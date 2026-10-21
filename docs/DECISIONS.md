@@ -1,0 +1,48 @@
+# Flowboard Decisions
+
+Status: chosen implementation defaults, 22 October 2026. These are engineering choices under the user's permission to select sensible defaults, not claims of separately approved designs. PLAN.md defines behavior in detail. Add a dated entry before changing a decision and update affected tasks/tests.
+
+| ID | Decision | Reason and consequence |
+|---|---|---|
+| D01 | Modular monolith API plus one worker | Learn boundaries without paying the operational cost of microservices. |
+| D02 | Prisma with `packages/database` | One migration/repository owner reusable by API and worker; prevents cross-app imports. |
+| D03 | Fail-closed tenant repositories plus composite FKs | Central enforcement covers reads, writes, nested relations and jobs. RLS is a later defense, not claimed today. |
+| D04 | Global users; workspace-scoped memberships | A person may join multiple tenants; each access token selects one verified workspace. |
+| D05 | Argon2id; 15-minute access JWT; 7-day rotating random refresh | Digest-only refresh storage, family reuse detection, memory-only browser access token, CSRF/Origin checks. |
+| D06 | Virtual workspace tree root; three stored node types | Avoid duplicating Workspace while exposing the required four-level hierarchy. |
+| D07 | Ancestor restrictions are cumulative | A child allow cannot pierce a denied/private ancestor; inaccessible subtrees are pruned. |
+| D08 | Visible containers allow member task edits; admin-only configuration/container/grant/member changes | Existing allow/deny grants have no edit bit. Add a capability model only when needed. |
+| D09 | Stable StatusIdentity per workspace/key; immutable category | Scoped override IDs do not become task status IDs; renamed/overridden columns retain their tasks. |
+| D10 | Root-to-leaf merge by key; hidden records reversible by nearer explicit visibility | Deterministic effective sets and provenance; required categories hold at each affected scope/list. |
+| D11 | Cross-list status fallback uses first same-category status; absent category rejects | Preserves intent; optional closed category supplies the genuine failure case. |
+| D12 | Block status/field changes that invalidate active tasks | No silent remaps/dropped data; physical status identities retain references from archived tasks. |
+| D13 | Nearest field definition replaces whole key; strict values and explicit clears | No ambiguous option merges or coercion. `false` and `0` are valid required values. |
+| D14 | Move payload may supply/clear custom fields; unknown destination keys reject | No hidden data loss. Move is one transaction and one version change. |
+| D15 | Workspace write lock, integer positions, optimistic versions | Small, explainable concurrency policy; renumbering and coarse locking can be replaced when measured. |
+| D16 | Archive subtree/tasks; no restoration UI in MVP | Preserve history and consistent reads. Future restore must revalidate current status/field configuration. |
+| D17 | Commit OpenAPI and generated client sources | Reviewable contract diffs and deterministic checkouts. Handwritten setup remains outside generated folders. |
+| D18 | Bootstrap minimal API generation in Phase 1; finish tooling in Phase 7 | Every domain endpoint can meet its complete contract definition of done immediately. |
+| D19 | Spec-only tooling imports the API's explicit bootstrap export | Narrow build-only exception to packages-not-importing-apps; API never depends back on tooling/client. |
+| D20 | Zod is allowed in contracts | The request to forbid imports means no framework/workspace dependencies; literal zero imports conflicts with required Zod schemas. |
+| D21 | Normal build outputs stay ignored; explicit sync changes committed generated files | Builds do not silently edit source; check commands detect spec/client drift using temporary output. |
+| D22 | Shared refresh attempt, retry once, fail closed on replay/race | Prevent refresh storms and infinite loops; origin-scoped browser locking coordinates tabs where supported. |
+| D23 | Development UI playground instead of Storybook | Covers component states with one existing app; no second frontend toolchain. |
+| D24 | Compact MUI light UI and semantic light/dark tokens | Favor daily task work, accessible controls and measured performance over marketing visuals. |
+| D25 | Transactional outbox plus idempotent BullMQ activity | Persist activity, publish invalidation, then complete delivery. Retries publish even when activity exists; disconnected browsers refetch. |
+| D26 | Sockets send permission-safe invalidations; reconnect refetches | PostgreSQL stays authoritative; no promise of Pub/Sub event replay. WebSocket-only transport for MVP. |
+| D27 | Demo-first Compose defaults; gated, seed-once initialization | One-command hobby startup; production explicitly disables demo data and supplies secrets. |
+| D28 | Manual invite links and documented webhook examples | No email/webhook infrastructure added beyond the brief. Search stub is tracked separately. |
+| D29 | Root tests include real Docker-backed integration/E2E once present; no silent skip | A green root test command must mean the requested suites actually ran. |
+| D30 | Repository guardrails apply only to Flowboard | No global agent config or unrelated repositories modified. Rules combine documented policy with planned automated checks. |
+| D31 | Version the board's configuration bundle | Status, field and task responses include configVersion; mismatched parallel results are refetched before rendering together. |
+| D32 | Clean grants/assignments when removing membership | One transaction removes dependent access/assignment rows, versions affected tasks and emits updates; historical activity stays intact. |
+
+## Selected skill routing
+
+Use Turborepo for the build graph; TDD at the user-specified seams; React Hook Form/Zod for forms; TanStack through generated options; frontend-ui-engineering and web-design-guidelines for UI/accessibility review; Vercel React/composition guidance only where compatible with this fixed stack. Do not replace TanStack with SWR, MUI with Tailwind, or add compound components without a concrete need.
+
+The System Design template supplies the companion Word document. Markdown remains canonical for implementation; refresh the companion when major architecture changes. Banner-design is reserved for an explicit banner brief. Vercel-optimize is reserved for an identified, deployed Vercel project and real metrics; neither is an MVP task or reason to connect accounts now.
+
+## Planning limitations
+
+Package versions, executable commands and runtime performance are not verified by these documents. Phase 0 records pinned compatibility and adds real commands; Phase 12 validates the final clean Docker run. Documentation guardrails alone are not enforcement: lint, contract checks, integration tests and CI are explicit implementation tasks.
