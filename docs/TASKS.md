@@ -56,13 +56,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: enforce workspace architecture boundaries`.
   - **Completion evidence:** [P00-02 verification](evidence/P00-02.md).
 
-- [ ] **P00-03 — Minimal runnable application shells**
+- [x] **P00-03 — Minimal runnable application shells**
   - **Goal:** Boot Nest, Next and the worker process with honest operational state and no domain endpoints.
-  - **Files:** `apps/api/src/{main,app.module}.ts`, `apps/web/app/{layout,page}.tsx`, `apps/worker/src/main.ts`, `apps/{api,web,worker}/test/bootstrap.test.*`, `docs/DECISIONS.md`.
+  - **Files:** `apps/api/src/{main,app.module}.ts`, `apps/web/app/{layout,page}.tsx`, `apps/worker/src/main.ts`, app manifests/compiler/Turbo configs, `apps/{api,web,worker}/test/bootstrap.test.*`, `packages/config-jest/src/{process,no-network}.mjs`, shared lint/format support, `README.md`, `docs/DECISIONS.md`.
   - **Dependencies:** P00-02.
   - **Acceptance:** Shells compile/start and terminate cleanly; scaffold page identifies setup status. Worker does not claim activity processing exists. TCP/process readiness only until P01-02. TODO references point to P08-03/P11-02.
   - **Validation:** Start/stop smoke tests, no unexpected outbound connections, standard gate.
   - **Commit:** `chore: add runnable application shells`.
+  - **Completion evidence:** [P00-03 verification](evidence/P00-03.md): three real application processes, shared Next/Node tooling, 44 passing tests including half-open shutdown, and restored Next build cache.
 
 - [ ] **P00-04 — Pruned Docker images and five-service Compose**
   - **Goal:** Provide the first working one-command development topology.
