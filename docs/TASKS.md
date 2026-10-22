@@ -10,7 +10,7 @@ Canonical behavior is in [PLAN.md](PLAN.md), the brief in [REQUIREMENTS.md](REQU
 - [ ] Run `pnpm build`, `pnpm lint`, `pnpm test`; fix all failures. Before the scaffold creates these scripts, record the exact available bootstrap checks rather than claim these commands passed.
 - [ ] For every endpoint: shared schema → Zod DTO → typed controller response and explicit operationId → guard metadata → spec regenerated → client regenerated → at least one behavioral test. Never defer contract artifacts to a later phase.
 - [ ] Run named task-specific checks, inspect the diff, update docs/TODOs, tick the task only when acceptance passes, and commit only its changes.
-- [ ] Give three lines: delivered behavior; checks and result; next task or actual blocker. Record test evidence and commit ID beneath the completed task.
+- [ ] Give three lines: delivered behavior; checks and result; next task or actual blocker. Link the task's evidence record beneath its completion note; the commit containing that record identifies the task in Git history without a self-referential hash.
 
 The checklist above is a reusable protocol, not a task to mark globally complete. Each task below carries its own completion checkbox.
 
@@ -25,12 +25,22 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: plan flowboard architecture and guardrails`.
   - **Completion evidence (22 October 2026):** 46 unique backlog IDs and all required task fields/dependency order/local links verified; source brief preserved exactly. Two independent reviews reconciled. Eight-page companion rendered and visually checked. No package manifest exists yet, so build/lint/application tests were not runnable. Phase 0 remains unstarted.
 
+- [x] **P-001 — Architecture reference and delivery harness**
+  - **Goal:** Make future implementation easy to navigate, verify and resume using stable requirement IDs, quality gates and evidence records.
+  - **Requirements:** H01–H06 in [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md); original product rows remain planned.
+  - **Files:** `ARCHITECTURE.md`, `AGENTS.md`, `README.md`, `docs/{DEVELOPMENT_WORKFLOW,REQUIREMENTS_MATRIX,QUALITY_GATES,TASK_TEMPLATE}.md`, `docs/evidence/README.md`, `docs/evidence/P-001.md`, `docs/{PLAN,DECISIONS,TASKS}.md`.
+  - **Dependencies:** P-000.
+  - **Acceptance:** Architecture describes the existing planned design without introducing product changes; every requirement maps to implementation tasks and verification; documented workflow covers preflight, one-task execution, tests, review, evidence and handoff; active and future automated checks are clearly distinguished. No application scaffolding is added.
+  - **Validation:** Check document links, unique requirement/task IDs, dependency ordering, matrix coverage, status consistency and diff; independent review of architecture/process. Build/lint/application tests remain unavailable until Phase 0.
+  - **Commit:** `docs: add architecture and delivery harness`.
+  - **Completion evidence (22 October 2026):** [P-001 record](evidence/P-001.md). Architecture/process/coverage reviewed; 13 Markdown documents, 138 local links, 47 task records, 92 planned requirement rows and six documentation outcomes checked. Application implementation remains unstarted.
+
 ## Phase 0 — Workspace and runnable infrastructure
 
 - [ ] **P00-01 — Workspace graph and shared configuration**
   - **Goal:** Establish all requested workspaces plus the shared database package, strict TypeScript and package-owned Turbo tasks.
   - **Files:** root `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `turbo.json`, `.gitignore`, `.npmrc`; `packages/config-{typescript,eslint,jest}/**`; `apps/{api,web,worker}/{package.json,tsconfig.json}`; `packages/{contracts,database,openapi,api-client,ui}/{package.json,tsconfig.json,src/index.ts}`.
-  - **Dependencies:** P-000.
+  - **Dependencies:** P-001.
   - **Acceptance:** Exact package versions and compatibility recorded; every workspace has exports and a real minimal build/config-copy step. Empty library entry points are explicitly scaffolding, tracked by subsequent tasks. Root scripts delegate to Turbo; cache outputs and edges are defined.
   - **Validation:** Clean frozen install; build/lint/test entry points run; verify Turbo dry-run graph, package resolution and cache restore. No fake test-success scripts.
   - **Commit:** `chore: scaffold flowboard workspaces`.

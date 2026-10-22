@@ -6,6 +6,8 @@
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
 **Requirements:** [REQUIREMENTS.md](REQUIREMENTS.md). Execution backlog: [TASKS.md](TASKS.md). Chosen defaults: [DECISIONS.md](DECISIONS.md). Agent rules: [../AGENTS.md](../AGENTS.md).
 
+**Delivery harness:** [Architecture reference](../ARCHITECTURE.md), [requirement traceability](REQUIREMENTS_MATRIX.md), [development workflow](DEVELOPMENT_WORKFLOW.md), [quality gates](QUALITY_GATES.md), [templates](TASK_TEMPLATE.md), and [verification evidence](evidence/README.md). These organize implementation and proof without changing the product scope. Automated enforcement arrives in the tasks identified by the gate catalogue.
+
 Implementation follows the task order, one task at a time. Future agentic workers should use the executing-plans workflow or a sequential implementer/reviewer workflow; parallel review is allowed, parallel implementation of separate backlog tasks is not. The user's latest instruction is to plan for now, so Phase 0 remains unstarted.
 
 ## 1. Scope and success
