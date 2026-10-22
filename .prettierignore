@@ -1,0 +1,14 @@
+node_modules/
+**/node_modules/**
+**/dist/**
+**/.next/**
+**/coverage/**
+.turbo/
+.cache/
+.pnpm-store/
+.serena/
+.superpowers/
+pnpm-lock.yaml
+**/*.gen.ts
+packages/api-client/src/generated/
+docs/REQUIREMENTS.md

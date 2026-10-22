@@ -1,9 +1,9 @@
 # Flowboard architecture reference
 
-**Status: PLANNED — no application implementation exists yet.** Updated 22 October 2026.
+**Status: target architecture; Phase 0 foundation is in progress.** Updated 22 October 2026.
 This is a navigation and change-impact reference for the agreed design, not evidence that its controls run today.
 The complete behavior lives in [PLAN.md](docs/PLAN.md), the original brief in [REQUIREMENTS.md](docs/REQUIREMENTS.md), and chosen defaults in [DECISIONS.md](docs/DECISIONS.md).
-Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing; Phase 0 still requires the user's instruction to begin.
+Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing; the user has authorized the monorepo and application-shell foundation.
 
 ## System shape and authority
 
@@ -37,19 +37,20 @@ Five normal Compose services are planned: `web`, `api`, `worker`, `postgres`, `r
 
 These are intended workspace dependencies; external runtime libraries and shared compiler/lint/test configuration are additional dependencies appropriate to each package. Imports use public package exports and `workspace:*`, never another package's source path.
 
-| Workspace | Responsibility | Allowed workspace dependencies / boundary |
-|---|---|---|
-| `apps/api` | HTTP controllers, auth, authorization, orchestration, sockets, outbox dispatch | `contracts`, `database`; no other app or generated client |
-| `apps/worker` | Validate queued events, persist activity, publish invalidations | `contracts`, `database`; no app imports |
-| `apps/web` | Routes, session state, generated queries, feature composition | `contracts`, `api-client`, `ui`; no backend internals |
-| `packages/contracts` | Zod schemas, inferred types, enums, event contracts, pure resolvers | Own files and Zod only; no other workspace, framework, environment or I/O |
-| `packages/database` | Prisma schema/client, migrations, seed, scoped repositories, transactions | `contracts`; sole owner of raw Prisma construction and SQL |
-| `packages/openapi` | Spec export, normalization, lint and drift checks | API's explicit spec-bootstrap export, **build tooling only** |
-| `packages/api-client` | Generated SDK, types and TanStack options; handwritten transport setup | Consumes OpenAPI as generation input; no API runtime import |
-| `packages/ui` | MUI theme/provider, controlled presentational components | `contracts` and UI libraries; no fetching, session or database code |
-| `packages/config-typescript` | Base, Node/Nest, Next and library compiler settings | Configuration subpath exports |
-| `packages/config-eslint` | Shared lint rules, import ordering and boundaries | Configuration subpath exports |
-| `packages/config-jest` | Shared test presets and environment conventions | Configuration subpath exports |
+| Workspace                    | Responsibility                                                                 | Allowed workspace dependencies / boundary                                 |
+| ---------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `apps/api`                   | HTTP controllers, auth, authorization, orchestration, sockets, outbox dispatch | `contracts`, `database`; no other app or generated client                 |
+| `apps/worker`                | Validate queued events, persist activity, publish invalidations                | `contracts`, `database`; no app imports                                   |
+| `apps/web`                   | Routes, session state, generated queries, feature composition                  | `contracts`, `api-client`, `ui`; no backend internals                     |
+| `packages/contracts`         | Zod schemas, inferred types, enums, event contracts, pure resolvers            | Own files and Zod only; no other workspace, framework, environment or I/O |
+| `packages/database`          | Prisma schema/client, migrations, seed, scoped repositories, transactions      | `contracts`; sole owner of raw Prisma construction and SQL                |
+| `packages/openapi`           | Spec export, normalization, lint and drift checks                              | API's explicit spec-bootstrap export, **build tooling only**              |
+| `packages/api-client`        | Generated SDK, types and TanStack options; handwritten transport setup         | Consumes OpenAPI as generation input; no API runtime import               |
+| `packages/ui`                | MUI theme/provider, controlled presentational components                       | `contracts` and UI libraries; no fetching, session or database code       |
+| `packages/config-typescript` | Base, Node/Nest, Next and library compiler settings                            | Configuration subpath exports                                             |
+| `packages/config-eslint`     | Shared lint rules, import ordering and boundaries                              | Configuration subpath exports                                             |
+| `packages/config-prettier`   | Shared formatting object and root/workspace format checks                      | Build tooling only                                                        |
+| `packages/config-jest`       | Shared test presets and environment conventions                                | Configuration subpath exports                                             |
 
 Applications cannot import one another. The OpenAPI tooling exception (D19) is narrow: it loads real controllers/DTOs with inert providers, no listening socket and no database/Redis connection. It is not a production API dependency or a fake runtime service.
 
@@ -57,19 +58,19 @@ The planned build graph is `contracts/database → api → openapi → api-clien
 
 ## Module responsibility and data ownership
 
-| Owner | What belongs here |
-|---|---|
-| API `platform` | Bootstrap, service configuration, request IDs, sanitized errors, liveness/readiness |
-| API `auth` | Credentials, session rotation, JWT verification; narrow global identity repository |
-| API `workspaces` | Membership, invitations, verified workspace switching, last-admin protection |
-| API `permissions` | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions |
-| API `hierarchy` | Typed parent relationships, container ordering/reparenting and subtree archive |
-| API `statuses` / `fields` | Scoped configuration changes and validation of affected descendants |
-| API `tasks` | Task CRUD/moves/reorders, composing shared validation inside a transaction |
-| API `activity` / `realtime` / `outbox` | Authorized feed reads / safe subscriptions and fanout / durable dispatch retries |
-| Worker | Verify persisted event identity, idempotent activity insertion and retryable publication |
-| Database package | Tenant filters, relation checks, storage operations, locks and transaction-bound repositories |
-| Contracts / UI / web | Deterministic domain rules / plain presentation / data and interaction coordination |
+| Owner                                  | What belongs here                                                                             |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| API `platform`                         | Bootstrap, service configuration, request IDs, sanitized errors, liveness/readiness           |
+| API `auth`                             | Credentials, session rotation, JWT verification; narrow global identity repository            |
+| API `workspaces`                       | Membership, invitations, verified workspace switching, last-admin protection                  |
+| API `permissions`                      | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions            |
+| API `hierarchy`                        | Typed parent relationships, container ordering/reparenting and subtree archive                |
+| API `statuses` / `fields`              | Scoped configuration changes and validation of affected descendants                           |
+| API `tasks`                            | Task CRUD/moves/reorders, composing shared validation inside a transaction                    |
+| API `activity` / `realtime` / `outbox` | Authorized feed reads / safe subscriptions and fanout / durable dispatch retries              |
+| Worker                                 | Verify persisted event identity, idempotent activity insertion and retryable publication      |
+| Database package                       | Tenant filters, relation checks, storage operations, locks and transaction-bound repositories |
+| Contracts / UI / web                   | Deterministic domain rules / plain presentation / data and interaction coordination           |
 
 Controllers translate transport and call services. Services orchestrate policy and transactions; repositories own persistence. Pure contracts functions accept plain data, so both backend validation and UI previews use the same rules.
 
@@ -159,14 +160,14 @@ Every response's data and `configVersion` come from the same snapshot; matching 
 
 ## Operational failure behavior
 
-| Failure | Planned behavior |
-|---|---|
-| Migration, seed or required dependency fails at startup | Readiness stays false; dependent services wait; seed retries preserve existing user edits |
-| Redis enqueue/publish outage | Persisted outbox remains retryable; task writes remain durable; monitor backlog/failures/worker heartbeat |
-| Stale edit or concurrent configuration change | Re-read under lock; reject stale versions with 409 or invalid data with typed errors; no partial write |
-| Refresh fails/replays, or access is revoked | A 401 may refresh and retry once; a 403 never refreshes. Failed refresh clears session data; access changes revoke rooms and sockets expire with tokens |
-| Socket disconnect or duplicate delivery | Deduplicate event/version; refetch on reconnect; never claim Pub/Sub replay or browser delivery acknowledgment |
-| Invalid generated contract or service exception | Reject/sanitize output with request ID; generation checks detect drift; never expose secrets or task content in default logs |
+| Failure                                                 | Planned behavior                                                                                                                                        |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Migration, seed or required dependency fails at startup | Readiness stays false; dependent services wait; seed retries preserve existing user edits                                                               |
+| Redis enqueue/publish outage                            | Persisted outbox remains retryable; task writes remain durable; monitor backlog/failures/worker heartbeat                                               |
+| Stale edit or concurrent configuration change           | Re-read under lock; reject stale versions with 409 or invalid data with typed errors; no partial write                                                  |
+| Refresh fails/replays, or access is revoked             | A 401 may refresh and retry once; a 403 never refreshes. Failed refresh clears session data; access changes revoke rooms and sockets expire with tokens |
+| Socket disconnect or duplicate delivery                 | Deduplicate event/version; refetch on reconnect; never claim Pub/Sub replay or browser delivery acknowledgment                                          |
+| Invalid generated contract or service exception         | Reject/sanitize output with request ID; generation checks detect drift; never expose secrets or task content in default logs                            |
 
 The search-index worker stub is intentionally deferred as `NEXT-01`; it must not report working search. OIDC, teams, email/webhook delivery, restoration and other listed future features remain outside MVP scope.
 
@@ -174,15 +175,15 @@ The search-index worker stub is intentionally deferred as `NEXT-01`; it must not
 
 Use this table to identify the smallest complete slice, then follow the corresponding task's acceptance criteria and [PLAN test strategy](docs/PLAN.md#10-test-strategy-and-execution-gates). These are planned checks, not currently executable guarantees.
 
-| Change | Layers and required evidence |
-|---|---|
-| New/changed REST endpoint | Contracts → Zod DTO/controller metadata → service/repository → spec → generated client; real-Postgres behavior, auth/tenant negatives, contract/drift checks (P01-02, P07-01–02 plus owner task) |
-| Status/field rule or configuration edit | Pure contracts resolver tests; API descendant/in-use and concurrency tests; UI preview/form regressions; generated artifacts for transport changes (P04/P05, P10) |
-| Task edit, move or reorder | Shared validation, task transaction, outbox, generated mutation and affected UI; relation/anchor/tenant denials, stale versions, rollback and browser flow (P06, P09) |
-| Membership, grant or auth change | Auth/workspaces/permissions, tenant repository, cache/session and socket lifecycle; ancestor denials, cross-tenant isolation, last-admin/refresh races, revocation (P02/P03, P07-03, P11-03) |
-| Persistence model, seed or migration | Database package plus all affected repositories/contracts; real migration/constraint tests, repeatable seed and startup/restart checks (P01-03–05) |
-| Queue, activity or realtime change | Event contracts, API outbox, worker, gateway and web subscriptions; Redis/Postgres crash/retry/dedup and two-client authorization tests (P11) |
-| Shared component or view | Presentational UI and web coordination; accessible component tests, 320/768/1024/1440px, long content/reduced motion and relevant browser path (P08–P10, P12-01) |
-| Build, dependency or Docker change | Package manifests/exports, Turbo graph, generation and image inputs; boundary fixtures, clean frozen build, drift checks and five-service health/restart (P00, P07, P12-03) |
+| Change                                  | Layers and required evidence                                                                                                                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| New/changed REST endpoint               | Contracts → Zod DTO/controller metadata → service/repository → spec → generated client; real-Postgres behavior, auth/tenant negatives, contract/drift checks (P01-02, P07-01–02 plus owner task) |
+| Status/field rule or configuration edit | Pure contracts resolver tests; API descendant/in-use and concurrency tests; UI preview/form regressions; generated artifacts for transport changes (P04/P05, P10)                                |
+| Task edit, move or reorder              | Shared validation, task transaction, outbox, generated mutation and affected UI; relation/anchor/tenant denials, stale versions, rollback and browser flow (P06, P09)                            |
+| Membership, grant or auth change        | Auth/workspaces/permissions, tenant repository, cache/session and socket lifecycle; ancestor denials, cross-tenant isolation, last-admin/refresh races, revocation (P02/P03, P07-03, P11-03)     |
+| Persistence model, seed or migration    | Database package plus all affected repositories/contracts; real migration/constraint tests, repeatable seed and startup/restart checks (P01-03–05)                                               |
+| Queue, activity or realtime change      | Event contracts, API outbox, worker, gateway and web subscriptions; Redis/Postgres crash/retry/dedup and two-client authorization tests (P11)                                                    |
+| Shared component or view                | Presentational UI and web coordination; accessible component tests, 320/768/1024/1440px, long content/reduced motion and relevant browser path (P08–P10, P12-01)                                 |
+| Build, dependency or Docker change      | Package manifests/exports, Turbo graph, generation and image inputs; boundary fixtures, clean frozen build, drift checks and five-service health/restart (P00, P07, P12-03)                      |
 
 After each implementation task, required build/lint/test and applicable contract/Docker gates must run with recorded results. Until Phase 0 creates them, report their absence instead of claiming they passed. Boundary lint, drift checks, integration tests and CI become enforcement only when their owning tasks are implemented and verified.
