@@ -10,8 +10,8 @@
     "build": "node src/build.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "format": "prettier --write . \"../../*.{json,yaml,mjs,md}\" \"../../docs/**/*.md\" --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . \"../../*.{json,yaml,mjs,md}\" \"../../docs/**/*.md\" --ignore-path ../../.prettierignore"
+    "format": "prettier --write . \"../../*.{json,yaml,mjs,md}\" \"../../docs/**/*.md\" \"../../.github/**/*.md\" --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . \"../../*.{json,yaml,mjs,md}\" \"../../docs/**/*.md\" \"../../.github/**/*.md\" --ignore-path ../../.prettierignore"
   },
   "prettier": "@flowboard/config-prettier",
   "devDependencies": {
