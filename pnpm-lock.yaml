@@ -166,6 +166,9 @@ importers:
 
   .:
     devDependencies:
+      '@flowboard/config-eslint':
+        specifier: workspace:*
+        version: link:packages/config-eslint
       '@flowboard/config-prettier':
         specifier: workspace:*
         version: link:packages/config-prettier

@@ -1,5 +1,7 @@
 import importX from 'eslint-plugin-import-x';
 
+import boundaries from './boundaries.mjs';
+
 export const ignoredFiles = [
   '**/node_modules/**',
   '**/dist/**',
@@ -10,8 +12,9 @@ export const ignoredFiles = [
 ];
 
 export const commonRules = {
-  plugins: { 'import-x': importX },
+  plugins: { 'import-x': importX, flowboard: { rules: { boundaries } } },
   rules: {
+    'flowboard/boundaries': 'error',
     'import-x/order': [
       'error',
       {

@@ -47,13 +47,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: scaffold flowboard workspaces`.
   - **Completion evidence:** [P00-01 verification](evidence/P00-01.md): all 12 workspace builds/lints/typechecks/format checks pass; five native structural tests pass; cache restoration and frozen install verified.
 
-- [ ] **P00-02 — Enforce package and import boundaries**
+- [x] **P00-02 — Enforce package and import boundaries**
   - **Goal:** Turn the primary AI architecture rules into executable lint checks.
   - **Files:** `packages/config-eslint/src/{index,boundaries}.mjs`, `eslint.config.mjs`, `packages/config-eslint/test/boundaries.test.mjs`, `.github/pull_request_template.md`, `AGENTS.md`.
   - **Dependencies:** P00-01.
   - **Acceptance:** Invalid web→API, worker→API, UI→client, contracts→framework and direct Prisma imports fail. Zod is allowed in contracts. Only the OpenAPI scripts may use the dedicated API tooling export. Type-only violations also fail; relative escapes cannot bypass rules.
   - **Validation:** Deliberate valid/invalid import fixtures prove rules; standard task gate passes after removing violations.
   - **Commit:** `chore: enforce workspace architecture boundaries`.
+  - **Completion evidence:** [P00-02 verification](evidence/P00-02.md).
 
 - [ ] **P00-03 — Minimal runnable application shells**
   - **Goal:** Boot Nest, Next and the worker process with honest operational state and no domain endpoints.
