@@ -1,6 +1,6 @@
 # Flowboard Task Backlog
 
-Status: implementation not started. Execute top to bottom, one task at a time. Dependencies name the technical prerequisites; they do not authorize skipping ahead. Paths below are planned files, not files that already exist. Small supporting edits are allowed only within the task's stated goal and must be recorded in its completion note.
+Status: Phase 0 foundation implementation authorized and in progress. Execute top to bottom, one task at a time. Dependencies name the technical prerequisites; they do not authorize skipping ahead. Paths below are planned deliverables; check their current implementation and evidence. Small supporting edits are allowed only within the task's stated goal and must be recorded in its completion note.
 
 Canonical behavior is in [PLAN.md](PLAN.md), the brief in [REQUIREMENTS.md](REQUIREMENTS.md), and defaults in [DECISIONS.md](DECISIONS.md). Read [AGENTS.md](../AGENTS.md) before execution.
 
@@ -37,13 +37,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 0 — Workspace and runnable infrastructure
 
-- [ ] **P00-01 — Workspace graph and shared configuration**
-  - **Goal:** Establish all requested workspaces plus the shared database package, strict TypeScript and package-owned Turbo tasks.
+- [x] **P00-01 — Workspace graph and shared configuration**
+  - **Goal:** Establish all requested workspaces plus shared database/Prettier packages, strict TypeScript, Node/Next ESLint presets and package-owned Turbo tasks.
+  - **Requirements:** R08–R10, R22 and R93; foundation portions only until app shells and boundary enforcement land.
   - **Files:** root `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `turbo.json`, `.gitignore`, `.npmrc`; `packages/config-{typescript,eslint,jest}/**`; `apps/{api,web,worker}/{package.json,tsconfig.json}`; `packages/{contracts,database,openapi,api-client,ui}/{package.json,tsconfig.json,src/index.ts}`.
   - **Dependencies:** P-001.
-  - **Acceptance:** Exact package versions and compatibility recorded; every workspace has exports and a real minimal build/config-copy step. Empty library entry points are explicitly scaffolding, tracked by subsequent tasks. Root scripts delegate to Turbo; cache outputs and edges are defined.
+  - **Acceptance:** Exact package versions and compatibility recorded; every workspace has exports and a real minimal build/config-copy step. All workspaces consume shared Prettier configuration with format/check commands. Empty library entry points are explicitly scaffolding, tracked by subsequent tasks. Root scripts delegate to Turbo; cache outputs and edges are defined.
   - **Validation:** Clean frozen install; build/lint/test entry points run; verify Turbo dry-run graph, package resolution and cache restore. No fake test-success scripts.
   - **Commit:** `chore: scaffold flowboard workspaces`.
+  - **Completion evidence:** [P00-01 verification](evidence/P00-01.md): all 12 workspace builds/lints/typechecks/format checks pass; five native structural tests pass; cache restoration and frozen install verified.
 
 - [ ] **P00-02 — Enforce package and import boundaries**
   - **Goal:** Turn the primary AI architecture rules into executable lint checks.

@@ -46,15 +46,15 @@ Commit: This record is included in the task commit; resolve it through Git histo
 
 ## Acceptance evidence
 
-| Criterion | Check or test | Outcome | Observed result |
-|---|---|---|---|
-| <specific criterion> | <test path/name or documented inspection> | <pass/fail/not_run/not_applicable> | <facts> |
+| Criterion            | Check or test                             | Outcome                            | Observed result |
+| -------------------- | ----------------------------------------- | ---------------------------------- | --------------- |
+| <specific criterion> | <test path/name or documented inspection> | <pass/fail/not_run/not_applicable> | <facts>         |
 
 ## Verification
 
-| Gate | Command or inspection | Outcome | Environment and observed result |
-|---|---|---|---|
-| <Gxx> | <exact command> | <outcome> | <exit result/count; required services; no secrets> |
+| Gate  | Command or inspection | Outcome   | Environment and observed result                    |
+| ----- | --------------------- | --------- | -------------------------------------------------- |
+| <Gxx> | <exact command>       | <outcome> | <exit result/count; required services; no secrets> |
 
 ## Review
 

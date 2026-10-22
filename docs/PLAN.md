@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** Planning only. Implementation has not started. Updated 22 October 2026.
+**Status:** Phase 0 foundation implementation authorized and in progress. Updated 22 October 2026.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
@@ -8,7 +8,7 @@
 
 **Delivery harness:** [Architecture reference](../ARCHITECTURE.md), [requirement traceability](REQUIREMENTS_MATRIX.md), [development workflow](DEVELOPMENT_WORKFLOW.md), [quality gates](QUALITY_GATES.md), [templates](TASK_TEMPLATE.md), and [verification evidence](evidence/README.md). These organize implementation and proof without changing the product scope. Automated enforcement arrives in the tasks identified by the gate catalogue.
 
-Implementation follows the task order, one task at a time. Future agentic workers should use the executing-plans workflow or a sequential implementer/reviewer workflow; parallel review is allowed, parallel implementation of separate backlog tasks is not. The user's latest instruction is to plan for now, so Phase 0 remains unstarted.
+Implementation follows the task order, one task at a time. Future agentic workers should use the executing-plans workflow or a sequential implementer/reviewer workflow; parallel review is allowed, parallel implementation of separate backlog tasks is not. The user's latest instruction authorizes the foundation setup through shared configuration and Next.js/NestJS shells, with a commit after each task. Docker and domain implementation remain subsequent backlog work.
 
 ## 1. Scope and success
 
@@ -48,19 +48,20 @@ PostgreSQL is authoritative. Redis provides queue transport and socket fanout; i
 
 ### Package ownership
 
-| Path | Responsibility and permitted dependencies |
-|---|---|
-| `apps/api` | REST, authentication, permissions, orchestration, Socket.IO, outbox dispatch. Imports contracts and database, never web/worker/client. |
-| `apps/worker` | BullMQ activity processing and explicit search stub. Imports contracts/database, never another app. |
-| `apps/web` | Routes, auth state, data hooks, board/list/drawer/config composition. Imports contracts/ui/api-client. |
-| `packages/contracts` | Zod schemas, inferred types, enums, errors, pagination, event schemas, pure resolution/validation. Only external runtime dependency is Zod; no framework or other workspace imports. |
-| `packages/database` | **One added package:** Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts. |
-| `packages/openapi` | Export, normalization, lint and drift checks for the API spec. Sole build-tool exception: imports API's exported spec bootstrap; never shipped into a browser/runtime API dependency. |
-| `packages/api-client` | Committed `src/generated/**` from Hey API; separate handwritten `src/setup-client.ts`. Exports SDK, types, query/mutation options. |
-| `packages/ui` | MUI theme/provider and presentational components; only contracts and UI libraries. No network, auth, Prisma, or app imports. |
-| `packages/config-typescript` | Base, Node/Nest, Next, library compiler settings. |
-| `packages/config-eslint` | Flat config, import ordering, package boundaries and restricted imports. |
-| `packages/config-jest` | Shared test presets and test environment conventions. |
+| Path                         | Responsibility and permitted dependencies                                                                                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/api`                   | REST, authentication, permissions, orchestration, Socket.IO, outbox dispatch. Imports contracts and database, never web/worker/client.                                                |
+| `apps/worker`                | BullMQ activity processing and explicit search stub. Imports contracts/database, never another app.                                                                                   |
+| `apps/web`                   | Routes, auth state, data hooks, board/list/drawer/config composition. Imports contracts/ui/api-client.                                                                                |
+| `packages/contracts`         | Zod schemas, inferred types, enums, errors, pagination, event schemas, pure resolution/validation. Only external runtime dependency is Zod; no framework or other workspace imports.  |
+| `packages/database`          | **One added package:** Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts.                 |
+| `packages/openapi`           | Export, normalization, lint and drift checks for the API spec. Sole build-tool exception: imports API's exported spec bootstrap; never shipped into a browser/runtime API dependency. |
+| `packages/api-client`        | Committed `src/generated/**` from Hey API; separate handwritten `src/setup-client.ts`. Exports SDK, types, query/mutation options.                                                    |
+| `packages/ui`                | MUI theme/provider and presentational components; only contracts and UI libraries. No network, auth, Prisma, or app imports.                                                          |
+| `packages/config-typescript` | Base, Node/Nest, Next, library compiler settings.                                                                                                                                     |
+| `packages/config-eslint`     | Flat config, import ordering, package boundaries and restricted imports.                                                                                                              |
+| `packages/config-prettier`   | Shared formatting rules for all workspaces and root documentation/configuration.                                                                                                      |
+| `packages/config-jest`       | Shared test presets and test environment conventions.                                                                                                                                 |
 
 All workspaces have `package.json`, explicit `exports`, a local `tsconfig`, and a real build or config-copy step. Config packages publish configuration subpaths; applications are private and expose only intentional tooling entry points. Public imports use package exports, never `../../other-package/src`.
 
@@ -74,23 +75,23 @@ Controllers translate HTTP and call services; they contain no business rules or 
 
 All IDs are opaque UUIDs. API dates are ISO UTC timestamps, except due dates and date custom fields which are calendar dates (`YYYY-MM-DD`). Ordered positions are integers managed by explicit move APIs. All tenant-owned records and join tables carry `workspaceId`; global `User` and global credential/session identity are exceptions by definition.
 
-| Entity | Important fields and constraints |
-|---|---|
-| User | `id`, normalized unique `email`, `name`, `passwordHash`, timestamps. Never serialize credential material. |
-| Workspace | `id`, `name`, `configVersion`, timestamps; serves as the tenant root and transaction lock. |
-| Membership | `workspaceId`, `userId`, `role: admin\|member`; unique pair. |
-| RefreshSession | `id`, `userId`, `familyId`, token digest, expiry, used/revoked timestamps. Global credential record; active workspace always revalidated against Membership. |
-| Invitation | `id`, `workspaceId`, normalized email, role, token digest, expiry, acceptedAt; admin-created. |
-| Node | `id`, `workspaceId`, `name`, `type: space\|folder\|list`, `parentId`, `position`, `visibility`, `archivedAt`, `version`. Root spaces have null parent; workspace is represented as a virtual root in the tree contract. |
-| Grant | `workspaceId`, `resourceId`, `userId`, `mode: allow\|deny`; unique resource/user. FK to current workspace membership. |
-| StatusIdentity | `id`, `workspaceId`, immutable `key`, immutable `category`; unique workspace/key. This is the task's `statusId`. |
-| StatusOverride | `id`, `workspaceId`, `statusId`, `ownerType`, `ownerId`, optional name/color/position, `hidden`. Unique owner/status. Root definitions provide all display fields. |
-| FieldDefinition | `id`, `workspaceId`, `key`, `name`, `type`, `required`, options JSON, `ownerType`, `ownerId`, `position`; unique owner/key. |
-| Task | Requested fields plus `workspaceId`, `version`, `archivedAt`. `customFields` is JSONB. `statusId` references stable identity; `primaryListId` references a list. |
-| TaskAssignee | `workspaceId`, `taskId`, `userId`; unique task/user, membership FK. API exposes `assigneeIds[]`. |
-| Activity | `id`, `workspaceId`, `taskId`, `actorId`, `eventId`, `type`, payload, `createdAt`; unique eventId for idempotency. |
-| OutboxEvent | `id`, `workspaceId`, aggregate ID/version, event type/schemaVersion, payload, delivery state, attempts, nextAttemptAt, createdAt. |
-| SeedState | Seed version and completion marker; first-boot initialization only. |
+| Entity          | Important fields and constraints                                                                                                                                                                                        |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User            | `id`, normalized unique `email`, `name`, `passwordHash`, timestamps. Never serialize credential material.                                                                                                               |
+| Workspace       | `id`, `name`, `configVersion`, timestamps; serves as the tenant root and transaction lock.                                                                                                                              |
+| Membership      | `workspaceId`, `userId`, `role: admin\|member`; unique pair.                                                                                                                                                            |
+| RefreshSession  | `id`, `userId`, `familyId`, token digest, expiry, used/revoked timestamps. Global credential record; active workspace always revalidated against Membership.                                                            |
+| Invitation      | `id`, `workspaceId`, normalized email, role, token digest, expiry, acceptedAt; admin-created.                                                                                                                           |
+| Node            | `id`, `workspaceId`, `name`, `type: space\|folder\|list`, `parentId`, `position`, `visibility`, `archivedAt`, `version`. Root spaces have null parent; workspace is represented as a virtual root in the tree contract. |
+| Grant           | `workspaceId`, `resourceId`, `userId`, `mode: allow\|deny`; unique resource/user. FK to current workspace membership.                                                                                                   |
+| StatusIdentity  | `id`, `workspaceId`, immutable `key`, immutable `category`; unique workspace/key. This is the task's `statusId`.                                                                                                        |
+| StatusOverride  | `id`, `workspaceId`, `statusId`, `ownerType`, `ownerId`, optional name/color/position, `hidden`. Unique owner/status. Root definitions provide all display fields.                                                      |
+| FieldDefinition | `id`, `workspaceId`, `key`, `name`, `type`, `required`, options JSON, `ownerType`, `ownerId`, `position`; unique owner/key.                                                                                             |
+| Task            | Requested fields plus `workspaceId`, `version`, `archivedAt`. `customFields` is JSONB. `statusId` references stable identity; `primaryListId` references a list.                                                        |
+| TaskAssignee    | `workspaceId`, `taskId`, `userId`; unique task/user, membership FK. API exposes `assigneeIds[]`.                                                                                                                        |
+| Activity        | `id`, `workspaceId`, `taskId`, `actorId`, `eventId`, `type`, payload, `createdAt`; unique eventId for idempotency.                                                                                                      |
+| OutboxEvent     | `id`, `workspaceId`, aggregate ID/version, event type/schemaVersion, payload, delivery state, attempts, nextAttemptAt, createdAt.                                                                                       |
+| SeedState       | Seed version and completion marker; first-boot initialization only.                                                                                                                                                     |
 
 Add unique `(workspaceId,id)` keys and composite tenant foreign keys wherever possible. Polymorphic owner references use checked ownerType/ownerId combinations and repository validation; workspace owners must equal the tenant ID, other owners must resolve to a node of the correct type. DB checks enforce enum/shape basics; services enforce the hierarchy.
 
@@ -146,15 +147,15 @@ Explicit reorder accepts neighbor IDs and expected version, never a client-chose
 
 Domain routes start `/v1`. Route groups:
 
-| Group | Initial endpoints |
-|---|---|
-| Auth | POST `/auth/signup`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/switch-workspace`; GET `/me` |
+| Group     | Initial endpoints                                                                                                                   |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Auth      | POST `/auth/signup`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/switch-workspace`; GET `/me`                            |
 | Workspace | GET `/workspaces`, `/workspaces/:id/members`; POST invitations/members; PATCH/DELETE memberships; POST `/invitations/:token/accept` |
-| Hierarchy | GET `/tree`; POST `/nodes`; GET/PATCH/DELETE `/nodes/:id`; POST `/nodes/:id/move`, `/nodes/:id/reorder` |
-| Grants | GET/PUT `/nodes/:id/grants`; DELETE `/nodes/:id/grants/:userId` |
-| Statuses | GET/POST `/scopes/:ownerType/:ownerId/statuses`; PATCH/DELETE `.../:statusId`; GET `/lists/:id/resolved-statuses` |
-| Fields | GET/POST `/scopes/:ownerType/:ownerId/fields`; PATCH/DELETE `.../:fieldId`; GET `/lists/:id/resolved-fields` |
-| Tasks | GET/POST `/lists/:id/tasks`; GET/PATCH/DELETE `/tasks/:id`; POST `/tasks/:id/move`, `/tasks/:id/reorder`; GET `/tasks/:id/activity` |
+| Hierarchy | GET `/tree`; POST `/nodes`; GET/PATCH/DELETE `/nodes/:id`; POST `/nodes/:id/move`, `/nodes/:id/reorder`                             |
+| Grants    | GET/PUT `/nodes/:id/grants`; DELETE `/nodes/:id/grants/:userId`                                                                     |
+| Statuses  | GET/POST `/scopes/:ownerType/:ownerId/statuses`; PATCH/DELETE `.../:statusId`; GET `/lists/:id/resolved-statuses`                   |
+| Fields    | GET/POST `/scopes/:ownerType/:ownerId/fields`; PATCH/DELETE `.../:fieldId`; GET `/lists/:id/resolved-fields`                        |
+| Tasks     | GET/POST `/lists/:id/tasks`; GET/PATCH/DELETE `/tasks/:id`; POST `/tasks/:id/move`, `/tasks/:id/reorder`; GET `/tasks/:id/activity` |
 
 `/health/live`, `/health/ready` and `/docs` are operational exceptions to `/v1`. Lists use `{ items, pageInfo: { nextCursor, hasNextPage } }`, limit default 50/max 100. Cursor is opaque and binds resource, sort/filter and final ID; reject malformed or mismatched cursors. Sort allowlist includes due date and priority (`urgent > high > normal > low > none`); null dates last, ID tie-breaker. Tree is a paginated flat visible-node traversal with parent IDs; the client assembles pages and never presents a partially loaded tree as complete. Resolved configuration is a bounded ordered set, not a collection pagination endpoint. Resolved-status/field responses use `{ items, configVersion }`; task pages extend their page envelope with `configVersion`. Each response reads that version and its data from one consistent snapshot.
 
@@ -208,14 +209,14 @@ Seed the main tenant with Alice admin, Bob/Carol members, 2 spaces, 2 folders, 3
 
 The user's requested public test seams are: pure contracts functions, real-Postgres REST endpoints through Jest/Supertest, and browser user flows through Playwright. Additional seams cover generated transport behavior and worker event processing. Tests assert externally observable outcomes, not private method calls. Use fresh schemas/databases and deterministic fixtures; never use a developer database or SQLite as a substitute.
 
-| Suite | Must prove |
-|---|---|
-| Contracts Jest | Root/child hide/unhide and override stability; sibling sets; mandatory categories; nearest field wins; wrong type/option/required/date/unknown key; `0`/`false`; PATCH clear semantics. |
+| Suite                                   | Must prove                                                                                                                                                                                                                 |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contracts Jest                          | Root/child hide/unhide and override stability; sibling sets; mandatory categories; nearest field wins; wrong type/option/required/date/unknown key; `0`/`false`; PATCH clear semantics.                                    |
 | API Jest/Supertest + Postgres container | 401/403/404 distinctions, rotation/reuse, private and denied access, forged identity rejection, tenant reads/writes/relations/anchors isolated, exact status/field edge cases, archive behavior, pagination and conflicts. |
-| Concurrency integration | Concurrent config/move cannot commit invalid state; stale versions conflict; reorder deterministic; last-admin removal cannot race. |
-| Client/UI Jest + RTL | One refresh for concurrent requests; no refresh loop; cache separation/logout; optimistic rollback; labels/focus; dynamic inputs preserve edits. |
-| Worker + Redis/Postgres | Retry creates one activity; outbox recovers enqueue failure; event ordering/dedup; revoked clients and cross-tenant rooms receive nothing. |
-| Playwright | Login → list → exact expected columns → task drawer → custom-field edit → save → reload confirms persistence. Also Alice/Bob private-list visibility and two-client realtime update. |
+| Concurrency integration                 | Concurrent config/move cannot commit invalid state; stale versions conflict; reorder deterministic; last-admin removal cannot race.                                                                                        |
+| Client/UI Jest + RTL                    | One refresh for concurrent requests; no refresh loop; cache separation/logout; optimistic rollback; labels/focus; dynamic inputs preserve edits.                                                                           |
+| Worker + Redis/Postgres                 | Retry creates one activity; outbox recovers enqueue failure; event ordering/dedup; revoked clients and cross-tenant rooms receive nothing.                                                                                 |
+| Playwright                              | Login → list → exact expected columns → task drawer → custom-field edit → save → reload confirms persistence. Also Alice/Bob private-list visibility and two-client realtime update.                                       |
 
 `pnpm test` runs all suites through Turbo after they are introduced; infra-dependent suites fail clearly if Docker is unavailable rather than silently skip. Root `pnpm build`, `pnpm lint`, `pnpm test` run after every implementation task. During initial scaffold, package verification checks real exports/build graph until behavioral suites exist. Tests are added with the owning feature, not postponed to Phase 12. Test Compose override supports a disposable test runner and isolated volumes; it does not change the five normal services.
 
@@ -223,21 +224,21 @@ Review focus: (1) `closed` fallback absence (P04-02/P06-03), (2) permission revo
 
 ## 11. Phased delivery
 
-| Phase | Exit criterion |
-|---|---|
-| 0 Foundation | All workspaces build; boundaries enforced; five Compose shells start and health is honest. |
-| 1 Data and contracts | Foundation schemas, early spec/client pipeline, migrations, tenant layer, real DB harness and repeatable seed. |
-| 2 Identity | Signup/login/refresh/logout, workspace membership and invitations tested. |
-| 3 Hierarchy and authorization | Correct tree, archive/reorder, grants and one consistent permission policy. |
-| 4 Statuses | Stable IDs, scoped resolution, safe mutations and required edge tests. |
-| 5 Fields | Resolved schemas, typed values and safe config mutations. |
-| 6 Tasks | CRUD, filters, ordering and atomic moves with durable mutation events. |
-| 7 API tooling | Complete lint/drift/generated-client checks and resilient refresh transport. |
-| 8 UI foundations | Presentational library, form inputs, auth shell and accessible sidebar. |
-| 9 Task experience | Board, optimistic drag, list, drawer and early browser path passing. |
-| 10 Configuration UI | Inherited/local status and field management with effective previews. |
-| 11 Collaboration | Outbox delivery, activity worker, permission-safe realtime and reconnect. |
-| 12 Release | Full E2E, clean Docker acceptance, README/cookbook and remaining polish. |
+| Phase                         | Exit criterion                                                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 0 Foundation                  | All workspaces build; boundaries enforced; five Compose shells start and health is honest.                     |
+| 1 Data and contracts          | Foundation schemas, early spec/client pipeline, migrations, tenant layer, real DB harness and repeatable seed. |
+| 2 Identity                    | Signup/login/refresh/logout, workspace membership and invitations tested.                                      |
+| 3 Hierarchy and authorization | Correct tree, archive/reorder, grants and one consistent permission policy.                                    |
+| 4 Statuses                    | Stable IDs, scoped resolution, safe mutations and required edge tests.                                         |
+| 5 Fields                      | Resolved schemas, typed values and safe config mutations.                                                      |
+| 6 Tasks                       | CRUD, filters, ordering and atomic moves with durable mutation events.                                         |
+| 7 API tooling                 | Complete lint/drift/generated-client checks and resilient refresh transport.                                   |
+| 8 UI foundations              | Presentational library, form inputs, auth shell and accessible sidebar.                                        |
+| 9 Task experience             | Board, optimistic drag, list, drawer and early browser path passing.                                           |
+| 10 Configuration UI           | Inherited/local status and field management with effective previews.                                           |
+| 11 Collaboration              | Outbox delivery, activity worker, permission-safe realtime and reconnect.                                      |
+| 12 Release                    | Full E2E, clean Docker acceptance, README/cookbook and remaining polish.                                       |
 
 Task detail and commits live in TASKS.md. Dependency IDs explain technical prerequisites; execution still follows document order. Do not skip ahead to a UI or infrastructure task that looks independent.
 

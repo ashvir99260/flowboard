@@ -1,18 +1,18 @@
 # Flowboard Development Workflow
 
-This is the operating procedure for a human or AI implementing Flowboard. Its purpose is to carry one requirement from the brief to working behavior, verified evidence and a reviewable commit. It does not authorize starting implementation: the current user request remains documentation only.
+This is the operating procedure for a human or AI implementing Flowboard. Its purpose is to carry one requirement from the brief to working behavior, verified evidence and a reviewable commit. It does not authorize starting implementation: the user has authorized the Phase 0 monorepo, shared configuration and application-shell setup.
 
 ## 1. Read the right source
 
-| Question | Authoritative source |
-|---|---|
-| What did the user request? | Latest direct user instructions, then [REQUIREMENTS.md](REQUIREMENTS.md) |
-| What design will implement it? | [PLAN.md](PLAN.md) and recorded choices in [DECISIONS.md](DECISIONS.md) |
-| Where does a change belong? | [ARCHITECTURE.md](../ARCHITECTURE.md) |
-| Which requirement does it satisfy? | [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md) |
-| What can I work on next? | [TASKS.md](TASKS.md) in document order |
-| What rules apply to the work? | [AGENTS.md](../AGENTS.md) and [QUALITY_GATES.md](QUALITY_GATES.md) |
-| What has actually been checked? | Task evidence under [evidence/](evidence/README.md) and its associated Git commit |
+| Question                           | Authoritative source                                                              |
+| ---------------------------------- | --------------------------------------------------------------------------------- |
+| What did the user request?         | Latest direct user instructions, then [REQUIREMENTS.md](REQUIREMENTS.md)          |
+| What design will implement it?     | [PLAN.md](PLAN.md) and recorded choices in [DECISIONS.md](DECISIONS.md)           |
+| Where does a change belong?        | [ARCHITECTURE.md](../ARCHITECTURE.md)                                             |
+| Which requirement does it satisfy? | [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md)                                  |
+| What can I work on next?           | [TASKS.md](TASKS.md) in document order                                            |
+| What rules apply to the work?      | [AGENTS.md](../AGENTS.md) and [QUALITY_GATES.md](QUALITY_GATES.md)                |
+| What has actually been checked?    | Task evidence under [evidence/](evidence/README.md) and its associated Git commit |
 
 These files have different jobs. Do not copy entire requirements into agent instructions or silently change a product rule in an evidence record. If sources conflict, resolve the conflict before dependent work: the latest user instruction wins; preserve a decision trail instead of quietly rewriting the original brief.
 
@@ -51,16 +51,16 @@ A later hardening task does not justify a known unsafe first implementation. The
 
 ## 4. Handle changes and failures
 
-| Situation | Required response |
-|---|---|
-| New behavior changes the product | Update the relevant decision, plan, requirement mapping and task acceptance before implementation. Record whether the source is the user or an engineering default. |
-| A needed file was outside the expected list | Explain why it belongs to this task; update its scope. Do not bundle unrelated cleanup. |
-| Existing implementation contradicts the design | Reproduce the behavior, inspect callers, then choose a compatible fix or record a deliberate design change. |
-| Required test fails | Keep the task incomplete; fix the implementation/test setup, then rerun the failing gate. Never weaken a requirement to get green output. |
-| Docker/tooling is unavailable | Record `not_run` with the reason. Continue independent work, but do not mark an implementation task complete if its mandatory evidence is missing. |
-| Previously passing behavior regresses | Reopen the affected task/requirement verification and repair it before proceeding to dependent work. |
-| Requirement is too large for one task | Split it into ordered sub-tasks with independently safe outcomes; preserve requirement IDs and dependency links. |
-| Temporary incomplete behavior is unavoidable | Add a concrete `TODO(task-id)` and an unchecked task; do not expose it as functioning product behavior. |
+| Situation                                      | Required response                                                                                                                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New behavior changes the product               | Update the relevant decision, plan, requirement mapping and task acceptance before implementation. Record whether the source is the user or an engineering default. |
+| A needed file was outside the expected list    | Explain why it belongs to this task; update its scope. Do not bundle unrelated cleanup.                                                                             |
+| Existing implementation contradicts the design | Reproduce the behavior, inspect callers, then choose a compatible fix or record a deliberate design change.                                                         |
+| Required test fails                            | Keep the task incomplete; fix the implementation/test setup, then rerun the failing gate. Never weaken a requirement to get green output.                           |
+| Docker/tooling is unavailable                  | Record `not_run` with the reason. Continue independent work, but do not mark an implementation task complete if its mandatory evidence is missing.                  |
+| Previously passing behavior regresses          | Reopen the affected task/requirement verification and repair it before proceeding to dependent work.                                                                |
+| Requirement is too large for one task          | Split it into ordered sub-tasks with independently safe outcomes; preserve requirement IDs and dependency links.                                                    |
+| Temporary incomplete behavior is unavoidable   | Add a concrete `TODO(task-id)` and an unchecked task; do not expose it as functioning product behavior.                                                             |
 
 Do not quarantine/delete a failing test, disable a lint rule, add broad `any`/type suppression, or broaden permissions just to clear a gate. A justified exception must be narrow, documented and accompanied by a regression test; it must not contradict the user's requirements.
 

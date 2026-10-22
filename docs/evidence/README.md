@@ -8,4 +8,4 @@ Record tests by real path/name, commands by their actual invocation, outcomes as
 
 Requirement status is maintained in [REQUIREMENTS_MATRIX.md](../REQUIREMENTS_MATRIX.md). Evidence must cover the row's entire acceptance before it becomes verified. The original planning task P-000 predates this directory; its original evidence is preserved in [TASKS.md](../TASKS.md) and commit `cfd53ed`. Do not invent retrospective test output for it.
 
-At this stage, application build/lint/tests do not exist. A complete documentation task demonstrates document structure, consistency and scope, not functioning application behavior.
+P00-01 supplies workspace build/lint/typecheck/format checks and native configuration tests. Feature tests arrive with their owning task. A complete documentation task demonstrates document structure and scope, not functioning application behavior.

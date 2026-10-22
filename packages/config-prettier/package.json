@@ -1,0 +1,25 @@
+{
+  "name": "@flowboard/config-prettier",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "build": "node src/build.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write . \"../../*.{json,yaml,mjs,md}\" \"../../docs/**/*.md\" --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . \"../../*.{json,yaml,mjs,md}\" \"../../docs/**/*.md\" --ignore-path ../../.prettierignore"
+  },
+  "prettier": "@flowboard/config-prettier",
+  "devDependencies": {
+    "@flowboard/config-typescript": "workspace:*",
+    "@flowboard/config-eslint": "workspace:*",
+    "@types/node": "22.20.5",
+    "typescript": "6.0.3",
+    "eslint": "9.39.5",
+    "prettier": "3.9.10"
+  }
+}
