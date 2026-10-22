@@ -36,6 +36,7 @@ Status: chosen implementation defaults, 22 October 2026. These are engineering c
 | D30 | Repository guardrails apply only to Flowboard | No global agent config or unrelated repositories modified. Rules combine documented policy with planned automated checks. |
 | D31 | Version the board's configuration bundle | Status, field and task responses include configVersion; mismatched parallel results are refetched before rendering together. |
 | D32 | Clean grants/assignments when removing membership | One transaction removes dependent access/assignment rows, versions affected tasks and emits updates; historical activity stays intact. |
+| D33 | Repository documentation is the delivery harness | Architecture, stable requirement IDs, ordered tasks, quality gates and per-task evidence make work resumable. No external tracker or custom agent platform is required; documentation and executable enforcement are distinct. |
 
 ## Selected skill routing
 
