@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["NEXT_TELEMETRY_DISABLED"]
+    },
+    "dev": {
+      "env": ["NEXT_TELEMETRY_DISABLED", "PORT"]
+    },
+    "test": {
+      "env": ["NEXT_TELEMETRY_DISABLED"]
+    }
+  }
+}

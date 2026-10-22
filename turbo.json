@@ -21,7 +21,8 @@
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["HOST", "PORT", "NEXT_TELEMETRY_DISABLED"]
     },
     "format": {
       "cache": false
