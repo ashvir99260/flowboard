@@ -75,3 +75,9 @@ Run `pnpm docker:check` for an isolated image/build/start/restart check. It uses
 | [System Design companion](docs/system-design.docx)      | Read the template-based Word overview; Markdown remains canonical.        |
 
 Future README sections for one-command startup, ports, demo users, API examples, operations and Docker tests are tracked in P12-02, with runnable setup added as the relevant foundation tasks land. Documentation is not a claim those capabilities already work.
+
+## Independent releases and hosting
+
+Merges to `main` publish only affected applications: `api/vX.Y.Z`, `web/vX.Y.Z`, and `worker/vX.Y.Z`, with separate GHCR images and source/digest manifests. Shared runtime package changes release their consumers; documentation/test-only changes do not. Pull requests run read-only verification first.
+
+Local development uses Docker PostgreSQL. The selected hosted setup is Vercel (UI), Northflank (API, worker, Redis), and Neon (PostgreSQL). Provider accounts are not linked yet. See [delivery and hosting](docs/DELIVERY.md) for setup, environment variables, image selection, and interrupted-release recovery.

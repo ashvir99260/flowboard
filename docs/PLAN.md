@@ -260,3 +260,7 @@ Compatibility will be rechecked against pinned versions before implementation. T
 - [Turborepo prune](https://turborepo.dev/docs/reference/prune): scoped Docker build context and lockfile.
 - [Compose startup order](https://docs.docker.com/compose/how-tos/startup-order/): dependencies must be healthy, not merely started.
 - [Socket.IO Redis adapter](https://socket.io/docs/v4/redis-adapter/): cross-node fanout, polling affinity and lack of durable connection recovery; reconnect refetch is a Flowboard design choice.
+
+### Independent delivery follow-up (23 October 2026)
+
+P00-04 through P00-06 add per-app Docker images, selective semantic releases and CI publication before domain development continues. `packages/release-tools` is CI-only; it compares committed app/runtime/compiler inputs against each app's published baseline. The selected hosted topology is Vercel, Northflank and Neon, while local development keeps PostgreSQL/Redis in Compose. Product implementation order remains unchanged. [DELIVERY.md](DELIVERY.md) defines versioning, image identity, recovery and provider configuration.

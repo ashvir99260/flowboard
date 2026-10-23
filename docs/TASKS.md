@@ -84,7 +84,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: plan independent application releases`.
   - **Completion evidence:** [P00-05 verification](evidence/P00-05.md): 31 planner fixtures and 75 total tests pass; publication remains P00-06.
 
-- [ ] **P00-06 — CI, independent image publication and hosted setup guide**
+- [x] **P00-06 — CI, independent image publication and hosted setup guide**
   - **Goal:** Validate pull requests and publish only affected application images, tags and GitHub Releases after main merges.
   - **Requirements:** R94–R97.
   - **Files:** `.github/workflows/**`, `packages/release-tools/**`, `docs/DELIVERY.md`, `README.md`, environment examples.
@@ -92,6 +92,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Read-only PR checks; serialized main publication with narrowly scoped write permissions; version/SHA image tags and digest recorded per release; idempotent failure recovery. No production credentials needed for release builds. Document local PostgreSQL, Neon runtime/direct migration URLs and the selected free-tier hosting setup, including honest limits and required secret names. Provider connection is explicit, never a dummy successful deployment.
   - **Validation:** Workflow lint, publication orchestration tests using a local Git/registry boundary or controlled API fixtures, Docker checks, full standard gate; remote publication only when authorized main workflow runs.
   - **Commit:** `ci: publish independent app images and releases`.
+  - **Completion evidence:** [P00-06 verification](evidence/P00-06.md): 89 tests, actionlint, standard gates and five-service Docker acceptance pass; live publication remains P00-07.
+
+- [ ] **P00-07 — Verify the first main-branch publication**
+  - **Goal:** Record the first real application tags, GHCR digests and GitHub Releases after this workflow is merged.
+  - **Requirements:** R94–R95.
+  - **Files:** `docs/evidence/P00-07.md`, `docs/REQUIREMENTS_MATRIX.md`, `docs/TASKS.md`; workflow fixes only if the first run fails.
+  - **Dependencies:** P00-06 and merge to main.
+  - **Acceptance:** The main run passes and publishes API, web and worker `0.1.0` releases with matching source SHA/digest manifests. A retry does not allocate new versions. Record run/release links without exposing credentials. Provider deployment is separate and requires connected accounts.
+  - **Validation:** Inspect the real workflow run, tags, release manifests and GHCR digests. Apply standard gates if implementation fixes are needed.
+  - **Commit:** `docs: record first independent releases`.
 
 ## Phase 1 — Contracts, persistence and tenancy
 

@@ -15,7 +15,8 @@
     "format": "turbo run format",
     "format:check": "turbo run format:check",
     "docker:check": "turbo run docker:check",
-    "release:plan": "turbo run release:plan"
+    "release:plan": "turbo run release:plan",
+    "release:publish": "turbo run release:publish"
   },
   "prettier": "@flowboard/config-prettier",
   "devDependencies": {

@@ -39,6 +39,12 @@
       "dependsOn": ["build"],
       "cache": false,
       "outputs": []
+    },
+    "release:publish": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "outputs": [],
+      "env": ["GITHUB_TOKEN", "GITHUB_REPOSITORY", "GITHUB_SHA", "GITHUB_REF"]
     }
   }
 }

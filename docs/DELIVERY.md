@@ -1,6 +1,6 @@
 # Independent releases and deployment
 
-Status: implementation plan, 23 October 2026. Docker and release automation are introduced by P00-04 through P00-06. This document does not claim a hosted deployment exists.
+Status: Docker and release automation implemented by P00-04 through P00-06, 23 October 2026. The first real main-branch publication is tracked by P00-07. This document does not claim a hosted deployment exists.
 
 ## Release contract
 
@@ -69,3 +69,45 @@ Use `[]` only for a repository that has never published. Local Git tags alone ar
 The planner compares runtime dependencies recursively on both snapshots, including peer-qualified/transitive lock entries and integrity metadata. Shared TypeScript configuration and TypeScript/type build dependencies count as artifact inputs; development servers, lint and test tools do not. Build/start commands, package exports, Docker inputs and source file modes count. When adding a different compiler/code generator to the build, add its build dependency to the planner and a behavioral fixture. Markdown documentation, environment examples and test files are excluded; `public/**` assets always participate. Runtime content outside `public` should live outside documentation/test conventions. A valid final PR may contain intermediate commits with incomplete dependency locks; those commits are classified using runtime ownership at the valid release endpoints.
 
 A completely reverted change causes no publication. Breaking changes in another app do not inflate this app's version. A pending tag at an older source must be completed by retrying that workflow before newer publication; unexpected versions or rewritten histories stop with an actionable error.
+
+## GitHub release setup and recovery
+
+The `Verify and release applications` workflow validates pull requests with read-only repository access. On `main`, it also builds the Compose stack and then enters a serialized publisher. Only that job receives `contents: write` and `packages: write`; it uses GitHub's built-in token, so no personal access token or cloud secret is required.
+
+For each affected app it publishes `ghcr.io/<owner>/flowboard-<app>:<version>` and `:sha-<full-commit>`, creates the application tag, uploads `release.json` to a draft release, and publishes the draft. The manifest records app, version, source SHA, image repository and digest. Images target `linux/amd64`. The first successful main run releases each app as `0.1.0`; later runs compare each app's own published baseline. Protected tag/ruleset policies must permit this workflow to create `api/v*`, `web/v*` and `worker/v*` tags.
+
+Existing image tags are reused only when digest and source/version labels match. Conflicting image tags are never overwritten. An interrupted upload leaves an unpublished draft; retry the failed workflow at the same SHA to finish it. A completed release is skipped. If a newer run finds an older unfinished tag, finish the older run first, then rerun the newer one. Do not delete/move release tags or edit manifests to bypass a conflict. A rewritten/diverged main history needs deliberate recovery, not an automatic version reset.
+
+Enable GitHub Actions and package publication for the repository, and require the verification jobs in branch protection. The workflow starts after this change is merged into main; a local passing run is not proof of a remote publication. If GHCR packages are private, give the host a read-only registry credential, or explicitly change the package visibility to public for this public hobby app. Public image contents must never contain secrets.
+
+## Vercel UI setup
+
+1. Import this GitHub repository into Vercel's Hobby plan. Use **Next.js**, root directory `apps/web`, and Node **22.x**. Enable access to source files outside the root directory so workspace packages are available.
+2. Install command: `cd ../.. && pnpm install --frozen-lockfile`. Build command: `cd ../.. && pnpm build --filter=@flowboard/web`. Keep Next's `.next` output setting. The app package and its dependency builds stay owned by Turbo.
+3. Enable **Skip deployment** under the root-directory build settings for unaffected monorepo projects. UI/package changes deploy the UI; an unrelated backend change does not. Review this setting again when adding build-only OpenAPI dependencies: generated client changes are the web input.
+4. Production branch is `main`. Add a public API origin only when P07-03 implements the generated client's configuration. Database, Redis, signing and refresh secrets never belong in Vercel browser variables.
+
+Vercel deploys from Git source; the web Docker image is an independently versioned portable artifact. GitHub Releases and provider deployments are separate records.
+
+## Northflank API, worker and Redis setup
+
+1. Create one Sandbox project. Add the Redis addon on the free allocation; keep its endpoint private, enable persistence, and set `maxmemory-policy=noeviction` for BullMQ.
+2. Create two services from external GHCR images: `flowboard-api:<version>` and `flowboard-worker:<version>` from the respective releases. Prefer the immutable digest from `release.json` for deployment/rollback. Do not build all apps in one service.
+3. API: `HOST=0.0.0.0`, `PORT=3001`; expose HTTP port 3001 with TLS and WebSocket support. Worker: background service, `PORT=3002`, TCP liveness on 3002, with no public ingress. Use the image defaults for commands.
+4. Set the server-only variables below through host secrets. Use the same Redis service for API sockets and worker queues. Keep worker and Redis in the same project/region.
+5. Select a newly published image version independently for the affected service, then deploy. Provider auto-deploy/webhooks can be connected later with provider credentials; this repository currently automates version/image/release publication only. No cloud account is linked by this change.
+
+| Variable                | API                   | Worker      | Purpose                                                 |
+| ----------------------- | --------------------- | ----------- | ------------------------------------------------------- |
+| `DATABASE_URL`          | yes                   | yes         | Neon pooled application URL; preserve Neon TLS settings |
+| `DATABASE_URL_UNPOOLED` | migration runner only | no          | Neon direct URL for migrations                          |
+| `REDIS_URL`             | yes                   | yes         | Private addon connection string                         |
+| `HOST`, `PORT`          | `0.0.0.0`, `3001`     | port `3002` | Service binding/liveness                                |
+
+The current services are foundation shells. Database-aware readiness arrives in P01-02, migrations/seed in P01-05, auth settings in P02, and real queues in P11-02. These are tracked tasks, not working hosted product features. When auth arrives, explicitly allow the Vercel origin and configure secure cross-origin refresh cookies; do not use wildcard credentialed CORS.
+
+## Neon setup
+
+Create a Neon project/database in a region close to Northflank. Copy its **pooled** connection URL into the API/worker `DATABASE_URL` secret, and its **direct** URL into the migration runner's `DATABASE_URL_UNPOOLED` secret. Never commit either value. Keep the SSL parameters supplied by Neon. In P01-05, migrations will run as a controlled pre-deploy job with the direct URL; hosted demo seeding stays opt-in. Local Compose continues using PostgreSQL with local-only credentials.
+
+Free plans have capacity limits and may change. Northflank Sandbox currently fits the two services and one Redis addon; Vercel Hobby is limited to personal/noncommercial projects. Neon idle suspension can add cold-start latency. Avoid frequent database polling/health queries that keep compute awake, and check current provider quotas before creating resources.
