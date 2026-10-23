@@ -2,12 +2,13 @@
 
 These tools help a human or Codex find the right code and verify changes. They do not replace the task plan, source review or existing CI. No new model service, subscription, global hook or autonomous rewrite is required.
 
-| Tool     | Job                                                                           | Setup                                                                       |
-| -------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Serena   | Find declarations, symbols and references through TypeScript language tooling | Existing connector; repository-local state in ignored `.serena/`            |
-| ast-grep | Search code syntax without confusing comments or strings with real calls      | Root development dependency pinned to `0.51.0`; installed by `pnpm install` |
-| Gitleaks | Check local files for likely secrets before sharing changes                   | Optional native CLI; verified with the installed `8.30.0`                   |
-| Graphify | Navigate a cached map of code relationships                                   | Existing optional tool; see [Graphify guide](GRAPHIFY.md)                   |
+| Tool     | Job                                                                                  | Setup                                                                       |
+| -------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| Serena   | Find declarations, symbols and references through TypeScript language tooling        | Existing connector; repository-local state in ignored `.serena/`            |
+| ast-grep | Search code syntax without confusing comments or strings with real calls             | Root development dependency pinned to `0.51.0`; installed by `pnpm install` |
+| Gitleaks | Check local files for likely secrets before sharing changes                          | Optional native CLI; verified with the installed `8.30.0`                   |
+| Graphify | Navigate a cached map of code relationships                                          | Existing optional tool; see [Graphify guide](GRAPHIFY.md)                   |
+| REA      | Inspect built JavaScript artifacts when source navigation cannot answer the question | Optional isolated `rea-agents@6.7.0` CLI; see [REA guide](REA.md)           |
 
 ## Serena: inspect symbols before editing
 
@@ -53,7 +54,7 @@ Keep logs and reports local. Redaction masks detected secrets, but metadata can 
 ## Shared workflow and local data
 
 1. Read the current task, decisions and evidence.
-2. Use Graphify or Serena to narrow the relevant source; use ast-grep for code patterns.
+2. Use Graphify or Serena to narrow the relevant source; use ast-grep for code patterns. Use REA for an explicit built-artifact question, following its local-output guide.
 3. Implement the smallest verified change and run the required build/lint/type/test checks.
 4. Run Gitleaks before sharing, then review the Git diff. No scanner result grants authority to change scope or publish data.
 

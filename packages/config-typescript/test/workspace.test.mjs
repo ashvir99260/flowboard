@@ -50,17 +50,28 @@ test('ast-grep finds code calls without matching comments or string literals', (
   assert.equal(matches[0].text, 'console.log("actual call")');
 });
 
-test('AI reports and Serena state stay local without hiding tool configuration', () => {
+test('AI reports, REA installation and Serena state stay local without hiding tool guidance', () => {
+  const localData = [
+    '.ai-local/gitleaks.json',
+    '.serena/project.yml',
+    'apps/web/.ai-local/search.json',
+    '.ai-local/rea/node_modules/rea-agents/package.json',
+    '.ai-local/rea/npm-cache/content',
+    '.ai-local/rea/tmp/analysis/checkpoint.json',
+    '.ai-local/rea/swift-module-cache/module',
+    '.ai-local/rea/release-tools-evidence.json',
+    '.ai-local/rea/release-tools-summary.json',
+  ];
   const ignored = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
     cwd: fileURLToPath(root),
-    input: '.ai-local/gitleaks.json\n.serena/project.yml\napps/web/.ai-local/search.json\n',
+    input: `${localData.join('\n')}\n`,
     encoding: 'utf8',
   });
   assert.equal(ignored.status, 0);
-  assert.equal(ignored.stdout.trim().split('\n').length, 3);
+  assert.deepEqual(ignored.stdout.trim().split('\n'), localData);
   const config = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
     cwd: fileURLToPath(root),
-    input: '.gitleaks.toml\ndocs/AI_TOOLS.md\n',
+    input: '.gitleaks.toml\ndocs/AI_TOOLS.md\ndocs/REA.md\n',
     encoding: 'utf8',
   });
   assert.equal(config.status, 1);
