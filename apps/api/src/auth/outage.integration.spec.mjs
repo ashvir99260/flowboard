@@ -1,8 +1,11 @@
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import request from 'supertest';
 
-import { startTestApplication } from '../../common/application.mjs';
-import { AuthTestOrigin as origin, SignupFixture as signup } from '../../common/auth-fixtures.mjs';
+import { startTestApplication } from '../../test/common/application.mjs';
+import {
+  AuthTestOrigin as origin,
+  SignupFixture as signup,
+} from '../../test/common/auth-fixtures.mjs';
 
 let fixture;
 let app;

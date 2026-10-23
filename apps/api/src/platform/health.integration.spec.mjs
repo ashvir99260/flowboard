@@ -2,7 +2,7 @@ import { ErrorEnvelopeSchema } from '@flowboard/contracts';
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import request from 'supertest';
 
-import { startTestApplication } from '../../common/application.mjs';
+import { startTestApplication } from '../../test/common/application.mjs';
 
 let fixture;
 let app;

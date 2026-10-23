@@ -15,7 +15,7 @@ The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to ou
 
 [Workspace RBAC and DTO/entity design](docs/BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
-[Backend structure and coding rules](docs/BACKEND_GUIDELINES.md) define feature-owned Nest modules, DTO placement, provider exports, test layout and the Swagger workflow. The [API-scoped instructions](apps/api/AGENTS.md) apply these rules to future changes; P02-06 covers auth/platform/common module ownership and purpose-based test directories.
+[Backend structure and coding rules](docs/BACKEND_GUIDELINES.md) define feature-owned Nest modules, DTO placement, provider exports, test layout and the Swagger workflow. The [API-scoped instructions](apps/api/AGENTS.md) apply these rules to future changes; P02-06 covers auth/platform/common ownership; P02-10 colocates auth/platform tests while retaining shared helpers and process tests.
 
 [Field validation reference](docs/FIELD_REFERENCE.md) defines every stored/embedded field and its enforcement layer; paginated APIs use cursor/limit only.
 
@@ -75,7 +75,7 @@ Applications cannot import one another. The OpenAPI tooling exception (D19) is n
 
 The planned build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
 
-Auth and platform source directories remain flat (D89): their DTOs and auth configuration sit beside controllers/services/modules. Common infrastructure and test directories keep their existing grouping.
+Auth and platform source directories remain flat (D89): their DTOs and auth configuration sit beside controllers/services/modules. Their unit/integration tests sit beside source files with descriptive suffixes (D90). Common infrastructure, shared test helpers and process tests keep their existing grouping.
 
 ## Module responsibility and data ownership
 

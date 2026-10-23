@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 
-import { exportOpenApi } from '../../../dist/spec-bootstrap.js';
+import { exportOpenApi } from '../../dist/spec-bootstrap.js';
 
 test('the spec-only bootstrap exposes real typed controller metadata without configuration', async () => {
   const document = await exportOpenApi();

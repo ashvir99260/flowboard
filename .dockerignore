@@ -17,6 +17,7 @@
 **/*.tsbuildinfo
 **/test
 **/tests
+**/*.spec.mjs
 **/.env
 **/.env.*
 docs

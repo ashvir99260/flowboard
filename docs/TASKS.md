@@ -436,6 +436,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: flatten auth and platform folders`.
   - **Completion evidence:** [P02-09](evidence/P02-09.md): seven verified moves, no nested source/output folders, 322 tests and all quality/contract/Docker checks pass.
 
+- [x] **P02-10 — Colocate auth and platform tests**
+  - **Goal:** Keep feature tests beside auth/platform source without adding subfolders or shipping tests in application output.
+  - **Requirements:** R121; preserves R117 isolation and R120 flat folders.
+  - **Files:** eight relocated auth/platform suites, `apps/api/jest.config.mjs`, `apps/api/tsconfig.json`, `.dockerignore`, `scripts/check-compose.mjs` image assertion, release-planner test fixtures, active backend/agent/architecture/plan rules and evidence.
+  - **Dependencies:** P02-09; prioritized by the user's test-layout follow-up.
+  - **Acceptance:** Five auth and three platform suites live directly in their feature folder, using unit/integration filename suffixes. Jest discovers all 13 existing suites exactly once; shared common suites/helpers and process startup tests stay separate. Existing assertions and fixture isolation are preserved. Production output and Docker context exclude tests; test-only changes remain excluded from app releases.
+  - **Validation:** Capture suite inventory; observe moved tests missing before updating discovery, then verify all suites restored. Run root build/lint/test/typecheck/format/OpenAPI and Docker checks; inspect clean build output, refresh local graph and review the diff.
+  - **Commit:** `refactor: colocate auth and platform tests`.
+  - **Completion evidence:** [P02-10](evidence/P02-10.md): all 13 Jest suites retained, 322 tests and quality/contract/Docker checks pass; production image excludes colocated tests.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

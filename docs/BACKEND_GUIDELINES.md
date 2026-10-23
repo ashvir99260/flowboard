@@ -1,18 +1,18 @@
 # Backend structure and coding rules
 
-Status: adopted repository rules, 23 October 2026 (D85/P02-05). P02-06 implements the auth/platform/common split and separated tests; P02-09/D89 keeps auth and platform source flat. Future workspace files below illustrate conventions, not implemented endpoints. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
+Status: adopted repository rules, 23 October 2026 (D85/P02-05). P02-06 implements the auth/platform/common split and separated tests; P02-09/D89 keeps auth and platform source flat, with colocated feature tests in P02-10/D90. Future workspace files below illustrate conventions, not implemented endpoints. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
 
 ## Basis and scope
 
 The requested [Encore NestJS structure guide](https://encore.dev/articles/nestjs-project-structure-best-practices) recommends grouping related code by feature, limiting module exports, separating transport DTOs from persistence, and keeping HTTP controllers thin. Flowboard adopts those organizational principles. The article is a design reference; repository rules and the fixed stack govern implementation.
 
-| Article guidance            | Flowboard rule                                                                                                               |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Feature folders             | One folder per domain under `apps/api/src/`; no app-wide controllers/services/DTOs directories.                              |
-| Module encapsulation        | Explicit Nest imports/providers/exports; only expose capabilities another feature needs.                                     |
-| Shared/core concerns        | Use `common/` for shared infrastructure/config/utilities; `platform/` owns health and dependency probes (D86).               |
-| DTOs separate from entities | Shared Zod contracts → local `createZodDto` adapters → explicit safe responses; Prisma stays in `packages/database`.         |
-| Unit and end-to-end tests   | Group tests by feature using the current executable `.mjs` runners; change discovery before adopting source-colocated tests. |
+| Article guidance            | Flowboard rule                                                                                                       |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Feature folders             | One folder per domain under `apps/api/src/`; no app-wide controllers/services/DTOs directories.                      |
+| Module encapsulation        | Explicit Nest imports/providers/exports; only expose capabilities another feature needs.                             |
+| Shared/core concerns        | Use `common/` for shared infrastructure/config/utilities; `platform/` owns health and dependency probes (D86).       |
+| DTOs separate from entities | Shared Zod contracts → local `createZodDto` adapters → explicit safe responses; Prisma stays in `packages/database`. |
+| Unit and end-to-end tests   | Colocate auth/platform `.mjs` suites by feature, with explicit discovery and isolated integration fixtures (D90).    |
 
 The article's TypeORM/class-validator examples, alternate error envelope and Encore migration are not adopted. NestJS, Prisma, Zod, Turborepo, PostgreSQL, Redis and the generated client remain the selected stack.
 
@@ -44,7 +44,10 @@ apps/api/
 │   │   ├── health.controller.ts
 │   │   ├── dependency-probe.ts
 │   │   ├── liveness-response.dto.ts
-│   │   └── readiness-response.dto.ts
+│   │   ├── readiness-response.dto.ts
+│   │   ├── health.integration.spec.mjs
+│   │   ├── http.integration.spec.mjs
+│   │   └── openapi.unit.spec.mjs
 │   ├── auth/
 │   │   ├── auth.module.ts
 │   │   ├── auth.controller.ts
@@ -56,7 +59,12 @@ apps/api/
 │   │   ├── empty-auth-body.dto.ts
 │   │   ├── log-in.dto.ts
 │   │   ├── sign-up.dto.ts
-│   │   └── session-response.dto.ts
+│   │   ├── session-response.dto.ts
+│   │   ├── auth-config.unit.spec.mjs
+│   │   ├── auth-guard.unit.spec.mjs
+│   │   ├── credentials.integration.spec.mjs
+│   │   ├── refresh.integration.spec.mjs
+│   │   └── outage.integration.spec.mjs
 │   └── workspaces/
 │       ├── workspaces.module.ts
 │       ├── workspaces.controller.ts
@@ -67,8 +75,8 @@ apps/api/
 └── test/
     ├── bootstrap/                    # Node startup/process tests
     ├── common/                       # per-suite setup and shared fixtures
-    ├── unit/                         # auth settings, guard, lifecycle, spec
-    └── integration/                  # HTTP suites grouped by feature
+    ├── unit/                         # common configuration, lifecycle and helper suites
+    └── integration/                  # common HTTP integration suites
 packages/
 ├── contracts/src/                    # shared schemas, types, pure logic
 ├── database/                         # Prisma, migrations, scoped persistence
@@ -76,7 +84,7 @@ packages/
 └── api-client/src/generated/         # generated SDK/types/query options
 ```
 
-Auth and platform own their modules and focused DTO adapters; AppModule composes those with CommonModule. Shared code stays in `common/`, while auth-specific configuration remains in `auth/auth.config.ts`. Auth and platform have no source subfolders (D89). Tests consume the compiled ESM application and are grouped by purpose. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
+Auth and platform own their modules and focused DTO adapters; AppModule composes those with CommonModule. Shared code stays in `common/`, while auth-specific configuration remains in `auth/auth.config.ts`. Auth and platform have no source subfolders (D89). Auth/platform tests live directly beside their source, with `.unit.spec.mjs` and `.integration.spec.mjs` suffixes distinguishing purpose (D90). They still consume the compiled ESM application. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
 
 In auth and platform, keep focused request, query and response adapters beside the controllers as `*.dto.ts`; do not add subfolders. Other features may use `dto/` for request, path, query and response adapters. Other features may add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
 
@@ -128,7 +136,7 @@ Keep backend filenames in kebab-case with role suffixes (`*.module.ts`, `*.contr
 
 Prefer `const`, destructuring and explicit typed data. Use `let` for actual reassignment. Typed lookup tables suit closed value-to-handler mappings; ordinary conditionals suit validation, authorization and branching that is clearer when read in order. Avoid forced dispatch tables, needless abstraction, swallowed errors and unrelated formatting changes. Validate configuration once at startup, inject the result, and keep credentials/task content out of logs.
 
-Tests consume built ESM output. Jest explicitly discovers `test/unit/**/*.spec.mjs` and `test/integration/**/*.spec.mjs`; Node's runner discovers `test/bootstrap/*.test.mjs`. Group both unit and integration suites by feature. `test/common/` contains helper modules only, with no test hooks or mutable singleton state. Each integration suite calls the shared application factory to own independent PostgreSQL/Redis containers, and closes the app before containers, including partial-start failure cleanup. Outage tests affect only their own fixture. Do not drop `.spec.ts` beside source and claim it runs: source-colocated unit tests require a runner/compiler change with discovery evidence first. Pure contracts tests stay with contracts; persistence tests stay with database.
+Tests consume built ESM output. Colocate auth/platform suites directly in their feature folders as `.unit.spec.mjs` and `.integration.spec.mjs`. Jest discovers `src/**/*.spec.mjs` together with retained common suites in `test/unit/**/*.spec.mjs` and `test/integration/**/*.spec.mjs`; Node's runner discovers `test/bootstrap/*.test.mjs`. `test/common/` contains helper modules only, with no test hooks or mutable singleton state. Each integration suite calls the shared application factory to own independent PostgreSQL/Redis containers, and closes the app before containers, including partial-start failure cleanup. Outage tests affect only their own fixture. The supported colocated format is `.mjs`, not `.spec.ts`; TypeScript tests require a separately verified runner change. Colocated tests are excluded from compiler output and Docker context. Pure contracts tests stay with contracts; persistence tests stay with database.
 
 For every implementation task, follow red → green → refactor, then the root build/lint/test gates plus type, format and contract checks as applicable. Consult [quality gates](QUALITY_GATES.md) and record evidence. These folder/module conventions are review rules today; existing lint enforces package/import boundaries and existing contract tests cover Swagger. No new automatic intra-API feature-boundary checker is claimed by this document.
 

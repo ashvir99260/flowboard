@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import request from 'supertest';
 
-import { startTestApplication } from '../../common/application.mjs';
-import { claimsOf, cookieOf, AuthTestOrigin as origin } from '../../common/auth-fixtures.mjs';
+import { startTestApplication } from '../../test/common/application.mjs';
+import { claimsOf, cookieOf, AuthTestOrigin as origin } from '../../test/common/auth-fixtures.mjs';
 
 let fixture;
 let app;
@@ -57,7 +57,7 @@ test('rotation preserves family, workspace and fixed cookie expiry', async () =>
   expect(rotated.headers['set-cookie'][0].split('Expires=')[1]).toBe(
     initial.headers['set-cookie'][0].split('Expires=')[1],
   );
-  const { AuthService } = await import('../../../dist/auth/auth.service.js');
+  const { AuthService } = await import('../../dist/auth/auth.service.js');
   await expect(
     app.get(AuthService).authenticate(`Bearer ${initial.body.data.accessToken}`),
   ).resolves.toBeDefined();
@@ -71,7 +71,7 @@ test('replaying a used cookie revokes both old and latest access tokens', async 
   expect(replay.status).toBe(401);
   expect(replay.body.error.code).toBe('REFRESH_REUSED');
   expect(replay.headers['set-cookie'][0]).toContain('Max-Age=0');
-  const { AuthService } = await import('../../../dist/auth/auth.service.js');
+  const { AuthService } = await import('../../dist/auth/auth.service.js');
   for (const response of [initial, rotated])
     await expect(
       app.get(AuthService).authenticate(`Bearer ${response.body.data.accessToken}`),
@@ -87,7 +87,7 @@ test('concurrent reuse has one rotation and one replay; its winning token is rev
   ]);
   expect(responses.map((response) => response.status).sort()).toEqual([200, 401]);
   const winner = responses.find((response) => response.status === 200);
-  const { AuthService } = await import('../../../dist/auth/auth.service.js');
+  const { AuthService } = await import('../../dist/auth/auth.service.js');
   await expect(
     app.get(AuthService).authenticate(`Bearer ${winner.body.data.accessToken}`),
   ).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
@@ -109,7 +109,7 @@ test('logout revokes the family, expires the cookie and is idempotent', async ()
     expect(response.headers['set-cookie'][0]).toContain('Max-Age=0');
     expect(response.headers['cache-control']).toBe('no-store');
   }
-  const { AuthService } = await import('../../../dist/auth/auth.service.js');
+  const { AuthService } = await import('../../dist/auth/auth.service.js');
   await expect(
     app.get(AuthService).authenticate(`Bearer ${initial.body.data.accessToken}`),
   ).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });

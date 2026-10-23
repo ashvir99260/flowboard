@@ -73,6 +73,15 @@ try {
     const uid = await run('exec', '-T', service, 'node', '-p', 'process.getuid()');
     assert.notEqual(uid, '0', `${service} must run as non-root`);
   }
+  await run(
+    'exec',
+    '-T',
+    'api',
+    'node',
+    '--input-type=module',
+    '-e',
+    "import assert from 'node:assert/strict'; import { existsSync, readdirSync } from 'node:fs'; assert.equal(existsSync('src'), false); assert.equal(existsSync('test'), false); assert.equal(readdirSync('dist', { recursive: true }).some(path => /\\.spec\\./.test(path)), false);",
+  );
   const webAddress = await run('port', 'web', '3000');
   const apiAddress = await run('port', 'api', '3001');
   const page = await fetch(`http://${webAddress}`, { signal: AbortSignal.timeout(10_000) });
