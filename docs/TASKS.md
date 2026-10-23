@@ -174,6 +174,25 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: detail Flowboard system architecture`.
   - **Completion evidence:** [P00-19 verification](evidence/P00-19.md): primary-source/architecture reviews, 10 parsed diagrams, document/requirement checks and all workspace gates pass. Domain and proxy implementation remain future tasks.
 
+- [x] **P00-20 — Enforce conventional commits locally and in CI**
+  - **Goal:** Reject malformed commit messages and PR titles with the same conventional-commit policy.
+  - **Requirements:** R104; preserves parallel CI and existing task commit rules.
+  - **Files:** `.githooks/commit-msg`, `commitlint.config.mjs`, root/Turbo/config-eslint manifests, config-eslint scripts/tests, delivery workflow/regression tests, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, README and task evidence.
+  - **Dependencies:** P00-19 and the user's commitlint request.
+  - **Acceptance:** Pinned commitlint accepts conventional and breaking-change messages and rejects invalid ones. An explicitly installed repository-local hook handles spaced paths without overwriting another hook configuration. CI checks actual PR commits and title via event data, including edited titles, without shell interpolation or new paid runners. Root commands delegate to uncached Turbo tasks; failures block publication.
+  - **Validation:** Positive/negative message and metadata fixtures, Git range/zero-SHA errors, local hook/install behavior, workflow regression, actionlint, build/lint/test/type/format and relevant Docker checks.
+  - **Commit:** `chore: enforce conventional commit messages`.
+  - **Completion evidence:** [P00-20 verification](evidence/P00-20.md): 16 focused cases, 143 repository tests, standard gates and Docker acceptance pass; local hook enabled.
+
+- [ ] **P00-21 — Strengthen shared linting and deterministic ordering**
+  - **Goal:** Apply compatible quality, naming, unused-code and safe sorting rules across backend, frontend and authored JSON.
+  - **Requirements:** R105; preserves R93 and application behavior.
+  - **Files:** config-eslint dependencies/config/tests, root lint coverage, package JSON/config and authored source fixes, lockfile, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, task evidence.
+  - **Dependencies:** P00-20.
+  - **Acceptance:** Add Perfectionist, SonarJS, unused-import and JSON rules without duplicating Next/React, import-x or Prettier. Types/classes/components use PascalCase; runtime names and external JSON contracts retain appropriate case. Sort safe named imports, types, props, destructuring and JSON keys; preserve evaluation order, dependency defaults, spreads, side-effect imports and conditional export semantics. Fix genuine diagnostics without blanket disabling checks or changing generated code.
+  - **Validation:** Positive/negative JS/TS/TSX/JSON fixtures and semantic ordering regressions; full build/lint/test/type/format, frozen install and Docker checks.
+  - **Commit:** `chore: strengthen shared eslint quality rules`.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.

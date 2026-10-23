@@ -17,7 +17,10 @@
     "docker:check": "turbo run docker:check",
     "release:plan": "turbo run release:plan",
     "release:publish": "turbo run release:publish",
-    "deploy:preview": "turbo run deploy:preview"
+    "deploy:preview": "turbo run deploy:preview",
+    "commitlint": "turbo run commitlint",
+    "commitlint:ci": "turbo run commitlint:ci",
+    "hooks:install": "turbo run hooks:install"
   },
   "prettier": "@flowboard/config-prettier",
   "devDependencies": {

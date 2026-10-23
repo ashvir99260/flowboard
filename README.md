@@ -21,6 +21,8 @@ pnpm format:check
 
 `pnpm format` applies the shared Prettier rules to every workspace plus root configuration and documentation. The original requirements are preserved verbatim. Tests currently verify package boundaries and real application start/stop behavior. Domain integration and browser user-flow suites arrive with their owning tasks. Runtime libraries expose compiled outputs; tool configurations are directly consumable so first-time builds need no generated files.
 
+Run `pnpm hooks:install` once to enable the repository-local commit-message check. [Code-quality conventions](docs/CODE_QUALITY.md) explain the commit policy, manual checks and CI validation.
+
 ## Run the application shells
 
 ```sh

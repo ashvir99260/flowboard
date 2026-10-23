@@ -47,6 +47,18 @@ test('the workflow uses preview secrets and only deploys after main release succ
   assert.ok(job.steps.some((step) => step.run === 'pnpm deploy:preview'));
 });
 
+test('commit policy checks event data in the lint leg and reruns on title edits', () => {
+  const workflow = parse(
+    readFileSync(new URL('../../../.github/workflows/delivery.yml', import.meta.url), 'utf8'),
+  );
+  assert.ok(workflow.on.pull_request.types.includes('edited'));
+  const steps = workflow.jobs.verify.steps;
+  assert.equal(steps[0].with['fetch-depth'], 0);
+  const commitCheck = steps.find((step) => step.run === 'pnpm commitlint:ci');
+  assert.equal(commitCheck.if, "matrix.command == 'lint'");
+  assert.ok(!JSON.stringify(commitCheck).includes('pull_request.title'));
+});
+
 for (const [name, env] of [
   ['disabled deployment', { CD_ENABLED: 'false', GITHUB_REF: 'refs/heads/main' }],
   ['pull request deployment', { CD_ENABLED: 'true', GITHUB_REF: 'refs/pull/2/merge' }],

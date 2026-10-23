@@ -65,6 +65,19 @@
         "NORTHFLANK_API_SERVICE_ID",
         "NORTHFLANK_WORKER_SERVICE_ID"
       ]
+    },
+    "commitlint": {
+      "cache": false,
+      "outputs": []
+    },
+    "commitlint:ci": {
+      "cache": false,
+      "outputs": [],
+      "env": ["GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH"]
+    },
+    "hooks:install": {
+      "cache": false,
+      "outputs": []
     }
   }
 }
