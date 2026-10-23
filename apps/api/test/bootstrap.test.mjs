@@ -25,3 +25,20 @@ for (const port of ['not-a-port', '65536']) {
     assert.match(runtime.output(), /PORT must be an integer between 0 and 65535/);
   });
 }
+
+test('migration failure prevents listening and does not print credentials', async (t) => {
+  const runtime = startProcess(['dist/main.js'], {
+    cwd,
+    env: {
+      DATABASE_URL: 'postgresql://test:never-print-this@127.0.0.1:1/unavailable',
+      DATABASE_URL_UNPOOLED: 'postgresql://test:never-print-this@127.0.0.1:1/unavailable',
+      HOST: '127.0.0.1',
+      PORT: '0',
+    },
+  });
+  t.after(() => runtime.stop(null, 1));
+  const { code } = await runtime.exited;
+  assert.equal(code, 1);
+  assert.match(runtime.output(), /Database initialization failed/);
+  assert.doesNotMatch(runtime.output(), /Listening at|never-print-this/);
+});

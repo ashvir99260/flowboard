@@ -1,5 +1,8 @@
 import { createClient } from './client.js';
 
+export { initializeDatabase } from './initialize.js';
+export { DemoAccounts, DemoPassword, seedDemoData } from './seed.js';
+
 export type { Database } from './tenant-database.js';
 export { createDatabase } from './tenant-database.js';
 export { DatabaseError } from './tenant-context.js';

@@ -1,0 +1,8 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "env": ["HOST", "PORT", "DATABASE_URL", "DATABASE_URL_UNPOOLED", "DEMO_SEED", "NODE_ENV"]
+    }
+  }
+}

@@ -338,13 +338,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: centralize tenant scoped persistence`.
   - **Completion evidence:** [P01-04](evidence/P01-04.md): 20 tenant-boundary tests plus all 43 schema tests; full root gates pass.
 
-- [ ] **P01-05 — Seed-once data and migration startup**
+- [x] **P01-05 — Seed-once data and migration startup**
   - **Goal:** Make clean boot reproducible and demonstrate all major scenarios with real persisted data.
-  - **Files:** `packages/database/prisma/seed.ts`, `packages/database/src/initialize.ts`, `packages/database/test/seed.integration.test.ts`, `apps/api/docker/entrypoint.sh`, `compose.yaml`, `README.md`.
+  - **Files:** `packages/database/src/{seed,seed-cli,password,initialize}.ts`, `packages/database/test/seed.integration.test.mjs`, `apps/api/src/main.ts`, API bootstrap tests, Compose/verification scripts, manifests and README. Add the shared option UUID/name/color schema required to validate real seed options before the full P05 field module.
   - **Dependencies:** P01-04.
   - **Acceptance:** Alice/Bob/Carol, two tenants, 2 spaces/2 folders/3 main lists, 24 tasks, inherited/overridden statuses, optional closed, 3+ multilevel fields (a workspace default, a lower-level definition and a list override) and private/denied lists exist. All seeded tasks satisfy the four-level effective schema. Migrate then seed once under a lock before API ready; repeated/concurrent boot preserves edits. Seed disabled outside demo mode.
   - **Validation:** Assert counts/relations/field validity, two parallel initializers, second boot after editing data, migration failure prevents readiness; standard gate and Compose boot.
   - **Commit:** `feat: initialize database with repeatable demo data`.
+  - **Completion evidence:** [P01-05](evidence/P01-05.md): seed/rollback/concurrency checks, 240 root tests and Docker startup/restart checks pass.
 
 - [ ] **P01-02 — HTTP platform and early contract generation**
   - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.

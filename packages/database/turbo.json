@@ -6,6 +6,11 @@
       "cache": false,
       "env": ["DATABASE_URL", "DATABASE_URL_UNPOOLED"]
     },
+    "db:seed": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "env": ["DATABASE_URL", "DATABASE_URL_UNPOOLED", "DEMO_SEED"]
+    },
     "test": {
       "env": ["DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_CONFIG"]
     }

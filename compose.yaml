@@ -28,6 +28,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
       DATABASE_URL_UNPOOLED: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
       REDIS_URL: redis://redis:6379
+      DEMO_SEED: ${DEMO_SEED:-true}
     depends_on:
       postgres:
         condition: service_healthy
@@ -46,6 +47,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
       REDIS_URL: redis://redis:6379
     depends_on:
+      api:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:

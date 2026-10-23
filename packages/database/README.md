@@ -8,7 +8,7 @@ To apply migrations to your chosen local database, export `DATABASE_URL_UNPOOLED
 
 `pnpm --filter @flowboard/database test` needs a running Docker daemon. It starts a uniquely named PostgreSQL 17 container with an ephemeral localhost port, applies the real migration, tests rejected writes and Prisma operations, restarts PostgreSQL, reapplies the migration, and removes only that container. It never reads your database URL and fails if Docker is unavailable. Root `pnpm test` includes this suite.
 
-Database constraints enforce row shape and same-tenant relationships. The repository boundary also validates node parent type. These checks do not replace services for permissions, effective status sets or custom-field values. Seed-once initialization is P01-05.
+Database constraints enforce row shape and same-tenant relationships. The repository boundary also validates node parent type. These checks do not replace services for permissions, effective status sets or custom-field values. Seed-once initialization runs migrations before inserting the explicitly enabled demo under initialization/transaction locks. Set DEMO_SEED=true only for the local demo; subsequent runs preserve edits. `pnpm db:migrate` and `pnpm db:seed` provide the root operational commands.
 
 `createDatabase(url)` exposes `read(context, callback)`, `write(context, callback)` and `close()`. Context contains only verified `actorUserId` and `workspaceId`; supplying a role is rejected. Each operation reloads membership. Reads use a consistent, read-only snapshot; writes lock the workspace first and reload membership at Read Committed isolation. A waiting write therefore observes a membership revocation committed by the previous lock holder. Callback handles expire when the transaction closes.
 

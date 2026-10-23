@@ -14,6 +14,7 @@ const env = {
   POSTGRES_DB: 'flowboard',
   POSTGRES_USER: 'flowboard',
   POSTGRES_PASSWORD: 'flowboard-check-only',
+  DEMO_SEED: 'true',
 };
 const prefix = ['compose', '--project-name', project, '--file', 'compose.yaml'];
 
@@ -87,6 +88,19 @@ try {
 
   console.info(`[${project}] Verify persistent PostgreSQL and Redis data across restart`);
   const psql = ['exec', '-T', 'postgres', 'psql', '-U', 'flowboard', '-d', 'flowboard', '-tAc'];
+  assert.equal(await run(...psql, 'SELECT count(*) FROM tasks;'), '27');
+  assert.equal(await run(...psql, 'SELECT count(*) FROM seed_states;'), '1');
+  assert.equal(
+    await run(
+      ...psql,
+      "SELECT count((entry->>'id')::uuid) FROM field_definitions CROSS JOIN LATERAL jsonb_array_elements(options) AS entry;",
+    ),
+    '4',
+  );
+  await run(
+    ...psql,
+    "UPDATE tasks SET title='Preserve this local edit' WHERE id=(SELECT id FROM tasks ORDER BY id LIMIT 1);",
+  );
   await run(
     ...psql,
     "CREATE TABLE delivery_probe(value text); INSERT INTO delivery_probe VALUES ('retained');",
@@ -95,6 +109,11 @@ try {
   await run('restart', 'postgres', 'redis', 'api', 'worker', 'web');
   await run('up', '--detach', '--wait', '--wait-timeout', '180');
   assert.equal(await run(...psql, 'SELECT value FROM delivery_probe;'), 'retained');
+  assert.equal(await run(...psql, 'SELECT count(*) FROM tasks;'), '27');
+  assert.equal(
+    await run(...psql, "SELECT count(*) FROM tasks WHERE title='Preserve this local edit';"),
+    '1',
+  );
   assert.equal(await run('exec', '-T', 'redis', 'redis-cli', 'GET', 'delivery-probe'), 'retained');
   const restartedAddress = await run('port', 'web', '3000');
   const restarted = await fetch(`http://${restartedAddress}`, {

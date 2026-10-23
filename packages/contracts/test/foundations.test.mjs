@@ -4,6 +4,29 @@ import { z } from 'zod';
 import * as contracts from '../dist/index.js';
 
 describe('shared transport rules', () => {
+  test('select options require UUID identities and validated display values', () => {
+    expect(
+      contracts.CustomFieldOptionSchema.parse({
+        color: '#2563EB',
+        id: 'f1000000-0000-4000-8000-000000000610',
+        label: 'Frontend',
+      }).label,
+    ).toBe('Frontend');
+    expect(
+      contracts.CustomFieldOptionSchema.safeParse({
+        color: '#2563EB',
+        id: 'frontend',
+        label: 'Frontend',
+      }).success,
+    ).toBe(false);
+    expect(
+      contracts.CustomFieldOptionSchema.safeParse({
+        color: 'blue',
+        id: 'f1000000-0000-4000-8000-000000000610',
+        label: ' ',
+      }).success,
+    ).toBe(false);
+  });
   test('validates domain enums including workspace field ownership', () => {
     expect(contracts.WorkspaceRoleSchema.parse('admin')).toBe('admin');
     expect(contracts.ScopeTypeSchema.parse('workspace')).toBe('workspace');
