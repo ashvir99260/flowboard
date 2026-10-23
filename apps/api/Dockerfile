@@ -1,6 +1,11 @@
 # syntax=docker/dockerfile:1
 ARG NODE_IMAGE=node:22.23.2-bookworm-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f19948f0f9
-FROM ${NODE_IMAGE} AS tools
+FROM ${NODE_IMAGE} AS runtime
+# Prisma's migration engine needs OpenSSL at build and runtime.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM runtime AS tools
 WORKDIR /repo
 RUN npm install --global pnpm@12.15.0 turbo@2.11.10
 
@@ -18,7 +23,7 @@ RUN pnpm exec turbo run build --filter=@flowboard/api
 RUN --mount=type=cache,id=flowboard-pnpm,target=/pnpm/store \
     pnpm --filter @flowboard/api deploy --prod --store-dir /pnpm/store /prod/api
 
-FROM ${NODE_IMAGE} AS runner
+FROM runtime AS runner
 WORKDIR /app
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3001
 COPY --from=build --chown=node:node /prod/api/ .

@@ -6,6 +6,8 @@ strictPeerDependencies: true
 autoInstallPeers: false
 
 allowBuilds:
+  '@prisma/engines': true
+  prisma: true
   '@parcel/watcher': false
   '@ast-grep/cli': true
   unrs-resolver: true

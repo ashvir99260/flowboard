@@ -1,0 +1,13 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": { "outputs": ["dist/**", "src/generated/**"] },
+    "db:migrate": {
+      "cache": false,
+      "env": ["DATABASE_URL", "DATABASE_URL_UNPOOLED"]
+    },
+    "test": {
+      "env": ["DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_CONFIG"]
+    }
+  }
+}

@@ -119,3 +119,11 @@ Vercel forces the first project deployment to its production target. Initial pre
 - **D76 — Compatible persistence/test baseline.** Pin Prisma/client/adapter-pg7.10.1, Zod4.6.7 and Jest30.5.2. Retain Prisma7's schema/migration API and Node22 compatibility; generation must not need a database connection. Feature Jest tests import compiled ESM through public boundaries, avoiding a TS transformer compatibility dependency. Use an isolated Postgres17 container, never a developer database, for persistence tests.
 
 - **D77 — Nest/Zod compatibility alignment.** Published nestjs-zod5.5.0 supports Nest10/11 and Swagger7/8/11, not Nest12. Before introducing DTO generation, align Nest packages to11.2.7 and Swagger11.4.7, retain Zod4.6.7 and strict peer checking. HeyAPI0.99.0 requires Node>=22.18; raise that minimum when its generator lands. Do not use peer overrides to disguise incompatibility.
+
+## D78 — Prisma migration and integration-test boundary
+
+The database package uses Prisma 7's ESM client generator and PostgreSQL driver adapter. Generated sources stay local and are rebuilt by Turbo; only the schema and migration SQL are committed. The initial DDL migration is transactional. SQL supplies CHECK constraints, composite foreign keys, the current-refresh-family partial index and audit triggers. All 15 tables start with equal audit timestamps, reject changes to createdAt, and stamp updatedAt on every SQL update. Services avoid no-op updates.
+
+Real PostgreSQL tests run in task-owned disposable Docker containers with random ports, independently of development or hosted URLs. Reconnect after restart rediscovers Docker's published port. API and worker images include OpenSSL so Prisma's migration engine selects the correct Linux binary. Optional source-generation commands need no database URL; migration commands require an explicit direct URL (falling back to DATABASE_URL only when deliberately supplied). Prisma's offline diff engine currently requires a syntactically valid explicit URL even when neither input connects to a database.
+
+The schema does not enforce polymorphic scope-owner existence, full resolved field/status validity or authorization. Those remain the tested repository/service responsibilities in the following tasks.

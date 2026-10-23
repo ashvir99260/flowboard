@@ -1,0 +1,381 @@
+// SQL-only CHECKs, audit triggers and the current-session index are in migrations.
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum WorkspaceRole {
+  admin
+  member
+}
+
+enum ContainerType {
+  space
+  folder
+  list
+}
+
+enum ScopeType {
+  workspace
+  space
+  folder
+  list
+}
+
+enum Visibility {
+  public
+  private
+}
+
+enum PermissionMode {
+  allow
+  deny
+}
+
+enum StatusCategory {
+  not_started
+  active
+  done
+  closed
+}
+
+enum CustomFieldType {
+  text
+  number
+  single_select
+  multi_select
+  date
+  checkbox
+}
+
+enum Priority {
+  urgent
+  high
+  normal
+  low
+  none
+}
+
+enum OutboxState {
+  pending
+  processing
+  delivered
+  failed
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  memberships         Membership[]
+  sessions            RefreshSession[]
+  createdInvitations  Invitation[]     @relation("InvitationCreator")
+  acceptedInvitations Invitation[]     @relation("InvitationAcceptor")
+  events              OutboxEvent[]
+  activities          Activity[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  configVersion Int      @default(1) @map("config_version")
+  dataVersion   Int      @default(1) @map("data_version")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  memberships Membership[]
+  sessions    RefreshSession[]
+  invitations Invitation[]
+  nodes       Node[]
+  grants      Grant[]
+  statuses    StatusIdentity[]
+  overrides   StatusOverride[]
+  fields      FieldDefinition[]
+  tasks       Task[]
+  assignees   TaskAssignee[]
+  events      OutboxEvent[]
+  activities  Activity[]
+
+  @@map("workspaces")
+}
+
+model Membership {
+  workspaceId String        @map("workspace_id") @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  role        WorkspaceRole
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  grants      Grant[]
+  assignments TaskAssignee[]
+
+  @@id([workspaceId, userId])
+  @@index([userId, workspaceId])
+  @@map("memberships")
+}
+
+model RefreshSession {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  familyId          String    @map("family_id") @db.Uuid
+  activeWorkspaceId String?   @map("active_workspace_id") @db.Uuid
+  tokenDigest       String    @unique @map("token_digest")
+  expiresAt         DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt            DateTime? @map("used_at") @db.Timestamptz(3)
+  revokedAt         DateTime? @map("revoked_at") @db.Timestamptz(3)
+  replacedById      String?   @map("replaced_by_id") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime  @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  workspace    Workspace?       @relation(fields: [activeWorkspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replacement  RefreshSession?  @relation("SessionReplacement", fields: [userId, familyId, replacedById], references: [userId, familyId, id], onDelete: Restrict, onUpdate: Restrict)
+  predecessors RefreshSession[] @relation("SessionReplacement")
+
+  @@unique([userId, familyId, id])
+  @@index([userId, familyId, revokedAt, expiresAt])
+  @@map("refresh_sessions")
+}
+
+model Invitation {
+  id           String        @id @default(uuid()) @db.Uuid
+  workspaceId  String        @map("workspace_id") @db.Uuid
+  email        String
+  role         WorkspaceRole
+  tokenDigest  String        @unique @map("token_digest")
+  createdById  String        @map("created_by_id") @db.Uuid
+  expiresAt    DateTime      @map("expires_at") @db.Timestamptz(3)
+  acceptedAt   DateTime?     @map("accepted_at") @db.Timestamptz(3)
+  acceptedById String?       @map("accepted_by_id") @db.Uuid
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  creator   User      @relation("InvitationCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  acceptor  User?     @relation("InvitationAcceptor", fields: [acceptedById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, id])
+  @@index([workspaceId, email, acceptedAt, expiresAt])
+  @@map("invitations")
+}
+
+model Node {
+  id          String        @id @default(uuid()) @db.Uuid
+  workspaceId String        @map("workspace_id") @db.Uuid
+  name        String
+  type        ContainerType
+  parentId    String?       @map("parent_id") @db.Uuid
+  position    Int           @default(0)
+  visibility  Visibility    @default(public)
+  version     Int           @default(1)
+  archivedAt  DateTime?     @map("archived_at") @db.Timestamptz(3)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  parent    Node?     @relation("Hierarchy", fields: [workspaceId, parentId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  children  Node[]    @relation("Hierarchy")
+  grants    Grant[]
+  tasks     Task[]
+
+  @@unique([workspaceId, id])
+  @@index([workspaceId, parentId, archivedAt, position, id])
+  @@map("nodes")
+}
+
+model Grant {
+  workspaceId String         @map("workspace_id") @db.Uuid
+  resourceId  String         @map("resource_id") @db.Uuid
+  userId      String         @map("user_id") @db.Uuid
+  mode        PermissionMode
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime       @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  resource   Node       @relation(fields: [workspaceId, resourceId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  membership Membership @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([workspaceId, resourceId, userId])
+  @@index([workspaceId, userId, resourceId])
+  @@map("grants")
+}
+
+model StatusIdentity {
+  id          String         @id @default(uuid()) @db.Uuid
+  workspaceId String         @map("workspace_id") @db.Uuid
+  key         String
+  category    StatusCategory
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime       @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  overrides StatusOverride[]
+  tasks     Task[]
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, key])
+  @@map("status_identities")
+}
+
+model StatusOverride {
+  id          String    @id @default(uuid()) @db.Uuid
+  workspaceId String    @map("workspace_id") @db.Uuid
+  statusId    String    @map("status_id") @db.Uuid
+  ownerType   ScopeType @map("owner_type")
+  ownerId     String    @map("owner_id") @db.Uuid
+  name        String?
+  color       String?
+  position    Int?
+  hidden      Boolean?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  status    StatusIdentity @relation(fields: [workspaceId, statusId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, ownerType, ownerId, statusId])
+  @@map("status_overrides")
+}
+
+model FieldDefinition {
+  id          String          @id @default(uuid()) @db.Uuid
+  workspaceId String          @map("workspace_id") @db.Uuid
+  key         String
+  name        String
+  type        CustomFieldType
+  required    Boolean         @default(false)
+  options     Json            @default("[]") @db.JsonB
+  ownerType   ScopeType       @map("owner_type")
+  ownerId     String          @map("owner_id") @db.Uuid
+  position    Int             @default(0)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime        @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, ownerType, ownerId, key])
+  @@map("field_definitions")
+}
+
+model Task {
+  id            String    @id @default(uuid()) @db.Uuid
+  workspaceId   String    @map("workspace_id") @db.Uuid
+  title         String
+  description   String    @default("")
+  statusId      String    @map("status_id") @db.Uuid
+  priority      Priority  @default(none)
+  dueDate       DateTime? @map("due_date") @db.Date
+  customFields  Json      @default("{}") @map("custom_fields") @db.JsonB
+  position      Int       @default(0)
+  primaryListId String    @map("primary_list_id") @db.Uuid
+  version       Int       @default(1)
+  archivedAt    DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace  Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  list       Node           @relation(fields: [workspaceId, primaryListId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  status     StatusIdentity @relation(fields: [workspaceId, statusId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  assignees  TaskAssignee[]
+  activities Activity[]
+
+  @@unique([workspaceId, id])
+  @@index([workspaceId, primaryListId, archivedAt, statusId, position, id])
+  @@index([workspaceId, primaryListId, archivedAt, dueDate, id])
+  @@index([workspaceId, primaryListId, archivedAt, priority, id])
+  @@map("tasks")
+}
+
+model TaskAssignee {
+  workspaceId String   @map("workspace_id") @db.Uuid
+  taskId      String   @map("task_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  task       Task       @relation(fields: [workspaceId, taskId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  membership Membership @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([workspaceId, taskId, userId])
+  @@index([workspaceId, userId, taskId])
+  @@map("task_assignees")
+}
+
+model OutboxEvent {
+  id               String      @id @default(uuid()) @db.Uuid
+  workspaceId      String      @map("workspace_id") @db.Uuid
+  aggregateType    String      @map("aggregate_type")
+  aggregateId      String      @map("aggregate_id") @db.Uuid
+  aggregateVersion Int         @map("aggregate_version")
+  eventType        String      @map("event_type")
+  schemaVersion    Int         @default(1) @map("schema_version")
+  actorId          String      @map("actor_id") @db.Uuid
+  payload          Json        @db.JsonB
+  state            OutboxState @default(pending)
+  attempts         Int         @default(0)
+  nextAttemptAt    DateTime    @default(now()) @map("next_attempt_at") @db.Timestamptz(3)
+  leaseOwner       String?     @map("lease_owner")
+  leaseUntil       DateTime?   @map("lease_until") @db.Timestamptz(3)
+  lastErrorCode    String?     @map("last_error_code")
+  completedAt      DateTime?   @map("completed_at") @db.Timestamptz(3)
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime    @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  actor     User      @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  activity  Activity?
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, aggregateType, aggregateId, aggregateVersion])
+  @@index([state, nextAttemptAt, id])
+  @@index([state, leaseUntil, id])
+  @@map("outbox_events")
+}
+
+model Activity {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  taskId      String   @map("task_id") @db.Uuid
+  actorId     String   @map("actor_id") @db.Uuid
+  eventId     String   @unique @map("event_id") @db.Uuid
+  type        String
+  payload     Json     @db.JsonB
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  task      Task        @relation(fields: [workspaceId, taskId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  actor     User        @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  event     OutboxEvent @relation(fields: [workspaceId, eventId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, eventId])
+  @@index([workspaceId, taskId, createdAt, id])
+  @@map("activities")
+}
+
+model SeedState {
+  version     String   @id
+  completedAt DateTime @default(now()) @map("completed_at") @db.Timestamptz(3)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  @@map("seed_states")
+}

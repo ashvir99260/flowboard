@@ -1,6 +1,6 @@
 # Flowboard database and ER design
 
-Status: implementation specification, **not a migrated database**. Reviewed against the project brief on 23 October 2026. Implementation begins in P01-03; tenancy enforcement is P01-04. [PLAN](PLAN.md), [DECISIONS](DECISIONS.md) and the original requirements remain the scope authority.
+Status: the schema and checked-in migration are implemented and verified in [P01-03](evidence/P01-03.md). Reviewed against the project brief on 23 October 2026. Tenant repository enforcement is P01-04; later service invariants below remain planned until their task evidence exists. [PLAN](PLAN.md), [DECISIONS](DECISIONS.md) and the original requirements remain the scope authority.
 
 ## Storage boundary
 

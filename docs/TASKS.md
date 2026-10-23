@@ -320,13 +320,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: define shared transport contracts`.
   - **Completion evidence:** [P01-01](evidence/P01-01.md): seven Jest behavior/schema-export tests and root gates pass.
 
-- [ ] **P01-03 — Relational schema and migrations**
+- [x] **P01-03 — Relational schema and migrations**
   - **Goal:** Persist the model with tenant-safe relations before repositories/endpoints use it.
-  - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{migration,schema}.integration.test.ts`, `compose.test.yaml`.
+  - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{schema.integration.test,postgres,fixtures}.mjs`, `packages/database/{prisma.config.ts,turbo.json,README.md}`, API/worker Dockerfiles (Prisma OpenSSL dependency).
   - **Dependencies:** P01-01 (DB-first execution per D75).
   - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, current-session partial unique index and selected-workspace FK, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Every table has createdAt/updatedAt enforced for Prisma/raw SQL/worker paths; workspace field ownership is allowed and checked. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
   - **Validation:** Migrate empty database, verify constraints by rejected inserts, inspect all audit columns and immutable-createdAt/update-trigger behavior, field CHECKs and paired invitation/refresh/outbox state rules, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
   - **Commit:** `feat: add tenant safe database schema`.
+  - **Completion evidence:** [P01-03](evidence/P01-03.md): 43 real-Postgres cases, root gates and five-service Docker checks pass.
 
 - [ ] **P01-04 — Fail-closed tenant repositories and test harness**
   - **Goal:** Make tenant scoping the only persistence entry point for tenant data.

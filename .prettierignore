@@ -14,5 +14,7 @@ node_modules/
 pnpm-lock.yaml
 **/*.gen.ts
 packages/api-client/src/generated/
+packages/database/src/generated/
+**/*.prisma
 docs/REQUIREMENTS.md
 **/next-env.d.ts
