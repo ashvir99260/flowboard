@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** Phase 0 foundation implementation authorized and in progress. Updated 22 October 2026.
+**Status:** Foundation present; backend/database/API and UI design documents reviewed. Updated 23 October 2026. The latest workspace/audit/DTO refinement is documentation only; runtime implementation remains a subsequent task.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
@@ -11,6 +11,14 @@
 **Architecture detail:** [Comparable-product research](REFERENCE_ARCHITECTURES.md) separates published facts from proposed choices. [System design](SYSTEM_DESIGN.md) expands UI composition, database constraints/indexes, pagination, transaction flows and failure recovery. D57/P07-04 correct the hosted browser cookie boundary; the remaining domain scope is unchanged.
 
 Implementation follows the task order, one task at a time. Future agentic workers should use the executing-plans workflow or a sequential implementer/reviewer workflow; parallel review is allowed, parallel implementation of separate backlog tasks is not. The user's latest instruction authorizes the foundation setup through shared configuration and Next.js/NestJS shells, with a commit after each task. The 23 October follow-up authorizes Docker and independent application releases (P00-04 through P00-06); domain implementation remains subsequent work. See [DELIVERY.md](DELIVERY.md) for release and hosted-environment behavior.
+
+The implementation-ready [database and ER specification](DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
+
+The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+
+The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
+
+[Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
 ## 1. Scope and success
 
@@ -76,20 +84,20 @@ Controllers translate HTTP and call services; they contain no business rules or 
 
 ## 3. Data model
 
-All IDs are opaque UUIDs. API dates are ISO UTC timestamps, except due dates and date custom fields which are calendar dates (`YYYY-MM-DD`). Ordered positions are integers managed by explicit move APIs. All tenant-owned records and join tables carry `workspaceId`; global `User` and global credential/session identity are exceptions by definition.
+Every stored model has immutable createdAt and server-maintained updatedAt, including joins, sessions, events and seed metadata. All IDs are opaque UUIDs. API dates are ISO UTC timestamps, except due dates and date custom fields which are calendar dates (`YYYY-MM-DD`). Ordered positions are integers managed by explicit move APIs. All tenant-owned records and join tables carry `workspaceId`; global `User` and global credential/session identity are exceptions by definition.
 
 | Entity          | Important fields and constraints                                                                                                                                                                                        |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | User            | `id`, normalized unique `email`, `name`, `passwordHash`, timestamps. Never serialize credential material.                                                                                                               |
-| Workspace       | `id`, `name`, `configVersion`, timestamps; serves as the tenant root and transaction lock.                                                                                                                              |
-| Membership      | `workspaceId`, `userId`, `role: admin\|member`; unique pair.                                                                                                                                                            |
+| Workspace       | `id`, `name`, `configVersion`, `dataVersion`, timestamps; serves as the tenant root and transaction lock.                                                                                                               |
+| Membership      | `workspaceId`, `userId`, `role: admin\|member`; unique pair, scoped per workspace; createdAt/updatedAt.                                                                                                                 |
 | RefreshSession  | `id`, `userId`, `familyId`, token digest, expiry, used/revoked timestamps. Global credential record; active workspace always revalidated against Membership.                                                            |
 | Invitation      | `id`, `workspaceId`, normalized email, role, token digest, expiry, acceptedAt; admin-created.                                                                                                                           |
 | Node            | `id`, `workspaceId`, `name`, `type: space\|folder\|list`, `parentId`, `position`, `visibility`, `archivedAt`, `version`. Root spaces have null parent; workspace is represented as a virtual root in the tree contract. |
 | Grant           | `workspaceId`, `resourceId`, `userId`, `mode: allow\|deny`; unique resource/user. FK to current workspace membership.                                                                                                   |
 | StatusIdentity  | `id`, `workspaceId`, immutable `key`, immutable `category`; unique workspace/key. This is the task's `statusId`.                                                                                                        |
-| StatusOverride  | `id`, `workspaceId`, `statusId`, `ownerType`, `ownerId`, optional name/color/position, `hidden`. Unique owner/status. Root definitions provide all display fields.                                                      |
-| FieldDefinition | `id`, `workspaceId`, `key`, `name`, `type`, `required`, options JSON, `ownerType`, `ownerId`, `position`; unique owner/key.                                                                                             |
+| StatusOverride  | `id`, `workspaceId`, `statusId`, `ownerType`, `ownerId`, optional name/color/position, nullable `hidden` (null inherits, true hides, false restores). Unique owner/status. Root definitions provide all display fields. |
+| FieldDefinition | `id`, `workspaceId`, `key`, `name`, `type`, `required`, options JSON, `ownerType`, `ownerId`, `position`; unique owner/key; workspace ownership is supported.                                                           |
 | Task            | Requested fields plus `workspaceId`, `version`, `archivedAt`. `customFields` is JSONB. `statusId` references stable identity; `primaryListId` references a list.                                                        |
 | TaskAssignee    | `workspaceId`, `taskId`, `userId`; unique task/user, membership FK. API exposes `assigneeIds[]`.                                                                                                                        |
 | Activity        | `id`, `workspaceId`, `taskId`, `actorId`, `eventId`, `type`, payload, `createdAt`; unique eventId for idempotency.                                                                                                      |
@@ -134,7 +142,7 @@ Move policy: keep statusId if visible at destination; otherwise choose its first
 
 ### Custom-field resolution and validation
 
-`resolveFields({ scopes, definitions }): ResolvedField[]` walks space → folder → list. Nearest key wins by replacing the **whole definition**, including type, required and options. Sort by position/key/ID and include provenance. A local field cannot partially merge option lists.
+`resolveFields({ scopes, definitions }): ResolvedField[]` walks workspace → space → folder → list. Nearest key wins by replacing the **whole definition**, including type, required and options. Sort by position/key/ID and include provenance. A local field cannot partially merge option lists.
 
 `validateTaskFields({ values, fields }): ValidationIssue[]` returns precise paths such as `customFields.effort` and `customFields.team[0]`. Accepted values: text string, finite number, stable option ID, unique array of valid option IDs, real ISO calendar date, boolean. Unknown keys are errors. Required text must have non-whitespace content; required multi-select must be nonempty; `0` and `false` satisfy required values. Optional `null` clears/removes a value. PATCH omission leaves it unchanged. Validate the complete resulting task on create/update/move.
 
@@ -152,17 +160,17 @@ Explicit reorder accepts neighbor IDs and expected version, never a client-chose
 
 Domain routes start `/v1`. Route groups:
 
-| Group     | Initial endpoints                                                                                                                   |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Auth      | POST `/auth/signup`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/switch-workspace`; GET `/me`                            |
-| Workspace | GET `/workspaces`, `/workspaces/:id/members`; POST invitations/members; PATCH/DELETE memberships; POST `/invitations/:token/accept` |
-| Hierarchy | GET `/tree`; POST `/nodes`; GET/PATCH/DELETE `/nodes/:id`; POST `/nodes/:id/move`, `/nodes/:id/reorder`                             |
-| Grants    | GET/PUT `/nodes/:id/grants`; DELETE `/nodes/:id/grants/:userId`                                                                     |
-| Statuses  | GET/POST `/scopes/:ownerType/:ownerId/statuses`; PATCH/DELETE `.../:statusId`; GET `/lists/:id/resolved-statuses`                   |
-| Fields    | GET/POST `/scopes/:ownerType/:ownerId/fields`; PATCH/DELETE `.../:fieldId`; GET `/lists/:id/resolved-fields`                        |
-| Tasks     | GET/POST `/lists/:id/tasks`; GET/PATCH/DELETE `/tasks/:id`; POST `/tasks/:id/move`, `/tasks/:id/reorder`; GET `/tasks/:id/activity` |
+| Group     | Initial endpoints                                                                                                                                   |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth      | POST `/auth/signup`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/switch-workspace`; GET `/me`                                            |
+| Workspace | GET `/workspaces`, `/workspaces/:id/members`; POST invitations/members; PATCH/DELETE memberships; POST `/invitations/accept` with token in the body |
+| Hierarchy | GET `/tree`; POST `/nodes`; GET/PATCH/DELETE `/nodes/:id`; POST `/nodes/:id/move`, `/nodes/:id/reorder`                                             |
+| Grants    | GET/PUT `/nodes/:id/grants`; DELETE `/nodes/:id/grants/:userId`                                                                                     |
+| Statuses  | GET/POST `/scopes/:ownerType/:ownerId/statuses`; PATCH/DELETE `.../:statusId`; GET `/lists/:id/resolved-statuses`                                   |
+| Fields    | GET/POST `/scopes/:ownerType/:ownerId/fields`; PATCH/DELETE `.../:fieldId`; GET `/lists/:id/resolved-fields`                                        |
+| Tasks     | GET/POST `/lists/:id/tasks`; GET/PATCH/DELETE `/tasks/:id`; POST `/tasks/:id/move`, `/tasks/:id/reorder`; GET `/tasks/:id/activity`                 |
 
-`/health/live`, `/health/ready` and `/docs` are operational exceptions to `/v1`. Lists use `{ items, pageInfo: { nextCursor, hasNextPage } }`, limit default 50/max 100. Cursor is opaque and binds resource, sort/filter and final ID; reject malformed or mismatched cursors. Sort allowlist includes due date and priority (`urgent > high > normal > low > none`); null dates last, ID tie-breaker. Tree is a paginated flat visible-node traversal with parent IDs; the client assembles pages and never presents a partially loaded tree as complete. Resolved configuration is a bounded ordered set, not a collection pagination endpoint. Resolved-status/field responses use `{ items, configVersion }`; task pages extend their page envelope with `configVersion`. Each response reads that version and its data from one consistent snapshot.
+`/health/live`, `/health/ready` and `/docs` are operational exceptions to `/v1`. Pagination is cursor-only: reject page/pageSize/offset/skip/take and duplicate query keys; complete bounded configuration sets reject pagination parameters. Lists use `{ items, pageInfo: { nextCursor, hasNextPage } }`, limit default 50/max 100. Cursor chains expire after 15 minutes and bind limit as well as canonical query context. Cursor is opaque and binds resource, sort/filter and final ID; reject malformed or mismatched cursors. Sort allowlist includes due date and priority (`urgent > high > normal > low > none`); null dates last, ID tie-breaker. Tree is a paginated flat visible-node traversal with parent IDs; the client assembles pages and never presents a partially loaded tree as complete. Resolved configuration is a bounded ordered set, not a collection pagination endpoint. Resolved-status/field responses use `{ items, configVersion }`; task pages extend their page envelope with `configVersion` and `dataVersion`. Task/tree cursors bind both revisions and return409 CURSOR_STALE after changes; per-column board task pages must match both before combining. Each response reads that version and its data from one consistent snapshot.
 
 Global error envelope: `{ error: { code, message, details? } }`. Details is a typed issue array with `path`, `code`, `message`. Use 400 validation, 401 auth, 403 permission, 404 missing/out-of-tenant, 409 conflicts/in-use mutation, and sanitized 500 with request ID. Successful creates return 201, deletes/archives 204, reads/updates 200. Strict request schemas reject identity/role/workspace injection.
 
@@ -190,7 +198,7 @@ Forms use shared schemas via `zodResolver`, typed `useForm`, complete defaults, 
 
 Board columns come from the current list's resolved statuses, including empty columns. Fetch statuses, fields and tasks in parallel after list selection; render them together only when `configVersion` matches. Configuration writes increment that workspace version, including reparenting that changes inherited configuration. A mismatch refetches the bundle, with a bounded retry and visible retry state during continuous changes. Cards show the requested metadata and one selected field chip. Pointer and keyboard drag use dnd-kit; explicit move/status controls provide a non-drag alternative. Optimistic changes cancel matching queries, snapshot only affected data, serialize pending changes per task, rollback on error and reconcile with authoritative server responses/version. Switching lists mid-request must not update the wrong cache.
 
-The list table includes at least two effective custom-field columns, deterministic server sorting and a schema-aware custom-field filter. Drawer supports all built-in fields and each custom-field type. Config screens at space/folder/list show inherited/local/hidden states, effective previews, and in-use validation errors. Admin-only controls reflect server permissions but do not replace them.
+The list table includes at least two effective custom-field columns, deterministic server sorting and a schema-aware custom-field filter. Drawer supports all built-in fields and each custom-field type. Config screens at workspace/space/folder/list show inherited/local/hidden states, effective previews, and in-use validation errors. Admin-only controls reflect server permissions but do not replace them.
 
 Verify keyboard navigation, visible focus, drawer focus trap/return, accessible labels/errors/live announcements, 4.5:1 normal-text contrast and non-color status cues. Test 320, 768, 1024 and 1440px layouts, reduced motion and long titles/labels. Sidebar becomes a drawer on small screens; the board may scroll horizontally with reachable controls. Add no speculative memoization/virtualization before profiling.
 
@@ -208,7 +216,7 @@ Compose contains exactly the five normal services: web 3000, API 3001, worker in
 
 Phase 0 starts empty runnable shells and TCP/process health checks. Phase 1 introduces real liveness/readiness endpoints. API entrypoint runs `prisma migrate deploy`, then the transactional seed-once process under an initialization lock, before reporting ready. Worker waits for API readiness (therefore migrations); web waits for API. Failure is visible and prevents false readiness. Compose defaults support one-command local demo; `.env.example` documents all keys and labels development credentials. API/worker/web receive only their own environment variables. Production disables demo seed and requires configured secrets.
 
-Seed the main tenant with Alice admin, Bob/Carol members, 2 spaces, 2 folders, 3 lists, 24 varied tasks, default workspace statuses and one list override/extension. Include an optional closed status to test rejected moves. Put at least 3 fields across space/folder/list, including single-select and a required numeric/text field; all seed tasks satisfy their effective schema. A private list allows Carol but not Bob; Bob also has an explicit deny on another list. Add a second tenant with another user and tasks. Seed IDs/labels are deterministic fixtures, passwords are documented development-only values, reruns preserve edits, and resets require an explicit destructive command.
+Seed the main tenant with Alice admin, Bob/Carol members, 2 spaces, 2 folders, 3 lists, 24 varied tasks, default workspace statuses and one list override/extension. Include an optional closed status to test rejected moves. Put at least 3 fields across workspace/space/folder/list, including single-select and a required numeric/text field; all seed tasks satisfy their effective schema. A private list allows Carol but not Bob; Bob also has an explicit deny on another list. Add a second tenant with another user and tasks. Seed IDs/labels are deterministic fixtures, passwords are documented development-only values, reruns preserve edits, and resets require an explicit destructive command.
 
 ## 10. Test strategy and execution gates
 

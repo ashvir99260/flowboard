@@ -2,6 +2,14 @@
 
 **Status: target design, not implemented product behavior. Updated 23 October 2026.** The repository currently has application/build/delivery foundations; domain features and the browser proxy below remain future tasks. This document makes [PLAN.md](PLAN.md) concrete. [REQUIREMENTS.md](REQUIREMENTS.md) and [DECISIONS.md](DECISIONS.md) remain canonical. Vendor observations are separated into [REFERENCE_ARCHITECTURES.md](REFERENCE_ARCHITECTURES.md).
 
+The implementation-ready [database and ER specification](DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
+
+The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+
+The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
+
+[Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
+
 ## 1. System and deployment boundaries
 
 Use one modular NestJS API, one worker and one PostgreSQL database. Redis transports work and realtime notifications. The Next.js app coordinates generated queries and MUI views. The same domain API serves the UI and curl clients.
@@ -139,17 +147,17 @@ erDiagram
   OUTBOX_EVENT ||--o| ACTIVITY : identifies
 ```
 
-ERD edges express the logical relationship. Composite tenant keys, nullable root parent and polymorphic scope limitations below determine actual foreign keys. Field/status scope owners and generic outbox aggregates are not represented as ordinary Node foreign keys.
+This is a relationship overview; the [complete 15-model ER diagram](DATABASE_DESIGN.md#entity-relationship-model) shows every name/title, nullable field and audit timestamp. Every table stores createdAt/updatedAt. ERD edges express the logical relationship. Composite tenant keys, nullable root parent and polymorphic scope limitations below determine actual foreign keys. Field/status scope owners and generic outbox aggregates are not represented as ordinary Node foreign keys.
 
 | Records                             | Key fields and constraints                                                                                                                                         | Delete/history policy                                                                                                                                |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | User / RefreshSession               | Normalized email unique; password hash; session token digest/family/expiry/used/revoked timestamps                                                                 | Revoke credentials. Account hard deletion is outside MVP; never expose credential material.                                                          |
-| Workspace / Membership / Invitation | Workspace configVersion; membership PK `(workspaceId,userId)`; invitation digest/expiry/email/target role                                                          | Last admin protected; removing membership removes current grants/assignees, not past actor history.                                                  |
+| Workspace / Membership / Invitation | Workspace configVersion/dataVersion; membership PK `(workspaceId,userId)`; invitation digest/expiry/email/target role                                              | Last admin protected; removing membership removes current grants/assignees, not past actor history.                                                  |
 | Node                                | UUID, workspaceId, parentId, type, name, integer position, visibility, archivedAt, version; unique `(workspaceId,id)`                                              | Composite parent FK; service enforces space→folder→list and same tenant. Archive subtree in one transaction.                                         |
 | Grant                               | `(workspaceId,resourceId,userId)` unique; mode allow/deny                                                                                                          | FK to node and membership through workspaceId. Grant never bypasses an ancestor restriction.                                                         |
 | StatusIdentity                      | `(workspaceId,id)` unique; `(workspaceId,key)` unique; immutable category                                                                                          | Referenced by task statusId. Block physical deletion while any task, including archived tasks, references it.                                        |
-| StatusOverride                      | workspaceId, statusId, ownerType/ownerId; unique owner/status; nullable display overrides, explicit visibility                                                     | FK to identity; locked scope validation handles polymorphic owners. Removing a row must validate the revealed inherited result.                      |
-| FieldDefinition                     | workspaceId, ownerType/ownerId, key, type, required, options JSON, position; unique owner/key                                                                      | Nearest key replaces the whole definition. Definition/options changes validate affected live values before commit.                                   |
+| StatusOverride                      | workspaceId, statusId, ownerType/ownerId; unique owner/status; nullable display overrides and visibility (null inherits)                                           | FK to identity; locked scope validation handles polymorphic owners. Removing a row must validate the revealed inherited result.                      |
+| FieldDefinition                     | workspaceId, ownerType/ownerId (workspace/space/folder/list), key, name, type, required, options JSON, position; unique owner/key                                  | Nearest key replaces the whole definition. Definition/options changes validate affected live values before commit.                                   |
 | Task                                | UUID, workspaceId, primaryListId, stable statusId, title≤500, markdown, priority, date-only dueDate, JSONB customFields, position, version, timestamps, archivedAt | Composite tenant FKs to list node and status. Node type and effective status/field membership require service validation. Archive rather than erase. |
 | TaskAssignee                        | `(workspaceId,taskId,userId)` unique                                                                                                                               | Composite task/membership FKs. API maps rows to `assigneeIds[]`.                                                                                     |
 | Activity                            | workspaceId, taskId, actorId, eventId unique, type, payload, timestamp                                                                                             | Task and global User references preserve history; actor is not an FK to current Membership.                                                          |
@@ -209,7 +217,7 @@ sequenceDiagram
   end
 ```
 
-A single response containing multiple SQL reads uses one consistent snapshot, not independent read-committed statements. Membership/access checks belong in that response transaction too. Separate HTTP responses can still race, hence configVersion matching. Authorization is rechecked on every read, not inferred from possession of a cached tree node.
+A single response containing multiple SQL reads uses one consistent snapshot, not independent read-committed statements. Membership/access checks belong in that response transaction too. Separate HTTP responses can still race: match configVersion for configuration, plus dataVersion across all task pages/columns; discard mismatches and retry within a bounded limit. Authorization is rechecked on every read, not inferred from possession of a cached tree node.
 
 ## 7. Atomic writes and cross-list movement
 

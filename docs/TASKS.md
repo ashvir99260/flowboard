@@ -214,6 +214,56 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: organize package manifests by purpose`.
   - **Completion evidence:** [P00-23 verification](evidence/P00-23.md): all 14 manifests retain identical data and nested order; 162 tests and standard gates pass.
 
+- [x] **P00-24 — Specify the backend database and ER model**
+  - **Goal:** Turn the agreed logical model into a migration-ready data dictionary and integrity specification.
+  - **Requirements:** R108; refines R28–R61 and R74–R75 without claiming implementation.
+  - **Files:** `docs/DATABASE_DESIGN.md`, architecture/plan links, decisions, requirement matrix, this backlog and evidence.
+  - **Dependencies:** P00-23 and the user's documentation-first request.
+  - **Acceptance:** All 15 records, ER relationships, types/nullability/defaults, tenant keys, constraints, indexes, archive policy, transaction boundaries and migration tests are explicit. Clarify refresh families, inherited visibility and versions after renumbering. No Prisma schema/migration or runtime endpoint is added.
+  - **Validation:** Independent database review, Mermaid parsing, source/link consistency and formatting; preserve domain requirements as Planned.
+  - **Commit:** `docs: specify backend database and er model`.
+  - **Completion evidence:** [P00-24 verification](evidence/P00-24.md): 15-record design reviewed, diagrams parsed and links checked; no runtime implementation claim.
+
+- [x] **P00-25 — Specify the REST API catalog and contracts**
+  - **Goal:** Give backend and frontend implementation a shared endpoint-by-endpoint contract.
+  - **Requirements:** R109; refines existing API/auth/domain requirements.
+  - **Files:** `docs/API_CATALOG.md`, architecture/plan links, decisions, task acceptance refinements and evidence.
+  - **Dependencies:** P00-24.
+  - **Acceptance:** Every planned operation has method/path, stable operationId, access policy, typed input/output, error and implementation task. Define pagination, concurrency, configuration previews, refresh cookies and example task/config commands. No generated spec or runtime route is represented as implemented.
+  - **Validation:** Unique route/operationId inventory, consistency with DB/requirements, JSON examples, independent API review and formatting.
+  - **Commit:** `docs: define rest api implementation catalog`.
+  - **Completion evidence:** [P00-25 verification](evidence/P00-25.md): 43 unique operations, schema examples and cross-document contract review pass; endpoints remain planned.
+
+- [x] **P00-26 — Analyze Linear interactions and map the MUI UI**
+  - **Goal:** Convert observable Linear patterns into a scoped, accessible Flowboard UI implementation guide.
+  - **Requirements:** R110; refines R62–R76.
+  - **Files:** `docs/UI_DESIGN.md`, public-source references, architecture/plan links, component/task mapping and evidence.
+  - **Dependencies:** P00-25.
+  - **Acceptance:** Dated official sources distinguish observation from proposed design; specify shell, board/table, drawer, configuration, MUI components/tokens, responsive states, generated-query boundaries, accessibility and ordered acceptance tests. Preserve Flowboard hierarchy/multiple assignees and fixed stack. No private Linear internals or shipped UI is claimed.
+  - **Validation:** Primary-source review, requirement/component/API traceability, Mermaid/link/format checks and independent UI review.
+  - **Commit:** `docs: map linear interactions to mui views`.
+  - **Completion evidence:** [P00-26 verification](evidence/P00-26.md): dated public research, complete component/screen mapping, independent review, diagram/link/token/format checks.
+
+- [x] **P00-27 — Refine workspace RBAC, audit fields and decorated contracts**
+  - **Goal:** Complete the ER model and specify workspace-based authorization/field inheritance and the entity/DTO/Swagger/Next.js boundary before implementation.
+  - **Requirements:** R111–R112; refines R12, R14, R16–R22, R30–R31, R56–R57, R67.
+  - **Files:** `docs/{DATABASE_DESIGN,BACKEND_CONTRACTS,API_CATALOG,PLAN,SYSTEM_DESIGN,UI_DESIGN,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, architecture/README links and task evidence.
+  - **Dependencies:** P00-26 and the user's workspace/audit/DTO refinement.
+  - **Acceptance:** All 15 ER models show complete attributes including meaningful names and both timestamps; RBAC is per Membership; workspace field defaults resolve through all four levels. Explicit request/response DTOs, entity boundaries, decorators, safe projections and generated web contract flow are planned. No application implementation is claimed.
+  - **Validation:** Independent database/API review; verify ER/dictionary attribute parity, timestamp coverage,43 unique operations, source links/diagrams, formatting and affected requirement status.
+  - **Commit:** `docs: refine workspace access and api contracts`.
+  - **Completion evidence:** [P00-27 verification](evidence/P00-27.md): all 15 ER/dictionary attribute sets and audit pairs match, 43 operations retained, two independent reviews and documentation checks pass.
+
+- [x] **P00-28 — Specify every field and cursor-only pagination**
+  - **Goal:** Make each stored/embedded field implementable from explicit types, relations and validation; allow only cursor pagination in the public API.
+  - **Requirements:** R113–R114; refines R11–R14, R21, R31, R49, R58.
+  - **Files:** `docs/{FIELD_REFERENCE,DATABASE_DESIGN,API_CATALOG,BACKEND_CONTRACTS,PLAN,UI_DESIGN,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, architecture/README links and evidence.
+  - **Dependencies:** P00-27 and the user's field/pagination refinement.
+  - **Acceptance:** All135 stored fields plus embedded/derived/request controls have type, null/default/ownership, relation and validation responsibility. Paginated operations use only cursor/limit; reject page/offset aliases, duplicate query keys, invalid/expired/context-mismatched cursors. Bound complete schemas are not paginated. No runtime behavior is claimed.
+  - **Validation:** Exact field-reference/ER/dictionary parity,43 unique operations, independent DB/API reviews, diagrams/local links and formatting. Runtime constraints and pagination remain Planned until implemented tests pass.
+  - **Commit:** `docs: specify field rules and cursor pagination`.
+  - **Completion evidence:** [P00-28 verification](evidence/P00-28.md):135 stored-field rows match the ER/dictionary; typed embedded/request controls, cursor-only policy,43-operation inventory and documentation checks reviewed.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.
@@ -265,7 +315,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Define shared enums, errors, pagination and immutable transport primitives.
   - **Files:** `packages/contracts/src/{enums,errors,pagination,identifiers,dates,index}.ts`, `packages/contracts/test/foundations.test.ts`.
   - **Dependencies:** P00-04.
-  - **Acceptance:** Zod schemas infer types for all requested enums, error codes/envelope, cursor page and strict IDs/calendar dates. Domain schemas reject unsupported values and unexpected identity fields.
+  - **Acceptance:** Zod schemas infer types for all requested enums, error codes/envelope, cursor page and strict IDs/calendar dates. Domain schemas reject unsupported values and unexpected identity fields. Include shared audit timestamp schema, workspace-role/action constants and workspace-inclusive field scope enum. Follow FIELD_REFERENCE bounds/types, reject NUL/lone-surrogate strings but preserve valid supplementary characters, and use cursor-only queries; reject offset/page aliases and duplicate query inputs.
   - **Validation:** Literal valid/invalid fixtures including leap dates, enum typos, negative/oversized limits and malformed issue paths; standard gate.
   - **Commit:** `feat: define shared transport contracts`.
 
@@ -273,7 +323,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.
   - **Files:** `apps/api/src/platform/**`, `apps/api/src/spec-bootstrap.ts`, `packages/contracts/src/health.ts`, `packages/openapi/{scripts/export.ts,openapi.json,.spectral.yaml}`, `packages/api-client/{openapi-ts.config.ts,src/generated/**}`, affected package manifests/Turbo config.
   - **Dependencies:** P01-01.
-  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear, and generated client compiles. Infrastructure URL exceptions are explicit.
+  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit. Follow BACKEND_CONTRACTS for createZodDto request/response classes, ZodResponse metadata, global serializer and safe500 output validation; generated response consumer compiles.
   - **Validation:** Supertest error-envelope/response tests; export/generation with runtime dependencies unavailable; malformed response fails safely; standard gate.
   - **Commit:** `feat: establish typed api platform and generation`.
 
@@ -281,8 +331,8 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Persist the model with tenant-safe relations before repositories/endpoints use it.
   - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{migration,schema}.integration.test.ts`, `compose.test.yaml`.
   - **Dependencies:** P01-02.
-  - **Acceptance:** All PLAN entities exist, including stable status identity, field JSONB, versions, join tables and outbox. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
-  - **Validation:** Migrate empty database, verify constraints by rejected inserts, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
+  - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, current-session partial unique index and selected-workspace FK, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Every table has createdAt/updatedAt enforced for Prisma/raw SQL/worker paths; workspace field ownership is allowed and checked. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
+  - **Validation:** Migrate empty database, verify constraints by rejected inserts, inspect all audit columns and immutable-createdAt/update-trigger behavior, field CHECKs and paired invitation/refresh/outbox state rules, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
   - **Commit:** `feat: add tenant safe database schema`.
 
 - [ ] **P01-04 — Fail-closed tenant repositories and test harness**
@@ -297,7 +347,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Make clean boot reproducible and demonstrate all major scenarios with real persisted data.
   - **Files:** `packages/database/prisma/seed.ts`, `packages/database/src/initialize.ts`, `packages/database/test/seed.integration.test.ts`, `apps/api/docker/entrypoint.sh`, `compose.yaml`, `README.md`.
   - **Dependencies:** P01-04.
-  - **Acceptance:** Alice/Bob/Carol, two tenants, 2 spaces/2 folders/3 main lists, 24 tasks, inherited/overridden statuses, optional closed, 3+ multilevel fields and private/denied lists exist. Migrate then seed once under a lock before API ready; repeated/concurrent boot preserves edits. Seed disabled outside demo mode.
+  - **Acceptance:** Alice/Bob/Carol, two tenants, 2 spaces/2 folders/3 main lists, 24 tasks, inherited/overridden statuses, optional closed, 3+ multilevel fields (a workspace default, a lower-level definition and a list override) and private/denied lists exist. All seeded tasks satisfy the four-level effective schema. Migrate then seed once under a lock before API ready; repeated/concurrent boot preserves edits. Seed disabled outside demo mode.
   - **Validation:** Assert counts/relations/field validity, two parallel initializers, second boot after editing data, migration failure prevents readiness; standard gate and Compose boot.
   - **Commit:** `feat: initialize database with repeatable demo data`.
 
@@ -315,7 +365,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Provide cookie refresh without token reuse or unsafe replay.
   - **Files:** `apps/api/src/auth/{session.service,cookie-policy,origin.guard}.ts`, auth controller/contracts, `apps/api/test/refresh.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P02-01.
-  - **Acceptance:** Random refresh digest only; atomic single-use rotation; reuse revokes family; logout invalidates session/cookie. Cookie Secure/SameSite/httpOnly policy, Origin validation and credentialed CORS are explicit. Auth endpoints never disclose password/token digests.
+  - **Acceptance:** Random refresh digest only; atomic single-use rotation under the User lock with same-family lineage and fixed seven-day lifetime; JWT session identity remains familyId; reuse revokes family; logout invalidates session/cookie. Refresh with a removed selected membership returns403 without a retry loop; re-login recovers. Cookie Secure/SameSite/httpOnly policy, Origin validation and credentialed CORS are explicit. Auth endpoints never disclose password/token digests.
   - **Validation:** Cookie flags, rotation, replay, concurrent use, revoked/deleted membership, missing/bad Origin and cross-site refresh; endpoint DoD and standard gate.
   - **Commit:** `feat: rotate refresh sessions securely`.
 
@@ -323,7 +373,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/workspaces.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P02-02.
-  - **Acceptance:** `/me`, paginated workspaces/members, add/invite/accept/remove/role change and verified workspace switch work. Invite is an expiring manual-share link with digest storage and email match. Establish the one PermissionGuard/PermissionService with the membership/admin policy now; P03-02 extends it to containers. Remove departing members' grants/assignments atomically, bump affected task versions/emit outbox updates, and retain activity. No controller-local authorization, self-escalation or last-admin removal.
+  - **Acceptance:** `/me`, paginated workspaces/members, add/invite/accept/remove/role change and verified workspace switch work. Invite is an expiring manual-share link with digest storage and email match. Establish the one PermissionGuard/PermissionService with the membership/admin policy now; P03-02 extends it to containers. Remove departing members' grants/assignments atomically, bump affected task versions/emit outbox updates, and retain activity. No controller-local authorization, self-escalation or last-admin removal. The same user can be admin in workspace A and member in B; role changes apply on the next request without global-role leakage.
   - **Validation:** Expired/reused invite, wrong email, cross-tenant switch, member cannot grant admin, concurrent last-admin demotions, removed member token fails; endpoint DoD and standard gate.
   - **Commit:** `feat: manage workspace membership and invites`.
 
@@ -341,7 +391,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Make tree/direct access agree on ancestor-aware visibility.
   - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/permissions/**`, `apps/api/src/hierarchy/tree.controller.ts`, `apps/api/test/permissions.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P03-01.
-  - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Paginated flat tree contains visible nodes/parents only. Grants are admin-managed and transactions recheck authorization.
+  - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Cursor-only paginated flat tree contains visible nodes/parents only, orders parents before children, and rejects stale revision-bound cursors. Grants are admin-managed and transactions recheck authorization.
   - **Validation:** Alice sees all; Bob lacks private list; Carol allow works; Bob direct denied list 403; child allow cannot bypass parent deny/private; foreign IDs 404; counts/grants do not leak. Endpoint DoD and standard gate.
   - **Commit:** `feat: enforce container permissions centrally`.
 
@@ -349,7 +399,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Order visible hierarchy without client-controlled positions or race corruption.
   - **Files:** `packages/contracts/src/ordering.ts`, `apps/api/src/hierarchy/ordering.service.ts`, nodes controller, `apps/api/test/node-ordering.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P03-02.
-  - **Acceptance:** Neighbor-ID move API assigns integer positions transactionally, validates sibling set, increments version and has stable ID tie-breaks.
+  - **Acceptance:** Neighbor-ID move API assigns integer positions transactionally, validates sibling set, increments every changed sibling version once and the workspace collection revisions, with stable ID tie-breaks.
   - **Validation:** First/last/empty position, wrong-parent/foreign anchors, duplicate anchors, stale version and concurrent reorder; endpoint DoD and standard gate.
   - **Commit:** `feat: reorder hierarchy siblings atomically`.
 
@@ -385,7 +435,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Share exact field precedence/types across server and forms.
   - **Files:** `packages/contracts/src/{fields,field-resolution,field-values}.ts`, `packages/contracts/test/field-values.test.ts`.
   - **Dependencies:** P04-03.
-  - **Acceptance:** Nearest full definition wins. All six field types, strict calendar dates, finite numbers, unique option IDs, required semantics and path-based errors are specified; null clear and omitted value differ.
+  - **Acceptance:** Resolve workspace → space → folder → list; nearest full definition wins. All six field types, strict calendar dates, finite numbers, unique option IDs, required semantics and path-based errors are specified; null clear and omitted value differ.
   - **Validation:** Wrong types, unknown/duplicate options/keys, blank required text, missing required, invalid dates, zero/false accepted, nearest collision changes entire schema; standard gate.
   - **Commit:** `feat: resolve and validate custom fields`.
 
@@ -393,15 +443,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Add scoped field CRUD and authoritative list schemas.
   - **Files:** `apps/api/src/fields/**`, `apps/api/test/fields.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P05-01.
-  - **Acceptance:** Space/folder/list owners only, admin-only mutations, typed options and provenance, `GET /v1/lists/:id/resolved-fields`. Uses shared resolver and tenant repositories. In-use/descendant validation ships with the first write routes; P05-03 hardens edge coverage. Mutations increment configVersion and resolved reads return a consistent version.
-  - **Validation:** Owner mismatch, field-key collision, sibling independence, member writes 403, foreign fields 404 and schema response shape; endpoint DoD and standard gate.
+  - **Acceptance:** Workspace/space/folder/list owners, workspace ownerId equals active tenant, admin-only mutations, typed options and provenance, `GET /v1/lists/:id/resolved-fields`. Uses shared resolver and tenant repositories. In-use/descendant validation ships with the first write routes; P05-03 hardens edge coverage. Mutations increment configVersion and resolved reads return a consistent version.
+  - **Validation:** Owner mismatch/foreign workspace, workspace defaults inherited across separate spaces, list override, field-key collision, sibling independence, member writes 403, foreign fields 404 and schema response shape; endpoint DoD and standard gate.
   - **Commit:** `feat: expose scoped custom field schemas`.
 
 - [ ] **P05-03 — Reject destructive field-schema changes**
   - **Goal:** Keep stored task values valid after ancestor/local configuration changes.
   - **Files:** `apps/api/src/fields/field-safety.service.ts`, field service/repositories, `apps/api/test/field-safety.e2e-spec.ts`.
   - **Dependencies:** P05-02.
-  - **Acceptance:** Validate affected live tasks transactionally. Block deletion of in-use effective definition, invalid option removal, incompatible type changes, required promotion with missing values, and invalid fallback exposed by deleting override. Document optional→populate→required workflow.
+  - **Acceptance:** Validate every affected live list/task transactionally, including workspace-root changes and the 100-effective-field cap. Shadowed definitions are evaluated from their final resolved schema. Block deletion of in-use effective definition, invalid option removal, incompatible type changes, required promotion with missing values, and invalid fallback exposed by deleting override. Document optional→populate→required workflow.
   - **Validation:** Each rejected mutation returns field paths and preserves definitions/tasks; zero/false do not falsely block required promotion; safe unused deletion succeeds. Endpoint DoD and standard gate.
   - **Commit:** `fix: preserve task validity during field changes`.
 
@@ -417,9 +467,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-02 — Validated task create, edit and archive**
   - **Goal:** Persist complete valid tasks and durable event intent.
-  - **Files:** `apps/api/src/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, `apps/api/test/task-writes.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, assignable-member filter/contracts, `apps/api/test/task-writes.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P06-01.
-  - **Acceptance:** Validate title ≤500, Markdown string, dates, destination status, members/assignee access and effective custom fields. PATCH omission/clear semantics and expected versions work. Task update and outbox insert commit together. Archive removes task from normal reads.
+  - **Acceptance:** Validate title ≤500, Markdown string, dates, destination status, members/assignee access and effective custom fields. PATCH omission/clear semantics and expected versions work. Member listing accepts an authorized assignableToListId filter for eligible assignee choices. Task update and outbox insert commit together. Archive removes task from normal reads.
   - **Validation:** Unknown statusId 400; foreign/disallowed assignee; title 501; wrong type/option/missing required; explicit clear; stale edit 409; rollback emits no event. Endpoint DoD and standard gate.
   - **Commit:** `feat: write tasks with scoped validation`.
 
@@ -427,7 +477,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Move cards atomically while preserving valid status, fields and ordering.
   - **Files:** `apps/api/src/tasks/task-move.service.ts`, task contracts/controller, `apps/api/test/task-moves.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P06-02.
-  - **Acceptance:** Source/destination permissions checked; preserve status or map first same category; missing category rejects. Move accepts required field values/explicit clears. Reorder validates neighbor list+column and versions; one transaction updates everything/outbox.
+  - **Acceptance:** Source/destination permissions checked; preserve status or map first same category; missing category rejects. Move accepts required field values/explicit clears. Reorder validates neighbor list+column and versions; each changed task version advances once, dataVersion advances once, and one transaction updates everything/outbox.
   - **Validation:** Same-category mapping success; closed→no closed rejects; required destination field missing rejects/provided succeeds; source-only value needs explicit clear; wrong anchors/tenant reject; concurrent config/move remains valid; failure leaves task unchanged. Endpoint DoD and standard gate.
   - **Commit:** `feat: move and reorder tasks atomically`.
 
@@ -435,7 +485,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Audit all task entry points against the required negative scenarios.
   - **Files:** `apps/api/test/{tenant-isolation,task-invariants}.e2e-spec.ts`, `packages/contracts/test/task-patches.test.ts`, necessary task/repository fixes, generated artifacts.
   - **Dependencies:** P06-03.
-  - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts.
+  - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts. Cursor tampering/expiry/context changes and offset/page/duplicate parameters return400; visible rows determine limit+1/hasNextPage; revision changes return409 and a restart returns each current row once.
   - **Validation:** Full real-Postgres suite with two tenants; standard gate. Fix actual defects rather than weaken expectations.
   - **Commit:** `test: cover task isolation and mutation invariants`.
 
@@ -469,7 +519,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Give web one safe transport integration without handwritten endpoints.
   - **Files:** `packages/api-client/src/{setup-client,session-state}.ts`, `packages/api-client/test/setup-client.test.ts`, auth contract/client tests.
   - **Dependencies:** P07-02.
-  - **Acceptance:** `setupClient` configures an instance with base URL/credentials/token lookup, coordinates refresh and retries each rejected request once. Uses generated refresh SDK through an unwrapped instance; guards recursion and preserves abort. No retry for arbitrary network failure or forbidden 403. Defines origin-scoped tab lock and failure reauth behavior.
+  - **Acceptance:** `setupClient` configures an instance with base URL/credentials/token lookup, coordinates refresh and retries each rejected request once. Uses generated refresh SDK through an unwrapped instance; guards recursion and preserves abort. No retry for arbitrary network failure or forbidden 403. Defines origin-scoped tab lock and failure reauth behavior. Switch and refresh share that lock; generation checks prevent retrying an old-workspace request in a new workspace.
   - **Validation:** Concurrent 401s trigger one refresh; refresh failure/replayed token stops; 403 never refreshes; mutation retried at most once only after 401; aborted request stays aborted; instance state never shared across SSR requests; standard gate.
   - **Commit:** `feat: configure generated client session refresh`.
 
@@ -514,7 +564,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Render each list from its authoritative statuses and tasks.
   - **Files:** `apps/web/src/features/board/{board,board-data,use-board}.tsx`, board tests, board route.
   - **Dependencies:** P08-03.
-  - **Acceptance:** Parallel generated queries load statuses/fields/tasks; render only matching configVersions and refetch mismatches with bounded retries. Exact columns including empty ones, requested card metadata and pagination. No orphan fallback column. List change isolates cached data and reports schema errors.
+  - **Acceptance:** Parallel generated queries load statuses/fields/tasks; render only matching configVersions across schemas/data and matching dataVersions across all task columns/pages; refetch mismatches with bounded retries. Exact columns including empty ones, requested card metadata and pagination. No orphan fallback column. List change isolates cached data and reports schema errors.
   - **Validation:** Sibling lists produce different exact columns; config changes between parallel responses cause safe refetch rather than orphan cards. Cover empty board, long title, deleted/forbidden list, field chip and loading/error state; standard gate.
   - **Commit:** `feat: render list scoped kanban boards`.
 
@@ -556,7 +606,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Configure all six field types without hiding downstream consequences.
   - **Files:** `apps/web/src/features/config/fields/**`, field editor tests and examples.
   - **Dependencies:** P10-01.
-  - **Acceptance:** Space/folder/list field CRUD, local/inherited nearest-key preview, options with stable IDs and required-state guidance. Failed in-use/type/required mutation preserves editor values.
+  - **Acceptance:** Workspace/space/folder/list field CRUD, local/inherited nearest-key preview, options with stable IDs and required-state guidance. Failed in-use/type/required mutation preserves editor values.
   - **Validation:** Dynamic option identity on reorder/remove, duplicate keys/options, required promotion rejection, inherited override removal, field-path errors and role restrictions; standard gate.
   - **Commit:** `feat: manage inherited custom field configuration`.
 
