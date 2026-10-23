@@ -1,9 +1,11 @@
 # Flowboard architecture reference
 
-**Status: target architecture; Phase 0 foundation is in progress.** Updated 22 October 2026.
+**Status: target architecture; Phase 0 foundation is in progress.** Updated 23 October 2026.
 This is a navigation and change-impact reference for the agreed design, not evidence that its controls run today.
 The complete behavior lives in [PLAN.md](docs/PLAN.md), the original brief in [REQUIREMENTS.md](docs/REQUIREMENTS.md), and chosen defaults in [DECISIONS.md](docs/DECISIONS.md).
 Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing; the user has authorized the monorepo and application-shell foundation.
+
+For the dated ClickUp/Asana/Linear research, see [product architecture references](docs/REFERENCE_ARCHITECTURES.md). For the concrete UI composition, tenant-aware ERD, query/index mapping, auth boundary and request/event sequences, see [system design](docs/SYSTEM_DESIGN.md). These describe intended implementation and do not mark domain requirements complete.
 
 ## System shape and authority
 
@@ -13,7 +15,8 @@ Flowboard is a modular NestJS API, a Next.js client and one BullMQ worker. Postg
 flowchart LR
   Browser[Next.js browser client] --> SDK[Generated Hey API client]
   Cookbook[curl cookbook] --> HTTP[REST /v1]
-  SDK --> HTTP
+  SDK --> Proxy[Same-origin Next.js HTTP proxy]
+  Proxy --> HTTP
   subgraph API[NestJS API: authentication and authorization boundary]
     HTTP --> Guards[JWT + current membership + PermissionService]
     Guards --> Modules[Domain services]
@@ -32,6 +35,8 @@ flowchart LR
 ```
 
 Five normal Compose services are planned: `web`, `api`, `worker`, `postgres`, `redis`. Web/API publish localhost ports 3000/3001; database and Redis ports remain internal unless a development override exposes them. Deployment, readiness, seed and scaling details are in [PLAN sections 8–9](docs/PLAN.md#8-realtime-and-asynchronous-activity).
+
+For hosted browsers, the planned web-origin `/api/v1` proxy preserves first-party refresh cookies while forwarding to API `/v1` at a fixed server-only runtime origin (D57/P07-04). It forwards HTTP without domain logic. Socket.IO remains a direct JWT-authenticated connection to API. This transport is not implemented in the current shells.
 
 ## Package boundary matrix
 
@@ -95,9 +100,9 @@ flowchart TD
   Request[Validated command + verified TenantContext] --> Tx
   subgraph Tx[One PostgreSQL transaction]
     Lock[Lock workspace row] --> Read[Re-read membership, permissions, config and versions]
-    Read --> Validate[Resolve rules; validate all relationships and affected tasks]
+    Read --> Validate[Resolve rules, validate all relationships and affected tasks]
     Validate -->|valid| Write[Write domain rows + versions + outbox event]
-    Validate -->|invalid| Rollback[Rollback; no domain write or event]
+    Validate -->|invalid| Rollback[Rollback, no domain write or event]
     Write --> Commit[Commit together]
   end
   Commit --> Response[Return authoritative response]
@@ -122,23 +127,23 @@ sequenceDiagram
   participant DB as PostgreSQL
   UI->>SDK: Query statuses, fields and task page in parallel
   SDK->>API: Authenticated list-scoped reads
-  API->>DB: Verify membership/access; consistent snapshot per response
+  API->>DB: Verify membership/access, consistent snapshot per response
   DB-->>API: Effective data + configVersion
   API-->>UI: Typed response bundles
   alt configVersion differs across responses
     UI->>SDK: Refetch bundle with bounded retry
-    Note over UI: Show retry state; do not mix incompatible data
+    Note over UI: Show retry state, do not mix incompatible data
   else configVersion matches
     Note over UI: Render exact resolved columns, including empty ones
   end
-  UI->>UI: Serialize per-task change; snapshot affected cache
+  UI->>UI: Serialize per-task change, snapshot affected cache
   UI->>SDK: Move/reorder with expected task version and valid anchors
   SDK->>API: Generated typed mutation
-  API->>DB: Lock workspace; re-read access/configuration/version
-  API->>API: Resolve destination status/fields; validate complete result
+  API->>DB: Lock workspace, re-read access/configuration/version
+  API->>API: Resolve destination status/fields, validate complete result
   alt access, validation or version failure
     API-->>UI: Typed 400 / 403 / 404 / 409 error
-    UI->>UI: Safe rollback; visible error; targeted refetch
+    UI->>UI: Safe rollback, visible error, targeted refetch
   else valid mutation
     API->>DB: Commit task/order/version and outbox event
     API-->>UI: Authoritative task response

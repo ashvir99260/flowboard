@@ -164,6 +164,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: add local reverse engineering tools`.
   - **Completion evidence:** [P00-18 verification](evidence/P00-18.md): pinned CLI, static artifact/non-execution/error checks, 126 tests and all workspace gates pass. Installation and generated data remain local; MCP is not registered.
 
+- [x] **P00-19 — Research comparable products and detail Flowboard's system design**
+  - **Goal:** Turn published ClickUp/Asana/Linear patterns into a concrete UI, backend, database and request-flow design for the existing requirements.
+  - **Requirements:** R103; clarifies H01–H03 and planned R28–R89 without claiming those features work.
+  - **Files:** `docs/{REFERENCE_ARCHITECTURES,SYSTEM_DESIGN,PLAN,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, `ARCHITECTURE.md`, `AGENTS.md`, `README.md`, `docs/evidence/P00-19.md`.
+  - **Dependencies:** Existing architecture/requirements and P00-18; the user's research/design request takes priority over the deferred live-host task.
+  - **Acceptance:** Primary sources have dates and distinguish published internals, public behavior and Flowboard proposals. Design includes UI/state ownership, modular backend, tenant-aware ERD/constraints/indexes, inheritance examples, reads/writes/auth/events/failure flows and implementation-task mapping. Correct cross-site refresh-cookie topology in the plan and track its implementation separately. Preserve the fixed stack, scope, permissions and atomicity rules.
+  - **Validation:** Source/claim review, document links, Mermaid syntax, requirement/task consistency, formatting and independent design review. Documentation only; no runtime or migration claims.
+  - **Commit:** `docs: detail Flowboard system architecture`.
+  - **Completion evidence:** [P00-19 verification](evidence/P00-19.md): primary-source/architecture reviews, 10 parsed diagrams, document/requirement checks and all workspace gates pass. Domain and proxy implementation remain future tasks.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.
@@ -423,6 +433,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Concurrent 401s trigger one refresh; refresh failure/replayed token stops; 403 never refreshes; mutation retried at most once only after 401; aborted request stays aborted; instance state never shared across SSR requests; standard gate.
   - **Commit:** `feat: configure generated client session refresh`.
 
+- [ ] **P07-04 — Same-origin browser transport for hosted authentication**
+  - **Goal:** Preserve rotating httpOnly cookies when the web and API use separate provider domains.
+  - **Requirements:** R29, R33, R91; follows D57.
+  - **Files:** `apps/web/app/api/v1/[...path]/route.ts`, `apps/web/src/server/api-proxy.ts`, proxy integration tests, `packages/api-client/src/setup-client.ts`, `packages/config-eslint/src/boundaries.mjs`, `packages/config-eslint/test/boundaries.test.mjs`, server environment docs.
+  - **Dependencies:** P07-03.
+  - **Acceptance:** Browser-generated requests use same-origin `/api/v1`; the server forwards only to a fixed runtime-configured API origin and `/v1` paths. Preserve abort/status/body and separate Set-Cookie headers; forward only approved headers, validate browser Origin for cookie mutations, bypass caches and reject arbitrary destinations/redirects. Host-only refresh cookies use Path=/, Secure on HTTPS and SameSite=Lax. Forward only approved cookie names. The lint exception permits direct fetch only in the designated server-only proxy module; feature-code fetches remain rejected. No domain logic or second endpoint client in the proxy. Socket.IO connects directly to API with memory-held access JWT. CLI clients retain direct `/v1` access.
+  - **Validation:** Integration tests with distinct web/API origins cover login/refresh/logout cookies, malicious origins/paths, no caching, upstream failure/abort, rejection of feature-code fetches, and no browser exposure of the upstream configuration. Browser tests prove refresh on separate-site hosts; standard gate.
+  - **Commit:** `feat: proxy browser api transport on same origin`.
+
 ## Phase 8 — UI package and application shell
 
 - [ ] **P08-01 — MUI theme and presentational display components**
@@ -444,7 +463,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 - [ ] **P08-03 — Auth pages, providers and visible sidebar**
   - **Goal:** Connect generated transport to an authenticated app shell.
   - **Files:** `apps/web/app/{layout,(auth)/**,(workspace)/**}`, `apps/web/src/{providers,features/auth/**,features/tree/**,lib/query-scope.ts}`, web component tests.
-  - **Dependencies:** P08-02.
+  - **Dependencies:** P08-02, P07-04.
   - **Acceptance:** Signup/login/refresh bootstrap/logout/workspace switch, one browser QueryClient, accessible collapsible paginated tree, list selection in URL. Loading/error/empty/forbidden states. Clear caches and sockets when identity changes; no prior-tenant flash.
   - **Validation:** Login errors, refresh expiry, logout then Bob after Alice, private list hidden, tree loading all pages, browser-back selection and mobile sidebar; standard gate.
   - **Commit:** `feat: add authenticated workspace shell`.
