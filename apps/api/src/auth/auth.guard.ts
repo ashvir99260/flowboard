@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { ApiException } from '../platform/api-exception.js';
-import { PublicRouteKey } from '../platform/public.decorator.js';
+import { PublicRouteKey } from '../common/decorators/public.decorator.js';
+import { ApiException } from '../common/errors/api-exception.js';
 
 import { AuthService } from './auth.service.js';
 

@@ -3,11 +3,14 @@ import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { documentedError, RequestIdHeaders } from './api-documentation.js';
-import { ApiException } from './api-exception.js';
+import { PublicRoute } from '../common/decorators/public.decorator.js';
+import { EmptyQueryDto } from '../common/dto/empty-query.dto.js';
+import { ApiException } from '../common/errors/api-exception.js';
+import { documentedError, RequestIdHeaders } from '../common/swagger/api-documentation.js';
+
 import { DependencyProbeKey } from './dependency-probe.js';
-import { HealthQueryDto, LivenessResponseDto, ReadinessResponseDto } from './health.dto.js';
-import { PublicRoute } from './public.decorator.js';
+import { LivenessResponseDto } from './dto/liveness-response.dto.js';
+import { ReadinessResponseDto } from './dto/readiness-response.dto.js';
 
 import type { DependencyProbe } from './dependency-probe.js';
 import type { Liveness, Readiness } from '@flowboard/contracts';
@@ -39,7 +42,7 @@ export class HealthController {
     type: LivenessResponseDto,
   })
   getLiveness(
-    @Query(new ZodValidationPipe(HealthQueryDto)) _query: Record<string, never>,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
   ): Liveness {
     return { status: 'ok' };
   }
@@ -66,7 +69,7 @@ export class HealthController {
     type: ReadinessResponseDto,
   })
   async getReadiness(
-    @Query(new ZodValidationPipe(HealthQueryDto)) _query: Record<string, never>,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
   ): Promise<Readiness> {
     try {
       await this.probe.check();

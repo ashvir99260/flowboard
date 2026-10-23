@@ -1,38 +1,22 @@
-import { initializeDatabase } from '@flowboard/database';
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import request from 'supertest';
 
-import { createApplication } from '../dist/application.js';
-import { createAuthRuntime } from '../dist/auth/runtime.js';
-import { readAuthSettings } from '../dist/auth/settings.js';
-import { runtimeProbe } from '../dist/platform/dependency-probe.js';
+import { startTestApplication } from '../../common/application.mjs';
+import { claimsOf, cookieOf, AuthTestOrigin as origin } from '../../common/auth-fixtures.mjs';
 
-import { startInfrastructure } from './infrastructure.mjs';
-
-let infrastructure;
+let fixture;
 let app;
-const origin = 'https://flowboard.test';
 const call = (path) => request(app.getHttpServer()).post(`/v1/auth/${path}`).set('Origin', origin);
 beforeAll(async () => {
-  infrastructure = await startInfrastructure();
-  await initializeDatabase({ databaseUrl: infrastructure.databaseUrl });
-  const auth = createAuthRuntime(
-    infrastructure.databaseUrl,
-    infrastructure.redisUrl,
-    readAuthSettings({
-      AUTH_SECRET: 'refresh-test-secret-abcdefghijklmnopqrstuvwxyz',
-      AUTH_ALLOWED_ORIGINS: origin,
-    }),
-  );
-  ({ app } = await createApplication(
-    runtimeProbe(infrastructure.databaseUrl, infrastructure.redisUrl),
-    { auth },
-  ));
-  await app.init();
+  fixture = await startTestApplication({
+    auth: true,
+    origin,
+    secret: 'refresh-test-secret-abcdefghijklmnopqrstuvwxyz',
+  });
+  ({ app } = fixture);
 });
 afterAll(async () => {
-  await app?.close();
-  infrastructure?.close();
+  await fixture?.close();
 });
 
 test('refresh rotates the cookie and returns a real session without an access JWT', async () => {
@@ -51,8 +35,6 @@ test('refresh rotates the cookie and returns a real session without an access JW
 });
 
 let counter = 0;
-const cookieOf = (response) => response.headers['set-cookie'][0].split(';')[0];
-const claimsOf = (token) => JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
 async function fresh() {
   const response = await call('signup').send({
     email: `fresh-${++counter}@example.com`,
@@ -75,7 +57,7 @@ test('rotation preserves family, workspace and fixed cookie expiry', async () =>
   expect(rotated.headers['set-cookie'][0].split('Expires=')[1]).toBe(
     initial.headers['set-cookie'][0].split('Expires=')[1],
   );
-  const { AuthService } = await import('../dist/auth/auth.service.js');
+  const { AuthService } = await import('../../../dist/auth/auth.service.js');
   await expect(
     app.get(AuthService).authenticate(`Bearer ${initial.body.data.accessToken}`),
   ).resolves.toBeDefined();
@@ -89,7 +71,7 @@ test('replaying a used cookie revokes both old and latest access tokens', async 
   expect(replay.status).toBe(401);
   expect(replay.body.error.code).toBe('REFRESH_REUSED');
   expect(replay.headers['set-cookie'][0]).toContain('Max-Age=0');
-  const { AuthService } = await import('../dist/auth/auth.service.js');
+  const { AuthService } = await import('../../../dist/auth/auth.service.js');
   for (const response of [initial, rotated])
     await expect(
       app.get(AuthService).authenticate(`Bearer ${response.body.data.accessToken}`),
@@ -105,7 +87,7 @@ test('concurrent reuse has one rotation and one replay; its winning token is rev
   ]);
   expect(responses.map((response) => response.status).sort()).toEqual([200, 401]);
   const winner = responses.find((response) => response.status === 200);
-  const { AuthService } = await import('../dist/auth/auth.service.js');
+  const { AuthService } = await import('../../../dist/auth/auth.service.js');
   await expect(
     app.get(AuthService).authenticate(`Bearer ${winner.body.data.accessToken}`),
   ).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
@@ -127,7 +109,7 @@ test('logout revokes the family, expires the cookie and is idempotent', async ()
     expect(response.headers['set-cookie'][0]).toContain('Max-Age=0');
     expect(response.headers['cache-control']).toBe('no-store');
   }
-  const { AuthService } = await import('../dist/auth/auth.service.js');
+  const { AuthService } = await import('../../../dist/auth/auth.service.js');
   await expect(
     app.get(AuthService).authenticate(`Bearer ${initial.body.data.accessToken}`),
   ).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });

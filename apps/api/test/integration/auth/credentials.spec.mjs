@@ -1,59 +1,33 @@
 import { TextEncoder } from 'node:util';
 
-import { initializeDatabase } from '@flowboard/database';
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
-import { Controller, Get, Req } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { SignJWT } from 'jose';
 import request from 'supertest';
 
-import { AppModule } from '../dist/app.module.js';
-import { createApplication } from '../dist/application.js';
-import { AuthGuard } from '../dist/auth/auth.guard.js';
-import { createAuthRuntime } from '../dist/auth/runtime.js';
-import { readAuthSettings } from '../dist/auth/settings.js';
-import { runtimeProbe } from '../dist/platform/dependency-probe.js';
+import { AppModule } from '../../../dist/app.module.js';
+import { startTestApplication } from '../../common/application.mjs';
+import {
+  AuthTestOrigin as origin,
+  AuthTestSecret as secret,
+  SignupFixture as signup,
+} from '../../common/auth-fixtures.mjs';
+import { ProtectedController } from '../../common/protected-controller.mjs';
 
-import { startInfrastructure } from './infrastructure.mjs';
-
-let infrastructure;
+let fixture;
 let app;
-const origin = 'https://flowboard.test';
-const secret = 'test-only-abcdefghijklmnopqrstuvwxyz123456';
-let runtime;
 let protectedApp;
 let currentSession;
-class ProtectedController {
-  get(req) {
-    return { userId: req.identity.user.id, role: req.identity.activeWorkspace?.role };
-  }
-}
-Controller('protected')(ProtectedController);
-Get()(
-  ProtectedController.prototype,
-  'get',
-  Object.getOwnPropertyDescriptor(ProtectedController.prototype, 'get'),
-);
-Req()(ProtectedController.prototype, 'get', 0);
-const signup = {
-  email: 'new@example.com',
-  name: 'New User',
-  password: 'A secure password!',
-  workspaceName: 'Personal work',
-};
 beforeAll(async () => {
-  infrastructure = await startInfrastructure();
-  await initializeDatabase({ databaseUrl: infrastructure.databaseUrl });
-  runtime = createAuthRuntime(
-    infrastructure.databaseUrl,
-    infrastructure.redisUrl,
-    readAuthSettings({ AUTH_SECRET: secret, AUTH_ALLOWED_ORIGINS: origin }),
-  );
-  ({ app } = await createApplication(
-    runtimeProbe(infrastructure.databaseUrl, infrastructure.redisUrl),
-    { auth: runtime },
-  ));
+  fixture = await startTestApplication({ auth: true, origin, secret });
+  ({ app } = fixture);
+  const initial = await request(app.getHttpServer())
+    .post('/v1/auth/signup')
+    .set('Origin', origin)
+    .send(signup);
+  expect(initial.status).toBe(201);
+  currentSession = initial.body.data;
+  const runtime = fixture.runtime;
   const testModule = await Test.createTestingModule({
     imports: [
       AppModule.forProbe({ async check() {}, async close() {} }, { ...runtime, async close() {} }),
@@ -62,25 +36,25 @@ beforeAll(async () => {
   }).compile();
   protectedApp = testModule.createNestApplication();
   await protectedApp.init();
-  await app.init();
 });
 afterAll(async () => {
-  await protectedApp?.close();
-  await app?.close();
-  infrastructure?.close();
+  try {
+    await protectedApp?.close();
+  } finally {
+    await fixture?.close();
+  }
 });
 
 test('signup atomically creates an admin workspace and returns a safe real session', async () => {
   const response = await request(app.getHttpServer())
     .post('/v1/auth/signup')
     .set('Origin', origin)
-    .send(signup);
+    .send({ ...signup, email: 'created@example.com' });
   expect(response.status).toBe(201);
-  expect(response.body.data.user.email).toBe(signup.email);
+  expect(response.body.data.user.email).toBe('created@example.com');
   expect(response.body.data.activeWorkspace.role).toBe('admin');
   expect(response.body.data.accessToken.split('.')).toHaveLength(3);
   expect(response.headers['set-cookie'][0]).toMatch(/HttpOnly; SameSite=Lax; Expires=.*; Secure$/);
-  currentSession = response.body.data;
   expect(JSON.stringify(response.body)).not.toMatch(/password|tokenDigest/);
 });
 
@@ -180,50 +154,4 @@ test('credential attempts are limited through Redis', async () => {
   expect(response.body.error.code).toBe('RATE_LIMITED');
   expect(Number(response.headers['retry-after'])).toBeGreaterThan(0);
   expect(Number(response.headers['retry-after'])).toBeLessThanOrEqual(900);
-});
-
-test('unsafe or incomplete auth configuration is rejected', () => {
-  expect(() => readAuthSettings({ AUTH_SECRET: 'short' })).toThrow();
-  expect(() =>
-    readAuthSettings({ AUTH_SECRET: secret, AUTH_ALLOWED_ORIGINS: 'http://flowboard.test' }),
-  ).toThrow();
-  expect(() =>
-    readAuthSettings({
-      AUTH_SECRET: secret,
-      AUTH_ALLOWED_ORIGINS: 'https://flowboard.test',
-      AUTH_ALLOW_INSECURE_HTTP: 'true',
-    }),
-  ).toThrow();
-  expect(
-    readAuthSettings({
-      AUTH_SECRET: secret,
-      AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
-      AUTH_ALLOW_INSECURE_HTTP: 'true',
-    }).insecureHttp,
-  ).toBe(true);
-});
-
-test('default member guard rejects a valid identity with no workspace membership', async () => {
-  const guard = new AuthGuard(new Reflector(), {
-    async authenticate() {
-      return { activeWorkspace: null };
-    },
-  });
-  const context = {
-    getHandler: () => ProtectedController.prototype.get,
-    getClass: () => ProtectedController,
-    switchToHttp: () => ({ getRequest: () => ({ headers: {} }) }),
-  };
-  await expect(guard.canActivate(context)).rejects.toMatchObject({ code: 'MEMBERSHIP_REQUIRED' });
-});
-
-test('identity storage outage fails closed without disclosing a URL', async () => {
-  infrastructure.stopPostgres();
-  const response = await request(app.getHttpServer())
-    .post('/v1/auth/login')
-    .set('Origin', origin)
-    .send({ email: signup.email, password: signup.password });
-  expect(response.status).toBe(503);
-  expect(response.body.error.code).toBe('SERVICE_UNAVAILABLE');
-  expect(JSON.stringify(response.body)).not.toMatch(/postgres|password|127\.0\.0\.1/);
 });

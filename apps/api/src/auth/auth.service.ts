@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { jwtVerify, SignJWT } from 'jose';
 import { z } from 'zod';
 
-import { ApiException } from '../platform/api-exception.js';
+import { ApiException } from '../common/errors/api-exception.js';
 
 import { clearRefreshCookie, readRefreshCookie, refreshCookie } from './cookie-policy.js';
 import { AuthRuntimeKey } from './runtime.js';

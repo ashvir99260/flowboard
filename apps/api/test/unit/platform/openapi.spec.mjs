@@ -1,0 +1,21 @@
+import { expect, test } from '@jest/globals';
+
+import { exportOpenApi } from '../../../dist/spec-bootstrap.js';
+
+test('the spec-only bootstrap exposes real typed controller metadata without configuration', async () => {
+  const document = await exportOpenApi();
+  expect(Object.keys(document.paths).sort()).toEqual([
+    '/health/live',
+    '/health/ready',
+    '/v1/auth/login',
+    '/v1/auth/logout',
+    '/v1/auth/refresh',
+    '/v1/auth/signup',
+  ]);
+  expect(document.paths['/health/live'].get.operationId).toBe('getLiveness');
+  expect(document.paths['/health/ready'].get.operationId).toBe('getReadiness');
+  expect(
+    document.paths['/health/ready'].get.responses['503'].content['application/json'].schema,
+  ).toBeDefined();
+  expect(JSON.stringify(document)).not.toContain('passwordHash');
+});

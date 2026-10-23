@@ -1,3 +1,5 @@
+import { readBooleanSetting } from '../../common/utils/read-boolean-setting.js';
+
 export interface AuthSettings {
   allowedOrigins: string[];
   insecureHttp: boolean;
@@ -6,12 +8,8 @@ export interface AuthSettings {
 export function readAuthSettings(environment: NodeJS.ProcessEnv): AuthSettings {
   const value = environment.AUTH_SECRET ?? '';
   if (Buffer.byteLength(value) < 32) throw new Error('AUTH_SECRET must contain at least 32 bytes');
-  if (
-    environment.AUTH_ALLOW_INSECURE_HTTP &&
-    !['true', 'false'].includes(environment.AUTH_ALLOW_INSECURE_HTTP)
-  )
-    throw new Error('AUTH_ALLOW_INSECURE_HTTP must be true or false');
-  const insecureHttp = environment.AUTH_ALLOW_INSECURE_HTTP === 'true';
+  const insecureHttp =
+    readBooleanSetting(environment.AUTH_ALLOW_INSECURE_HTTP, 'AUTH_ALLOW_INSECURE_HTTP') ?? false;
   if (!insecureHttp && value === 'flowboard-local-only-change-before-hosting-64-bytes')
     throw new Error('Replace the local-only AUTH_SECRET before hosting');
   const allowedOrigins = (environment.AUTH_ALLOWED_ORIGINS ?? '')

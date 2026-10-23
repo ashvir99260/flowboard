@@ -20,7 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint --fix . --max-warnings=0",
-    "test": "node --test --test-timeout=60000 test/*.test.mjs && node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
+    "test": "node --test --test-timeout=60000 test/bootstrap/*.test.mjs && node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
     "docker:check": "node ../../scripts/check-compose.mjs"

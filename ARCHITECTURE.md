@@ -15,7 +15,7 @@ The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to ou
 
 [Workspace RBAC and DTO/entity design](docs/BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
-[Backend structure and coding rules](docs/BACKEND_GUIDELINES.md) define feature-owned Nest modules, DTO placement, provider exports, test layout and the Swagger workflow. The [API-scoped instructions](apps/api/AGENTS.md) apply these rules to future changes; P02-06 tracks existing auth/platform module extraction.
+[Backend structure and coding rules](docs/BACKEND_GUIDELINES.md) define feature-owned Nest modules, DTO placement, provider exports, test layout and the Swagger workflow. The [API-scoped instructions](apps/api/AGENTS.md) apply these rules to future changes; P02-06 covers auth/platform/common module ownership and purpose-based test directories.
 
 [Field validation reference](docs/FIELD_REFERENCE.md) defines every stored/embedded field and its enforcement layer; paginated APIs use cursor/limit only.
 

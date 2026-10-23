@@ -13,19 +13,23 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
+import { PublicRoute } from '../common/decorators/public.decorator.js';
+import { EmptyQueryDto } from '../common/dto/empty-query.dto.js';
+import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
+import { ApiException } from '../common/errors/api-exception.js';
 import {
   AuthResponseHeaders,
   ClearedSessionHeaders,
   documentedError,
   OriginDocumentation,
   SessionResponseHeaders,
-} from '../platform/api-documentation.js';
-import { ApiException } from '../platform/api-exception.js';
-import { ErrorResponseDto, HealthQueryDto } from '../platform/health.dto.js';
-import { PublicRoute } from '../platform/public.decorator.js';
+} from '../common/swagger/api-documentation.js';
 
-import { EmptyAuthBodyDto, LogInDto, SessionResponseDto, SignUpDto } from './auth.dto.js';
 import { AuthService } from './auth.service.js';
+import { EmptyAuthBodyDto } from './dto/empty-auth-body.dto.js';
+import { LogInDto } from './dto/log-in.dto.js';
+import { SessionResponseDto } from './dto/session-response.dto.js';
+import { SignUpDto } from './dto/sign-up.dto.js';
 
 import type { SessionEnvelope } from '@flowboard/contracts';
 import type { IncomingMessage } from 'node:http';
@@ -105,7 +109,7 @@ export class AuthController {
   })
   async refresh(
     @Body() _input: EmptyAuthBodyDto,
-    @Query(new ZodValidationPipe(HealthQueryDto)) _query: Record<string, never>,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
     @Req() request: IncomingMessage,
     @Res({ passthrough: true }) response: CookieResponse,
   ): Promise<SessionEnvelope> {
@@ -151,7 +155,7 @@ export class AuthController {
   })
   async logOut(
     @Body() _input: EmptyAuthBodyDto,
-    @Query(new ZodValidationPipe(HealthQueryDto)) _query: Record<string, never>,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
     @Req() request: IncomingMessage,
     @Res({ passthrough: true }) response: CookieResponse,
   ): Promise<void> {
@@ -196,7 +200,7 @@ export class AuthController {
   })
   async signUp(
     @Body() input: SignUpDto,
-    @Query(new ZodValidationPipe(HealthQueryDto)) _query: Record<string, never>,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
     @Req() request: IncomingMessage,
     @Res({ passthrough: true }) response: CookieResponse,
   ): Promise<SessionEnvelope> {
@@ -240,7 +244,7 @@ export class AuthController {
   })
   async logIn(
     @Body() input: LogInDto,
-    @Query(new ZodValidationPipe(HealthQueryDto)) _query: Record<string, never>,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
     @Req() request: IncomingMessage,
     @Res({ passthrough: true }) response: CookieResponse,
   ): Promise<SessionEnvelope> {

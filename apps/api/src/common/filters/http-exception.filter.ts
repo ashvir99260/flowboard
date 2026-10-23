@@ -3,7 +3,7 @@ import { Catch, HttpException } from '@nestjs/common';
 import { ZodValidationException } from 'nestjs-zod';
 import { ZodError } from 'zod';
 
-import { ApiException } from './api-exception.js';
+import { ApiException } from '../errors/api-exception.js';
 
 import type { ErrorCode, ValidationIssue } from '@flowboard/contracts';
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';

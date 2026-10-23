@@ -396,18 +396,19 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: define feature-based backend conventions`.
   - **Completion evidence:** [P02-05](evidence/P02-05.md): sourced guide, scoped rules and future task paths reviewed; 179 local links, documentation-only diff and all root gates pass. Runtime restructuring remains P02-06.
 
-- [ ] **P02-06 — Align existing auth and platform module structure**
-  - **Goal:** Bring the current bootstrap/auth slice into the documented feature module layout before growing membership functionality.
-  - **Requirements:** R116; preserves R20, R21, R91 and R115.
-  - **Files:** `apps/api/src/app.module.ts`, `application.ts`, `spec-bootstrap.ts`, `auth/**`, `platform/**`, API tests, generated artifacts only if reproducible output changes.
+- [x] **P02-06 — Organize backend modules, common code and tests**
+  - **Goal:** Bring the current bootstrap/auth slice into feature modules, extract shared infrastructure/configuration/utilities, and split tests by purpose before growing membership functionality.
+  - **Requirements:** R116, R117; preserves R20, R21, R91 and R115.
+  - **Files:** `apps/api/src/app.module.ts`, `application.ts`, `main.ts`, `spec-bootstrap.ts`, `auth/**`, `platform/**`, `common/**`, `test/{unit,integration,bootstrap,common}/**`, API test/package configuration, backend rules and task/evidence docs. Generated artifacts only if reproducible output changes.
   - **Dependencies:** P02-05.
-  - **Acceptance:** Auth has its own module and focused request/response DTO files in `auth/dto/`; platform infrastructure is registered once with explicit provider lifetimes/exports. AppModule composes modules. Runtime and isolated spec bootstrap use the same controller registry; no raw database access moves into the API. Route names, validation, response schemas, auth/cookie behavior and OpenAPI output are preserved.
-  - **Validation:** Existing real Postgres/Redis auth, refresh, shutdown and platform tests; complete build/lint/test/typecheck/format/spec/client gates. Verify no duplicate connection creation or startup side effects during spec export.
-  - **Commit:** `refactor: isolate auth and platform modules`.
+  - **Acceptance:** Auth/platform have modules and focused DTO files; AppModule composes modules. Shared decorators/errors/filters/Swagger, application/Redis config and reused utilities live under `common/`; auth-specific settings remain in auth. Unit, HTTP integration and bootstrap tests are separately discovered, with per-suite shared fixtures in `test/common/` and no shared mutable database/Redis singleton. Runtime and isolated spec bootstrap use the same controller registry; no raw database access moves into the API. Route names, validation, response schemas, auth/cookie behavior and OpenAPI output are preserved.
+  - **Validation:** Config parsing tests first; all existing test names/assertions retained through the split. Real Postgres/Redis auth, refresh, outage, shutdown and platform tests; complete build/lint/test/typecheck/format/spec/client gates. Verify one-time cleanup and no startup side effects during spec export.
+  - **Commit:** `refactor: organize api modules and tests`.
+  - **Completion evidence:** [P02-06](evidence/P02-06.md): feature/common modules, shared config/utilities and isolated split test suites pass 296 tests, full quality/contract gates and five-service Docker startup/restart checks.
 
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
-  - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/workspaces.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.
   - **Dependencies:** P02-02, P02-06.
   - **Acceptance:** `/me`, paginated workspaces/members, add/invite/accept/remove/role change and verified workspace switch work. Invite is an expiring manual-share link with digest storage and email match. Establish the one PermissionGuard/PermissionService with the membership/admin policy now; P03-02 extends it to containers. Remove departing members' grants/assignments atomically, bump affected task versions/emit outbox updates, and retain activity. No controller-local authorization, self-escalation or last-admin removal. The same user can be admin in workspace A and member in B; role changes apply on the next request without global-role leakage.
   - **Validation:** Expired/reused invite, wrong email, cross-tenant switch, member cannot grant admin, concurrent last-admin demotions, removed member token fails; endpoint DoD and standard gate.
@@ -417,7 +418,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P03-01 — Strict hierarchy CRUD and archive**
   - **Goal:** Implement space/folder/list records with valid parents and soft deletion.
-  - **Files:** `packages/contracts/src/nodes.ts`, `apps/api/src/hierarchy/{hierarchy.module,nodes.controller,hierarchy.service}.ts`, `apps/api/src/hierarchy/dto/*.dto.ts`, `apps/api/test/hierarchy.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/nodes.ts`, `apps/api/src/hierarchy/{hierarchy.module,nodes.controller,hierarchy.service}.ts`, `apps/api/src/hierarchy/dto/*.dto.ts`, `apps/api/test/integration/hierarchy.spec.mjs`, generated artifacts.
   - **Dependencies:** P02-03.
   - **Acceptance:** Create/read/rename/archive nodes; exact parent types enforced; IDs cannot cross tenants. Archive removes whole subtree/tasks from normal reads atomically. Until P03-02 adds complete member visibility, all new node routes are admin-only through the established PermissionGuard, including reads. Reparenting waits for P06-05.
   - **Validation:** Skip-level/cycle/self-parent attempts, archived ancestors, cross-tenant parent, repeat archive behavior and rollback; endpoint DoD and standard gate.
@@ -425,7 +426,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P03-02 — Central permission policy, grants and visible tree**
   - **Goal:** Make tree/direct access agree on ancestor-aware visibility.
-  - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/permissions/**`, `apps/api/src/hierarchy/tree.controller.ts`, `apps/api/test/permissions.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/permissions/**`, `apps/api/src/hierarchy/tree.controller.ts`, `apps/api/test/integration/permissions.spec.mjs`, generated artifacts.
   - **Dependencies:** P03-01.
   - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Cursor-only paginated flat tree contains visible nodes/parents only, orders parents before children, and rejects stale revision-bound cursors. Grants are admin-managed and transactions recheck authorization.
   - **Validation:** Alice sees all; Bob lacks private list; Carol allow works; Bob direct denied list 403; child allow cannot bypass parent deny/private; foreign IDs 404; counts/grants do not leak. Endpoint DoD and standard gate.
@@ -433,7 +434,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P03-03 — Deterministic sibling reordering**
   - **Goal:** Order visible hierarchy without client-controlled positions or race corruption.
-  - **Files:** `packages/contracts/src/ordering.ts`, `apps/api/src/hierarchy/ordering.service.ts`, nodes controller, `apps/api/test/node-ordering.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/ordering.ts`, `apps/api/src/hierarchy/ordering.service.ts`, nodes controller, `apps/api/test/integration/node-ordering.spec.mjs`, generated artifacts.
   - **Dependencies:** P03-02.
   - **Acceptance:** Neighbor-ID move API assigns integer positions transactionally, validates sibling set, increments every changed sibling version once and the workspace collection revisions, with stable ID tie-breaks.
   - **Validation:** First/last/empty position, wrong-parent/foreign anchors, duplicate anchors, stale version and concurrent reorder; endpoint DoD and standard gate.
@@ -451,7 +452,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P04-02 — Status configuration and list resolution endpoints**
   - **Goal:** Expose typed status CRUD and the authoritative resolved-list status endpoint.
-  - **Files:** `apps/api/src/statuses/**`, `apps/api/test/statuses.spec.mjs`, generated artifacts.
+  - **Files:** `apps/api/src/statuses/**`, `apps/api/test/integration/statuses.spec.mjs`, generated artifacts.
   - **Dependencies:** P04-01.
   - **Acceptance:** Scoped config endpoints and `GET /v1/lists/:id/resolved-statuses` use the same pure resolver. Admin-only config, readable resolved sets follow list access. Stable identities and local overrides serialize distinctly. Basic in-use/descendant safety ships with these writes; P04-03 expands its regression coverage. Mutations increment configVersion and reads return it from the same snapshot as their items.
   - **Validation:** Two sibling lists under one folder return different expected sets; override retains task statusId; illegal category edits, invalid owner, forbidden scope and invalid sets reject. Endpoint DoD and standard gate.
@@ -459,7 +460,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P04-03 — Safe status mutation across descendants**
   - **Goal:** Prevent orphaned tasks when ancestor configuration changes.
-  - **Files:** `apps/api/src/statuses/status-safety.service.ts`, status service/repositories, `apps/api/test/status-safety.spec.mjs`.
+  - **Files:** `apps/api/src/statuses/status-safety.service.ts`, status service/repositories, `apps/api/test/integration/status-safety.spec.mjs`.
   - **Dependencies:** P04-02.
   - **Acceptance:** Proposed mutations validate owning scope and all affected active descendant lists under one lock. Hide/delete rejects in-use effective statuses. Physical identity deletion respects archived references. Removing overrides re-evaluates fallback.
   - **Validation:** Parent hide with child task, hiding last active/done, safe unused deletion, child overrides unaffected where appropriate, rollback leaves all lists valid; endpoint DoD and standard gate.
@@ -477,7 +478,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P05-02 — Custom-field configuration and resolved schemas**
   - **Goal:** Add scoped field CRUD and authoritative list schemas.
-  - **Files:** `apps/api/src/fields/**`, `apps/api/test/fields.spec.mjs`, generated artifacts.
+  - **Files:** `apps/api/src/fields/**`, `apps/api/test/integration/fields.spec.mjs`, generated artifacts.
   - **Dependencies:** P05-01.
   - **Acceptance:** Workspace/space/folder/list owners, workspace ownerId equals active tenant, admin-only mutations, typed options and provenance, `GET /v1/lists/:id/resolved-fields`. Uses shared resolver and tenant repositories. In-use/descendant validation ships with the first write routes; P05-03 hardens edge coverage. Mutations increment configVersion and resolved reads return a consistent version.
   - **Validation:** Owner mismatch/foreign workspace, workspace defaults inherited across separate spaces, list override, field-key collision, sibling independence, member writes 403, foreign fields 404 and schema response shape; endpoint DoD and standard gate.
@@ -485,7 +486,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P05-03 — Reject destructive field-schema changes**
   - **Goal:** Keep stored task values valid after ancestor/local configuration changes.
-  - **Files:** `apps/api/src/fields/field-safety.service.ts`, field service/repositories, `apps/api/test/field-safety.spec.mjs`.
+  - **Files:** `apps/api/src/fields/field-safety.service.ts`, field service/repositories, `apps/api/test/integration/field-safety.spec.mjs`.
   - **Dependencies:** P05-02.
   - **Acceptance:** Validate every affected live list/task transactionally, including workspace-root changes and the 100-effective-field cap. Shadowed definitions are evaluated from their final resolved schema. Block deletion of in-use effective definition, invalid option removal, incompatible type changes, required promotion with missing values, and invalid fallback exposed by deleting override. Document optional→populate→required workflow.
   - **Validation:** Each rejected mutation returns field paths and preserves definitions/tasks; zero/false do not falsely block required promotion; safe unused deletion succeeds. Endpoint DoD and standard gate.
@@ -495,7 +496,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-01 — Task reads, cursor pagination and filters**
   - **Goal:** Load board/list/drawer data without leaks or unstable pagination.
-  - **Files:** `packages/contracts/src/tasks.ts`, `apps/api/src/tasks/{tasks.module,tasks.controller,task-query.service}.ts`, `apps/api/src/tasks/dto/*.dto.ts`, `apps/api/test/task-queries.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/tasks.ts`, `apps/api/src/tasks/{tasks.module,tasks.controller,task-query.service}.ts`, `apps/api/src/tasks/dto/*.dto.ts`, `apps/api/test/integration/task-queries.spec.mjs`, generated artifacts.
   - **Dependencies:** P05-03.
   - **Acceptance:** List task pages/detail include requested built-ins and customFields, never secrets. Due/priority sorting, stable null ordering and one typed custom-field filter work. Cursor binds resource/filter/sort and limit is bounded. Task pages include configVersion from the same transaction snapshot.
   - **Validation:** No duplicate/skipped ties on stable dataset, malformed/mismatched cursor 400, hidden/foreign task access, null dates and all priorities, option filter types; endpoint DoD and standard gate.
@@ -503,7 +504,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-02 — Validated task create, edit and archive**
   - **Goal:** Persist complete valid tasks and durable event intent.
-  - **Files:** `apps/api/src/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, assignable-member filter/contracts, `apps/api/test/task-writes.spec.mjs`, generated artifacts.
+  - **Files:** `apps/api/src/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, assignable-member filter/contracts, `apps/api/test/integration/task-writes.spec.mjs`, generated artifacts.
   - **Dependencies:** P06-01.
   - **Acceptance:** Validate title ≤500, Markdown string, dates, destination status, members/assignee access and effective custom fields. PATCH omission/clear semantics and expected versions work. Member listing accepts an authorized assignableToListId filter for eligible assignee choices. Task update and outbox insert commit together. Archive removes task from normal reads.
   - **Validation:** Unknown statusId 400; foreign/disallowed assignee; title 501; wrong type/option/missing required; explicit clear; stale edit 409; rollback emits no event. Endpoint DoD and standard gate.
@@ -511,7 +512,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-03 — Cross-list moves and column ordering**
   - **Goal:** Move cards atomically while preserving valid status, fields and ordering.
-  - **Files:** `apps/api/src/tasks/task-move.service.ts`, task contracts/controller, `apps/api/test/task-moves.spec.mjs`, generated artifacts.
+  - **Files:** `apps/api/src/tasks/task-move.service.ts`, task contracts/controller, `apps/api/test/integration/task-moves.spec.mjs`, generated artifacts.
   - **Dependencies:** P06-02.
   - **Acceptance:** Source/destination permissions checked; preserve status or map first same category; missing category rejects. Move accepts required field values/explicit clears. Reorder validates neighbor list+column and versions; each changed task version advances once, dataVersion advances once, and one transaction updates everything/outbox.
   - **Validation:** Same-category mapping success; closed→no closed rejects; required destination field missing rejects/provided succeeds; source-only value needs explicit clear; wrong anchors/tenant reject; concurrent config/move remains valid; failure leaves task unchanged. Endpoint DoD and standard gate.
@@ -519,7 +520,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-04 — Complete task invariants and contract regression**
   - **Goal:** Audit all task entry points against the required negative scenarios.
-  - **Files:** `apps/api/test/{tenant-isolation,task-invariants}.spec.mjs`, `packages/contracts/test/task-patches.test.ts`, necessary task/repository fixes, generated artifacts.
+  - **Files:** `apps/api/test/integration/{tenant-isolation,task-invariants}.spec.mjs`, `packages/contracts/test/task-patches.test.ts`, necessary task/repository fixes, generated artifacts.
   - **Dependencies:** P06-03.
   - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts. Cursor tampering/expiry/context changes and offset/page/duplicate parameters return400; visible rows determine limit+1/hasNextPage; revision changes return409 and a restart returns each current row once.
   - **Validation:** Full real-Postgres suite with two tenants; standard gate. Fix actual defects rather than weaken expectations.
@@ -527,7 +528,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-05 — Validated container reparenting**
   - **Goal:** Complete container moves now that status and field rules are available.
-  - **Files:** `apps/api/src/hierarchy/node-move.service.ts`, node contracts/controller, `apps/api/test/node-moves.spec.mjs`, generated artifacts.
+  - **Files:** `apps/api/src/hierarchy/node-move.service.ts`, node contracts/controller, `apps/api/test/integration/node-moves.spec.mjs`, generated artifacts.
   - **Dependencies:** P06-04.
   - **Acceptance:** Admin can move folder/list only to a valid same-tenant parent. Revalidate resulting subtree permissions, status availability and all live task field schemas; reject invalid reparenting rather than silently remap a whole subtree. Update versions/events as needed.
   - **Validation:** Cycle, archived parent, cross-tenant target, required-field/status mismatch, valid move and atomic rollback across descendants; endpoint DoD and standard gate.
@@ -650,7 +651,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P11-01 — Durable outbox dispatch to BullMQ**
   - **Goal:** Deliver persisted task events after commit, surviving Redis outages.
-  - **Files:** `apps/api/src/outbox/**`, `packages/contracts/src/{events,jobs}.ts`, `apps/api/test/outbox.integration.test.ts`, Redis test harness/config.
+  - **Files:** `apps/api/src/outbox/**`, `packages/contracts/src/{events,jobs}.ts`, `apps/api/test/integration/outbox.integration.test.ts`, Redis test harness/config.
   - **Dependencies:** P10-02.
   - **Acceptance:** Claim/retry durable events; stable event ID/job ID; bounded backoff and observable failures. No lost intent after DB commit, no event from rolled-back write, multiple dispatchers safely claim work.
   - **Validation:** Redis unavailable then recovers, dispatcher crash/retry, duplicate attempts, two dispatchers, malformed job schema; standard gate with real Redis/Postgres.
@@ -666,7 +667,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P11-03 — Permission-safe Socket.IO collaboration**
   - **Goal:** Update other clients while preserving tenant and resource access.
-  - **Files:** `apps/api/src/realtime/**`, `apps/api/test/realtime.integration.test.ts`, `apps/web/src/features/realtime/**`, realtime browser tests.
+  - **Files:** `apps/api/src/realtime/**`, `apps/api/test/integration/realtime.integration.test.ts`, `apps/web/src/features/realtime/**`, realtime browser tests.
   - **Dependencies:** P11-02.
   - **Acceptance:** Redis adapter, verified JWT handshake, guarded list subscriptions and safe source/destination invalidations. Revoke rooms on access changes, disconnect at token expiry, refetch on reconnect. Dirty forms preserve local edits and report conflicts; duplicate/stale events ignored.
   - **Validation:** Two clients update; two API instances fan out; Bob cannot subscribe to private list; foreign room blocked; grant revocation stops next event; move does not reveal hidden target; reconnect catches missed changes. Standard gate.

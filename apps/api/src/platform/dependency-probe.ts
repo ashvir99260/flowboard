@@ -1,6 +1,8 @@
 import { verifyDatabaseConnection } from '@flowboard/database';
 import { Redis } from 'ioredis';
 
+import { RedisConnectionOptions } from '../common/config/redis.config.js';
+
 export const DependencyProbeKey = Symbol('DependencyProbe');
 export interface DependencyProbe {
   check(): Promise<void>;
@@ -9,11 +11,8 @@ export interface DependencyProbe {
 
 export function runtimeProbe(databaseUrl: string, redisUrl: string): DependencyProbe {
   const redis = new Redis(redisUrl, {
-    commandTimeout: 3000,
-    connectTimeout: 3000,
+    ...RedisConnectionOptions,
     enableOfflineQueue: false,
-    maxRetriesPerRequest: 0,
-    retryStrategy: (attempt) => Math.min(attempt * 100, 2000),
   });
   // Readiness observes connection errors; connection strings never enter logs.
   redis.on('error', () => undefined);

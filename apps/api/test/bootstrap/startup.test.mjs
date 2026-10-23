@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { startProcess } from '@flowboard/config-jest/process';
 
-const cwd = new URL('../', import.meta.url);
+const cwd = new URL('../../', import.meta.url);
 
 test('Nest refuses to start the HTTP platform without database configuration', async (t) => {
   const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });

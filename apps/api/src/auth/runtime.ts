@@ -3,21 +3,17 @@ import { createHash } from 'node:crypto';
 import { createIdentityRepository } from '@flowboard/database';
 import { Redis } from 'ioredis';
 
-import { ApiException } from '../platform/api-exception.js';
+import { RedisConnectionOptions } from '../common/config/redis.config.js';
+import { ApiException } from '../common/errors/api-exception.js';
 
-import type { AuthSettings } from './settings.js';
+import type { AuthSettings } from './config/auth.config.js';
 
 export const AuthRuntimeKey = Symbol('AuthRuntime');
 const counter =
   "local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('PEXPIRE',KEYS[1],ARGV[1]); end; return {n,redis.call('PTTL',KEYS[1])}";
 export function createAuthRuntime(databaseUrl: string, redisUrl: string, settings: AuthSettings) {
   const identities = createIdentityRepository(databaseUrl);
-  const redis = new Redis(redisUrl, {
-    commandTimeout: 3000,
-    connectTimeout: 3000,
-    maxRetriesPerRequest: 0,
-    retryStrategy: (attempt) => Math.min(attempt * 100, 2000),
-  });
+  const redis = new Redis(redisUrl, { ...RedisConnectionOptions });
   redis.on('error', () => undefined);
   return {
     identities,
