@@ -10,7 +10,7 @@ test('Nest refuses to start the HTTP platform without database configuration', a
   t.after(() => runtime.stop(null, 1));
   const { code } = await runtime.exited;
   assert.equal(code, 1);
-  assert.match(runtime.output(), /DATABASE_URL is required/);
+  assert.match(runtime.output(), /"event":"api.startup.failed".*"operation":"application_config"/);
 });
 
 for (const port of ['not-a-port', '65536']) {
@@ -19,7 +19,10 @@ for (const port of ['not-a-port', '65536']) {
     t.after(() => runtime.stop(null, 1));
     const { code } = await runtime.exited;
     assert.equal(code, 1);
-    assert.match(runtime.output(), /PORT must be an integer between 0 and 65535/);
+    assert.match(
+      runtime.output(),
+      /"event":"api.startup.failed".*"operation":"application_config"/,
+    );
   });
 }
 
@@ -40,6 +43,14 @@ test('migration failure prevents listening and does not print credentials', asyn
   t.after(() => runtime.stop(null, 1));
   const { code } = await runtime.exited;
   assert.equal(code, 1);
-  assert.match(runtime.output(), /Database initialization failed/);
-  assert.doesNotMatch(runtime.output(), /Listening at|never-print-this/);
+  assert.match(runtime.output(), /"event":"database.initialization.failed"/);
+  assert.doesNotMatch(runtime.output(), /api.started|never-print-this/);
+});
+
+test('invalid log level fails without printing the supplied value', async (t) => {
+  const runtime = startProcess(['dist/main.js'], { cwd, env: { LOG_LEVEL: 'secret-level' } });
+  t.after(() => runtime.stop(null, 1));
+  assert.equal((await runtime.exited).code, 1);
+  assert.match(runtime.output(), /"operation":"log_config"/);
+  assert.doesNotMatch(runtime.output(), /secret-level/);
 });

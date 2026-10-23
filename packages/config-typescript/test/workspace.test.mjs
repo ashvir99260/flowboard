@@ -11,6 +11,7 @@ const workspaces = [
   'apps/worker',
   'packages/contracts',
   'packages/database',
+  'packages/logger',
   'packages/openapi',
   'packages/api-client',
   'packages/ui',

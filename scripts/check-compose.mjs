@@ -18,6 +18,7 @@ const env = {
   AUTH_SECRET: 'flowboard-docker-check-secret-abcdefghijklmnopqrstuvwxyz',
   AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
   AUTH_ALLOW_INSECURE_HTTP: 'true',
+  LOG_LEVEL: 'debug',
 };
 const prefix = ['compose', '--project-name', project, '--file', 'compose.yaml'];
 
@@ -104,6 +105,39 @@ try {
   assert.equal(session.data.activeWorkspace.role, 'admin');
   assert.equal(session.data.user.email, 'alice@example.com');
   assert.ok(login.headers.get('set-cookie').includes('HttpOnly'));
+  const logOutput = await run('logs', '--no-color', '--no-log-prefix', 'api', 'worker');
+  const logRecords = logOutput
+    .split('\n')
+    .filter((line) => line.startsWith('{'))
+    .map((line) => JSON.parse(line));
+  const loginTrace = logRecords.filter(
+    ({ requestId }) => requestId === login.headers.get('x-request-id'),
+  );
+  assert.ok(
+    loginTrace.some(
+      ({ event, operation }) =>
+        event === 'operation.completed' && operation === 'database.identity',
+    ),
+  );
+  assert.ok(
+    loginTrace.some(
+      ({ event, userId }) => event === 'http.completed' && userId === session.data.user.id,
+    ),
+  );
+  assert.ok(
+    logRecords.some(
+      ({ event, outcome }) => event === 'worker.started' && outcome === 'process_only',
+    ),
+  );
+  for (const secret of [
+    env.AUTH_SECRET,
+    env.POSTGRES_PASSWORD,
+    'FlowboardDemo123!',
+    session.data.accessToken,
+    login.headers.get('set-cookie'),
+  ]) {
+    assert.ok(!logOutput.includes(secret), 'Runtime logs must exclude credentials');
+  }
 
   console.info(`[${project}] Verify persistent PostgreSQL and Redis data across restart`);
   const psql = ['exec', '-T', 'postgres', 'psql', '-U', 'flowboard', '-d', 'flowboard', '-tAc'];
@@ -139,6 +173,9 @@ try {
     signal: AbortSignal.timeout(10_000),
   });
   assert.equal(restarted.status, 200);
+  const restartLogs = await run('logs', '--no-color', '--no-log-prefix', 'api', 'worker');
+  assert.ok(restartLogs.includes('"event":"api.stopped"'));
+  assert.ok(restartLogs.includes('"event":"worker.stopped"'));
   console.info(`[${project}] All Docker acceptance checks passed`);
 } finally {
   // The random project name isolates this run from the user's development stack.

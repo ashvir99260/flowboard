@@ -1,5 +1,6 @@
 import { TextEncoder } from 'node:util';
 
+import { createLogger } from '@flowboard/logger';
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import { SignJWT } from 'jose';
@@ -14,12 +15,18 @@ import {
 } from '../../common/auth-fixtures.mjs';
 import { ProtectedController } from '../../common/protected-controller.mjs';
 
+const records = [];
+const logger = createLogger({
+  service: 'api',
+  level: 'debug',
+  write: (line) => records.push(JSON.parse(line)),
+});
 let fixture;
 let app;
 let protectedApp;
 let currentSession;
 beforeAll(async () => {
-  fixture = await startTestApplication({ auth: true, origin, secret });
+  fixture = await startTestApplication({ auth: true, origin, secret, logger });
   ({ app } = fixture);
   const initial = await request(app.getHttpServer())
     .post('/v1/auth/signup')
@@ -154,4 +161,44 @@ test('credential attempts are limited through Redis', async () => {
   expect(response.body.error.code).toBe('RATE_LIMITED');
   expect(Number(response.headers['retry-after'])).toBeGreaterThan(0);
   expect(Number(response.headers['retry-after'])).toBeLessThanOrEqual(900);
+});
+
+test('login traces service and database work with verified identity and no credentials', async () => {
+  const response = await request(app.getHttpServer())
+    .post('/v1/auth/login')
+    .set('Origin', origin)
+    .send({ email: signup.email, password: signup.password });
+  expect(response.status).toBe(200);
+  const trace = records.filter(({ requestId }) => requestId === response.headers['x-request-id']);
+  expect(
+    trace.some(
+      ({ event, operation }) =>
+        event === 'operation.completed' && operation === 'database.identity',
+    ),
+  ).toBe(true);
+  expect(
+    trace.some(
+      ({ event, operation }) => event === 'operation.completed' && operation === 'redis.rate_limit',
+    ),
+  ).toBe(true);
+  const completed = trace.find(({ event }) => event === 'http.completed');
+  expect(completed.userId).toBe(response.body.data.user.id);
+  expect(completed.workspaceId).toBe(response.body.data.activeWorkspace.id);
+  for (const value of [
+    signup.email,
+    signup.password,
+    secret,
+    response.body.data.accessToken,
+    response.headers['set-cookie'][0],
+  ])
+    expect(JSON.stringify(records)).not.toContain(value);
+  const invalid = await request(app.getHttpServer())
+    .post('/v1/auth/login')
+    .set('Origin', origin)
+    .send({ email: signup.email, password: 'invalid-password' });
+  expect(invalid.status).toBe(401);
+  const rejected = records.filter(({ requestId }) => requestId === invalid.headers['x-request-id']);
+  expect(
+    rejected.every(({ userId, workspaceId }) => userId === undefined && workspaceId === undefined),
+  ).toBe(true);
 });

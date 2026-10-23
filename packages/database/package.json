@@ -31,7 +31,8 @@
     "@prisma/client": "7.10.1",
     "pg": "8.23.1",
     "prisma": "7.10.1",
-    "@node-rs/argon2": "2.2.2"
+    "@node-rs/argon2": "2.2.2",
+    "@flowboard/logger": "workspace:*"
   },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",

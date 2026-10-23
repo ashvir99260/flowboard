@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 import { LogInSchema, SignUpSchema, UuidSchema } from '@flowboard/contracts';
+import { SilentLogger } from '@flowboard/logger';
 
 import { createClient } from './client.js';
 import { hashPassword, verifyPassword } from './password.js';
@@ -9,6 +10,7 @@ import { DatabaseError, exactKeys } from './tenant-context.js';
 import type { Prisma, RefreshSession } from './generated/client.js';
 import type { IdentitySession, RefreshResult, SessionCredential } from './identity.entity.js';
 import type { LogIn, SignUp } from '@flowboard/contracts';
+import type { Logger } from '@flowboard/logger';
 
 const userSelect = { createdAt: true, email: true, id: true, name: true, updatedAt: true } as const;
 const workspaceSelect = { createdAt: true, id: true, name: true, updatedAt: true } as const;
@@ -25,13 +27,13 @@ function validateCredential(value: SessionCredential) {
 }
 
 /** The only global identity boundary; never exports Prisma or credential rows. */
-export function createIdentityRepository(databaseUrl: string) {
+export function createIdentityRepository(databaseUrl: string, logger: Logger = SilentLogger) {
   const client = createClient(databaseUrl, 5000);
   // Unknown users still incur the same Argon2 verification work.
   const dummyHash = hashPassword(randomBytes(32).toString('base64url'));
   async function available<T>(operation: () => Promise<T>): Promise<T> {
     try {
-      return await operation();
+      return await logger.observe('database.identity', operation);
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error) {
         if (error.code === 'P2002' && 'meta' in error) {

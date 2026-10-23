@@ -3,9 +3,12 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { SilentLogger } from '@flowboard/logger';
 import pg from 'pg';
 
 import { seedDemoData } from './seed.js';
+
+import type { Logger } from '@flowboard/logger';
 
 const execute = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -14,9 +17,11 @@ export interface InitializeOptions {
   databaseUrl: string;
   demoSeed?: boolean;
   directDatabaseUrl?: string;
+  logger?: Logger;
 }
 
 export async function initializeDatabase(options: InitializeOptions): Promise<{ seeded: boolean }> {
+  const logger = options.logger ?? SilentLogger;
   const databaseUrl = options.directDatabaseUrl ?? options.databaseUrl;
   if (!databaseUrl) throw new Error('DATABASE_URL is required');
   const lock = new pg.Client({
@@ -31,6 +36,7 @@ export async function initializeDatabase(options: InitializeOptions): Promise<{ 
   });
   let stage = 'migration';
   try {
+    logger.info('database.initialization.started', { component: 'database', operation: stage });
     await lock.connect();
     connected = true;
     // Serialize the whole first boot, including Prisma's migration bookkeeping.
@@ -57,11 +63,21 @@ export async function initializeDatabase(options: InitializeOptions): Promise<{ 
       },
     );
     if (lockLost) throw new Error('Initialization lock lost');
+    logger.info('database.migration.completed', { component: 'database' });
     stage = 'seed';
     const seeded = options.demoSeed === true ? await seedDemoData(databaseUrl) : false;
     if (lockLost) throw new Error('Initialization lock lost');
+    logger.info('database.initialization.completed', {
+      component: 'database',
+      outcome: seeded ? 'seeded' : 'unchanged',
+    });
     return { seeded };
   } catch {
+    logger.error('database.initialization.failed', {
+      component: 'database',
+      operation: stage,
+      code: 'INITIALIZATION_FAILED',
+    });
     // Child-process diagnostics may include connection strings; do not log them.
     throw new Error(
       `Database initialization failed during ${stage}; check connectivity and migrations`,

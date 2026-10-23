@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "@flowboard/contracts": "workspace:*",
-    "@flowboard/database": "workspace:*"
+    "@flowboard/database": "workspace:*",
+    "@flowboard/logger": "workspace:*"
   },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",

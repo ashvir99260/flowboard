@@ -1,34 +1,35 @@
 import 'reflect-metadata';
 
-import { randomUUID } from 'node:crypto';
-
+import { SilentLogger } from '@flowboard/logger';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { AppModule } from './app.module.js';
+import { NestLogger } from './common/logging/nest-logger.js';
+import { requestLogging } from './common/logging/request-logging.js';
 
 import type { AuthRuntime } from './auth/runtime.js';
 import type { DependencyProbe } from './platform/dependency-probe.js';
+import type { Logger } from '@flowboard/logger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export async function createApplication(
   probe: DependencyProbe,
-  options: { auth?: AuthRuntime; exposeDocs?: boolean } = {},
+  options: { auth?: AuthRuntime; exposeDocs?: boolean; logger?: Logger } = {},
 ) {
+  const logger = options.logger ?? SilentLogger;
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule.forProbe(probe, options.auth),
+    AppModule.forProbe(probe, options.auth, logger),
     {
       bodyParser: false,
-      logger: false,
+      logger: options.logger ? new NestLogger(logger) : false,
+      abortOnError: false,
     },
   );
   try {
-    app.use((_request: IncomingMessage, response: ServerResponse, next: () => void) => {
-      response.setHeader('X-Request-Id', randomUUID());
-      next();
-    });
+    app.use(requestLogging(logger));
     app.use('/v1/auth', (_request: IncomingMessage, response: ServerResponse, next: () => void) => {
       response.setHeader('Cache-Control', 'no-store');
       next();

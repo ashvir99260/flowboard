@@ -35,6 +35,7 @@ async function fixture(t) {
     ...apps,
     'contracts',
     'database',
+    'logger',
     'ui',
     'api-client',
     'config-typescript',
@@ -45,7 +46,7 @@ async function fixture(t) {
       name === 'web'
         ? ['contracts', 'ui', 'api-client']
         : ['api', 'worker'].includes(name)
-          ? ['contracts', 'database']
+          ? ['contracts', 'database', 'logger']
           : [];
     const manifest = {
       name: `@flowboard/${name}`,
@@ -98,6 +99,7 @@ for (const [path, expected] of [
   ['apps/web/src/index.ts', ['web']],
   ['apps/worker/src/index.ts', ['worker']],
   ['packages/database/src/index.ts', ['api', 'worker']],
+  ['packages/logger/src/index.ts', ['api', 'worker']],
   ['packages/ui/src/index.ts', ['web']],
   ['packages/api-client/src/index.ts', ['web']],
   ['packages/contracts/src/index.ts', apps],

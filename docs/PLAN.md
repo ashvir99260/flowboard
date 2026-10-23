@@ -65,11 +65,12 @@ PostgreSQL is authoritative. Redis provides queue transport and socket fanout; i
 
 | Path                         | Responsibility and permitted dependencies                                                                                                                                             |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api`                   | REST, authentication, permissions, orchestration, Socket.IO, outbox dispatch. Imports contracts and database, never web/worker/client.                                                |
-| `apps/worker`                | BullMQ activity processing and explicit search stub. Imports contracts/database, never another app.                                                                                   |
+| `apps/api`                   | REST, authentication, permissions, orchestration, Socket.IO, outbox dispatch. Imports contracts, database and logger, never web/worker/client.                                        |
+| `apps/worker`                | BullMQ activity processing and explicit search stub. Imports contracts/database/logger, never another app.                                                                            |
 | `apps/web`                   | Routes, auth state, data hooks, board/list/drawer/config composition. Imports contracts/ui/api-client.                                                                                |
 | `packages/contracts`         | Zod schemas, inferred types, enums, errors, pagination, event schemas, pure resolution/validation. Only external runtime dependency is Zod; no framework or other workspace imports.  |
-| `packages/database`          | **One added package:** Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts.                 |
+| `packages/database`          | Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts and logger.                             |
+| `packages/logger`            | Node-only structured logs and async request context shared by API/database/worker; no dependencies outside Node built-ins.                                                            |
 | `packages/openapi`           | Export, normalization, lint and drift checks for the API spec. Sole build-tool exception: imports API's exported spec bootstrap; never shipped into a browser/runtime API dependency. |
 | `packages/api-client`        | Committed `src/generated/**` from Hey API; separate handwritten `src/setup-client.ts`. Exports SDK, types, query/mutation options.                                                    |
 | `packages/ui`                | MUI theme/provider and presentational components; only contracts and UI libraries. No network, auth, Prisma, or app imports.                                                          |

@@ -10,8 +10,9 @@ const cwd = new URL('../', import.meta.url);
 test('worker exposes process liveness and stops without claiming queue readiness', async (t) => {
   const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });
   t.after(() => runtime.stop());
-  const [, port] = await runtime.waitFor(/\[worker\] Process listening on port (\d+)/);
-  assert.match(runtime.output(), /Queue processing is not implemented/);
+  const [line] = await runtime.waitFor(/\{[^\n]*"event":"worker.started"[^\n]*\}/);
+  const { port } = JSON.parse(line);
+  assert.match(runtime.output(), /"outcome":"process_only"/);
   const connection = createConnection({ host: '127.0.0.1', port: Number(port) });
   t.after(() => connection.destroy());
   await once(connection, 'connect');
@@ -25,7 +26,7 @@ for (const port of ['not-a-port', '65536']) {
     t.after(() => runtime.stop(null, 1));
     const { code } = await runtime.exited;
     assert.equal(code, 1);
-    assert.match(runtime.output(), /PORT must be an integer between 0 and 65535/);
+    assert.match(runtime.output(), /"code":"INVALID_PORT"/);
   });
 }
 
@@ -34,9 +35,18 @@ test('worker closes a half-open liveness connection during shutdown', async (t) 
   let client;
   t.after(() => client?.destroy());
   t.after(() => runtime.stop());
-  const [, port] = await runtime.waitFor(/\[worker\] Process listening on port (\d+)/);
+  const [line] = await runtime.waitFor(/\{[^\n]*"event":"worker.started"[^\n]*\}/);
+  const { port } = JSON.parse(line);
   client = createConnection({ host: '127.0.0.1', port: Number(port), allowHalfOpen: true });
   client.resume();
   await once(client, 'end');
   await runtime.stop();
+});
+
+test('worker rejects invalid log configuration without revealing it', async (t) => {
+  const runtime = startProcess(['dist/main.js'], { cwd, env: { LOG_LEVEL: 'secret-setting' } });
+  t.after(() => runtime.stop(null, 1));
+  assert.equal((await runtime.exited).code, 1);
+  assert.match(runtime.output(), /"code":"INVALID_LOG_LEVEL"/);
+  assert.doesNotMatch(runtime.output(), /secret-setting/);
 });

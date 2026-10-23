@@ -196,6 +196,9 @@ importers:
       '@flowboard/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@flowboard/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@nestjs/common':
         specifier: 11.2.7
         version: 11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
@@ -324,6 +327,9 @@ importers:
       '@flowboard/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@flowboard/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
     devDependencies:
       '@flowboard/config-eslint':
         specifier: workspace:*
@@ -562,6 +568,9 @@ importers:
       '@flowboard/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@flowboard/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@node-rs/argon2':
         specifier: 2.2.2
         version: 2.2.2
@@ -602,6 +611,27 @@ importers:
       jest:
         specifier: 30.5.2
         version: 30.5.2(@types/node@22.20.5)(supports-color@7.2.0)
+      prettier:
+        specifier: 3.9.10
+        version: 3.9.10
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/logger:
+    devDependencies:
+      '@flowboard/config-eslint':
+        specifier: workspace:*
+        version: link:../config-eslint
+      '@flowboard/config-typescript':
+        specifier: workspace:*
+        version: link:../config-typescript
+      '@types/node':
+        specifier: 22.20.5
+        version: 22.20.5
+      eslint:
+        specifier: 9.39.5
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
       prettier:
         specifier: 3.9.10
         version: 3.9.10

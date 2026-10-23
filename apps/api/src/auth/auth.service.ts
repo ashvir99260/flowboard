@@ -1,11 +1,13 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { UuidSchema } from '@flowboard/contracts';
+import { updateLogContext } from '@flowboard/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { jwtVerify, SignJWT } from 'jose';
 import { z } from 'zod';
 
 import { ApiException } from '../common/errors/api-exception.js';
+import { ApiLoggerKey } from '../common/logging/logging.module.js';
 
 import { clearRefreshCookie, readRefreshCookie, refreshCookie } from './cookie-policy.js';
 import { AuthRuntimeKey } from './runtime.js';
@@ -13,6 +15,7 @@ import { AuthRuntimeKey } from './runtime.js';
 import type { AuthRuntime } from './runtime.js';
 import type { LogIn, SessionEnvelope, SignUp } from '@flowboard/contracts';
 import type { IdentitySession } from '@flowboard/database';
+import type { Logger } from '@flowboard/logger';
 
 const issuer = 'flowboard';
 const audience = 'flowboard-api';
@@ -24,7 +27,10 @@ const claimsSchema = z.object({
 
 @Injectable()
 export class AuthService {
-  constructor(@Inject(AuthRuntimeKey) private readonly runtime: AuthRuntime | undefined) {}
+  constructor(
+    @Inject(AuthRuntimeKey) private readonly runtime: AuthRuntime | undefined,
+    @Inject(ApiLoggerKey) private readonly logger: Logger,
+  ) {}
   private requireRuntime() {
     if (!this.runtime)
       throw new ApiException(503, 'SERVICE_UNAVAILABLE', 'Authentication service unavailable');
@@ -73,6 +79,10 @@ export class AuthService {
       createdAt: entity.createdAt.toISOString(),
       updatedAt: entity.updatedAt.toISOString(),
     });
+    updateLogContext({
+      userId: session.user.id,
+      ...(session.activeWorkspace ? { workspaceId: session.activeWorkspace.id } : {}),
+    });
     const body: SessionEnvelope = {
       data: {
         accessToken,
@@ -91,73 +101,91 @@ export class AuthService {
     };
   }
   async signUp(input: SignUp, ip: string) {
-    const runtime = this.requireRuntime();
-    await runtime.limit('signup', ip, input.email);
-    const credential = this.credential();
-    return this.response(
-      await runtime.identities.register(input, credential.value),
-      credential.token,
-    );
+    return this.logger.observe('auth.signUp', async () => {
+      const runtime = this.requireRuntime();
+      await runtime.limit('signup', ip, input.email);
+      const credential = this.credential();
+      return this.response(
+        await runtime.identities.register(input, credential.value),
+        credential.token,
+      );
+    });
   }
   async logIn(input: LogIn, ip: string) {
-    const runtime = this.requireRuntime();
-    await runtime.limit('login', ip, input.email);
-    const credential = this.credential();
-    return this.response(await runtime.identities.logIn(input, credential.value), credential.token);
+    return this.logger.observe('auth.logIn', async () => {
+      const runtime = this.requireRuntime();
+      await runtime.limit('login', ip, input.email);
+      const credential = this.credential();
+      return this.response(
+        await runtime.identities.logIn(input, credential.value),
+        credential.token,
+      );
+    });
   }
   expiredCookie() {
     return clearRefreshCookie(this.requireRuntime().settings.insecureHttp);
   }
   async refresh(cookie: string | undefined, ip: string) {
-    await this.requireRuntime().limit('refresh', ip, '');
-    const token = readRefreshCookie(cookie);
-    if (!token) throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
-    const replacement = this.credential();
-    const result = await this.requireRuntime().identities.rotate(
-      createHash('sha256').update(token).digest('hex'),
-      replacement.value.tokenDigest,
-    );
-    if (result.status === 'reused')
-      throw new ApiException(401, 'REFRESH_REUSED', 'Refresh credential already used');
-    if (result.status === 'invalid')
-      throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
-    return this.response(result.session, replacement.token);
+    return this.logger.observe('auth.refresh', async () => {
+      await this.requireRuntime().limit('refresh', ip, '');
+      const token = readRefreshCookie(cookie);
+      if (!token) throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+      const replacement = this.credential();
+      const result = await this.requireRuntime().identities.rotate(
+        createHash('sha256').update(token).digest('hex'),
+        replacement.value.tokenDigest,
+      );
+      if (result.status === 'reused')
+        throw new ApiException(401, 'REFRESH_REUSED', 'Refresh credential already used');
+      if (result.status === 'invalid')
+        throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+      return this.response(result.session, replacement.token);
+    });
   }
   async logOut(cookie: string | undefined, ip: string) {
-    const token = readRefreshCookie(cookie);
-    await this.requireRuntime().limit('logout', ip, '');
-    if (token)
-      await this.requireRuntime().identities.revoke(
-        createHash('sha256').update(token).digest('hex'),
-      );
-    return this.expiredCookie();
+    return this.logger.observe('auth.logOut', async () => {
+      const token = readRefreshCookie(cookie);
+      await this.requireRuntime().limit('logout', ip, '');
+      if (token)
+        await this.requireRuntime().identities.revoke(
+          createHash('sha256').update(token).digest('hex'),
+        );
+      return this.expiredCookie();
+    });
   }
   async authenticate(authorization: string | undefined) {
-    const runtime = this.requireRuntime();
-    if (!authorization?.match(/^Bearer [A-Za-z0-9_.-]+$/))
-      throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
-    let claims: z.infer<typeof claimsSchema>;
-    try {
-      const { payload, protectedHeader } = await jwtVerify(
-        authorization.slice(7),
-        runtime.settings.secret,
-        {
-          algorithms: ['HS256'],
-          audience,
-          issuer,
-          requiredClaims: ['exp', 'iat', 'sub', 'sid', 'workspaceId'],
-          maxTokenAge: '15m',
-        },
-      );
-      if (protectedHeader.typ !== 'JWT') throw new Error('Invalid token type');
-      claims = claimsSchema.parse(payload);
-    } catch {
-      throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
-    }
-    return runtime.identities.authenticate({
-      familyId: claims.sid,
-      userId: claims.sub,
-      workspaceId: claims.workspaceId,
+    return this.logger.observe('auth.authenticate', async () => {
+      const runtime = this.requireRuntime();
+      if (!authorization?.match(/^Bearer [A-Za-z0-9_.-]+$/))
+        throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
+      let claims: z.infer<typeof claimsSchema>;
+      try {
+        const { payload, protectedHeader } = await jwtVerify(
+          authorization.slice(7),
+          runtime.settings.secret,
+          {
+            algorithms: ['HS256'],
+            audience,
+            issuer,
+            requiredClaims: ['exp', 'iat', 'sub', 'sid', 'workspaceId'],
+            maxTokenAge: '15m',
+          },
+        );
+        if (protectedHeader.typ !== 'JWT') throw new Error('Invalid token type');
+        claims = claimsSchema.parse(payload);
+      } catch {
+        throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
+      }
+      const session = await runtime.identities.authenticate({
+        familyId: claims.sid,
+        userId: claims.sub,
+        workspaceId: claims.workspaceId,
+      });
+      updateLogContext({
+        userId: session.user.id,
+        ...(session.activeWorkspace ? { workspaceId: session.activeWorkspace.id } : {}),
+      });
+      return session;
     });
   }
 }

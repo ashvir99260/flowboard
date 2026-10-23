@@ -56,11 +56,12 @@ These are intended workspace dependencies; external runtime libraries and shared
 
 | Workspace                    | Responsibility                                                                 | Allowed workspace dependencies / boundary                                 |
 | ---------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `apps/api`                   | HTTP controllers, auth, authorization, orchestration, sockets, outbox dispatch | `contracts`, `database`; no other app or generated client                 |
-| `apps/worker`                | Validate queued events, persist activity, publish invalidations                | `contracts`, `database`; no app imports                                   |
+| `apps/api`                   | HTTP controllers, auth, authorization, orchestration, sockets, outbox dispatch | `contracts`, `database`, `logger`; no other app or generated client       |
+| `apps/worker`                | Validate queued events, persist activity, publish invalidations                | `contracts`, `database`, `logger`; no app imports                         |
 | `apps/web`                   | Routes, session state, generated queries, feature composition                  | `contracts`, `api-client`, `ui`; no backend internals                     |
 | `packages/contracts`         | Zod schemas, inferred types, enums, event contracts, pure resolvers            | Own files and Zod only; no other workspace, framework, environment or I/O |
-| `packages/database`          | Prisma schema/client, migrations, seed, scoped repositories, transactions      | `contracts`; sole owner of raw Prisma construction and SQL                |
+| `packages/database`          | Prisma schema/client, migrations, seed, scoped repositories, transactions      | `contracts`, `logger`; sole owner of raw Prisma construction and SQL      |
+| `packages/logger`            | Structured Node JSON logs, async request context, safe metadata projection     | Node built-ins only; no framework, database or other workspace imports    |
 | `packages/openapi`           | Spec export, normalization, lint and drift checks                              | API's explicit spec-bootstrap export, **build tooling only**              |
 | `packages/api-client`        | Generated SDK, types and TanStack options; handwritten transport setup         | Consumes OpenAPI as generation input; no API runtime import               |
 | `packages/ui`                | MUI theme/provider, controlled presentational components                       | `contracts` and UI libraries; no fetching, session or database code       |
@@ -72,13 +73,14 @@ These are intended workspace dependencies; external runtime libraries and shared
 
 Applications cannot import one another. The OpenAPI tooling exception (D19) is narrow: it loads real controllers/DTOs with inert providers, no listening socket and no database/Redis connection. It is not a production API dependency or a fake runtime service.
 
-The planned build graph is `contracts/database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
+The planned build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
 
 ## Module responsibility and data ownership
 
 | Owner                                  | What belongs here                                                                             |
 | -------------------------------------- | --------------------------------------------------------------------------------------------- |
-| API `platform`                         | Bootstrap, service configuration, request IDs, sanitized errors, liveness/readiness           |
+| API `common`                           | Shared configuration, validation/serialization, request logging and sanitized errors          |
+| API `platform`                         | Liveness/readiness and dependency probes                                                      |
 | API `auth`                             | Credentials, session rotation, JWT verification; narrow global identity repository            |
 | API `workspaces`                       | Membership, invitations, verified workspace switching, last-admin protection                  |
 | API `permissions`                      | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions            |

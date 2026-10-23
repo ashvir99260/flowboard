@@ -41,7 +41,7 @@
     "dev": {
       "cache": false,
       "dependsOn": ["^build"],
-      "env": ["HOST", "PORT", "NEXT_TELEMETRY_DISABLED"],
+      "env": ["HOST", "PORT", "NEXT_TELEMETRY_DISABLED", "LOG_LEVEL"],
       "persistent": true
     },
     "docker:check": {

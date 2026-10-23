@@ -3,6 +3,10 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
 import { HttpExceptionFilter } from './filters/http-exception.filter.js';
+import { LoggingModule } from './logging/logging.module.js';
+
+import type { Logger } from '@flowboard/logger';
+import type { DynamicModule } from '@nestjs/common';
 
 @Module({
   providers: [
@@ -11,4 +15,8 @@ import { HttpExceptionFilter } from './filters/http-exception.filter.js';
     { provide: APP_PIPE, useClass: ZodValidationPipe },
   ],
 })
-export class CommonModule {}
+export class CommonModule {
+  static forLogger(logger: Logger): DynamicModule {
+    return { module: CommonModule, imports: [LoggingModule.forLogger(logger)] };
+  }
+}

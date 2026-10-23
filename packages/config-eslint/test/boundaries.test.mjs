@@ -17,6 +17,7 @@ const names = [
   'apps/worker',
   'packages/contracts',
   'packages/database',
+  'packages/logger',
   'packages/ui',
   'packages/openapi',
   'packages/api-client',
@@ -58,6 +59,9 @@ async function check(file, code) {
 }
 
 for (const [file, code] of [
+  ['apps/api/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
+  ['apps/worker/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
+  ['packages/database/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['apps/api/src/example.ts', "import { schema } from '@flowboard/contracts';"],
   ['packages/contracts/src/example.ts', "import { z } from 'zod';"],
   ['packages/contracts/src/example.ts', "export { value } from './local.js';"],
@@ -68,6 +72,9 @@ for (const [file, code] of [
 }
 
 for (const [file, code] of [
+  ['packages/logger/src/example.ts', "import { schema } from '@flowboard/contracts';"],
+  ['apps/web/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
+  ['packages/ui/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['apps/web/src/example.ts', "import type { Internal } from '@flowboard/api';"],
   ['apps/api/src/example.ts', "export * from '@flowboard/web';"],
   ['apps/worker/src/example.ts', "await import('@flowboard/api');"],

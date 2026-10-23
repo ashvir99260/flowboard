@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 
+import { createLogger } from '@flowboard/logger';
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 
 import * as databaseModule from '../dist/index.js';
@@ -259,4 +260,39 @@ test('membership revocation wins over a write waiting for the workspace lock', a
     (await postgres.client.query('SELECT name FROM nodes WHERE id = $1', [data.b.list.id])).rows[0]
       .name,
   ).toBe('List');
+});
+
+test('transaction logging reports commit only after resolution and preserves rollback', async () => {
+  const records = [];
+  const logger = createLogger({
+    service: 'database',
+    level: 'debug',
+    write: (line) => records.push(JSON.parse(line)),
+  });
+  const observed = databaseModule.createDatabase(await applicationUrl(postgres), logger);
+  try {
+    const original = await observed.read(context(), (view) => view.nodes.find(data.a.list.id));
+    records.length = 0;
+    const failure = new Error('secret-rollback');
+    await expect(
+      observed.write(context(), async (tx) => {
+        await tx.nodes.rename(data.a.list.id, 'Temporary');
+        expect(records.map(({ event }) => event)).toEqual(['operation.started']);
+        throw failure;
+      }),
+    ).rejects.toBe(failure);
+    expect(records.map(({ event }) => event)).toEqual(['operation.started', 'operation.failed']);
+    expect(JSON.stringify(records)).not.toContain('secret-rollback');
+    expect(await observed.read(context(), (view) => view.nodes.find(data.a.list.id))).toEqual(
+      original,
+    );
+    records.length = 0;
+    await observed.write(context(), async (tx) => {
+      await tx.nodes.rename(data.a.list.id, original.name);
+      expect(records.map(({ event }) => event)).toEqual(['operation.started']);
+    });
+    expect(records.map(({ event }) => event)).toEqual(['operation.started', 'operation.completed']);
+  } finally {
+    await observed.close();
+  }
 });

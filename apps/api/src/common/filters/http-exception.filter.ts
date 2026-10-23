@@ -1,11 +1,13 @@
 import { DatabaseError } from '@flowboard/database';
-import { Catch, HttpException } from '@nestjs/common';
+import { Catch, HttpException, Inject } from '@nestjs/common';
 import { ZodValidationException } from 'nestjs-zod';
 import { ZodError } from 'zod';
 
 import { ApiException } from '../errors/api-exception.js';
+import { ApiLoggerKey } from '../logging/logging.module.js';
 
 import type { ErrorCode, ValidationIssue } from '@flowboard/contracts';
+import type { Logger } from '@flowboard/logger';
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 
 const failures: Record<number, { code: ErrorCode; message: string }> = {
@@ -21,6 +23,7 @@ const failures: Record<number, { code: ErrorCode; message: string }> = {
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  constructor(@Inject(ApiLoggerKey) private readonly logger: Logger) {}
   catch(exception: unknown, host: ArgumentsHost) {
     let status = exception instanceof HttpException ? exception.getStatus() : 500;
     if (exception && typeof exception === 'object' && 'type' in exception) {
@@ -65,6 +68,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }>();
     if (status === 429 && exception instanceof ApiException && exception.retryAfterSeconds)
       response.setHeader('Retry-After', String(exception.retryAfterSeconds));
+    this.logger[status >= 500 ? 'error' : 'warn']('http.error', {
+      component: 'http',
+      code: error.code,
+      statusCode: status,
+    });
     response.status(status).json({ error: { ...error, ...(details ? { details } : {}) } });
   }
 }

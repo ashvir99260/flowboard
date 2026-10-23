@@ -13,7 +13,8 @@
         "API_DOCS",
         "AUTH_SECRET",
         "AUTH_ALLOWED_ORIGINS",
-        "AUTH_ALLOW_INSECURE_HTTP"
+        "AUTH_ALLOW_INSECURE_HTTP",
+        "LOG_LEVEL"
       ]
     }
   }

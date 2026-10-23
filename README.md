@@ -53,6 +53,12 @@ The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Us
 
 The shared ESLint presets are exported as `@flowboard/config-eslint/node` and `/next`; compiler presets as `@flowboard/config-typescript/{node,nest,next,library}.json`. Workspace boundary violations fail lint. App manifests export their metadata only; apps are not reusable libraries.
 
+## Debugging backend requests
+
+API, database and worker events use structured JSON on stdout. `LOG_LEVEL=info` is the default; `LOG_LEVEL=debug` includes operation start/completion/failure and health requests. For local Compose, run `LOG_LEVEL=debug docker compose up --build`, then `docker compose logs -f api worker`. With local Node processes, use `LOG_LEVEL=debug pnpm dev --filter=@flowboard/api`.
+
+Each HTTP response contains a server-generated `X-Request-Id`. Search that ID in logs to follow HTTP → auth → Redis/database work. Records include safe error codes, status, duration, operation, and DB-verified user/workspace IDs when available. Request bodies, tokens, cookies, SQL, query strings and raw exceptions are excluded. [Logging reference](docs/LOGGING.md) explains levels and failure diagnosis.
+
 ## Run with Docker
 
 Start Docker, then run from the repository root:

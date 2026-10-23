@@ -416,6 +416,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `style: separate exports with blank lines`.
   - **Completion evidence:** [P02-07](evidence/P02-07.md): five spacing regressions, all 301 tests and quality/contract gates pass; 26 existing source/test files changed only by inserted blank lines.
 
+- [x] **P02-08 — Add safe correlated backend logging**
+  - **Goal:** Trace failures across HTTP, auth/services, database operations, infrastructure and worker lifecycle with structured logs and configurable levels.
+  - **Requirements:** R119; preserves tenant and secret-handling safeguards.
+  - **Files:** new Node-only `packages/logger/**`, API common logging/module/config and auth/platform boundaries, database operation/initialization boundaries, worker bootstrap, manifests/lockfile/boundary rules, environment examples/Compose and logging guide/evidence.
+  - **Dependencies:** P02-07; prioritized by the user's logging request.
+  - **Acceptance:** JSON logs support trace/debug/info/warn/error/fatal/silent and validated LOG_LEVEL; generated request IDs propagate across async work and verified identity context. Static operation/route/status/duration fields identify each layer. Errors, aborts, startup/shutdown and dependency failures are visible. Bodies, raw URLs/query, headers, credentials, SQL/parameters, arbitrary error messages/stacks and Prisma metadata never enter logs. Spec export and default tests are silent. Logging sink failures cannot change business outcomes; transaction completion is logged only after resolution.
+  - **Validation:** Logger level/redaction/context/throwing-sink tests first; real HTTP correlation and failure tests plus DB rollback logs; existing full build/lint/test/typecheck/format/contract and Docker startup gates.
+  - **Commit:** `feat: add correlated backend logging`.
+  - **Completion evidence:** [P02-08](evidence/P02-08.md): 322 tests and build/lint/type/format/contract gates pass; five-service Docker login tracing, secret exclusion and restart checks pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.
