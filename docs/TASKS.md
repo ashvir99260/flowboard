@@ -311,26 +311,19 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 1 — Contracts, persistence and tenancy
 
-- [ ] **P01-01 — Foundation contracts before HTTP endpoints**
+- [x] **P01-01 — Foundation contracts before HTTP endpoints**
   - **Goal:** Define shared enums, errors, pagination and immutable transport primitives.
-  - **Files:** `packages/contracts/src/{enums,errors,pagination,identifiers,dates,index}.ts`, `packages/contracts/test/foundations.test.ts`.
+  - **Files:** `packages/contracts/src/{enums,errors,pagination,identifiers,dates,index}.ts`, `packages/contracts/test/foundations.test.mjs`.
   - **Dependencies:** P00-04.
   - **Acceptance:** Zod schemas infer types for all requested enums, error codes/envelope, cursor page and strict IDs/calendar dates. Domain schemas reject unsupported values and unexpected identity fields. Include shared audit timestamp schema, workspace-role/action constants and workspace-inclusive field scope enum. Follow FIELD_REFERENCE bounds/types, reject NUL/lone-surrogate strings but preserve valid supplementary characters, and use cursor-only queries; reject offset/page aliases and duplicate query inputs.
   - **Validation:** Literal valid/invalid fixtures including leap dates, enum typos, negative/oversized limits and malformed issue paths; standard gate.
   - **Commit:** `feat: define shared transport contracts`.
-
-- [ ] **P01-02 — HTTP platform and early contract generation**
-  - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.
-  - **Files:** `apps/api/src/platform/**`, `apps/api/src/spec-bootstrap.ts`, `packages/contracts/src/health.ts`, `packages/openapi/{scripts/export.ts,openapi.json,.spectral.yaml}`, `packages/api-client/{openapi-ts.config.ts,src/generated/**}`, affected package manifests/Turbo config.
-  - **Dependencies:** P01-01.
-  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit. Follow BACKEND_CONTRACTS for createZodDto request/response classes, ZodResponse metadata, global serializer and safe500 output validation; generated response consumer compiles.
-  - **Validation:** Supertest error-envelope/response tests; export/generation with runtime dependencies unavailable; malformed response fails safely; standard gate.
-  - **Commit:** `feat: establish typed api platform and generation`.
+  - **Completion evidence:** [P01-01](evidence/P01-01.md): seven Jest behavior/schema-export tests and root gates pass.
 
 - [ ] **P01-03 — Relational schema and migrations**
   - **Goal:** Persist the model with tenant-safe relations before repositories/endpoints use it.
   - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{migration,schema}.integration.test.ts`, `compose.test.yaml`.
-  - **Dependencies:** P01-02.
+  - **Dependencies:** P01-01 (DB-first execution per D75).
   - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, current-session partial unique index and selected-workspace FK, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Every table has createdAt/updatedAt enforced for Prisma/raw SQL/worker paths; workspace field ownership is allowed and checked. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
   - **Validation:** Migrate empty database, verify constraints by rejected inserts, inspect all audit columns and immutable-createdAt/update-trigger behavior, field CHECKs and paired invitation/refresh/outbox state rules, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
   - **Commit:** `feat: add tenant safe database schema`.
@@ -351,12 +344,20 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Assert counts/relations/field validity, two parallel initializers, second boot after editing data, migration failure prevents readiness; standard gate and Compose boot.
   - **Commit:** `feat: initialize database with repeatable demo data`.
 
+- [ ] **P01-02 — HTTP platform and early contract generation**
+  - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.
+  - **Files:** `apps/api/src/platform/**`, `apps/api/src/spec-bootstrap.ts`, `packages/contracts/src/health.ts`, `packages/openapi/{scripts/export.ts,openapi.json,.spectral.yaml}`, `packages/api-client/{openapi-ts.config.ts,src/generated/**}`, affected package manifests/Turbo config.
+  - **Dependencies:** P01-05 (DB-first execution per D75).
+  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit. Follow BACKEND_CONTRACTS for createZodDto request/response classes, ZodResponse metadata, global serializer and safe500 output validation; generated response consumer compiles.
+  - **Validation:** Supertest error-envelope/response tests; export/generation with runtime dependencies unavailable; malformed response fails safely; standard gate.
+  - **Commit:** `feat: establish typed api platform and generation`.
+
 ## Phase 2 — Authentication and membership
 
 - [ ] **P02-01 — Signup, login and default-deny authentication**
   - **Goal:** Establish password identity, atomic workspace creation and verified tenant context.
   - **Files:** `packages/contracts/src/auth.ts`, `apps/api/src/auth/{auth.module,auth.controller,auth.service,auth.guard,auth.dto,public.decorator}.ts`, `apps/api/test/auth.e2e-spec.ts`, generated artifacts.
-  - **Dependencies:** P01-05.
+  - **Dependencies:** P01-02.
   - **Acceptance:** Signup creates workspace/admin/default statuses atomically; login verifies Argon2id and normalizes email. JWT claims/audience/issuer/expiry checked, membership role read from DB. Guard is default-on with named public exceptions. Credential rate limiting and redacted logs exist.
   - **Validation:** Correct login; duplicate normalized email; wrong password; expired/forged token; unauthenticated domain route 401; body cannot set acting role/workspace; failed signup rolls back. Endpoint DoD and standard gate.
   - **Commit:** `feat: add workspace aware authentication`.

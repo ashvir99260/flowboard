@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** Foundation present; backend/database/API and UI design documents reviewed. Updated 23 October 2026. The latest workspace/audit/DTO refinement is documentation only; runtime implementation remains a subsequent task.
+**Status:** Foundation present; backend/database/API and UI design documents reviewed. Updated 23 October 2026. The user authorized database, migrations and seed implementation followed by typed login and token flows.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
