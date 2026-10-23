@@ -214,6 +214,34 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: organize package manifests by purpose`.
   - **Completion evidence:** [P00-23 verification](evidence/P00-23.md): all 14 manifests retain identical data and nested order; 162 tests and standard gates pass.
 
+- [x] **P00-24 — Specify the backend database and ER model**
+  - **Goal:** Turn the agreed logical model into a migration-ready data dictionary and integrity specification.
+  - **Requirements:** R108; refines R28–R61 and R74–R75 without claiming implementation.
+  - **Files:** `docs/DATABASE_DESIGN.md`, architecture/plan links, decisions, requirement matrix, this backlog and evidence.
+  - **Dependencies:** P00-23 and the user's documentation-first request.
+  - **Acceptance:** All 15 records, ER relationships, types/nullability/defaults, tenant keys, constraints, indexes, archive policy, transaction boundaries and migration tests are explicit. Clarify refresh families, inherited visibility and versions after renumbering. No Prisma schema/migration or runtime endpoint is added.
+  - **Validation:** Independent database review, Mermaid parsing, source/link consistency and formatting; preserve domain requirements as Planned.
+  - **Commit:** `docs: specify backend database and er model`.
+  - **Completion evidence:** [P00-24 verification](evidence/P00-24.md): 15-record design reviewed, diagrams parsed and links checked; no runtime implementation claim.
+
+- [ ] **P00-25 — Specify the REST API catalog and contracts**
+  - **Goal:** Give backend and frontend implementation a shared endpoint-by-endpoint contract.
+  - **Requirements:** R109; refines existing API/auth/domain requirements.
+  - **Files:** `docs/API_CATALOG.md`, architecture/plan links, decisions, task acceptance refinements and evidence.
+  - **Dependencies:** P00-24.
+  - **Acceptance:** Every planned operation has method/path, stable operationId, access policy, typed input/output, error and implementation task. Define pagination, concurrency, configuration previews, refresh cookies and example task/config commands. No generated spec or runtime route is represented as implemented.
+  - **Validation:** Unique route/operationId inventory, consistency with DB/requirements, JSON examples, independent API review and formatting.
+  - **Commit:** `docs: define rest api implementation catalog`.
+
+- [ ] **P00-26 — Analyze Linear interactions and map the MUI UI**
+  - **Goal:** Convert observable Linear patterns into a scoped, accessible Flowboard UI implementation guide.
+  - **Requirements:** R110; refines R62–R76.
+  - **Files:** `docs/UI_DESIGN.md`, public-source references, architecture/plan links, component/task mapping and evidence.
+  - **Dependencies:** P00-25.
+  - **Acceptance:** Dated official sources distinguish observation from proposed design; specify shell, board/table, drawer, configuration, MUI components/tokens, responsive states, generated-query boundaries, accessibility and ordered acceptance tests. Preserve Flowboard hierarchy/multiple assignees and fixed stack. No private Linear internals or shipped UI is claimed.
+  - **Validation:** Primary-source review, requirement/component/API traceability, Mermaid/link/format checks and independent UI review.
+  - **Commit:** `docs: map linear interactions to mui views`.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.
@@ -281,7 +309,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Persist the model with tenant-safe relations before repositories/endpoints use it.
   - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{migration,schema}.integration.test.ts`, `compose.test.yaml`.
   - **Dependencies:** P01-02.
-  - **Acceptance:** All PLAN entities exist, including stable status identity, field JSONB, versions, join tables and outbox. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
+  - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
   - **Validation:** Migrate empty database, verify constraints by rejected inserts, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
   - **Commit:** `feat: add tenant safe database schema`.
 
@@ -315,7 +343,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Provide cookie refresh without token reuse or unsafe replay.
   - **Files:** `apps/api/src/auth/{session.service,cookie-policy,origin.guard}.ts`, auth controller/contracts, `apps/api/test/refresh.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P02-01.
-  - **Acceptance:** Random refresh digest only; atomic single-use rotation; reuse revokes family; logout invalidates session/cookie. Cookie Secure/SameSite/httpOnly policy, Origin validation and credentialed CORS are explicit. Auth endpoints never disclose password/token digests.
+  - **Acceptance:** Random refresh digest only; atomic single-use rotation under the User lock with same-family lineage and fixed seven-day lifetime; JWT session identity remains familyId; reuse revokes family; logout invalidates session/cookie. Cookie Secure/SameSite/httpOnly policy, Origin validation and credentialed CORS are explicit. Auth endpoints never disclose password/token digests.
   - **Validation:** Cookie flags, rotation, replay, concurrent use, revoked/deleted membership, missing/bad Origin and cross-site refresh; endpoint DoD and standard gate.
   - **Commit:** `feat: rotate refresh sessions securely`.
 
@@ -349,7 +377,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Order visible hierarchy without client-controlled positions or race corruption.
   - **Files:** `packages/contracts/src/ordering.ts`, `apps/api/src/hierarchy/ordering.service.ts`, nodes controller, `apps/api/test/node-ordering.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P03-02.
-  - **Acceptance:** Neighbor-ID move API assigns integer positions transactionally, validates sibling set, increments version and has stable ID tie-breaks.
+  - **Acceptance:** Neighbor-ID move API assigns integer positions transactionally, validates sibling set, increments every changed sibling version once and the workspace collection revisions, with stable ID tie-breaks.
   - **Validation:** First/last/empty position, wrong-parent/foreign anchors, duplicate anchors, stale version and concurrent reorder; endpoint DoD and standard gate.
   - **Commit:** `feat: reorder hierarchy siblings atomically`.
 
@@ -427,7 +455,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Move cards atomically while preserving valid status, fields and ordering.
   - **Files:** `apps/api/src/tasks/task-move.service.ts`, task contracts/controller, `apps/api/test/task-moves.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P06-02.
-  - **Acceptance:** Source/destination permissions checked; preserve status or map first same category; missing category rejects. Move accepts required field values/explicit clears. Reorder validates neighbor list+column and versions; one transaction updates everything/outbox.
+  - **Acceptance:** Source/destination permissions checked; preserve status or map first same category; missing category rejects. Move accepts required field values/explicit clears. Reorder validates neighbor list+column and versions; each changed task version advances once, dataVersion advances once, and one transaction updates everything/outbox.
   - **Validation:** Same-category mapping success; closed→no closed rejects; required destination field missing rejects/provided succeeds; source-only value needs explicit clear; wrong anchors/tenant reject; concurrent config/move remains valid; failure leaves task unchanged. Endpoint DoD and standard gate.
   - **Commit:** `feat: move and reorder tasks atomically`.
 

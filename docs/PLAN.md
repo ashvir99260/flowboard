@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** Phase 0 foundation implementation authorized and in progress. Updated 22 October 2026.
+**Status:** Foundation present; backend/database/API and UI design refinement in progress. Updated 23 October 2026. The latest request is documentation only; runtime implementation remains a subsequent task.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
@@ -11,6 +11,8 @@
 **Architecture detail:** [Comparable-product research](REFERENCE_ARCHITECTURES.md) separates published facts from proposed choices. [System design](SYSTEM_DESIGN.md) expands UI composition, database constraints/indexes, pagination, transaction flows and failure recovery. D57/P07-04 correct the hosted browser cookie boundary; the remaining domain scope is unchanged.
 
 Implementation follows the task order, one task at a time. Future agentic workers should use the executing-plans workflow or a sequential implementer/reviewer workflow; parallel review is allowed, parallel implementation of separate backlog tasks is not. The user's latest instruction authorizes the foundation setup through shared configuration and Next.js/NestJS shells, with a commit after each task. The 23 October follow-up authorizes Docker and independent application releases (P00-04 through P00-06); domain implementation remains subsequent work. See [DELIVERY.md](DELIVERY.md) for release and hosted-environment behavior.
+
+The implementation-ready [database and ER specification](DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
 ## 1. Scope and success
 
@@ -81,14 +83,14 @@ All IDs are opaque UUIDs. API dates are ISO UTC timestamps, except due dates and
 | Entity          | Important fields and constraints                                                                                                                                                                                        |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | User            | `id`, normalized unique `email`, `name`, `passwordHash`, timestamps. Never serialize credential material.                                                                                                               |
-| Workspace       | `id`, `name`, `configVersion`, timestamps; serves as the tenant root and transaction lock.                                                                                                                              |
+| Workspace       | `id`, `name`, `configVersion`, `dataVersion`, timestamps; serves as the tenant root and transaction lock.                                                                                                               |
 | Membership      | `workspaceId`, `userId`, `role: admin\|member`; unique pair.                                                                                                                                                            |
 | RefreshSession  | `id`, `userId`, `familyId`, token digest, expiry, used/revoked timestamps. Global credential record; active workspace always revalidated against Membership.                                                            |
 | Invitation      | `id`, `workspaceId`, normalized email, role, token digest, expiry, acceptedAt; admin-created.                                                                                                                           |
 | Node            | `id`, `workspaceId`, `name`, `type: space\|folder\|list`, `parentId`, `position`, `visibility`, `archivedAt`, `version`. Root spaces have null parent; workspace is represented as a virtual root in the tree contract. |
 | Grant           | `workspaceId`, `resourceId`, `userId`, `mode: allow\|deny`; unique resource/user. FK to current workspace membership.                                                                                                   |
 | StatusIdentity  | `id`, `workspaceId`, immutable `key`, immutable `category`; unique workspace/key. This is the task's `statusId`.                                                                                                        |
-| StatusOverride  | `id`, `workspaceId`, `statusId`, `ownerType`, `ownerId`, optional name/color/position, `hidden`. Unique owner/status. Root definitions provide all display fields.                                                      |
+| StatusOverride  | `id`, `workspaceId`, `statusId`, `ownerType`, `ownerId`, optional name/color/position, nullable `hidden` (null inherits, true hides, false restores). Unique owner/status. Root definitions provide all display fields. |
 | FieldDefinition | `id`, `workspaceId`, `key`, `name`, `type`, `required`, options JSON, `ownerType`, `ownerId`, `position`; unique owner/key.                                                                                             |
 | Task            | Requested fields plus `workspaceId`, `version`, `archivedAt`. `customFields` is JSONB. `statusId` references stable identity; `primaryListId` references a list.                                                        |
 | TaskAssignee    | `workspaceId`, `taskId`, `userId`; unique task/user, membership FK. API exposes `assigneeIds[]`.                                                                                                                        |
