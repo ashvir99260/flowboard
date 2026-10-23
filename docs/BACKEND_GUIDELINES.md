@@ -43,8 +43,7 @@ apps/api/
 │   │   ├── platform.module.ts
 │   │   ├── health.controller.ts
 │   │   ├── dependency-probe.ts
-│   │   ├── liveness-response.dto.ts
-│   │   ├── readiness-response.dto.ts
+│   │   ├── health.response.dto.ts
 │   │   ├── health.integration.spec.mjs
 │   │   ├── http.integration.spec.mjs
 │   │   └── openapi.unit.spec.mjs
@@ -56,10 +55,8 @@ apps/api/
 │   │   ├── auth.config.ts            # auth-only settings
 │   │   ├── runtime.ts
 │   │   ├── cookie-policy.ts
-│   │   ├── empty-auth-body.dto.ts
-│   │   ├── log-in.dto.ts
-│   │   ├── sign-up.dto.ts
-│   │   ├── session-response.dto.ts
+│   │   ├── auth.request.dto.ts
+│   │   ├── auth.response.dto.ts
 │   │   ├── auth-config.unit.spec.mjs
 │   │   ├── auth-guard.unit.spec.mjs
 │   │   ├── credentials.integration.spec.mjs
@@ -70,8 +67,8 @@ apps/api/
 │       ├── workspaces.controller.ts
 │       ├── workspaces.service.ts
 │       └── dto/
-│           ├── create-invitation.dto.ts
-│           └── member-page-response.dto.ts
+│           ├── workspaces.request.dto.ts
+│           └── workspaces.response.dto.ts
 └── test/
     ├── bootstrap/                    # Node startup/process tests
     ├── common/                       # per-suite setup and shared fixtures
@@ -86,7 +83,7 @@ packages/
 
 Auth and platform own their modules and focused DTO adapters; AppModule composes those with CommonModule. Shared code stays in `common/`, while auth-specific configuration remains in `auth/auth.config.ts`. Auth and platform have no source subfolders (D89). Auth/platform tests live directly beside their source, with `.unit.spec.mjs` and `.integration.spec.mjs` suffixes distinguishing purpose (D90). They still consume the compiled ESM application. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
 
-In auth and platform, keep focused request, query and response adapters beside the controllers as `*.dto.ts`; do not add subfolders. Other features may use `dto/` for request, path, query and response adapters. Other features may add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
+Keep DTO classes together by feature and request/response role (D92). Auth uses `auth.request.dto.ts` for signup/login/empty-body inputs and `auth.response.dto.ts` for sessions; health uses `health.response.dto.ts` for liveness/readiness outputs. These files sit beside their controllers without subfolders. Other features may use `dto/` for request, path, query and response adapters. Other features may add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
 
 ## Modules and dependency injection
 
@@ -119,7 +116,7 @@ Controllers return deliberate response DTO projections. Never return complete da
 Follow this order for every endpoint, including its first implementation:
 
 1. Define strict request/path/query/response schemas in `packages/contracts`, using shared field primitives and cursor pagination. Add schema/model/field titles, descriptions and valid examples with Zod `.meta()`; keep secrets synthetic and password fields write-only.
-2. In the owning feature, extend `createZodDto` using those schemas. Place auth/platform DTO files directly in the feature directory; other features may group them in `dto/`. Use focused names such as `CreateInvitationDto`, `MemberParamsDto`, `MemberPageQueryDto`, `MemberResponseDto` and `MemberPageResponseDto`. Do not repeat properties with `@ApiProperty` or introduce parallel class-validator rules.
+2. In the owning feature, extend `createZodDto` using those schemas. Place auth/platform DTO classes in the feature/type files described above; other features may group their files in `dto/`. Use focused names such as `CreateInvitationDto`, `MemberParamsDto`, `MemberPageQueryDto`, `MemberResponseDto` and `MemberPageResponseDto`. Do not repeat properties with `@ApiProperty` or introduce parallel class-validator rules.
 3. Keep HTTP decorators near the controller method: verb/path, explicit status, guard metadata, and `@ApiOperation` with a unique stable `operationId`, `summary` and `description`. Describe path/query/header semantics and request-body examples. Security decorators describe the actual guard requirements; they do not enforce access themselves.
 4. Use `@ZodResponse` with the concrete response DTO and success status. Keep global `ZodValidationPipe`, `ZodSerializerInterceptor` and sanitized exception filtering. Any supplemental `@ApiResponse` for a payload must retain its concrete `type: ResponseDto.Output`; include description, example and applicable headers. No `Object`, `any` or implicit generic page schema.
 5. Describe relevant typed error responses through the existing platform helper and feature-specific cases. Schema references in custom `@ApiBody` metadata use `getSchemaPath` and registered models, not duplicated inline shapes. A 204 response has a description and applicable headers but no content/body example. Cookie/header examples must match the runtime policy.

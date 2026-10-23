@@ -197,3 +197,7 @@ The user's test-layout follow-up refines D86/D89: move auth/platform suites dire
 ## D91 — Pino behind the shared logging boundary
 
 The user requests a standard library. Replace D88's handwritten JSON/severity engine with pinned Pino 10.4.0 in `packages/logger`; retain the existing small, typed facade, safe-field projection and AsyncLocalStorage context. Nest continues through its LoggerService adapter into the same engine used by database/worker code. Pino handles level filtering, ISO timestamps and JSON encoding; configure the existing string-level/service/event shape and defense-in-depth redaction. Validate levels before construction to keep configuration values out of errors. No extra HTTP middleware, Nest dependency outside the API, pretty transport, thread worker or external collector is needed. Existing sink and credential-safety behavior remains required.
+
+## D92 — DTO groups by feature and request/response role
+
+The user requests fewer DTO files. Group the existing auth request classes in `auth.request.dto.ts`, auth responses in `auth.response.dto.ts`, and health responses in `health.response.dto.ts`. Keep every class and shared schema unchanged so validation and Swagger component identities stay stable. This refines D85/D89's one-adapter-file examples, preserving flat feature directories and colocated tests. Common error/query adapters stay in common because multiple features consume them. Use feature/type groups by default; do not add barrels, merged request/response schemas, or compatibility re-exports.

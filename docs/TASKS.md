@@ -456,7 +456,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: use pino for shared logging`.
   - **Completion evidence:** [P02-11](evidence/P02-11.md): 324 tests and all build/lint/type/format/contract/Docker gates pass with Pino-backed logging.
 
-- [ ] **P02-12 — Group DTO adapters by feature and type**
+- [x] **P02-12 — Group DTO adapters by feature and type**
   - **Goal:** Reduce one-class DTO files while retaining separate request/response roles and every concrete schema/class.
   - **Requirements:** R123; preserves R120 flat folders and existing typed Swagger contracts.
   - **Files:** grouped auth/health DTO files and their controller imports; backend/agent/architecture rules, task/evidence records.
@@ -464,6 +464,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Use `auth.request.dto.ts`, `auth.response.dto.ts` and `health.response.dto.ts` for the existing six classes; no new DTO folder, forwarding exports, renamed schemas/classes or altered request/response behavior. Generated OpenAPI/client stay identical.
   - **Validation:** Class/content preservation and import checks, clean build, root lint/test/typecheck/format/OpenAPI and Docker verification.
   - **Commit:** `refactor: group dtos by feature and type`.
+  - **Completion evidence:** [P02-12](evidence/P02-12.md): three grouped files preserve all six adapters; generated contracts are unchanged and all build/lint/type/test/format/OpenAPI/Docker gates pass.
 
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
