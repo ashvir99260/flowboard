@@ -22,3 +22,4 @@ packages/api-client/src/generated/
 .serena/
 .codex/
 .agents/
+.ai-local/

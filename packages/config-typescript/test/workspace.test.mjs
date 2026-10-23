@@ -23,6 +23,49 @@ const workspaces = [
 
 const json = async (path) => JSON.parse(await readFile(new URL(path, root), 'utf8'));
 
+test('ast-grep finds code calls without matching comments or string literals', () => {
+  const result = spawnSync(
+    'pnpm',
+    [
+      'exec',
+      'ast-grep',
+      'run',
+      '--lang',
+      'ts',
+      '--pattern',
+      'console.log($$$ARGS)',
+      '--stdin',
+      '--json=compact',
+    ],
+    {
+      cwd: fileURLToPath(root),
+      input:
+        '// console.log("comment")\nconst text = \'console.log("text")\';\nconsole.log("actual call");\n',
+      encoding: 'utf8',
+    },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  const matches = JSON.parse(result.stdout);
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].text, 'console.log("actual call")');
+});
+
+test('AI reports and Serena state stay local without hiding tool configuration', () => {
+  const ignored = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
+    cwd: fileURLToPath(root),
+    input: '.ai-local/gitleaks.json\n.serena/project.yml\napps/web/.ai-local/search.json\n',
+    encoding: 'utf8',
+  });
+  assert.equal(ignored.status, 0);
+  assert.equal(ignored.stdout.trim().split('\n').length, 3);
+  const config = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
+    cwd: fileURLToPath(root),
+    input: '.gitleaks.toml\ndocs/AI_TOOLS.md\n',
+    encoding: 'utf8',
+  });
+  assert.equal(config.status, 1);
+});
+
 test('Graphify generated data stays untracked while its configuration remains trackable', () => {
   const outputs = [
     'graphify-out/graph.json',
