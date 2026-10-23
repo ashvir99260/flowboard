@@ -38,13 +38,16 @@ async function source(t) {
     else {
       res.writeHead(404);
       res.end();
+
       return;
     }
+
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(value));
   });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise((resolve) => server.close(resolve)));
+
   return {
     state,
     github: githubPort(

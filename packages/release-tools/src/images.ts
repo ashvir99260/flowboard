@@ -12,6 +12,7 @@ export async function ensureImage(release: Release, image: string): Promise<stri
   }).trim();
   if (head !== release.sha || changes)
     throw new Error('Image publication requires a clean checkout at the release SHA');
+
   const run = (...args: string[]) =>
     execFileSync('docker', args, { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }).trim();
   const inspect = (ref: string) => {
@@ -21,7 +22,9 @@ export async function ensureImage(release: Release, image: string): Promise<stri
       { encoding: 'utf8' },
     );
     if (result.status === 0) return result.stdout.trim();
+
     if (/not found|manifest unknown|name unknown/i.test(result.stderr)) return null;
+
     throw new Error(`Cannot inspect registry image ${ref}: ${result.stderr}`);
   };
   const versionTag = `${image}:${release.version}`;
@@ -31,6 +34,7 @@ export async function ensureImage(release: Release, image: string): Promise<stri
   if (versionDigest || shaDigest) {
     if (versionDigest && shaDigest && versionDigest !== shaDigest)
       throw new Error(`Conflicting image tags for ${release.tag}`);
+
     const digest = versionDigest ?? shaDigest!;
     run('pull', '--platform', 'linux/amd64', `${image}@${digest}`);
     const labels = JSON.parse(
@@ -42,6 +46,7 @@ export async function ensureImage(release: Release, image: string): Promise<stri
       labels['org.opencontainers.image.title'] !== release.app
     )
       throw new Error(`Conflicting existing image ${versionTag}`);
+
     for (const [tag, existing] of [
       [versionTag, versionDigest],
       [shaTag, shaDigest],
@@ -56,8 +61,10 @@ export async function ensureImage(release: Release, image: string): Promise<stri
           tag!,
           `${image}@${digest}`,
         );
+
     return digest;
   }
+
   const directory = mkdtempSync(join(tmpdir(), 'flowboard-image-'));
   try {
     const metadata = join(directory, 'metadata.json');
@@ -90,6 +97,7 @@ export async function ensureImage(release: Release, image: string): Promise<stri
     const result = JSON.parse(readFileSync(metadata, 'utf8')) as Record<string, string>;
     const digest = result['containerimage.digest'];
     if (!digest) throw new Error('Build did not record an image digest');
+
     return digest;
   } finally {
     rmSync(directory, { force: true, recursive: true });

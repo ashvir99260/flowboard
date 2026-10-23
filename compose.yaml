@@ -25,9 +25,15 @@ services:
       - '127.0.0.1:${API_PORT:-3001}:3001'
     environment:
       PORT: '3001'
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       DATABASE_URL: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
       DATABASE_URL_UNPOOLED: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
       REDIS_URL: redis://redis:6379
+      DEMO_SEED: ${DEMO_SEED:-true}
+      API_DOCS: ${API_DOCS:-true}
+      AUTH_SECRET: ${AUTH_SECRET:-flowboard-local-only-change-before-hosting-64-bytes}
+      AUTH_ALLOWED_ORIGINS: ${AUTH_ALLOWED_ORIGINS:-http://localhost:${WEB_PORT:-3000},http://localhost:${API_PORT:-3001}}
+      AUTH_ALLOW_INSECURE_HTTP: ${AUTH_ALLOW_INSECURE_HTTP:-true}
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,9 +49,12 @@ services:
       dockerfile: apps/worker/Dockerfile
     environment:
       PORT: '3002'
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       DATABASE_URL: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
       REDIS_URL: redis://redis:6379
     depends_on:
+      api:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:

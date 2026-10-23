@@ -1,21 +1,54 @@
 import 'reflect-metadata';
 
-import { NestFactory } from '@nestjs/core';
+import { initializeDatabase } from '@flowboard/database';
+import { createLogger, readLogLevel } from '@flowboard/logger';
 
-import { AppModule } from './app.module.js';
+import { createApplication } from './application.js';
+import { readApplicationConfig } from './core/config/application.config.js';
+import { readAuthSettings } from './modules/auth/auth.config.js';
+import { createAuthRuntime } from './modules/auth/runtime.js';
+import { runtimeProbe } from './modules/platform/dependency-probe.js';
+
+import type { Server } from 'node:http';
+
+let logger = createLogger({ level: 'info', service: 'api' });
+let stage = 'log_config';
 
 async function bootstrap(): Promise<void> {
-  const port = Number(process.env.PORT ?? 3001);
-  if (!Number.isInteger(port) || port < 0 || port > 65535) {
-    throw new Error('PORT must be an integer between 0 and 65535');
-  }
-  const app = await NestFactory.create(AppModule);
+  logger = createLogger({ service: 'api', level: readLogLevel(process.env.LOG_LEVEL) });
+  stage = 'application_config';
+  const config = readApplicationConfig(process.env);
+  const { databaseUrl, redisUrl } = config;
+  stage = 'auth_config';
+  const authSettings = readAuthSettings(process.env);
+  stage = 'database';
+  await initializeDatabase({
+    databaseUrl,
+    demoSeed: config.demoSeed,
+    logger,
+    ...(config.directDatabaseUrl ? { directDatabaseUrl: config.directDatabaseUrl } : {}),
+  });
+  stage = 'application';
+  const { app } = await createApplication(runtimeProbe(databaseUrl, redisUrl, logger), {
+    auth: createAuthRuntime(databaseUrl, redisUrl, authSettings, logger),
+    exposeDocs: config.exposeDocs,
+    logger,
+  });
   app.enableShutdownHooks(['SIGINT', 'SIGTERM']);
-  await app.listen(port, process.env.HOST ?? '127.0.0.1');
-  console.info(`[api] Listening at ${await app.getUrl()}`);
+  try {
+    stage = 'listen';
+    await app.listen(config.port, config.host);
+  } catch (error) {
+    await app.close();
+    throw error;
+  }
+  const server: Server = app.getHttpServer();
+  server.once('close', () => logger.info('api.stopped'));
+  const address = server.address();
+  if (address && typeof address !== 'string') logger.info('api.started', { port: address.port });
 }
 
-bootstrap().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : 'API startup failed');
+bootstrap().catch(() => {
+  logger.fatal('api.startup.failed', { operation: stage, code: 'STARTUP_FAILED' });
   process.exitCode = 1;
 });

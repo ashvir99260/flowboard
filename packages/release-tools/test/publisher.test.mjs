@@ -19,14 +19,17 @@ function fixture() {
   const port = {
     async readRelease() {
       calls.push('read');
+
       return remote;
     },
     async readTag() {
       calls.push('tag');
+
       return tagSha;
     },
     async ensureImage() {
       calls.push('image');
+
       return digest;
     },
     async createTag() {
@@ -37,6 +40,7 @@ function fixture() {
       calls.push('draft');
       tagSha = release.sha;
       remote = { draft: true, id: 1 };
+
       return remote;
     },
     async readManifest() {
@@ -51,6 +55,7 @@ function fixture() {
       remote.draft = false;
     },
   };
+
   return {
     port,
     calls,

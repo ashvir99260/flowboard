@@ -6,6 +6,7 @@ import tseslint from 'typescript-eslint';
 import { commonRules, ignoredFiles } from './common.mjs';
 import json from './json.mjs';
 import quality, { codeFiles } from './quality.mjs';
+import spacing from './spacing.mjs';
 
 export default defineConfig([
   { ignores: ignoredFiles },
@@ -37,4 +38,5 @@ export default defineConfig([
   },
   ...json,
   prettier,
+  spacing,
 ]);

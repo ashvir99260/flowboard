@@ -15,6 +15,8 @@ The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to ou
 
 [Workspace RBAC and DTO/entity design](docs/BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
+[Backend structure and coding rules](docs/BACKEND_GUIDELINES.md) define feature-owned Nest modules, DTO placement, provider exports, test layout and the Swagger workflow. The [API-scoped instructions](apps/api/AGENTS.md) apply these rules to future changes; P02-06 covers auth/platform/common ownership; P02-10 colocates auth/platform tests while retaining shared helpers and process tests; P02-13 moves features under modules and separates config/utils/shared.
+
 [Field validation reference](docs/FIELD_REFERENCE.md) defines every stored/embedded field and its enforcement layer; paginated APIs use cursor/limit only.
 
 ## System shape and authority
@@ -52,41 +54,49 @@ For hosted browsers, the planned web-origin `/api/v1` proxy preserves first-part
 
 These are intended workspace dependencies; external runtime libraries and shared compiler/lint/test configuration are additional dependencies appropriate to each package. Imports use public package exports and `workspace:*`, never another package's source path.
 
-| Workspace                    | Responsibility                                                                 | Allowed workspace dependencies / boundary                                 |
-| ---------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `apps/api`                   | HTTP controllers, auth, authorization, orchestration, sockets, outbox dispatch | `contracts`, `database`; no other app or generated client                 |
-| `apps/worker`                | Validate queued events, persist activity, publish invalidations                | `contracts`, `database`; no app imports                                   |
-| `apps/web`                   | Routes, session state, generated queries, feature composition                  | `contracts`, `api-client`, `ui`; no backend internals                     |
-| `packages/contracts`         | Zod schemas, inferred types, enums, event contracts, pure resolvers            | Own files and Zod only; no other workspace, framework, environment or I/O |
-| `packages/database`          | Prisma schema/client, migrations, seed, scoped repositories, transactions      | `contracts`; sole owner of raw Prisma construction and SQL                |
-| `packages/openapi`           | Spec export, normalization, lint and drift checks                              | API's explicit spec-bootstrap export, **build tooling only**              |
-| `packages/api-client`        | Generated SDK, types and TanStack options; handwritten transport setup         | Consumes OpenAPI as generation input; no API runtime import               |
-| `packages/ui`                | MUI theme/provider, controlled presentational components                       | `contracts` and UI libraries; no fetching, session or database code       |
-| `packages/config-typescript` | Base, Node/Nest, Next and library compiler settings                            | Configuration subpath exports                                             |
-| `packages/config-eslint`     | Shared lint rules, import ordering and boundaries                              | Configuration subpath exports                                             |
-| `packages/config-prettier`   | Shared formatting object and root/workspace format checks                      | Build tooling only                                                        |
-| `packages/release-tools`     | Independent app release planning and GitHub/GHCR publication                   | CI tooling only; reads committed Git snapshots, no runtime app imports    |
-| `packages/config-jest`       | Shared test presets and environment conventions                                | Configuration subpath exports                                             |
+| Workspace                    | Responsibility                                                                 | Allowed workspace dependencies / boundary                                  |
+| ---------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `apps/api`                   | HTTP controllers, auth, authorization, orchestration, sockets, outbox dispatch | `contracts`, `database`, `logger`; no other app or generated client        |
+| `apps/worker`                | Validate queued events, persist activity, publish invalidations                | `contracts`, `database`, `logger`; no app imports                          |
+| `apps/web`                   | Routes, session state, generated queries, feature composition                  | `contracts`, `api-client`, `ui`; no backend internals                      |
+| `packages/contracts`         | Zod schemas, inferred types, enums, event contracts, pure resolvers            | Own files and Zod only; no other workspace, framework, environment or I/O  |
+| `packages/database`          | Prisma schema/client, migrations, seed, scoped repositories, transactions      | `contracts`, `logger`; sole owner of raw Prisma construction and SQL       |
+| `packages/logger`            | Pino-backed JSON logs, async request context, safe metadata projection         | Pino and Node built-ins; no framework, database or other workspace imports |
+| `packages/openapi`           | Spec export, normalization, lint and drift checks                              | API's explicit spec-bootstrap export, **build tooling only**               |
+| `packages/api-client`        | Generated SDK, types and TanStack options; handwritten transport setup         | Consumes OpenAPI as generation input; no API runtime import                |
+| `packages/ui`                | MUI theme/provider, controlled presentational components                       | `contracts` and UI libraries; no fetching, session or database code        |
+| `packages/config-typescript` | Base, Node/Nest, Next and library compiler settings                            | Configuration subpath exports                                              |
+| `packages/config-eslint`     | Shared lint rules, import ordering and boundaries                              | Configuration subpath exports                                              |
+| `packages/config-prettier`   | Shared formatting object and root/workspace format checks                      | Build tooling only                                                         |
+| `packages/release-tools`     | Independent app release planning and GitHub/GHCR publication                   | CI tooling only; reads committed Git snapshots, no runtime app imports     |
+| `packages/config-jest`       | Shared test presets and environment conventions                                | Configuration subpath exports                                              |
 
 Applications cannot import one another. The OpenAPI tooling exception (D19) is narrow: it loads real controllers/DTOs with inert providers, no listening socket and no database/Redis connection. It is not a production API dependency or a fake runtime service.
 
-The planned build graph is `contracts/database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
+Authored workspaces and root tooling use native ESM (D95). Module manifests and verbatim TypeScript syntax prevent implicit CommonJS rewriting; NodeNext resolves Node output while ESNext/Bundler serves Next.js. CLI resolution uses import.meta.resolve. Generated Next.js and third-party internals retain their framework-supported module format.
+
+The planned build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
+
+Features live under `apps/api/src/modules/` (D93). Auth and platform remain flat (D89): grouped DTOs and auth configuration sit beside controllers/services/modules, with colocated unit/integration tests (D90/D92). D96 groups foundations in `src/core/`: `config` holds reusable settings, `utils` pure helpers, and `common` HTTP helpers and injection tokens. `src/shared/` owns SharedModule and logging; it registers core HTTP filters/validation/serialization once. Core cannot import shared/features, and shared cannot import features; shared ESLint checks these directions. The common runtime/spec factory explicitly uses Express. Prisma stays in `packages/database`. Shared test helpers and process tests keep their existing grouping. See the [adapted feature-first guide](docs/BACKEND_GUIDELINES.md).
 
 ## Module responsibility and data ownership
 
-| Owner                                  | What belongs here                                                                             |
-| -------------------------------------- | --------------------------------------------------------------------------------------------- |
-| API `platform`                         | Bootstrap, service configuration, request IDs, sanitized errors, liveness/readiness           |
-| API `auth`                             | Credentials, session rotation, JWT verification; narrow global identity repository            |
-| API `workspaces`                       | Membership, invitations, verified workspace switching, last-admin protection                  |
-| API `permissions`                      | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions            |
-| API `hierarchy`                        | Typed parent relationships, container ordering/reparenting and subtree archive                |
-| API `statuses` / `fields`              | Scoped configuration changes and validation of affected descendants                           |
-| API `tasks`                            | Task CRUD/moves/reorders, composing shared validation inside a transaction                    |
-| API `activity` / `realtime` / `outbox` | Authorized feed reads / safe subscriptions and fanout / durable dispatch retries              |
-| Worker                                 | Verify persisted event identity, idempotent activity insertion and retryable publication      |
-| Database package                       | Tenant filters, relation checks, storage operations, locks and transaction-bound repositories |
-| Contracts / UI / web                   | Deterministic domain rules / plain presentation / data and interaction coordination           |
+| Owner                                                          | What belongs here                                                                             |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| API `core/config` / `core/utils`                               | Reusable application/Redis settings / pure helpers                                            |
+| API `shared`                                                   | SharedModule validation/serialization/filter wiring and shared logging providers              |
+| API `core/common`                                              | HTTP decorators, tokens, DTO helpers, sanitized errors/filters and Swagger support            |
+| API `modules/platform`                                         | Liveness/readiness and dependency probes                                                      |
+| API `modules/auth`                                             | Credentials, session rotation, JWT verification; narrow global identity repository            |
+| API `modules/workspaces`                                       | Membership, invitations, verified workspace switching, last-admin protection                  |
+| API `modules/permissions`                                      | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions            |
+| API `modules/hierarchy`                                        | Typed parent relationships, container ordering/reparenting and subtree archive                |
+| API `modules/statuses` / `modules/fields`                      | Scoped configuration changes and validation of affected descendants                           |
+| API `modules/tasks`                                            | Task CRUD/moves/reorders, composing shared validation inside a transaction                    |
+| API `modules/activity` / `modules/realtime` / `modules/outbox` | Authorized feed reads / safe subscriptions and fanout / durable dispatch retries              |
+| Worker                                                         | Verify persisted event identity, idempotent activity insertion and retryable publication      |
+| Database package                                               | Tenant filters, relation checks, storage operations, locks and transaction-bound repositories |
+| Contracts / UI / web                                           | Deterministic domain rules / plain presentation / data and interaction coordination           |
 
 Controllers translate transport and call services. Services orchestrate policy and transactions; repositories own persistence. Pure contracts functions accept plain data, so both backend validation and UI previews use the same rules.
 

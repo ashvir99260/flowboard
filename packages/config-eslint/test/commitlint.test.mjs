@@ -16,6 +16,7 @@ after(() => rm(root, { force: true, recursive: true }));
 function git(...args) {
   const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
+
   return result.stdout.trim();
 }
 git('init', '--quiet');
@@ -73,6 +74,7 @@ test('CI validates both actual PR commits and the proposed squash title', async 
 test('event text is data, even when it contains shell syntax', () => {
   const marker = path.join('/private/tmp', `flowboard-no-shell-${process.pid}`);
   checkCiCommits('pull_request', pullRequest(`feat: handle $(touch '${marker}')`), root);
+
   return assert.rejects(readFile(marker), { code: 'ENOENT' });
 });
 

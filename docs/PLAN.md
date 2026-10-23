@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** Foundation present; backend/database/API and UI design documents reviewed. Updated 23 October 2026. The latest workspace/audit/DTO refinement is documentation only; runtime implementation remains a subsequent task.
+**Status:** Foundation present; backend/database/API and UI design documents reviewed. Updated 23 October 2026. The user authorized database, migrations and seed implementation followed by typed login and token flows.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
@@ -19,6 +19,10 @@ The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions
 The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
 [Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
+
+P02-04 completed Swagger operation summaries/descriptions and schema/header/request/response examples through shared Zod metadata and Nest documentation decorators. The next user follow-up prioritizes P02-05: [feature-based backend rules](BACKEND_GUIDELINES.md) based on the supplied NestJS structure article. P02-06 aligns auth/platform modules, extracts common config/utilities/infrastructure and separates tests before P02-03 membership work. D86 records that common-folder choice; P02-13/D93 later separates config/utils/shared and moves features under modules.
+
+P02-07 applies the user's blank-line convention after exported declarations, including NestJS module classes, through shared lint presets. It precedes further feature work and preserves runtime code and generated contracts (D87).
 
 ## 1. Scope and success
 
@@ -57,15 +61,18 @@ flowchart LR
 
 PostgreSQL is authoritative. Redis provides queue transport and socket fanout; it is not the source of truth for tasks or permissions. Read paths initially resolve configuration from PostgreSQL without an application cache. This avoids invalidation complexity until measurements justify caching.
 
+Feature source lives under `apps/api/src/modules/<feature>/` (D93). Auth and platform stay flat with grouped DTOs, feature settings and colocated `.unit.spec.mjs`/`.integration.spec.mjs` tests (D89/D90/D92); helpers and bootstrap tests remain under `test/`. P02-16/D96 adapts the requested feature-first article: foundations live in `src/core/{common,config,utils}`, while SharedModule and logging remain in `src/shared/`. Core cannot import shared/features, and shared cannot import features. Runtime and spec bootstrap explicitly use Express. Persistence remains in `packages/database`.
+
 ### Package ownership
 
 | Path                         | Responsibility and permitted dependencies                                                                                                                                             |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api`                   | REST, authentication, permissions, orchestration, Socket.IO, outbox dispatch. Imports contracts and database, never web/worker/client.                                                |
-| `apps/worker`                | BullMQ activity processing and explicit search stub. Imports contracts/database, never another app.                                                                                   |
+| `apps/api`                   | REST, authentication, permissions, orchestration, Socket.IO, outbox dispatch. Imports contracts, database and logger, never web/worker/client.                                        |
+| `apps/worker`                | BullMQ activity processing and explicit search stub. Imports contracts/database/logger, never another app.                                                                            |
 | `apps/web`                   | Routes, auth state, data hooks, board/list/drawer/config composition. Imports contracts/ui/api-client.                                                                                |
 | `packages/contracts`         | Zod schemas, inferred types, enums, errors, pagination, event schemas, pure resolution/validation. Only external runtime dependency is Zod; no framework or other workspace imports.  |
-| `packages/database`          | **One added package:** Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts.                 |
+| `packages/database`          | Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts and logger.                             |
+| `packages/logger`            | Pino-backed structured logs and Node async request context shared by API/database/worker; no framework or other workspace imports.                                                    |
 | `packages/openapi`           | Export, normalization, lint and drift checks for the API spec. Sole build-tool exception: imports API's exported spec bootstrap; never shipped into a browser/runtime API dependency. |
 | `packages/api-client`        | Committed `src/generated/**` from Hey API; separate handwritten `src/setup-client.ts`. Exports SDK, types, query/mutation options.                                                    |
 | `packages/ui`                | MUI theme/provider and presentational components; only contracts and UI libraries. No network, auth, Prisma, or app imports.                                                          |
@@ -76,9 +83,25 @@ PostgreSQL is authoritative. Redis provides queue transport and socket fanout; i
 
 All workspaces have `package.json`, explicit `exports`, a local `tsconfig`, and a real build or config-copy step. Config packages publish configuration subpaths; applications are private and expose only intentional tooling entry points. Public imports use package exports, never `../../other-package/src`.
 
+All authored workspaces and root tooling use ESM with explicit module manifests and verbatim TypeScript syntax (D95). Keep NodeNext for Node-compatible output and ESNext/Bundler for Next.js. Shared lint rejects CommonJS loading/exports; compiler fixtures verify actual ESM execution and reject accidental CommonJS rewriting. Generated framework/vendor internals remain managed by their tools.
+
+Shared Node, React and Next lint presets also enforce readable control-flow spacing (P02-17/D97): blank lines after complete if/else chains and before returns, plus after returns where another statement follows. Keep closing braces and else clauses attached and retain the existing export/module spacing. Autofix must preserve syntax and remain stable under Prettier.
+
+Host development uses `localhost` for application URLs, default listeners and local datastore connection examples (P02-18/D98). Docker keeps numeric loopback port bindings and internal health probes; containers and hosted processes retain their explicit all-interface host override.
+
+Local API/worker development and start scripts load optional per-app `.env` files through Node's native loader, with process variables taking precedence (P02-19/D99). Compose uses root `.env` and Next.js its `.env.local`; private configuration is ignored and excluded from Docker. Examples supply the required local auth settings, and local API startup migrates/seeds against host-accessible Docker datastores.
+
+P02-21 adds an opt-in `compose.dev.yaml` for live code updates in Docker (D100). Development targets retain installed Linux dependencies and writable build output inside each container, mounting only authored source directories read-only. Next.js refreshes the web UI; dependency-aware Turbo watch rebuilds shared packages and restarts API/worker consumers. Release images and normal Compose remain immutable. Manifest, build-config and Dockerfile edits require an explicit rebuild; this works with the installed Compose 2.20 without a host tool upgrade.
+
+P02-22 publishes PostgreSQL/Redis host ports through the live-development override, bound only to localhost and configurable with POSTGRES_PORT/REDIS_PORT (D101). Base Compose retains private datastore networking.
+
+P02-23 corrects local Swagger execution by explicitly allowing the documented web and API origins in local configuration (D102), with custom-port regressions and a real authentication lifecycle check. Runtime origin validation remains strict.
+
 ### Module boundaries inside the API
 
-`platform` owns bootstrap, configuration, exception mapping, request IDs and health. `auth` owns credentials, sessions and token verification. `workspaces` owns membership/invitations. `permissions` owns a single resource authorization policy. `hierarchy` owns container paths and archive operations. `statuses` and `fields` own scoped configuration. `tasks` composes both resolvers inside transactions. `activity` exposes stored events. `realtime` owns authenticated subscriptions and Redis fanout. `outbox` retries committed events.
+Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.
+
+`core/config` owns reusable application/Redis settings; `core/utils` owns pure helpers; `shared` owns shared Nest modules/logging; `core/common` owns decorators, injection tokens, DTO helpers, exception mapping and Swagger support. Core cannot import shared/features, and shared cannot import features; shared ESLint checks these directions. Features live under `modules`: `platform` owns health and dependency probes; `auth` owns credentials, sessions and token verification; `workspaces` owns membership/invitations; `permissions` owns a single resource authorization policy; `hierarchy` owns container paths and archive operations; `statuses` and `fields` own scoped configuration; `tasks` composes both resolvers inside transactions; `activity` exposes stored events; `realtime` owns authenticated subscriptions and Redis fanout; `outbox` retries committed events.
 
 Controllers translate HTTP and call services; they contain no business rules or Prisma calls. Repositories centralize tenant filters and relation checks. Services orchestrate transactions; pure functions hold deterministic domain logic.
 

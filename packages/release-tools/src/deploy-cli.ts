@@ -10,6 +10,7 @@ const {
 } = process.env;
 if (process.env.CD_ENABLED !== 'true' || ref !== 'refs/heads/main')
   throw new Error('Preview deployment is not enabled for this context');
+
 if (
   !repository ||
   !token ||
@@ -18,6 +19,7 @@ if (
   !/^[a-f0-9]{40}$/.test(sha)
 )
   throw new Error('Invalid deployment source context');
+
 const values = {
   vercelToken: process.env.VERCEL_TOKEN,
   vercelProjectId: process.env.VERCEL_PROJECT_ID,

@@ -1,8 +1,9 @@
 {
   "name": "flowboard",
   "private": true,
+  "type": "module",
   "engines": {
-    "node": ">=22.13.0 <23",
+    "node": ">=22.18.0 <23",
     "pnpm": "12.15.0"
   },
   "packageManager": "pnpm@12.15.0",
@@ -21,7 +22,12 @@
     "docker:check": "turbo run docker:check",
     "release:plan": "turbo run release:plan",
     "release:publish": "turbo run release:publish",
-    "deploy:preview": "turbo run deploy:preview"
+    "deploy:preview": "turbo run deploy:preview",
+    "db:migrate": "turbo run db:migrate",
+    "db:seed": "turbo run db:seed",
+    "gen:api": "turbo run api:generate",
+    "openapi:check": "turbo run openapi:check",
+    "docker:dev:check": "turbo run docker:dev:check"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",

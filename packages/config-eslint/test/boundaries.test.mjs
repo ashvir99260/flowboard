@@ -17,6 +17,7 @@ const names = [
   'apps/worker',
   'packages/contracts',
   'packages/database',
+  'packages/logger',
   'packages/ui',
   'packages/openapi',
   'packages/api-client',
@@ -31,6 +32,10 @@ for (const name of names) {
 await writeFile(
   path.join(root, 'apps/web/tsconfig.json'),
   JSON.stringify({ compilerOptions: { paths: { '@api/*': ['../api/src/*'] } } }),
+);
+await writeFile(
+  path.join(root, 'apps/api/tsconfig.json'),
+  JSON.stringify({ compilerOptions: { paths: { '@features/*': ['./src/modules/*'] } } }),
 );
 after(() => rm(root, { force: true, recursive: true }));
 
@@ -54,20 +59,31 @@ async function check(file, code) {
     !result.messages.some((m) => m.fatal),
     'syntax errors must not count as boundary detection',
   );
+
   return result.messages.filter((m) => m.ruleId === 'flowboard/boundaries');
 }
 
 for (const [file, code] of [
+  ['apps/api/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
+  ['apps/worker/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
+  ['packages/database/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['apps/api/src/example.ts', "import { schema } from '@flowboard/contracts';"],
   ['packages/contracts/src/example.ts', "import { z } from 'zod';"],
   ['packages/contracts/src/example.ts', "export { value } from './local.js';"],
   ['packages/database/src/example.ts', "import { PrismaClient } from '@prisma/client';"],
   ['packages/openapi/scripts/export.ts', "import { buildSpec } from '@flowboard/api/spec';"],
+  ['apps/api/src/core/common/example.ts', "import '../config/application.config.js';"],
+  ['apps/api/src/core/common/example.ts', "import { schema } from '@flowboard/contracts';"],
+  ['apps/api/src/shared/example.ts', "import '../core/common/tokens/logger.token.js';"],
+  ['apps/api/src/modules/auth/example.ts', "import '../../shared/logging/logging.module.js';"],
 ]) {
   test(`allows ${file}: ${code}`, async () => assert.equal((await check(file, code)).length, 0));
 }
 
 for (const [file, code] of [
+  ['packages/logger/src/example.ts', "import { schema } from '@flowboard/contracts';"],
+  ['apps/web/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
+  ['packages/ui/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['apps/web/src/example.ts', "import type { Internal } from '@flowboard/api';"],
   ['apps/api/src/example.ts', "export * from '@flowboard/web';"],
   ['apps/worker/src/example.ts', "await import('@flowboard/api');"],
@@ -96,6 +112,15 @@ for (const [file, code] of [
   ['apps/api/src/example.ts', "const other = require('@flowboard/' + name);"],
   ['apps/api/src/example.ts', "import '../node_modules/@prisma/client/index.js';"],
   ['apps/web/src/example.ts', "globalThis['fetch']('/v1/tasks');"],
+  ['apps/api/src/core/common/example.ts', "import '../../shared/logging/logging.module.js';"],
+  ['apps/api/src/core/example.ts', "import type { Auth } from '../modules/auth/auth.service.js';"],
+  ['apps/api/src/core/example.ts', "await import('../modules/auth/auth.service.js');"],
+  ['apps/api/src/shared/example.ts', "export * from '../modules/auth/auth.service.js';"],
+  [
+    'apps/api/src/core/example.ts',
+    `import '${pathToFileURL(path.join(root, 'apps/api/src/shared/shared.module.js')).href}';`,
+  ],
+  ['apps/api/src/core/example.ts', "import '@features/auth/auth.service.js';"],
 ]) {
   test(`rejects ${file}: ${code}`, async () => assert.equal((await check(file, code)).length, 1));
 }

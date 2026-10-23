@@ -8,7 +8,7 @@ Canonical behavior is in [PLAN.md](PLAN.md), the brief in [REQUIREMENTS.md](REQU
 
 - [ ] Write the next behavioral test at the named public seam and observe its expected failure; implement one passing slice at a time. Documentation/config-only tasks use relevant structural checks instead.
 - [ ] Run `pnpm build`, `pnpm lint`, `pnpm test`; fix all failures. Before the scaffold creates these scripts, record the exact available bootstrap checks rather than claim these commands passed.
-- [ ] For every endpoint: shared schema → Zod DTO → typed controller response and explicit operationId → guard metadata → spec regenerated → client regenerated → at least one behavioral test. Never defer contract artifacts to a later phase.
+- [ ] For every endpoint: shared schema with titles/descriptions/examples → Zod DTO → typed controller response and explicit operationId/summary/description → guard metadata → spec regenerated → client regenerated → at least one behavioral test. Verify concrete response schemas and schema-valid examples. Never defer contract artifacts to a later phase.
 - [ ] Run named task-specific checks, inspect the diff, update docs/TODOs, tick the task only when acceptance passes, and commit only its changes.
 - [ ] Give three lines: delivered behavior; checks and result; next task or actual blocker. Link the task's evidence record beneath its completion note; the commit containing that record identifies the task in Git history without a self-referential hash.
 
@@ -311,68 +311,275 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 1 — Contracts, persistence and tenancy
 
-- [ ] **P01-01 — Foundation contracts before HTTP endpoints**
+- [x] **P01-01 — Foundation contracts before HTTP endpoints**
   - **Goal:** Define shared enums, errors, pagination and immutable transport primitives.
-  - **Files:** `packages/contracts/src/{enums,errors,pagination,identifiers,dates,index}.ts`, `packages/contracts/test/foundations.test.ts`.
+  - **Files:** `packages/contracts/src/{enums,errors,pagination,identifiers,dates,index}.ts`, `packages/contracts/test/foundations.test.mjs`.
   - **Dependencies:** P00-04.
   - **Acceptance:** Zod schemas infer types for all requested enums, error codes/envelope, cursor page and strict IDs/calendar dates. Domain schemas reject unsupported values and unexpected identity fields. Include shared audit timestamp schema, workspace-role/action constants and workspace-inclusive field scope enum. Follow FIELD_REFERENCE bounds/types, reject NUL/lone-surrogate strings but preserve valid supplementary characters, and use cursor-only queries; reject offset/page aliases and duplicate query inputs.
   - **Validation:** Literal valid/invalid fixtures including leap dates, enum typos, negative/oversized limits and malformed issue paths; standard gate.
   - **Commit:** `feat: define shared transport contracts`.
+  - **Completion evidence:** [P01-01](evidence/P01-01.md): seven Jest behavior/schema-export tests and root gates pass.
 
-- [ ] **P01-02 — HTTP platform and early contract generation**
-  - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.
-  - **Files:** `apps/api/src/platform/**`, `apps/api/src/spec-bootstrap.ts`, `packages/contracts/src/health.ts`, `packages/openapi/{scripts/export.ts,openapi.json,.spectral.yaml}`, `packages/api-client/{openapi-ts.config.ts,src/generated/**}`, affected package manifests/Turbo config.
-  - **Dependencies:** P01-01.
-  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit. Follow BACKEND_CONTRACTS for createZodDto request/response classes, ZodResponse metadata, global serializer and safe500 output validation; generated response consumer compiles.
-  - **Validation:** Supertest error-envelope/response tests; export/generation with runtime dependencies unavailable; malformed response fails safely; standard gate.
-  - **Commit:** `feat: establish typed api platform and generation`.
-
-- [ ] **P01-03 — Relational schema and migrations**
+- [x] **P01-03 — Relational schema and migrations**
   - **Goal:** Persist the model with tenant-safe relations before repositories/endpoints use it.
-  - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{migration,schema}.integration.test.ts`, `compose.test.yaml`.
-  - **Dependencies:** P01-02.
+  - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{schema.integration.test,postgres,fixtures}.mjs`, `packages/database/{prisma.config.ts,turbo.json,README.md}`, API/worker Dockerfiles (Prisma OpenSSL dependency).
+  - **Dependencies:** P01-01 (DB-first execution per D75).
   - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, current-session partial unique index and selected-workspace FK, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Every table has createdAt/updatedAt enforced for Prisma/raw SQL/worker paths; workspace field ownership is allowed and checked. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
   - **Validation:** Migrate empty database, verify constraints by rejected inserts, inspect all audit columns and immutable-createdAt/update-trigger behavior, field CHECKs and paired invitation/refresh/outbox state rules, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
   - **Commit:** `feat: add tenant safe database schema`.
+  - **Completion evidence:** [P01-03](evidence/P01-03.md): 43 real-Postgres cases, root gates and five-service Docker checks pass.
 
-- [ ] **P01-04 — Fail-closed tenant repositories and test harness**
+- [x] **P01-04 — Fail-closed tenant repositories and test harness**
   - **Goal:** Make tenant scoping the only persistence entry point for tenant data.
-  - **Files:** `packages/database/src/{tenant-context,tenant-database,transaction,identity-repository}.ts`, `packages/database/src/repositories/**`, `packages/database/test/tenancy.integration.test.ts`, `apps/api/test/support/{database,fixtures,app}.ts`.
+  - **Files:** `packages/database/src/{tenant-context,tenant-database,repositories,index}.ts`, `packages/database/test/{tenancy.integration.test,postgres}.mjs`, database README. API harness/identity access are introduced with their first real HTTP consumers in P01-02/P02-01.
   - **Dependencies:** P01-03.
   - **Acceptance:** Missing context fails; reads/writes/counts/pagination/relations/transaction access inject workspace scope; raw Prisma is not exported to apps. Workspace locking is transaction-bound. Fixtures/harness clean up an isolated database and work with Testcontainers or the documented test service.
   - **Validation:** Tenant A cannot read/update/delete/link tenant B records; forged workspace criteria cannot override context; callback transaction keeps scoping. Standard gate.
   - **Commit:** `feat: centralize tenant scoped persistence`.
+  - **Completion evidence:** [P01-04](evidence/P01-04.md): 20 tenant-boundary tests plus all 43 schema tests; full root gates pass.
 
-- [ ] **P01-05 — Seed-once data and migration startup**
+- [x] **P01-05 — Seed-once data and migration startup**
   - **Goal:** Make clean boot reproducible and demonstrate all major scenarios with real persisted data.
-  - **Files:** `packages/database/prisma/seed.ts`, `packages/database/src/initialize.ts`, `packages/database/test/seed.integration.test.ts`, `apps/api/docker/entrypoint.sh`, `compose.yaml`, `README.md`.
+  - **Files:** `packages/database/src/{seed,seed-cli,password,initialize}.ts`, `packages/database/test/seed.integration.test.mjs`, `apps/api/src/main.ts`, API bootstrap tests, Compose/verification scripts, manifests and README. Add the shared option UUID/name/color schema required to validate real seed options before the full P05 field module.
   - **Dependencies:** P01-04.
   - **Acceptance:** Alice/Bob/Carol, two tenants, 2 spaces/2 folders/3 main lists, 24 tasks, inherited/overridden statuses, optional closed, 3+ multilevel fields (a workspace default, a lower-level definition and a list override) and private/denied lists exist. All seeded tasks satisfy the four-level effective schema. Migrate then seed once under a lock before API ready; repeated/concurrent boot preserves edits. Seed disabled outside demo mode.
   - **Validation:** Assert counts/relations/field validity, two parallel initializers, second boot after editing data, migration failure prevents readiness; standard gate and Compose boot.
   - **Commit:** `feat: initialize database with repeatable demo data`.
+  - **Completion evidence:** [P01-05](evidence/P01-05.md): seed/rollback/concurrency checks, 240 root tests and Docker startup/restart checks pass.
+
+- [x] **P01-02 — HTTP platform and early contract generation**
+  - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.
+  - **Files:** `apps/api/src/platform/**`, `apps/api/src/spec-bootstrap.ts`, `packages/contracts/src/health.ts`, `packages/openapi/{scripts/export.ts,openapi.json,.spectral.yaml}`, `packages/api-client/{openapi-ts.config.ts,src/generated/**}`, affected package manifests/Turbo config.
+  - **Dependencies:** P01-05 (DB-first execution per D75).
+  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit. Follow BACKEND_CONTRACTS for createZodDto request/response classes, ZodResponse metadata, global serializer and safe500 output validation; generated response consumer compiles.
+  - **Validation:** Supertest error-envelope/response tests; export/generation with runtime dependencies unavailable; malformed response fails safely; standard gate.
+  - **Commit:** `feat: establish typed api platform and generation`.
+  - **Completion evidence:** [P01-02](evidence/P01-02.md): 251 tests, build/lint/typecheck, generated contract drift checks and five-service Docker restart pass.
 
 ## Phase 2 — Authentication and membership
 
-- [ ] **P02-01 — Signup, login and default-deny authentication**
+- [x] **P02-01 — Signup, login and default-deny authentication**
   - **Goal:** Establish password identity, atomic workspace creation and verified tenant context.
   - **Files:** `packages/contracts/src/auth.ts`, `apps/api/src/auth/{auth.module,auth.controller,auth.service,auth.guard,auth.dto,public.decorator}.ts`, `apps/api/test/auth.e2e-spec.ts`, generated artifacts.
-  - **Dependencies:** P01-05.
+  - **Dependencies:** P01-02.
   - **Acceptance:** Signup creates workspace/admin/default statuses atomically; login verifies Argon2id and normalizes email. JWT claims/audience/issuer/expiry checked, membership role read from DB. Guard is default-on with named public exceptions. Credential rate limiting and redacted logs exist.
   - **Validation:** Correct login; duplicate normalized email; wrong password; expired/forged token; unauthenticated domain route 401; body cannot set acting role/workspace; failed signup rolls back. Endpoint DoD and standard gate.
   - **Commit:** `feat: add workspace aware authentication`.
+  - **Completion evidence:** [P02-01](evidence/P02-01.md): 269 tests, generated contract checks, all quality gates and Docker seeded login/restart pass.
 
-- [ ] **P02-02 — Rotating refresh sessions and logout**
+- [x] **P02-02 — Rotating refresh sessions and logout**
   - **Goal:** Provide cookie refresh without token reuse or unsafe replay.
-  - **Files:** `apps/api/src/auth/{session.service,cookie-policy,origin.guard}.ts`, auth controller/contracts, `apps/api/test/refresh.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/auth/{auth.service,auth.controller,cookie-policy}.ts`, auth guard/DTO/contracts, `packages/database/src/identity.ts`, real API/database refresh tests, generated artifacts.
   - **Dependencies:** P02-01.
   - **Acceptance:** Random refresh digest only; atomic single-use rotation under the User lock with same-family lineage and fixed seven-day lifetime; JWT session identity remains familyId; reuse revokes family; logout invalidates session/cookie. Refresh with a removed selected membership returns403 without a retry loop; re-login recovers. Cookie Secure/SameSite/httpOnly policy, Origin validation and credentialed CORS are explicit. Auth endpoints never disclose password/token digests.
   - **Validation:** Cookie flags, rotation, replay, concurrent use, revoked/deleted membership, missing/bad Origin and cross-site refresh; endpoint DoD and standard gate.
   - **Commit:** `feat: rotate refresh sessions securely`.
+  - **Completion evidence:** [P02-02](evidence/P02-02.md): 284 tests, all quality/contract gates, real refresh/replay/concurrency/logout checks pass.
+
+- [x] **P02-04 — Complete Swagger descriptions and examples**
+  - **Goal:** Make every current endpoint and DTO understandable from Swagger without duplicating validation definitions.
+  - **Requirements:** R12, R20, R21, R91, R115.
+  - **Files:** shared auth/health/error schemas, API auth/health decorators and documentation helpers, generated spec/client, contract/OpenAPI tests and harness docs.
+  - **Dependencies:** P02-02; prioritized before P02-03 by the user's documentation request.
+  - **Acceptance:** All six operations have summaries/descriptions; body-bearing requests/responses, schema fields and applicable headers have descriptions and examples; schema/field titles are present. Examples satisfy the shared schemas, use no real credentials, preserve write-only passwords, and keep logout204 body-free. Spectral enforces operation descriptions. Runtime behavior and validation remain unchanged.
+  - **Validation:** Contract example validation and exported-document regression tests; full build/lint/test/typecheck/format and OpenAPI/client drift checks.
+  - **Commit:** `docs: enrich swagger contracts with examples`.
+  - **Completion evidence:** [P02-04](evidence/P02-04.md): all six operations and emitted schema fields documented; 290 tests, generated contract checks and standard gates pass; rendered Swagger verified.
+
+- [x] **P02-05 — Adopt feature-based backend rules**
+  - **Goal:** Make the Encore NestJS feature structure the documented default for backend work while preserving Flowboard's existing stack and contract boundaries.
+  - **Requirements:** R116; maintains R20, R21, R91 and R115.
+  - **Files:** `apps/api/AGENTS.md`, `docs/BACKEND_GUIDELINES.md`, root `AGENTS.md`, `ARCHITECTURE.md`, `README.md`, plan, decisions, quality gates, task/matrix/evidence records.
+  - **Dependencies:** P02-04; prioritized by the user's article/rules request.
+  - **Acceptance:** Feature layout, module exports/DI, controller/service/repository ownership, DTO/entity boundaries, complete Swagger metadata and endpoint workflow are explicit. Article-to-repository adaptations retain shared Zod, Prisma in database, generated client and central auth/permission/error handling. Current layout, future layout and review-only enforcement are distinguished; no runtime files move in this documentation task.
+  - **Validation:** Source-to-guide review, relative-link checks, independent architecture review, formatting and existing root quality/contract gates. No artificial behavioral tests for documentation.
+  - **Commit:** `docs: define feature-based backend conventions`.
+  - **Completion evidence:** [P02-05](evidence/P02-05.md): sourced guide, scoped rules and future task paths reviewed; 179 local links, documentation-only diff and all root gates pass. Runtime restructuring remains P02-06.
+
+- [x] **P02-06 — Organize backend modules, common code and tests**
+  - **Goal:** Bring the current bootstrap/auth slice into feature modules, extract shared infrastructure/configuration/utilities, and split tests by purpose before growing membership functionality.
+  - **Requirements:** R116, R117; preserves R20, R21, R91 and R115.
+  - **Files:** `apps/api/src/app.module.ts`, `application.ts`, `main.ts`, `spec-bootstrap.ts`, `auth/**`, `platform/**`, `common/**`, `test/{unit,integration,bootstrap,common}/**`, API test/package configuration, backend rules and task/evidence docs. Generated artifacts only if reproducible output changes.
+  - **Dependencies:** P02-05.
+  - **Acceptance:** Auth/platform have modules and focused DTO files; AppModule composes modules. Shared decorators/errors/filters/Swagger, application/Redis config and reused utilities live under `common/`; auth-specific settings remain in auth. Unit, HTTP integration and bootstrap tests are separately discovered, with per-suite shared fixtures in `test/common/` and no shared mutable database/Redis singleton. Runtime and isolated spec bootstrap use the same controller registry; no raw database access moves into the API. Route names, validation, response schemas, auth/cookie behavior and OpenAPI output are preserved.
+  - **Validation:** Config parsing tests first; all existing test names/assertions retained through the split. Real Postgres/Redis auth, refresh, outage, shutdown and platform tests; complete build/lint/test/typecheck/format/spec/client gates. Verify one-time cleanup and no startup side effects during spec export.
+  - **Commit:** `refactor: organize api modules and tests`.
+  - **Completion evidence:** [P02-06](evidence/P02-06.md): feature/common modules, shared config/utilities and isolated split test suites pass 296 tests, full quality/contract gates and five-service Docker startup/restart checks.
+
+- [x] **P02-07 — Enforce spacing after exports and modules**
+  - **Goal:** Automatically keep one blank line after exports, including exported NestJS module classes, whenever another statement follows.
+  - **Requirements:** R118.
+  - **Files:** shared ESLint spacing configuration/presets and regression tests, affected authored source whitespace, backend/code-quality/agent rules, decisions and evidence.
+  - **Dependencies:** P02-06; prioritized by the user's formatting request.
+  - **Acceptance:** Node/React/Next presets report and autofix missing spacing after exports, including decorated module classes, types and re-exports. Preserve comments/decorator attachment and runtime tokens; no extra blank line at EOF, no generated-file or JSON rewrites. Prettier and lint agree.
+  - **Validation:** Red/green lint fixtures, all preset coverage and Prettier round-trip; full root build/lint/test/typecheck/format and contract drift checks.
+  - **Commit:** `style: separate exports with blank lines`.
+  - **Completion evidence:** [P02-07](evidence/P02-07.md): five spacing regressions, all 301 tests and quality/contract gates pass; 26 existing source/test files changed only by inserted blank lines.
+
+- [x] **P02-08 — Add safe correlated backend logging**
+  - **Goal:** Trace failures across HTTP, auth/services, database operations, infrastructure and worker lifecycle with structured logs and configurable levels.
+  - **Requirements:** R119; preserves tenant and secret-handling safeguards.
+  - **Files:** new Node-only `packages/logger/**`, API common logging/module/config and auth/platform boundaries, database operation/initialization boundaries, worker bootstrap, manifests/lockfile/boundary rules, environment examples/Compose and logging guide/evidence.
+  - **Dependencies:** P02-07; prioritized by the user's logging request.
+  - **Acceptance:** JSON logs support trace/debug/info/warn/error/fatal/silent and validated LOG_LEVEL; generated request IDs propagate across async work and verified identity context. Static operation/route/status/duration fields identify each layer. Errors, aborts, startup/shutdown and dependency failures are visible. Bodies, raw URLs/query, headers, credentials, SQL/parameters, arbitrary error messages/stacks and Prisma metadata never enter logs. Spec export and default tests are silent. Logging sink failures cannot change business outcomes; transaction completion is logged only after resolution.
+  - **Validation:** Logger level/redaction/context/throwing-sink tests first; real HTTP correlation and failure tests plus DB rollback logs; existing full build/lint/test/typecheck/format/contract and Docker startup gates.
+  - **Commit:** `feat: add correlated backend logging`.
+  - **Completion evidence:** [P02-08](evidence/P02-08.md): 322 tests and build/lint/type/format/contract gates pass; five-service Docker login tracing, secret exclusion and restart checks pass.
+
+- [x] **P02-09 — Flatten auth and platform feature folders**
+  - **Goal:** Keep all auth/platform source files directly in their feature folder as requested, including DTO adapters and auth configuration.
+  - **Requirements:** R120; preserves R116/R117 feature ownership and test separation.
+  - **Files:** `apps/api/src/auth/**`, `apps/api/src/platform/**`, imports in `apps/api/src/main.ts` and API test helpers/unit tests; backend/agent rules, decisions, requirement matrix and evidence.
+  - **Dependencies:** P02-08; prioritized by the user's folder-layout correction.
+  - **Acceptance:** No subdirectories remain in auth/platform source. DTO names, shared Zod contracts, Nest wiring, configuration validation and HTTP/Swagger output remain unchanged. Common infrastructure and purpose-based test folders stay separate. Document this exception to the generic feature DTO-folder convention; no forwarding shims or stale imports.
+  - **Validation:** Before/after directory assertions, clean API output and root build/lint/test/typecheck/format/OpenAPI checks; Docker startup/regression checks and read-only reference review. Refresh the ignored local code graph when available.
+  - **Commit:** `refactor: flatten auth and platform folders`.
+  - **Completion evidence:** [P02-09](evidence/P02-09.md): seven verified moves, no nested source/output folders, 322 tests and all quality/contract/Docker checks pass.
+
+- [x] **P02-10 — Colocate auth and platform tests**
+  - **Goal:** Keep feature tests beside auth/platform source without adding subfolders or shipping tests in application output.
+  - **Requirements:** R121; preserves R117 isolation and R120 flat folders.
+  - **Files:** eight relocated auth/platform suites, `apps/api/jest.config.mjs`, `apps/api/tsconfig.json`, `.dockerignore`, `scripts/check-compose.mjs` image assertion, release-planner test fixtures, active backend/agent/architecture/plan rules and evidence.
+  - **Dependencies:** P02-09; prioritized by the user's test-layout follow-up.
+  - **Acceptance:** Five auth and three platform suites live directly in their feature folder, using unit/integration filename suffixes. Jest discovers all 13 existing suites exactly once; shared common suites/helpers and process startup tests stay separate. Existing assertions and fixture isolation are preserved. Production output and Docker context exclude tests; test-only changes remain excluded from app releases.
+  - **Validation:** Capture suite inventory; observe moved tests missing before updating discovery, then verify all suites restored. Run root build/lint/test/typecheck/format/OpenAPI and Docker checks; inspect clean build output, refresh local graph and review the diff.
+  - **Commit:** `refactor: colocate auth and platform tests`.
+  - **Completion evidence:** [P02-10](evidence/P02-10.md): all 13 Jest suites retained, 322 tests and quality/contract/Docker checks pass; production image excludes colocated tests.
+
+- [x] **P02-11 — Use Pino for shared structured logging**
+  - **Goal:** Replace handwritten log serialization/severity handling with a maintained logging library while preserving the safe shared facade and Nest adapter.
+  - **Requirements:** R122; preserves R119 correlation/redaction guarantees.
+  - **Files:** `packages/logger/{src/index.ts,test/logger.test.mjs,package.json}`, lockfile, logging/architecture/agent documentation and evidence.
+  - **Dependencies:** P02-10; prioritized by the user's library request.
+  - **Acceptance:** Pinned Pino handles JSON output, timestamps and severity filtering across API/database/worker. Preserve current event shape, isolated request context, safe metadata, silent spec/tests and non-interfering sink failures. Reject invalid levels before Pino can expose the supplied value. No framework dependency enters database/logger and no duplicate HTTP middleware is added.
+  - **Validation:** Red/green invalid-level regression, existing logging/HTTP/auth/transaction tests, full build/lint/test/typecheck/format/OpenAPI and Docker checks.
+  - **Commit:** `refactor: use pino for shared logging`.
+  - **Completion evidence:** [P02-11](evidence/P02-11.md): 324 tests and all build/lint/type/format/contract/Docker gates pass with Pino-backed logging.
+
+- [x] **P02-12 — Group DTO adapters by feature and type**
+  - **Goal:** Reduce one-class DTO files while retaining separate request/response roles and every concrete schema/class.
+  - **Requirements:** R123; preserves R120 flat folders and existing typed Swagger contracts.
+  - **Files:** grouped auth/health DTO files and their controller imports; backend/agent/architecture rules, task/evidence records.
+  - **Dependencies:** P02-11; execute after the logging task is verified and committed.
+  - **Acceptance:** Use `auth.request.dto.ts`, `auth.response.dto.ts` and `health.response.dto.ts` for the existing six classes; no new DTO folder, forwarding exports, renamed schemas/classes or altered request/response behavior. Generated OpenAPI/client stay identical.
+  - **Validation:** Class/content preservation and import checks, clean build, root lint/test/typecheck/format/OpenAPI and Docker verification.
+  - **Commit:** `refactor: group dtos by feature and type`.
+  - **Completion evidence:** [P02-12](evidence/P02-12.md): three grouped files preserve all six adapters; generated contracts are unchanged and all build/lint/type/test/format/OpenAPI/Docker gates pass.
+
+- [x] **P02-13 — Separate feature modules and shared infrastructure**
+  - **Goal:** Make backend ownership visible through the requested modules, config, utils and shared directories.
+  - **Requirements:** R124; preserves R120/R121/R123 feature layout, test colocation and grouped DTOs.
+  - **Files:** `apps/api/src/{modules,config,utils,shared,common}/**`, entry-point imports, API test imports, release-planner path fixtures, backend/agent/architecture rules and task/evidence records.
+  - **Dependencies:** P02-12; prioritized by the user's folder-layout request before membership work.
+  - **Acceptance:** Auth/platform and their tests live flat under `src/modules/`. Reusable config and utils move out of common to `src/config/` and `src/utils/`. `src/shared/` owns SharedModule and LoggingModule; common keeps HTTP helpers. Preserve provider registration, shutdown behavior, all existing test assertions, DTO classes and generated contracts. No forwarding shims, duplicate providers or empty speculative modules.
+  - **Validation:** Observe the new-layout structural check fail first, preserve the suite inventory and source semantics through path changes, rebuild from clean API output, and run root build/lint/typecheck/test/format/OpenAPI/Docker gates plus independent review.
+  - **Commit:** `refactor: organize api modules and shared code`.
+  - **Completion evidence:** [P02-13](evidence/P02-13.md): layout/semantic checks, 324 tests and build/lint/type/contract/Docker gates pass; independent refresh clock finding is tracked in P02-14.
+
+- [x] **P02-14 — Use database time for refresh-session creation**
+  - **Goal:** Keep session lifecycle timestamps consistent when host and database clocks differ.
+  - **Requirements:** R125; preserves refresh rotation/replay safety.
+  - **Files:** `packages/database/prisma/schema.prisma`, the session-default migration, refresh integration tests, decisions and evidence.
+  - **Dependencies:** P02-13; discovered by its full-suite verification.
+  - **Acceptance:** Session audit defaults use database time instead of Prisma's host-generated now(). A deterministic host-clock-skew test proves create/rotate/replay obey lifecycle constraints. Keep fixed expiry, row locking, replay revocation and all DB constraints. Check in Prisma's two default reassertions without rewriting existing rows.
+  - **Validation:** Observe clock-skew regression fail before the change; run real PostgreSQL refresh tests, Prisma schema validation, root build/lint/typecheck/test/format/OpenAPI/Docker checks.
+  - **Commit:** `fix: use database time for refresh sessions`.
+  - **Completion evidence:** [P02-14](evidence/P02-14.md): deterministic clock-skew red/green, preserved migration data, 326 tests and all build/lint/type/contract/format/Docker checks pass.
+
+- [x] **P02-15 — Enforce ESM across authored workspaces**
+  - **Goal:** Keep all application, package and tooling code on native ESM and prevent accidental CommonJS output.
+  - **Requirements:** R126.
+  - **Files:** root manifest, shared TypeScript/ESLint configs and tests, database initializer, commitlint launcher, web/worker Docker health commands, release CLI fixtures, architecture/rules and evidence.
+  - **Dependencies:** P02-14; prioritized by the user's ESM request.
+  - **Acceptance:** Root and workspaces declare module type; NodeNext emits native ESM with verbatim module syntax; authored code rejects CommonJS loading/exports. Replace CLI path-resolution bridges with import.meta.resolve. Preserve package exports, CLI execution, migrations, API contracts and Docker startup. Framework/vendor-generated internals keep their supported format.
+  - **Validation:** Red/green compiler and lint fixtures; package module checks; full build/lint/typecheck/test/format/OpenAPI/Docker gates; inspect authored build output and independent review.
+  - **Commit:** `refactor: enforce esm across the workspace`.
+  - **Completion evidence:** [P02-15](evidence/P02-15.md): native ESM output audit, compiler/lint red-green fixtures, 329 tests and all build/type/format/contract/Docker checks pass.
+
+- [x] **P02-16 — Adopt feature-first core layers with Express**
+  - **Goal:** Apply the requested Medium architecture to existing foundations while keeping Express and Flowboard's package boundaries.
+  - **Requirements:** R127; preserve R120–R124 and R126.
+  - **Files:** `apps/api/src/{core,modules,shared}/**`, `application.ts`, `main.ts`, affected API test imports, `packages/config-eslint/src/boundaries.mjs`, boundary fixtures, architecture/rule/plan/decision/matrix docs and task evidence.
+  - **Dependencies:** P02-15; prioritized by the user's architecture request before P02-03.
+  - **Acceptance:** Foundation helpers/configuration live in `core/{common,config,utils}`; feature modules stay flat where requested; shared providers retain one registration/lifecycle. Core cannot depend on shared/features and shared cannot depend on features. Use an explicit ExpressAdapter for the common runtime/spec application factory. Keep Prisma in `packages/database`, preserve routes/contracts and avoid empty aggregator modules or compatibility shims.
+  - **Validation:** Failing/passing import-boundary fixtures, Express HTTP regression, clean build and unchanged generated contracts; root build/lint/typecheck/test/format/OpenAPI checks and isolated Docker startup/restart checks (G01–G07, G11 as applicable).
+  - **Commit:** `refactor: adopt feature-first core layers`.
+  - **Completion evidence:** [P02-16](evidence/P02-16.md): guarded layer directions, explicit Express, preserved contracts and flat features; 340 tests and all build/lint/type/format/contract/Docker gates pass.
+
+- [x] **P02-17 — Shared control-flow spacing for readable code**
+  - **Goal:** Separate conditionals and return paths visually in frontend, backend and shared code.
+  - **Requirements:** R128; preserve R118.
+  - **Files:** `packages/config-eslint/src/spacing.mjs`, `test/spacing.test.mjs`, autofixed authored app/package/tooling files, shared coding rules, plan/decision/matrix docs and task evidence.
+  - **Dependencies:** P02-16; prioritized by the user's readability request.
+  - **Acceptance:** Node, React and Next presets require blank lines after complete if/else chains, before returns and after returns when a sibling statement follows. Preserve export spacing, comments, attached else clauses, return expressions, generated exclusions and JSON formatting. Do not add blank lines before closing braces or impose unrelated style rewrites.
+  - **Validation:** Red/green real ESLint fixtures across three presets, comment/early-return/JSX cases, autofix/Prettier stability and unchanged syntax trees; root build/lint/typecheck/test/format and OpenAPI preservation checks. Docker checks if runtime syntax changes. G01–G06 as applicable.
+  - **Commit:** `style: separate control flow with blank lines`.
+  - **Completion evidence:** [P02-17](evidence/P02-17.md): three-preset spacing/autofix tests, unchanged existing syntax and 348 tests; build/lint/type/format/contract checks pass.
+
+- [x] **P02-18 — Use localhost for local development**
+  - **Goal:** Make localhost the consistent address developers use for the web, API, worker and local datastore examples.
+  - **Requirements:** R129.
+  - **Files:** App development/runtime configuration, app environment examples and startup tests, Compose origin default, README, plan/decision/matrix docs and task evidence.
+  - **Dependencies:** P02-17; prioritized by the user's localhost request.
+  - **Acceptance:** Web development and local API/worker listeners default to localhost; documented URLs and local connection examples use localhost; default browser origin is exactly http://localhost:3000. Explicit hosted/container host overrides remain valid. Keep numeric Docker loopback port bindings and IPv4 health probes; never broaden exposure. Preserve security validation of alternate explicitly configured loopback origins.
+  - **Validation:** Failing/passing default-config test, web/worker localhost startup and shutdown, auth regressions, root build/lint/typecheck/test/format/OpenAPI checks and isolated Docker startup/restart. G01–G07 and G11 as applicable.
+  - **Commit:** `fix: use localhost for local development`.
+  - **Completion evidence:** [P02-18](evidence/P02-18.md): localhost defaults, dev/production smoke checks and 348 tests pass; build/lint/type/format/contract/Docker checks pass.
+
+- [x] **P02-19 — Load ignored local environment files**
+  - **Goal:** Make local development usable with checked-in examples and private per-app environment files.
+  - **Requirements:** R130.
+  - **Files:** API/worker package scripts and startup tests, shared test command helper, API environment example, README, task/decision/matrix/evidence docs; ignored `.env`, `apps/api/.env`, `apps/worker/.env`, `apps/web/.env.local`.
+  - **Dependencies:** P02-18; prioritized by the user's local environment request.
+  - **Acceptance:** API and worker dev/start commands load optional local .env files using Node's native loader; inherited variables take precedence. Next uses .env.local and Compose uses root .env. Populate local-only credentials/settings without overwriting existing values. Local files remain ignored by Git and excluded from Docker; no secrets enter generated output or browser variables. Document datastore startup and server commands.
+  - **Validation:** Real startup-command red/green tests for local values, missing files and environment precedence; root build/lint/type/test/format/OpenAPI checks, Docker exclusion/config checks and local API readiness/login verification against PostgreSQL/Redis. G01–G07/G11 as applicable.
+  - **Commit:** `fix: load local environment files for development`.
+  - **Completion evidence:** [P02-19](evidence/P02-19.md): 12 startup-command cases and all 360 tests pass; local API readiness/login and private-file exclusions verified; root build/lint/type/format/contract/Docker checks pass.
+
+- [x] **P02-20 — Document the local Docker run workflow**
+  - **Goal:** Make README startup, configuration, diagnostics and shutdown instructions directly usable for local Docker development.
+  - **Requirements:** R86; documentation slice only.
+  - **Files:** `README.md`, `docs/TASKS.md`, `docs/REQUIREMENTS_MATRIX.md`, `docs/evidence/P02-20.md`.
+  - **Dependencies:** P02-19; prioritized by the user's Docker README request.
+  - **Acceptance:** Explain Docker/Compose prerequisites, root env versus per-app env, foreground/background startup, health and Swagger URLs, demo initialization, logs, port conflicts, rebuilding and shutdown with data retained. Commands match the current Compose configuration; do not change runtime code or the user's running stack.
+  - **Validation:** Compose configuration and CLI option checks, relative-link/Markdown checks, formatting and diff review. G01 plus documentation structural checks; application build/test gates are not applicable to this docs-only change.
+  - **Commit:** `docs: explain local Docker startup and operation`.
+  - **Completion evidence:** [P02-20](evidence/P02-20.md): Compose defaults/local configuration, CLI compatibility, README links and formatting verified; runtime unchanged.
+
+- [x] **P02-21 — Reload local source changes inside Docker**
+  - **Goal:** Show saved local code changes in running Docker development apps without manual rebuilds for each edit.
+  - **Requirements:** R131.
+  - **Files:** App Dockerfiles/package scripts, container-specific Turbo task configuration, `compose.dev.yaml`, Docker context exclusions/development verification script, parallel CI container matrix/regression, README, plan/decision/matrix/evidence docs.
+  - **Dependencies:** P02-20; prioritized by the user's live-update request.
+  - **Acceptance:** An opt-in development command runs web/API/worker with source mounts and dependency-aware watchers; app and shared-package edits become observable. Linux dependencies, build output and secrets remain isolated; runtime users stay non-root. Invalid code recovers after correction. Normal release images remain unchanged in behavior. Document rebuild boundaries and retain datastore contents across reloads.
+  - **Validation:** Observe a live-edit regression before implementation, then verify web/API/worker and shared-package updates in an isolated copied fixture. Check mounts, private-file exclusion, data retention and error recovery. Run root build/lint/type/test/format/OpenAPI, existing Docker acceptance and new development Docker acceptance. G01–G07/G11 as applicable.
+  - **Commit:** `feat: reload source changes in Docker development`.
+  - **Completion evidence:** [P02-21](evidence/P02-21.md): real app/shared-package live edits, compile-error recovery, stable health and restart counts, source/output isolation and data preservation verified; 360 tests and both Docker suites pass; parallel CI checks added.
+
+- [x] **P02-22 — Publish development datastore ports on localhost**
+  - **Goal:** Connect host database/Redis tools to the live Docker development stack.
+  - **Requirements:** R132.
+  - **Files:** `compose.dev.yaml`, `scripts/check-compose-dev.mjs`, README, plan/decision/matrix/evidence docs.
+  - **Dependencies:** P02-21; prioritized by the user's development port request.
+  - **Acceptance:** Development publishes PostgreSQL on localhost:5432 and Redis on localhost:6379 by default, with POSTGRES_PORT/REDIS_PORT overrides. Base Compose keeps datastores private. Isolated tests use random ports and verify PostgreSQL and Redis protocol responses from the host; preserve data and existing credentials.
+  - **Validation:** Red/green Compose configuration assertions and host protocol probes, full development Docker suite, base Compose privacy check, root build/lint/type/test/format/OpenAPI checks. G01–G05/G11.
+  - **Commit:** `feat: expose development datastore ports locally`.
+  - **Completion evidence:** [P02-22](evidence/P02-22.md): localhost defaults/overrides and base privacy checked; real PostgreSQL/Redis host probes and full development Docker suite pass; current stack updated with preserved data; all 360 tests and root checks pass.
+
+- [x] **P02-23 — Make local Swagger authentication executable**
+  - **Goal:** Allow Swagger's browser origin to use the documented local authentication endpoints.
+  - **Requirements:** R133; preserves R20/R33/R35.
+  - **Files:** Root/API `.env.example`, `compose.yaml`, README, auth configuration/integration tests, shared test fixture, plan/decision/matrix/evidence docs. Update ignored local env files without committing secrets.
+  - **Dependencies:** P02-22; prioritized by the user's reported Swagger Execute failure.
+  - **Acceptance:** Local defaults explicitly allow the web and Swagger origins; Compose defaults follow custom published ports. Explicit allowlist overrides remain authoritative. Browser login, cookie refresh and logout work in Swagger; missing/unlisted origins still fail. Existing credentials and data remain intact.
+  - **Validation:** Failing local configuration regressions, real PostgreSQL/Redis auth lifecycle test, browser Execute reproduction and recovery, root build/lint/type/test/format/OpenAPI checks and Docker configuration/runtime checks. G01–G05/G07/G11.
+  - **Commit:** `fix: allow local Swagger authentication requests`.
+  - **Completion evidence:** [P02-23](evidence/P02-23.md): browser login/refresh/logout return 200/200/204; real origin rejection and custom-port regressions pass; all 366 tests, Docker and root gates pass.
 
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
-  - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/workspaces.e2e-spec.ts`, generated artifacts.
-  - **Dependencies:** P02-02.
+  - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.
+  - **Dependencies:** P02-02, P02-06.
   - **Acceptance:** `/me`, paginated workspaces/members, add/invite/accept/remove/role change and verified workspace switch work. Invite is an expiring manual-share link with digest storage and email match. Establish the one PermissionGuard/PermissionService with the membership/admin policy now; P03-02 extends it to containers. Remove departing members' grants/assignments atomically, bump affected task versions/emit outbox updates, and retain activity. No controller-local authorization, self-escalation or last-admin removal. The same user can be admin in workspace A and member in B; role changes apply on the next request without global-role leakage.
   - **Validation:** Expired/reused invite, wrong email, cross-tenant switch, member cannot grant admin, concurrent last-admin demotions, removed member token fails; endpoint DoD and standard gate.
   - **Commit:** `feat: manage workspace membership and invites`.
@@ -381,7 +588,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P03-01 — Strict hierarchy CRUD and archive**
   - **Goal:** Implement space/folder/list records with valid parents and soft deletion.
-  - **Files:** `packages/contracts/src/nodes.ts`, `apps/api/src/hierarchy/{hierarchy.module,nodes.controller,hierarchy.service,nodes.dto}.ts`, `apps/api/test/hierarchy.e2e-spec.ts`, generated artifacts.
+  - **Files:** `packages/contracts/src/nodes.ts`, `apps/api/src/modules/hierarchy/{hierarchy.module,nodes.controller,hierarchy.service}.ts`, `apps/api/src/modules/hierarchy/dto/*.dto.ts`, `apps/api/test/integration/hierarchy.spec.mjs`, generated artifacts.
   - **Dependencies:** P02-03.
   - **Acceptance:** Create/read/rename/archive nodes; exact parent types enforced; IDs cannot cross tenants. Archive removes whole subtree/tasks from normal reads atomically. Until P03-02 adds complete member visibility, all new node routes are admin-only through the established PermissionGuard, including reads. Reparenting waits for P06-05.
   - **Validation:** Skip-level/cycle/self-parent attempts, archived ancestors, cross-tenant parent, repeat archive behavior and rollback; endpoint DoD and standard gate.
@@ -389,7 +596,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P03-02 — Central permission policy, grants and visible tree**
   - **Goal:** Make tree/direct access agree on ancestor-aware visibility.
-  - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/permissions/**`, `apps/api/src/hierarchy/tree.controller.ts`, `apps/api/test/permissions.e2e-spec.ts`, generated artifacts.
+  - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/modules/permissions/**`, `apps/api/src/modules/hierarchy/tree.controller.ts`, `apps/api/test/integration/permissions.spec.mjs`, generated artifacts.
   - **Dependencies:** P03-01.
   - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Cursor-only paginated flat tree contains visible nodes/parents only, orders parents before children, and rejects stale revision-bound cursors. Grants are admin-managed and transactions recheck authorization.
   - **Validation:** Alice sees all; Bob lacks private list; Carol allow works; Bob direct denied list 403; child allow cannot bypass parent deny/private; foreign IDs 404; counts/grants do not leak. Endpoint DoD and standard gate.
@@ -397,7 +604,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P03-03 — Deterministic sibling reordering**
   - **Goal:** Order visible hierarchy without client-controlled positions or race corruption.
-  - **Files:** `packages/contracts/src/ordering.ts`, `apps/api/src/hierarchy/ordering.service.ts`, nodes controller, `apps/api/test/node-ordering.e2e-spec.ts`, generated artifacts.
+  - **Files:** `packages/contracts/src/ordering.ts`, `apps/api/src/modules/hierarchy/ordering.service.ts`, nodes controller, `apps/api/test/integration/node-ordering.spec.mjs`, generated artifacts.
   - **Dependencies:** P03-02.
   - **Acceptance:** Neighbor-ID move API assigns integer positions transactionally, validates sibling set, increments every changed sibling version once and the workspace collection revisions, with stable ID tie-breaks.
   - **Validation:** First/last/empty position, wrong-parent/foreign anchors, duplicate anchors, stale version and concurrent reorder; endpoint DoD and standard gate.
@@ -415,7 +622,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P04-02 — Status configuration and list resolution endpoints**
   - **Goal:** Expose typed status CRUD and the authoritative resolved-list status endpoint.
-  - **Files:** `apps/api/src/statuses/**`, `apps/api/test/statuses.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/modules/statuses/**`, `apps/api/test/integration/statuses.spec.mjs`, generated artifacts.
   - **Dependencies:** P04-01.
   - **Acceptance:** Scoped config endpoints and `GET /v1/lists/:id/resolved-statuses` use the same pure resolver. Admin-only config, readable resolved sets follow list access. Stable identities and local overrides serialize distinctly. Basic in-use/descendant safety ships with these writes; P04-03 expands its regression coverage. Mutations increment configVersion and reads return it from the same snapshot as their items.
   - **Validation:** Two sibling lists under one folder return different expected sets; override retains task statusId; illegal category edits, invalid owner, forbidden scope and invalid sets reject. Endpoint DoD and standard gate.
@@ -423,7 +630,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P04-03 — Safe status mutation across descendants**
   - **Goal:** Prevent orphaned tasks when ancestor configuration changes.
-  - **Files:** `apps/api/src/statuses/status-safety.service.ts`, status service/repositories, `apps/api/test/status-safety.e2e-spec.ts`.
+  - **Files:** `apps/api/src/modules/statuses/status-safety.service.ts`, status service/repositories, `apps/api/test/integration/status-safety.spec.mjs`.
   - **Dependencies:** P04-02.
   - **Acceptance:** Proposed mutations validate owning scope and all affected active descendant lists under one lock. Hide/delete rejects in-use effective statuses. Physical identity deletion respects archived references. Removing overrides re-evaluates fallback.
   - **Validation:** Parent hide with child task, hiding last active/done, safe unused deletion, child overrides unaffected where appropriate, rollback leaves all lists valid; endpoint DoD and standard gate.
@@ -441,7 +648,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P05-02 — Custom-field configuration and resolved schemas**
   - **Goal:** Add scoped field CRUD and authoritative list schemas.
-  - **Files:** `apps/api/src/fields/**`, `apps/api/test/fields.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/modules/fields/**`, `apps/api/test/integration/fields.spec.mjs`, generated artifacts.
   - **Dependencies:** P05-01.
   - **Acceptance:** Workspace/space/folder/list owners, workspace ownerId equals active tenant, admin-only mutations, typed options and provenance, `GET /v1/lists/:id/resolved-fields`. Uses shared resolver and tenant repositories. In-use/descendant validation ships with the first write routes; P05-03 hardens edge coverage. Mutations increment configVersion and resolved reads return a consistent version.
   - **Validation:** Owner mismatch/foreign workspace, workspace defaults inherited across separate spaces, list override, field-key collision, sibling independence, member writes 403, foreign fields 404 and schema response shape; endpoint DoD and standard gate.
@@ -449,7 +656,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P05-03 — Reject destructive field-schema changes**
   - **Goal:** Keep stored task values valid after ancestor/local configuration changes.
-  - **Files:** `apps/api/src/fields/field-safety.service.ts`, field service/repositories, `apps/api/test/field-safety.e2e-spec.ts`.
+  - **Files:** `apps/api/src/modules/fields/field-safety.service.ts`, field service/repositories, `apps/api/test/integration/field-safety.spec.mjs`.
   - **Dependencies:** P05-02.
   - **Acceptance:** Validate every affected live list/task transactionally, including workspace-root changes and the 100-effective-field cap. Shadowed definitions are evaluated from their final resolved schema. Block deletion of in-use effective definition, invalid option removal, incompatible type changes, required promotion with missing values, and invalid fallback exposed by deleting override. Document optional→populate→required workflow.
   - **Validation:** Each rejected mutation returns field paths and preserves definitions/tasks; zero/false do not falsely block required promotion; safe unused deletion succeeds. Endpoint DoD and standard gate.
@@ -459,7 +666,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-01 — Task reads, cursor pagination and filters**
   - **Goal:** Load board/list/drawer data without leaks or unstable pagination.
-  - **Files:** `packages/contracts/src/tasks.ts`, `apps/api/src/tasks/{tasks.module,tasks.controller,task-query.service,tasks.dto}.ts`, `apps/api/test/task-queries.e2e-spec.ts`, generated artifacts.
+  - **Files:** `packages/contracts/src/tasks.ts`, `apps/api/src/modules/tasks/{tasks.module,tasks.controller,task-query.service}.ts`, `apps/api/src/modules/tasks/dto/*.dto.ts`, `apps/api/test/integration/task-queries.spec.mjs`, generated artifacts.
   - **Dependencies:** P05-03.
   - **Acceptance:** List task pages/detail include requested built-ins and customFields, never secrets. Due/priority sorting, stable null ordering and one typed custom-field filter work. Cursor binds resource/filter/sort and limit is bounded. Task pages include configVersion from the same transaction snapshot.
   - **Validation:** No duplicate/skipped ties on stable dataset, malformed/mismatched cursor 400, hidden/foreign task access, null dates and all priorities, option filter types; endpoint DoD and standard gate.
@@ -467,7 +674,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-02 — Validated task create, edit and archive**
   - **Goal:** Persist complete valid tasks and durable event intent.
-  - **Files:** `apps/api/src/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, assignable-member filter/contracts, `apps/api/test/task-writes.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/modules/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, assignable-member filter/contracts, `apps/api/test/integration/task-writes.spec.mjs`, generated artifacts.
   - **Dependencies:** P06-01.
   - **Acceptance:** Validate title ≤500, Markdown string, dates, destination status, members/assignee access and effective custom fields. PATCH omission/clear semantics and expected versions work. Member listing accepts an authorized assignableToListId filter for eligible assignee choices. Task update and outbox insert commit together. Archive removes task from normal reads.
   - **Validation:** Unknown statusId 400; foreign/disallowed assignee; title 501; wrong type/option/missing required; explicit clear; stale edit 409; rollback emits no event. Endpoint DoD and standard gate.
@@ -475,7 +682,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-03 — Cross-list moves and column ordering**
   - **Goal:** Move cards atomically while preserving valid status, fields and ordering.
-  - **Files:** `apps/api/src/tasks/task-move.service.ts`, task contracts/controller, `apps/api/test/task-moves.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/modules/tasks/task-move.service.ts`, task contracts/controller, `apps/api/test/integration/task-moves.spec.mjs`, generated artifacts.
   - **Dependencies:** P06-02.
   - **Acceptance:** Source/destination permissions checked; preserve status or map first same category; missing category rejects. Move accepts required field values/explicit clears. Reorder validates neighbor list+column and versions; each changed task version advances once, dataVersion advances once, and one transaction updates everything/outbox.
   - **Validation:** Same-category mapping success; closed→no closed rejects; required destination field missing rejects/provided succeeds; source-only value needs explicit clear; wrong anchors/tenant reject; concurrent config/move remains valid; failure leaves task unchanged. Endpoint DoD and standard gate.
@@ -483,7 +690,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-04 — Complete task invariants and contract regression**
   - **Goal:** Audit all task entry points against the required negative scenarios.
-  - **Files:** `apps/api/test/{tenant-isolation,task-invariants}.e2e-spec.ts`, `packages/contracts/test/task-patches.test.ts`, necessary task/repository fixes, generated artifacts.
+  - **Files:** `apps/api/test/integration/{tenant-isolation,task-invariants}.spec.mjs`, `packages/contracts/test/task-patches.test.ts`, necessary task/repository fixes, generated artifacts.
   - **Dependencies:** P06-03.
   - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts. Cursor tampering/expiry/context changes and offset/page/duplicate parameters return400; visible rows determine limit+1/hasNextPage; revision changes return409 and a restart returns each current row once.
   - **Validation:** Full real-Postgres suite with two tenants; standard gate. Fix actual defects rather than weaken expectations.
@@ -491,7 +698,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-05 — Validated container reparenting**
   - **Goal:** Complete container moves now that status and field rules are available.
-  - **Files:** `apps/api/src/hierarchy/node-move.service.ts`, node contracts/controller, `apps/api/test/node-moves.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/modules/hierarchy/node-move.service.ts`, node contracts/controller, `apps/api/test/integration/node-moves.spec.mjs`, generated artifacts.
   - **Dependencies:** P06-04.
   - **Acceptance:** Admin can move folder/list only to a valid same-tenant parent. Revalidate resulting subtree permissions, status availability and all live task field schemas; reject invalid reparenting rather than silently remap a whole subtree. Update versions/events as needed.
   - **Validation:** Cycle, archived parent, cross-tenant target, required-field/status mismatch, valid move and atomic rollback across descendants; endpoint DoD and standard gate.
@@ -614,7 +821,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P11-01 — Durable outbox dispatch to BullMQ**
   - **Goal:** Deliver persisted task events after commit, surviving Redis outages.
-  - **Files:** `apps/api/src/outbox/**`, `packages/contracts/src/{events,jobs}.ts`, `apps/api/test/outbox.integration.test.ts`, Redis test harness/config.
+  - **Files:** `apps/api/src/modules/outbox/**`, `packages/contracts/src/{events,jobs}.ts`, `apps/api/test/integration/outbox.integration.test.ts`, Redis test harness/config.
   - **Dependencies:** P10-02.
   - **Acceptance:** Claim/retry durable events; stable event ID/job ID; bounded backoff and observable failures. No lost intent after DB commit, no event from rolled-back write, multiple dispatchers safely claim work.
   - **Validation:** Redis unavailable then recovers, dispatcher crash/retry, duplicate attempts, two dispatchers, malformed job schema; standard gate with real Redis/Postgres.
@@ -622,7 +829,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P11-02 — Idempotent activity worker and drawer feed**
   - **Goal:** Turn status-change events into stored, visible activity.
-  - **Files:** `apps/worker/src/{main,activity.processor,health,search-index.stub}.ts`, `apps/worker/test/activity.integration.test.ts`, `apps/api/src/activity/**`, `apps/web/src/features/tasks/activity-feed.tsx`, generated artifacts.
+  - **Files:** `apps/worker/src/{main,activity.processor,health,search-index.stub}.ts`, `apps/worker/test/activity.integration.test.ts`, `apps/api/src/modules/activity/**`, `apps/web/src/features/tasks/activity-feed.tsx`, generated artifacts.
   - **Dependencies:** P11-01.
   - **Acceptance:** Worker verifies each job against its persisted outbox record, derives tenant context, and inserts one Activity per event. Paginated authorized activity endpoint and drawer feed show actor/time/from/to. Publication retries even if Activity already exists; mark delivery complete only after successful publish. Graceful worker shutdown/heartbeat. Search stub is explicit `TODO(NEXT-01)` and does not advertise indexing.
   - **Validation:** Duplicate/retried delivery yields one activity; crash after Activity insert but before publish recovers the notification; malformed/cross-tenant payload blocked; forbidden task feed 403; empty/loading/error feed states; endpoint DoD and standard gate.
@@ -630,7 +837,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P11-03 — Permission-safe Socket.IO collaboration**
   - **Goal:** Update other clients while preserving tenant and resource access.
-  - **Files:** `apps/api/src/realtime/**`, `apps/api/test/realtime.integration.test.ts`, `apps/web/src/features/realtime/**`, realtime browser tests.
+  - **Files:** `apps/api/src/modules/realtime/**`, `apps/api/test/integration/realtime.integration.test.ts`, `apps/web/src/features/realtime/**`, realtime browser tests.
   - **Dependencies:** P11-02.
   - **Acceptance:** Redis adapter, verified JWT handshake, guarded list subscriptions and safe source/destination invalidations. Revoke rooms on access changes, disconnect at token expiry, refetch on reconnect. Dirty forms preserve local edits and report conflicts; duplicate/stale events ignored.
   - **Validation:** Two clients update; two API instances fan out; Bob cannot subscribe to private list; foreign room blocked; grant revocation stops next event; move does not reveal hidden target; reconnect catches missed changes. Standard gate.

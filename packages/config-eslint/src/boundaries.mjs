@@ -6,27 +6,31 @@ import ts from 'typescript';
 
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const runtimeDependencies = {
-  api: ['contracts', 'database'],
+  api: ['contracts', 'database', 'logger'],
   'api-client': [],
   contracts: [],
-  database: ['contracts'],
+  database: ['contracts', 'logger'],
+  logger: [],
   openapi: ['contracts'],
   ui: ['contracts'],
   web: ['contracts', 'api-client', 'ui'],
-  worker: ['contracts', 'database'],
+  worker: ['contracts', 'database', 'logger'],
 };
 
 function workspaceFor(root, filename) {
   const [group, name] = path.relative(root, filename).split(path.sep);
   if (!['apps', 'packages'].includes(group) || !name) return undefined;
+
   return { group, name, directory: path.join(root, group, name) };
 }
 
 function compilerOptions(owner) {
   const config = path.join(owner.directory, 'tsconfig.json');
   if (!existsSync(config)) return {};
+
   const input = ts.readConfigFile(config, ts.sys.readFile);
   if (input.error) return {};
+
   return ts.parseJsonConfigFileContent(input.config, ts.sys, owner.directory, {}, config).options;
 }
 
@@ -37,12 +41,15 @@ function resolveAlias(owner, specifier, options) {
       ? specifier.startsWith(prefix) && specifier.endsWith(suffix)
       : specifier === pattern;
     if (!matches || !targets[0]) continue;
+
     const wildcard = specifier.slice(prefix.length, specifier.length - suffix.length || undefined);
+
     return path.resolve(
       options.baseUrl ?? options.pathsBasePath ?? owner.directory,
       targets[0].replace('*', wildcard),
     );
   }
+
   return undefined;
 }
 
@@ -60,6 +67,7 @@ export default {
     const filename = context.filename;
     const owner = workspaceFor(root, filename);
     if (!owner) return {};
+
     const options = compilerOptions(owner);
     const inSource = /(^|[/\\])(src|app)[/\\]/.test(path.relative(owner.directory, filename));
     const report = (node, reason) =>
@@ -67,32 +75,41 @@ export default {
 
     function check(node, specifier) {
       if (typeof specifier !== 'string') return;
+
       if (owner.name === 'contracts' && inSource && !specifier.startsWith('.')) {
         if (specifier !== 'zod' && !specifier.startsWith('zod/')) {
           report(node, 'Contracts runtime code may import only Zod and its own files.');
+
           return;
         }
       }
+
       if (/(^|[/\\])(@prisma|\.prisma)[/\\]/.test(specifier) && owner.name !== 'database') {
         report(node, 'Raw Prisma imports belong in packages/database.');
+
         return;
       }
+
       if (
         inSource &&
         ['web', 'ui'].includes(owner.name) &&
         /^(axios|undici|node:https?)(\/|$)/.test(specifier)
       ) {
         report(node, 'Use generated operations from packages/api-client for HTTP requests.');
+
         return;
       }
+
       if (
         inSource &&
         owner.name === 'ui' &&
         /^(socket\.io-client|@tanstack\/|@hey-api\/)/.test(specifier)
       ) {
         report(node, 'Shared UI components are presentational; data clients belong in apps/web.');
+
         return;
       }
+
       const alias = resolveAlias(owner, specifier, options);
       const resolved =
         alias ??
@@ -109,10 +126,13 @@ export default {
         owner.name !== 'database'
       ) {
         report(node, 'Raw Prisma imports belong in packages/database.');
+
         return;
       }
+
       const workspaceName = specifier.match(/^@flowboard\/([^/]+)/)?.[1];
       if (!resolved && !workspaceName) return;
+
       const target = resolved
         ? workspaceFor(root, resolved)
         : workspaceFor(
@@ -123,24 +143,47 @@ export default {
               workspaceName,
             ),
           );
+      if (resolved && owner.group === 'apps' && owner.name === 'api' && target?.name === 'api') {
+        const sourceRoot = path.join(owner.directory, 'src');
+        const fromLayer = path.relative(sourceRoot, filename).split(path.sep)[0];
+        const toLayer = path.relative(sourceRoot, resolved).split(path.sep)[0];
+        if (
+          (fromLayer === 'core' && ['shared', 'modules'].includes(toLayer)) ||
+          (fromLayer === 'shared' && toLayer === 'modules')
+        ) {
+          report(
+            node,
+            `API ${fromLayer} cannot import ${toLayer}; dependencies point toward core.`,
+          );
+
+          return;
+        }
+      }
+
       if (!target || target.name === owner.name) return;
+
       if (resolved) {
         report(
           node,
           'Cross-workspace paths and aliases must use the target package public export.',
         );
+
         return;
       }
+
       if (target.group === 'apps') {
         const toolingException =
           owner.name === 'openapi' &&
           path.relative(owner.directory, filename).startsWith(`scripts${path.sep}`) &&
           specifier === '@flowboard/api/spec';
         if (!toolingException) report(node, 'Applications cannot be imported across workspaces.');
+
         return;
       }
+
       if (target.name.startsWith('config-') && (!inSource || owner.name.startsWith('config-')))
         return;
+
       const allowed = runtimeDependencies[owner.name];
       if (allowed && !allowed.includes(target.name)) {
         report(
@@ -177,6 +220,7 @@ export default {
             check(node, node.arguments[0]?.value);
           }
         }
+
         const directFetch = node.callee.type === 'Identifier' && node.callee.name === 'fetch';
         const globalFetch =
           node.callee.type === 'MemberExpression' &&

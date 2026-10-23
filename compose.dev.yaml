@@ -1,0 +1,66 @@
+# Opt-in live source updates. Release targets in compose.yaml remain unchanged.
+services:
+  postgres:
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+
+  redis:
+    ports:
+      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
+
+  api:
+    image: flowboard-api:dev
+    restart: on-failure
+    build:
+      target: development
+    environment:
+      HOST: 0.0.0.0
+      NODE_ENV: development
+      TSC_WATCHFILE: UseFsEventsWithFallbackDynamicPolling
+    volumes:
+      - ./apps/api/src:/repo/apps/api/src:ro
+      - ./packages/contracts/src:/repo/packages/contracts/src:ro
+      - ./packages/logger/src:/repo/packages/logger/src:ro
+      - ./packages/database/src:/repo/packages/database/src:ro
+      - ./packages/database/prisma:/repo/packages/database/prisma:ro
+    tmpfs:
+      - /repo/packages/database/src/generated:uid=1000,gid=1000,mode=0755
+
+  worker:
+    image: flowboard-worker:dev
+    restart: on-failure
+    build:
+      target: development
+    environment:
+      HOST: 0.0.0.0
+      NODE_ENV: development
+      TSC_WATCHFILE: UseFsEventsWithFallbackDynamicPolling
+    volumes:
+      - ./apps/worker/src:/repo/apps/worker/src:ro
+      - ./packages/contracts/src:/repo/packages/contracts/src:ro
+      - ./packages/logger/src:/repo/packages/logger/src:ro
+      - ./packages/database/src:/repo/packages/database/src:ro
+      - ./packages/database/prisma:/repo/packages/database/prisma:ro
+    tmpfs:
+      - /repo/packages/database/src/generated:uid=1000,gid=1000,mode=0755
+
+  web:
+    image: flowboard-web:dev
+    restart: on-failure
+    build:
+      target: development
+    environment:
+      HOST: 0.0.0.0
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: '1'
+    volumes:
+      - ./apps/web/app:/repo/apps/web/app:ro
+      - ./packages/ui/src:/repo/packages/ui/src:ro
+      - ./packages/api-client/src:/repo/packages/api-client/src:ro
+      - ./packages/contracts/src:/repo/packages/contracts/src:ro
+      - ./packages/logger/src:/repo/packages/logger/src:ro
+      - ./packages/database/src:/repo/packages/database/src:ro
+      - ./packages/database/prisma:/repo/packages/database/prisma:ro
+      - ./apps/api/src:/repo/apps/api/src:ro
+    tmpfs:
+      - /repo/packages/database/src/generated:uid=1000,gid=1000,mode=0755

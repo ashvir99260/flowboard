@@ -65,6 +65,8 @@ Response projection is an explicit mapper/use-case result followed by Zod serial
 
 ## 4. Decorators and Swagger generation
 
+Feature ownership, DTO placement and the implementation checklist follow [the backend coding guide](BACKEND_GUIDELINES.md). Shared schemas remain in contracts, feature DTO adapters remain in the API, and Prisma persistence remains in database.
+
 ```mermaid
 flowchart TD
   Schemas[Shared Zod request and response schemas] --> DTOs[Nest createZodDto classes]
@@ -104,6 +106,8 @@ export class TaskPageResponseDto extends createZodDto(TaskPageSchema) {}
 Swagger decorators do not enforce authorization. Auth/permission guards still run on every request, including configuration and list queries. For a route requiring bearer **and** refresh cookie, represent both in one OpenAPI security requirement object; separate alternatives would describe OR. Document cookie-only refresh and public authentication separately.
 
 Shared Zod schemas already supply property types/requiredness/enums/examples. Do not hand-maintain equivalent @ApiProperty and class-validator schemas. If special Swagger metadata is needed, extend documentation without changing the shared validation source. Lock compatible dependency versions when implementing, and verify generated output against the installed versions rather than assuming latest decorator APIs.
+
+P02-04 documents the current auth and health endpoints with operation summaries/descriptions, schema/model titles and descriptions, schema-valid examples, and response/header examples. Put field metadata in Zod `.meta({ title, description, example })`; keep operation and transport details in Nest decorators. Use synthetic credentials only. A supplemental `@ApiResponse` must preserve the concrete `type: ResponseDto.Output` alongside `@ZodResponse`; otherwise the installed decorator merge can erase the generated response schema. Tests assert those references and their components. No-body 204 responses remain without content or a fabricated example.
 
 The spec-only bootstrap loads real DTOs/controller metadata without DB/Redis connections. Export/normalize OpenAPI → run Spectral conventions/drift check → generate Hey API → compile client/web. A schema, response or decorator change must regenerate both committed artifacts. Hey API provides typed SDK, query/infinite-query options and mutation options; Next.js calls TanStack hooks with those generated options. [Hey API TanStack plugin](https://heyapi.dev/docs/openapi/typescript/plugins/tanstack-query)
 

@@ -36,15 +36,19 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
     if (!response.ok) throw new Error(`Deployment provider ${method} failed (${response.status})`);
+
     const text = await response.text();
+
     return (text ? JSON.parse(text) : {}) as T;
   };
   const wait = async (check: () => Promise<boolean>) => {
     const start = (options.now ?? Date.now)();
     while (true) {
       if (await check()) return;
+
       if ((options.now ?? Date.now)() - start >= (options.timeoutMs ?? 900_000))
         throw new Error('Deployment readiness timed out');
+
       await (options.sleep ?? delay)(5_000);
     }
   };
@@ -52,8 +56,10 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
     const url = new URL(`https://api.vercel.com${path}`);
     for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
     if (config.vercelTeamId) url.searchParams.set('teamId', config.vercelTeamId);
+
     return url.toString();
   };
+
   return {
     async vercel(manifest: ReleaseManifest) {
       const projectPath = `/v9/projects/${encodeURIComponent(config.vercelProjectId!)}`;
@@ -70,6 +76,7 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
       const readProject = () => request<Project>(vercelUrl(projectPath), config.vercelToken!);
       const project = await readProject();
       if (!project.name) throw new Error('Vercel project was not found');
+
       const isPreview = (deployment: Deployment) =>
         deployment.target == null || deployment.target === 'preview';
       let existing: Deployment | undefined;
@@ -90,6 +97,7 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
           config.vercelToken!,
         );
         if (!Array.isArray(page.deployments)) throw new Error('Invalid Vercel deployment listing');
+
         existing = page.deployments.find(
           (deployment) =>
             isPreview(deployment) &&
@@ -102,6 +110,7 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
         const next = page.pagination?.next;
         until = next ? String(next) : '';
         if (until && cursors.has(until)) throw new Error('Repeated Vercel pagination cursor');
+
         if (until) cursors.add(until);
       } while (!existing && until);
       if (!existing) {
@@ -113,10 +122,12 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
         );
         if (!Array.isArray(history.deployments))
           throw new Error('Invalid Vercel deployment listing');
+
         if (!history.deployments.length)
           throw new Error(
             'Vercel initial deployment becomes production; bootstrap the dedicated preview project before enabling CI',
           );
+
         await options.assertCurrent();
         existing = await request<Deployment>(
           vercelUrl('/v13/deployments'),
@@ -136,8 +147,10 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
           },
         );
       }
+
       const id = existing.id ?? existing.uid;
       if (!id) throw new Error('Vercel did not return a deployment ID');
+
       let previewUrl = '';
       await wait(async () => {
         await options.assertCurrent();
@@ -147,20 +160,26 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
         );
         if (['ERROR', 'CANCELED', 'BLOCKED'].includes(deployment.readyState ?? ''))
           throw new Error('Vercel deployment failed');
+
         if (
           !isPreview(deployment) ||
           deployment.meta?.flowboardSha !== manifest.sha ||
           deployment.meta?.flowboardTag !== manifest.tag
         )
           throw new Error('Invalid Vercel preview identity');
+
         if (deployment.readyState !== 'READY') return false;
+
         const url = deployment.url;
         // Vercel returns the generated hostname, not an arbitrary redirect target.
         if (!url || !/^[a-z0-9-]+\.vercel\.app$/.test(url))
           throw new Error('Invalid Vercel preview URL');
+
         previewUrl = `https://${url}`;
+
         return true;
       });
+
       return previewUrl;
     },
     async northflank(manifest: ReleaseManifest, serviceId: string) {
@@ -175,6 +194,7 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
         deployment.instances < 1
       )
         throw new Error('Northflank target must be a running external-image service');
+
       if (deployment.external.imagePath !== target) {
         await options.assertCurrent();
         const patch = `https://api.northflank.com/v1/projects/${encodeURIComponent(config.northflankProjectId!)}/services/deployment/${encodeURIComponent(serviceId)}`;
@@ -189,11 +209,13 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
           },
         });
       }
+
       await wait(async () => {
         await options.assertCurrent();
         const current = await read();
         if (current.data.status.deployment.status === 'FAILED')
           throw new Error(`Northflank ${manifest.app} deployment failed`);
+
         return (
           current.data.deployment.external?.imagePath === target &&
           current.data.status.deployment.status === 'COMPLETED' &&

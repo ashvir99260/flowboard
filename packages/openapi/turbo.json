@@ -1,0 +1,7 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "api:generate": { "cache": false, "dependsOn": ["^build"] },
+    "openapi:check": { "cache": false, "dependsOn": ["^build"] }
+  }
+}

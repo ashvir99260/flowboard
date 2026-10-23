@@ -1,2 +1,4 @@
-// TODO(P01-02): populate this scaffold with its planned implementation.
-export {};
+export * from './generated/index.js';
+
+export * from './generated/@tanstack/react-query.gen.js';
+// TODO(P07-03): Add the session-aware setupClient transport before browser auth.

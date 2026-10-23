@@ -1,6 +1,10 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "tasks": {
+    "api:generate": {
+      "cache": false,
+      "outputs": []
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
@@ -37,10 +41,22 @@
     "dev": {
       "cache": false,
       "dependsOn": ["^build"],
-      "env": ["HOST", "PORT", "NEXT_TELEMETRY_DISABLED"],
+      "env": ["HOST", "PORT", "NEXT_TELEMETRY_DISABLED", "LOG_LEVEL"],
+      "persistent": true
+    },
+    "dev:docker": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "env": ["HOST", "PORT", "NODE_ENV", "NEXT_TELEMETRY_DISABLED", "LOG_LEVEL", "TSC_WATCHFILE"],
+      "interruptible": true,
       "persistent": true
     },
     "docker:check": {
+      "cache": false,
+      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
+      "outputs": []
+    },
+    "docker:dev:check": {
       "cache": false,
       "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
       "outputs": []
@@ -62,6 +78,10 @@
     "lint:fix": {
       "cache": false,
       "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "openapi:check": {
+      "cache": false,
       "outputs": []
     },
     "release:plan": {

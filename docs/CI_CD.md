@@ -41,7 +41,7 @@ Branch protection should require the five `Workspace / ...` checks and `Compose 
 - Northflank receives the exact API/worker image digest. Vercel builds the exact released Git commit as a **preview**, without assigning production traffic. This is intentionally a source build, not four-environment artifact promotion.
 - Validate all required settings before any provider writes. Missing credentials, invalid identities, provider errors, failed rollouts and timeouts fail the job.
 - Serialize preview deployments and refuse stale main workflows before mutations and during readiness polling. A stale Vercel build can finish at its unique preview URL, but it cannot acquire a production alias through this workflow.
-- PostgreSQL/Redis secrets stay on the hosts. CD needs deployment permissions, not database credentials. Automatic migrations remain P01-05.
+- PostgreSQL/Redis secrets stay on the hosts. CD needs deployment permissions, not database credentials. API startup applies checked-in migrations before readiness; hosted DEMO_SEED stays false.
 
 ## Connect the shared preview
 
@@ -61,7 +61,9 @@ Branch protection should require the five `Workspace / ...` checks and `Compose 
 | `NORTHFLANK_WORKER_SERVICE_ID` | Repository variable          | Preview external-image worker service, different from API |
 | `CD_ENABLED`                   | Repository variable          | Exactly `true` enables the shared preview job             |
 
-GitHub supplies its token, repository ID and workflow SHA. Never paste provider tokens into a PR, issue, file or chat. Database URLs, Redis credentials and later auth keys belong in provider runtime secrets. Vercel receives only settings it needs; no database or Redis secret belongs in the browser.
+GitHub supplies its token, repository ID and workflow SHA. Never paste provider tokens into a PR, issue, file or chat. Database URLs, Redis credentials and auth keys belong in provider runtime secrets. Vercel receives only settings it needs; no database or Redis secret belongs in the browser.
+
+API runtime settings now include `DATABASE_URL`, optional direct `DATABASE_URL_UNPOOLED`, `REDIS_URL`, a newly generated `AUTH_SECRET` of at least 32 bytes, `AUTH_ALLOWED_ORIGINS` listing exact HTTPS web origins, `AUTH_ALLOW_INSECURE_HTTP=false`, `DEMO_SEED=false`, and `API_DOCS=false` unless Swagger exposure is intentional. Store secrets on Northflank; they are never build inputs. Readiness is `/health/ready`. Configure the documented P07-04 trusted proxy transport before routing browser login through Vercel; do not enable arbitrary forwarded-IP trust.
 
 ## Readiness and recovery
 
@@ -69,11 +71,11 @@ Northflank updates only the external image, preserving replica count, registry c
 
 After the explicit initial project bootstrap, Vercel creates a preview by omitting `target` from the deployment request and disabling automatic custom-domain assignment. Retry lookup filters previews by released SHA and metadata, including providers that represent previews as a null target. Polling verifies preview identity, the release metadata, `READY` and a generated `*.vercel.app` URL before printing it. No production promotion endpoint is called. Failed, cancelled or blocked builds fail the job; an in-progress matching preview is polled on retry. Project protection may require Vercel sign-in to open the URL; readiness does not imply anonymous access.
 
-Each provider wait is bounded to 15 minutes. If main changes mid-run, rerun on current main. A failed Northflank rollout may need a provider-side correction or restart. There is no automatic destructive rollback, database migration or production promotion.
+Each provider wait is bounded to 15 minutes. If main changes mid-run, rerun on current main. A failed Northflank rollout may need a provider-side correction or restart. There is no automatic destructive rollback or production promotion. The API startup applies migrations before reporting ready.
 
 ## Current limits and live acceptance
 
-The deployed web is a foundation page. The API has TCP liveness and returns 404 for HTTP routes; the worker exposes private TCP liveness and does not consume jobs. Auth, board, migrations, seed data and queue processing are still planned. A hosted shell is not a completed product preview.
+The web remains a foundation page. The API now provides dependency-aware HTTP health, optional Swagger, signup/login and initial JWT sessions with startup migrations and opt-in local seed. The worker still exposes private TCP liveness and does not consume jobs. Refresh/logout are implemented; board and queue processing remain upcoming. These local acceptance results do not establish a verified hosted deployment.
 
 P00-14 records actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
 

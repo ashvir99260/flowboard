@@ -11,6 +11,7 @@ const sections = ['dependencies', 'devDependencies', 'optionalDependencies', 'pe
 async function inspect(manifest, filePath = 'package.json') {
   const [result] = await eslint.lintText(JSON.stringify(manifest), { filePath });
   assert.ok(!result.messages.some((message) => message.fatal), JSON.stringify(result.messages));
+
   return result;
 }
 

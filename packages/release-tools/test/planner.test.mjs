@@ -21,6 +21,7 @@ async function fixture(t) {
   const commit = (message) => {
     git('add', '.');
     git('-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-qm', message);
+
     return git('rev-parse', 'HEAD');
   };
   git('init', '-q');
@@ -35,6 +36,7 @@ async function fixture(t) {
     ...apps,
     'contracts',
     'database',
+    'logger',
     'ui',
     'api-client',
     'config-typescript',
@@ -45,7 +47,7 @@ async function fixture(t) {
       name === 'web'
         ? ['contracts', 'ui', 'api-client']
         : ['api', 'worker'].includes(name)
-          ? ['contracts', 'database']
+          ? ['contracts', 'database', 'logger']
           : [];
     const manifest = {
       name: `@flowboard/${name}`,
@@ -65,6 +67,7 @@ async function fixture(t) {
   const base = commit('chore: initial');
   const publishedTags = apps.map((app) => `${app}/v0.1.0`);
   for (const tag of publishedTags) git('tag', tag);
+
   return {
     cwd,
     git,
@@ -98,6 +101,7 @@ for (const [path, expected] of [
   ['apps/web/src/index.ts', ['web']],
   ['apps/worker/src/index.ts', ['worker']],
   ['packages/database/src/index.ts', ['api', 'worker']],
+  ['packages/logger/src/index.ts', ['api', 'worker']],
   ['packages/ui/src/index.ts', ['web']],
   ['packages/api-client/src/index.ts', ['web']],
   ['packages/contracts/src/index.ts', apps],
@@ -128,6 +132,8 @@ test('docs, tests and build-only spec tooling do not release an application', as
   for (const path of [
     'README.md',
     'apps/api/test/new.test.ts',
+    'apps/api/src/modules/auth/auth-guard.unit.spec.mjs',
+    'apps/api/src/modules/platform/health.integration.spec.mjs',
     'apps/web/src/item.test.ts',
     'packages/openapi/src/index.ts',
     'packages/config-eslint/index.js',

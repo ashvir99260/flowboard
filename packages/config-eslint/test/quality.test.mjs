@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 
 import { ESLint } from 'eslint';
 
+import next from '../src/next.mjs';
 import node from '../src/node.mjs';
 import react from '../src/react.mjs';
 
@@ -13,9 +14,43 @@ async function inspect(code, file = 'apps/api/src/quality-fixture.ts', config = 
   const eslint = new ESLint({ cwd: root, fix, overrideConfig: config, overrideConfigFile: true });
   const [result] = await eslint.lintText(code, { filePath: file });
   assert.ok(!result.messages.some((message) => message.fatal), JSON.stringify(result.messages));
+
   return result;
 }
 const hasRule = (result, rule) => result.messages.some((message) => message.ruleId === rule);
+
+test('all presets reject CommonJS loading, exports and createRequire bridges', async () => {
+  for (const [config, file] of [
+    [node, 'apps/api/src/esm-fixture.js'],
+    [react, 'packages/ui/src/esm-fixture.jsx'],
+    [next, 'apps/web/app/esm-fixture.tsx'],
+  ]) {
+    for (const code of [
+      "const value = require('node:path');",
+      'module.exports = {};',
+      'exports.value = 1;',
+    ]) {
+      assert.ok(hasRule(await inspect(code, file, config), 'import-x/no-commonjs'), code);
+    }
+    assert.ok(
+      hasRule(
+        await inspect("import { createRequire } from 'node:module';", file, config),
+        'no-restricted-imports',
+      ),
+    );
+    assert.ok(
+      hasRule(
+        await inspect(
+          "import module from 'node:module'; export const load = module.createRequire(import.meta.url);",
+          file,
+          config,
+        ),
+        'no-restricted-imports',
+      ),
+    );
+    assert.equal((await inspect('export const value = 1;', file, config)).errorCount, 0);
+  }
+});
 
 test('type names use PascalCase while contract property names keep camelCase', async () => {
   const bad = await inspect('export type task_shape = { statusId: string };');
@@ -90,9 +125,9 @@ test('literal properties sort while destructuring and positional parameters stay
 
 test('sorting preserves tagged-template and coercion calls and inherited binding reads', async () => {
   const fixtures = [
-    'const trace = []; function tag([value]) { trace.push(value); return value; } const object = { zebra: tag`zebra`, alpha: tag`alpha` }; JSON.stringify([trace, object]);',
+    'const trace = []; function tag([value]) { trace.push(value);\n\nreturn value; } const object = { zebra: tag`zebra`, alpha: tag`alpha` }; JSON.stringify([trace, object]);',
     'let counter = 0; const source = { valueOf() { return ++counter; } }; const object = { zebra: +source, alpha: +source }; JSON.stringify(object);',
-    'const trace = []; Object.defineProperties(Object.prototype, { zebra: { get() { trace.push("zebra"); return 1; } }, alpha: { get() { trace.push("alpha"); return 2; } } }); const { zebra, alpha } = {}; JSON.stringify([trace, zebra, alpha]);',
+    'const trace = []; Object.defineProperties(Object.prototype, { zebra: { get() { trace.push("zebra");\n\nreturn 1; } }, alpha: { get() { trace.push("alpha");\n\nreturn 2; } } }); const { zebra, alpha } = {}; JSON.stringify([trace, zebra, alpha]);',
   ];
   for (const code of fixtures) {
     const result = await inspect(code, undefined, node, true);

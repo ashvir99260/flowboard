@@ -33,8 +33,10 @@ test('Northflank updates only the external image and waits for that digest to co
       if (init.method === 'PATCH') {
         writes.push(JSON.parse(init.body));
         phase = 1;
+
         return json({ data: {} });
       }
+
       const data = {
         deployment: {
           external: { credentials: 'registry-credentials', imagePath: phase ? image : 'old' },
@@ -49,6 +51,7 @@ test('Northflank updates only the external image and waits for that digest to co
         },
       };
       if (phase === 1) phase = 2;
+
       return json({ data });
     },
   });
@@ -67,6 +70,7 @@ test('Northflank retry reuses a completed matching digest without another update
     assertCurrent: async () => {},
     fetch: async (_url, init) => {
       assert.equal(init.method, 'GET');
+
       return json({
         data: {
           deployment: { external: { imagePath: image }, imageUrl: image, instances: 1 },

@@ -16,6 +16,19 @@ RUN --mount=type=cache,id=flowboard-pnpm,target=/pnpm/store \
 COPY --from=prune /repo/out/full/ .
 RUN pnpm exec turbo run build --filter=@flowboard/web
 
+FROM build AS development
+ENV CI=false NODE_ENV=development HOST=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
+COPY .gitignore .gitignore
+# The web development graph also rebuilds Prisma-backed API contracts.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+RUN find /repo -name node_modules -prune -o -exec chown node:node {} +
+USER node
+EXPOSE 3000
+HEALTHCHECK --interval=5s --timeout=5s --start-period=60s --retries=24 \
+    CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT,{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["pnpm", "exec", "turbo", "watch", "dev:docker", "--filter=@flowboard/web", "--ui=stream"]
+
 FROM ${NODE_IMAGE} AS runner
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
@@ -23,5 +36,5 @@ COPY --from=build --chown=node:node /repo/apps/web/.next/standalone/ .
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=6 \
-    CMD node -e "const r=require('node:http').get('http://127.0.0.1:'+process.env.PORT,res=>{res.resume();process.exit(res.statusCode>=200&&res.statusCode<400?0:1)});r.on('error',()=>process.exit(1));r.setTimeout(2000,()=>process.exit(1))"
+    CMD node --input-type=module -e "import http from 'node:http';const r=http.get('http://127.0.0.1:'+process.env.PORT,res=>{res.resume();process.exit(res.statusCode>=200&&res.statusCode<400?0:1)});r.on('error',()=>process.exit(1));r.setTimeout(2000,()=>process.exit(1))"
 CMD ["node", "apps/web/server.js"]

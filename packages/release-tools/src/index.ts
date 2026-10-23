@@ -4,7 +4,9 @@ import { createHash } from 'node:crypto';
 import { parseAllDocuments } from 'yaml';
 
 export const applications = ['api', 'web', 'worker'] as const;
+
 export type Application = (typeof applications)[number];
+
 export interface Release {
   app: Application;
   mode: 'new' | 'resume';
@@ -13,6 +15,7 @@ export interface Release {
   tag: string;
   version: string;
 }
+
 interface Manifest {
   [key: string]: unknown;
   dependencies?: Record<string, string>;
@@ -61,6 +64,7 @@ export function planReleases({
     const result = spawnSync('git', ['merge-base', '--is-ancestor', a, b], { cwd });
     if (result.status !== 0 && result.status !== 1)
       throw new Error('Cannot inspect release ancestry');
+
     return result.status === 0;
   };
   const target = resolve(sha);
@@ -74,12 +78,14 @@ export function planReleases({
   const fingerprint = (commit: string, app: Application): string => {
     const cached = snapshots.get(commit)?.get(app);
     if (cached) return cached;
+
     const files = new Map(
       git('ls-tree', '-r', '-z', commit)
         .split('\0')
         .filter(Boolean)
         .map((entry) => {
           const [metadata, path] = entry.split('\t');
+
           return [path!, metadata!] as const;
         }),
     );
@@ -93,21 +99,25 @@ export function planReleases({
     const docs = parseAllDocuments(read('pnpm-lock.yaml')).map((document) => {
       if (document.errors.length)
         throw new Error(`Invalid lockfile: ${document.errors[0]?.message}`);
+
       return document.toJSON() as Lock;
     });
     const lock = docs.find((document) => document?.importers?.[`apps/${app}`]);
     if (!lock?.packages || !lock.snapshots)
       throw new Error(`Missing workspace lockfile for ${app} at ${commit}`);
+
     const inputs: Record<string, unknown> = {};
     const visited = new Set<string>();
     const external = new Set<string>();
     const visitExternal = (name: string, version: string) => {
       const key = `${name}@${version}`;
       if (external.has(key)) return;
+
       external.add(key);
       const snapshot = lock.snapshots[key];
       const metadata = lock.packages[key.replace(/\(.*/, '')];
       if (!snapshot || !metadata) throw new Error(`Unresolved lock dependency ${key}`);
+
       inputs[`dependency:${key}`] = { metadata, snapshot };
       for (const [child, resolved] of Object.entries({
         ...snapshot.dependencies,
@@ -117,9 +127,11 @@ export function planReleases({
     };
     const visit = (name: string) => {
       if (visited.has(name)) return;
+
       visited.add(name);
       const workspace = manifests.get(name);
       if (!workspace) throw new Error(`Missing workspace ${name} at ${commit}`);
+
       const { path, manifest } = workspace;
       const selected = {
         ...manifest.dependencies,
@@ -153,6 +165,7 @@ export function planReleases({
           inputs[file] = blob;
       const importer = lock.importers[path];
       if (!importer) throw new Error(`Missing importer ${path}`);
+
       for (const [dependency, specifier] of Object.entries(selected)) {
         if (specifier.startsWith('workspace:')) visit(dependency);
         else {
@@ -162,12 +175,14 @@ export function planReleases({
             importer.devDependencies?.[dependency]
           )?.version;
           if (!version) throw new Error(`Missing locked dependency ${dependency}`);
+
           visitExternal(dependency, version);
         }
       }
     };
     visit(`@flowboard/${app}`);
     if (manifests.has('@flowboard/config-typescript')) visit('@flowboard/config-typescript');
+
     const root = JSON.parse(read('package.json')) as Manifest;
     inputs.root = {
       packageManager: root.packageManager,
@@ -191,9 +206,12 @@ export function planReleases({
     );
     const hash = digest(inputs);
     if (!snapshots.has(commit)) snapshots.set(commit, new Map());
+
     snapshots.get(commit)!.set(app, hash);
+
     return hash;
   };
+
   return applications.flatMap((app): Release[] => {
     const versionOf = (tag: string) => {
       const match = new RegExp(`^${app}/v(\\d+)\\.(\\d+)\\.(\\d+)$`).exec(tag);
@@ -207,6 +225,7 @@ export function planReleases({
           )
       )
         throw new Error(`Unsupported application tag: ${tag}`);
+
       return match.slice(1).map(Number) as [number, number, number];
     };
     const matching = tags.filter((tag) => tag.startsWith(`${app}/v`));
@@ -214,25 +233,31 @@ export function planReleases({
     const sorted = matching.sort((a, b) => {
       const left = versionOf(a),
         right = versionOf(b);
+
       return left[0] - right[0] || left[1] - right[1] || left[2] - right[2];
     });
     const previousTag = sorted.filter((tag) => published.has(tag)).at(-1);
     const previous = previousTag ? resolve(previousTag) : undefined;
     if (previous) {
       if (ancestor(target, previous)) return [];
+
       if (!ancestor(previous, target))
         throw new Error(`Diverged ${app} history from ${previousTag}`);
     }
+
     const pending = sorted.filter((tag) => !published.has(tag));
     if (pending.some((tag) => resolve(tag) !== target))
       throw new Error(
         `Unfinished ${app} tag; retry its source commit before releasing a newer commit`,
       );
+
     const targetFingerprint = fingerprint(target, app);
     if (previous && fingerprint(previous, app) === targetFingerprint) {
       if (pending.length) throw new Error(`Conflicting ${app} tag for an unchanged application`);
+
       return [];
     }
+
     let version = '0.1.0';
     if (previous && previousTag) {
       let bump = 0;
@@ -252,6 +277,7 @@ export function planReleases({
               )
             )
               throw error;
+
             const paths = [
               ...(ownership.get(`${previous}:${app}`) ?? []),
               ...(ownership.get(`${target}:${app}`) ?? []),
@@ -277,6 +303,7 @@ export function planReleases({
               continue;
           }
         }
+
         const message = git('show', '-s', '--format=%B', commit);
         bump = Math.max(
           bump,
@@ -295,10 +322,12 @@ export function planReleases({
             ? `${major}.${minor + 1}.0`
             : `${major}.${minor}.${patch + 1}`;
     }
+
     const tag = `${app}/v${version}`;
     versionOf(tag);
     if (pending.some((item) => item !== tag))
       throw new Error(`Conflicting ${app} tag; expected ${tag}`);
+
     return [
       {
         app,

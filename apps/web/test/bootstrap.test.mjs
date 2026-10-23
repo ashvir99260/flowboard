@@ -10,7 +10,7 @@ test(
   { timeout: 60_000 },
   async (t) => {
     const reserve = createServer();
-    reserve.listen(0, '127.0.0.1');
+    reserve.listen(0, 'localhost');
     await once(reserve, 'listening');
     const { port } = reserve.address();
     await new Promise((resolve, reject) =>
@@ -18,12 +18,12 @@ test(
     );
     const runtime = startProcess(['.next/standalone/apps/web/server.js'], {
       cwd: new URL('../', import.meta.url),
-      env: { NEXT_TELEMETRY_DISABLED: '1', HOSTNAME: '127.0.0.1', PORT: String(port) },
+      env: { NEXT_TELEMETRY_DISABLED: '1', HOSTNAME: 'localhost', PORT: String(port) },
     });
     // Next exits with 128 + SIGTERM's signal number after closing the server.
     t.after(() => runtime.stop(null, 143));
     await runtime.waitFor(/Ready in/);
-    const response = await fetch(`http://127.0.0.1:${port}`, {
+    const response = await fetch(`http://localhost:${port}`, {
       signal: AbortSignal.timeout(5_000),
     });
     assert.equal(response.status, 200);
@@ -33,7 +33,7 @@ test(
     assert.match(html, /Product features are not implemented yet/);
     const asset = html.match(/src="([^"]*\/_next\/static\/[^"]+)"/);
     assert.ok(asset, 'The page references its compiled JavaScript');
-    const assetResponse = await fetch(`http://127.0.0.1:${port}${asset[1]}`, {
+    const assetResponse = await fetch(`http://localhost:${port}${asset[1]}`, {
       signal: AbortSignal.timeout(5_000),
     });
     assert.equal(assetResponse.status, 200, 'Standalone output includes browser assets');

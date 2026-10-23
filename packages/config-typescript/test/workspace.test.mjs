@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import process from 'node:process';
 import { test } from 'node:test';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = new URL('../../../', import.meta.url);
 const workspaces = [
@@ -11,6 +14,7 @@ const workspaces = [
   'apps/worker',
   'packages/contracts',
   'packages/database',
+  'packages/logger',
   'packages/openapi',
   'packages/api-client',
   'packages/ui',
@@ -22,6 +26,58 @@ const workspaces = [
 ];
 
 const json = async (path) => JSON.parse(await readFile(new URL(path, root), 'utf8'));
+
+test('root and every workspace explicitly use ESM', async () => {
+  for (const directory of ['', ...workspaces]) {
+    assert.equal(
+      (await json(`${directory ? `${directory}/` : ''}package.json`)).type,
+      'module',
+      directory || 'root',
+    );
+  }
+});
+
+test('Node preset emits loadable ESM and rejects implicit CommonJS rewriting', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'flowboard-esm-'));
+  try {
+    await writeFile(path.join(directory, 'package.json'), JSON.stringify({ type: 'module' }));
+    await writeFile(path.join(directory, 'value.ts'), 'export const answer = 42;\n');
+    await writeFile(
+      path.join(directory, 'main.ts'),
+      "import { answer } from './value.js';\nexport const result = answer;\n",
+    );
+    await writeFile(
+      path.join(directory, 'tsconfig.json'),
+      JSON.stringify({
+        extends: fileURLToPath(new URL('packages/config-typescript/node.json', root)),
+        compilerOptions: { outDir: './dist', rootDir: '.', types: [] },
+        include: ['*.ts'],
+      }),
+    );
+    const compile = () =>
+      spawnSync(
+        process.execPath,
+        [
+          fileURLToPath(import.meta.resolve('typescript/lib/tsc.js')),
+          '-p',
+          path.join(directory, 'tsconfig.json'),
+        ],
+        { encoding: 'utf8' },
+      );
+    const esm = compile();
+    assert.equal(esm.status, 0, esm.stdout + esm.stderr);
+    assert.equal(
+      (await import(pathToFileURL(path.join(directory, 'dist/main.js')).href)).result,
+      42,
+    );
+    await writeFile(path.join(directory, 'package.json'), JSON.stringify({ type: 'commonjs' }));
+    const commonjs = compile();
+    assert.notEqual(commonjs.status, 0, 'Compiler must reject rewriting authored ESM as CommonJS');
+    assert.match(commonjs.stdout + commonjs.stderr, /verbatimModuleSyntax/);
+  } finally {
+    await rm(directory, { force: true, recursive: true });
+  }
+});
 
 test('ast-grep finds code calls without matching comments or string literals', () => {
   const result = spawnSync(

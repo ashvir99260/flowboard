@@ -23,12 +23,13 @@ async function dockerFixture(t, state) {
   const directory = await mkdtemp(join(tmpdir(), 'flowboard-docker-fixture-'));
   t.after(() => rm(directory, { force: true, recursive: true }));
   const log = join(directory, 'commands.jsonl');
+  await writeFile(join(directory, 'package.json'), JSON.stringify({ type: 'module' }));
   await writeFile(log, '');
   const executable = join(directory, 'docker');
   await writeFile(
     executable,
     `#!/usr/bin/env node
-const fs = require('node:fs');
+import fs from 'node:fs';
 const state = ${JSON.stringify(state)};
 const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify(args)+'\\n');
@@ -59,6 +60,7 @@ console.log(args[0] === 'rev-parse' ? ${JSON.stringify(release.sha)} : ${JSON.st
   t.after(() => {
     process.env.PATH = path;
   });
+
   return async () =>
     (await readFile(log, 'utf8')).trim().split('\n').filter(Boolean).map(JSON.parse);
 }
@@ -131,15 +133,20 @@ async function githubFixture(t) {
       response.end(JSON.stringify(value));
     };
     if (state.unauthorized) return send({}, 401);
+
     assert.equal(request.headers.authorization, 'Bearer fixture-token');
     if (route === '/releases' && request.method === 'GET')
       return send(state.remote ? [state.remote] : []);
+
     if (route === '/git/refs' && request.method === 'POST') {
       state.tag = body.sha;
+
       return send({});
     }
+
     if (route === `/git/ref/tags/${release.tag}`)
       return state.tag ? send({ object: { sha: state.tag, type: 'commit' } }) : send({}, 404);
+
     if (route === '/releases' && request.method === 'POST') {
       state.remote = {
         id: 1,
@@ -148,22 +155,31 @@ async function githubFixture(t) {
         upload_url: `${base}/uploads{?name,label}`,
         assets: [],
       };
+
       return send(state.remote, 201);
     }
+
     if (route === `/releases/tags/${release.tag}` || route === '/releases/1') {
       if (!state.remote || (route.startsWith('/releases/tags/') && state.remote.draft))
         return send({}, 404);
+
       if (request.method === 'PATCH') state.remote.draft = body.draft;
+
       return send(state.remote);
     }
+
     if (route === '/uploads') {
       if (state.failUpload) return send({}, 503);
+
       state.uploads++;
       state.manifest = body;
       state.remote.assets = [{ id: 2, name: 'release.json' }];
+
       return send({}, 201);
     }
+
     if (route === '/releases/assets/2') return send(state.manifest);
+
     return send({}, 404);
   });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -171,6 +187,7 @@ async function githubFixture(t) {
   const base = `http://127.0.0.1:${server.address().port}`;
   const github = githubPort('owner/flowboard', 'fixture-token', base);
   github.port.ensureImage = async () => digest;
+
   return { github, requests, state };
 }
 
