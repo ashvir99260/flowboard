@@ -83,6 +83,8 @@ Feature source lives under `apps/api/src/modules/<feature>/` (D93). Auth and pla
 
 All workspaces have `package.json`, explicit `exports`, a local `tsconfig`, and a real build or config-copy step. Config packages publish configuration subpaths; applications are private and expose only intentional tooling entry points. Public imports use package exports, never `../../other-package/src`.
 
+All authored workspaces and root tooling use ESM with explicit module manifests and verbatim TypeScript syntax (D95). Keep NodeNext for Node-compatible output and ESNext/Bundler for Next.js. Shared lint rejects CommonJS loading/exports; compiler fixtures verify actual ESM execution and reject accidental CommonJS rewriting. Generated framework/vendor internals remain managed by their tools.
+
 ### Module boundaries inside the API
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.

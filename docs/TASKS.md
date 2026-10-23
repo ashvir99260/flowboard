@@ -486,6 +486,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `fix: use database time for refresh sessions`.
   - **Completion evidence:** [P02-14](evidence/P02-14.md): deterministic clock-skew red/green, preserved migration data, 326 tests and all build/lint/type/contract/format/Docker checks pass.
 
+- [x] **P02-15 — Enforce ESM across authored workspaces**
+  - **Goal:** Keep all application, package and tooling code on native ESM and prevent accidental CommonJS output.
+  - **Requirements:** R126.
+  - **Files:** root manifest, shared TypeScript/ESLint configs and tests, database initializer, commitlint launcher, web/worker Docker health commands, release CLI fixtures, architecture/rules and evidence.
+  - **Dependencies:** P02-14; prioritized by the user's ESM request.
+  - **Acceptance:** Root and workspaces declare module type; NodeNext emits native ESM with verbatim module syntax; authored code rejects CommonJS loading/exports. Replace CLI path-resolution bridges with import.meta.resolve. Preserve package exports, CLI execution, migrations, API contracts and Docker startup. Framework/vendor-generated internals keep their supported format.
+  - **Validation:** Red/green compiler and lint fixtures; package module checks; full build/lint/typecheck/test/format/OpenAPI/Docker gates; inspect authored build output and independent review.
+  - **Commit:** `refactor: enforce esm across the workspace`.
+  - **Completion evidence:** [P02-15](evidence/P02-15.md): native ESM output audit, compiler/lint red-green fixtures, 329 tests and all build/type/format/contract/Docker checks pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

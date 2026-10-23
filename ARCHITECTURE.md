@@ -73,6 +73,8 @@ These are intended workspace dependencies; external runtime libraries and shared
 
 Applications cannot import one another. The OpenAPI tooling exception (D19) is narrow: it loads real controllers/DTOs with inert providers, no listening socket and no database/Redis connection. It is not a production API dependency or a fake runtime service.
 
+Authored workspaces and root tooling use native ESM (D95). Module manifests and verbatim TypeScript syntax prevent implicit CommonJS rewriting; NodeNext resolves Node output while ESNext/Bundler serves Next.js. CLI resolution uses import.meta.resolve. Generated Next.js and third-party internals retain their framework-supported module format.
+
 The planned build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
 
 Features live under `apps/api/src/modules/` (D93). Auth and platform remain flat (D89): grouped DTOs and auth configuration sit beside controllers/services/modules, with colocated unit/integration tests (D90/D92). `src/config/` holds reusable settings, `src/utils/` pure helpers, and `src/shared/` SharedModule and logging. SharedModule registers common HTTP filters/validation/serialization once; `src/common/` retains their implementations plus decorators, DTO helpers and Swagger support. Shared test helpers and process tests keep their existing grouping.

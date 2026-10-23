@@ -1,5 +1,4 @@
 import { execFile } from 'node:child_process';
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
@@ -11,7 +10,6 @@ import { seedDemoData } from './seed.js';
 import type { Logger } from '@flowboard/logger';
 
 const execute = promisify(execFile);
-const require = createRequire(import.meta.url);
 
 export interface InitializeOptions {
   databaseUrl: string;
@@ -45,7 +43,7 @@ export async function initializeDatabase(options: InitializeOptions): Promise<{ 
     await execute(
       process.execPath,
       [
-        require.resolve('prisma/build/index.js'),
+        fileURLToPath(import.meta.resolve('prisma/build/index.js')),
         'migrate',
         'deploy',
         '--config',

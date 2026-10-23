@@ -30,5 +30,5 @@ USER node
 EXPOSE 3002
 # TODO(P11-02): Queue readiness is separate from this process-liveness probe.
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=6 \
-    CMD node -e "const s=require('node:net').connect({host:'127.0.0.1',port:Number(process.env.PORT)});s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));s.setTimeout(2000,()=>process.exit(1))"
+    CMD node --input-type=module -e "import net from 'node:net';const s=net.connect({host:'127.0.0.1',port:Number(process.env.PORT)});s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));s.setTimeout(2000,()=>process.exit(1))"
 CMD ["node", "dist/main.js"]

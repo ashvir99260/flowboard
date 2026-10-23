@@ -1,11 +1,10 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
-const cli = createRequire(import.meta.url).resolve('@commitlint/cli/cli.js');
+const cli = fileURLToPath(import.meta.resolve('@commitlint/cli/cli.js'));
 const config = path.join(root, 'commitlint.config.mjs');
 const titleConfig = fileURLToPath(new URL('../src/commitlint-title.mjs', import.meta.url));
 

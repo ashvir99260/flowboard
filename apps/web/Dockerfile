@@ -23,5 +23,5 @@ COPY --from=build --chown=node:node /repo/apps/web/.next/standalone/ .
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=6 \
-    CMD node -e "const r=require('node:http').get('http://127.0.0.1:'+process.env.PORT,res=>{res.resume();process.exit(res.statusCode>=200&&res.statusCode<400?0:1)});r.on('error',()=>process.exit(1));r.setTimeout(2000,()=>process.exit(1))"
+    CMD node --input-type=module -e "import http from 'node:http';const r=http.get('http://127.0.0.1:'+process.env.PORT,res=>{res.resume();process.exit(res.statusCode>=200&&res.statusCode<400?0:1)});r.on('error',()=>process.exit(1));r.setTimeout(2000,()=>process.exit(1))"
 CMD ["node", "apps/web/server.js"]

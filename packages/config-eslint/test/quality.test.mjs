@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 
 import { ESLint } from 'eslint';
 
+import next from '../src/next.mjs';
 import node from '../src/node.mjs';
 import react from '../src/react.mjs';
 
@@ -16,6 +17,39 @@ async function inspect(code, file = 'apps/api/src/quality-fixture.ts', config = 
   return result;
 }
 const hasRule = (result, rule) => result.messages.some((message) => message.ruleId === rule);
+
+test('all presets reject CommonJS loading, exports and createRequire bridges', async () => {
+  for (const [config, file] of [
+    [node, 'apps/api/src/esm-fixture.js'],
+    [react, 'packages/ui/src/esm-fixture.jsx'],
+    [next, 'apps/web/app/esm-fixture.tsx'],
+  ]) {
+    for (const code of [
+      "const value = require('node:path');",
+      'module.exports = {};',
+      'exports.value = 1;',
+    ]) {
+      assert.ok(hasRule(await inspect(code, file, config), 'import-x/no-commonjs'), code);
+    }
+    assert.ok(
+      hasRule(
+        await inspect("import { createRequire } from 'node:module';", file, config),
+        'no-restricted-imports',
+      ),
+    );
+    assert.ok(
+      hasRule(
+        await inspect(
+          "import module from 'node:module'; export const load = module.createRequire(import.meta.url);",
+          file,
+          config,
+        ),
+        'no-restricted-imports',
+      ),
+    );
+    assert.equal((await inspect('export const value = 1;', file, config)).errorCount, 0);
+  }
+});
 
 test('type names use PascalCase while contract property names keep camelCase', async () => {
   const bad = await inspect('export type task_shape = { statusId: string };');

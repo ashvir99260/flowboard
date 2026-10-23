@@ -23,12 +23,13 @@ async function dockerFixture(t, state) {
   const directory = await mkdtemp(join(tmpdir(), 'flowboard-docker-fixture-'));
   t.after(() => rm(directory, { force: true, recursive: true }));
   const log = join(directory, 'commands.jsonl');
+  await writeFile(join(directory, 'package.json'), JSON.stringify({ type: 'module' }));
   await writeFile(log, '');
   const executable = join(directory, 'docker');
   await writeFile(
     executable,
     `#!/usr/bin/env node
-const fs = require('node:fs');
+import fs from 'node:fs';
 const state = ${JSON.stringify(state)};
 const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify(args)+'\\n');

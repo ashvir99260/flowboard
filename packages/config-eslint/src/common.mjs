@@ -22,6 +22,24 @@ export const commonRules = {
   plugins: { flowboard: { rules: { boundaries } }, 'import-x': importX },
   rules: {
     'flowboard/boundaries': 'error',
+    'import-x/no-commonjs': 'error',
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: 'node:module',
+            importNames: ['createRequire', 'default'],
+            message: 'Use native imports or import.meta.resolve for ESM.',
+          },
+          {
+            name: 'module',
+            importNames: ['createRequire', 'default'],
+            message: 'Use native imports or import.meta.resolve for ESM.',
+          },
+        ],
+      },
+    ],
     'import-x/order': [
       'error',
       {
