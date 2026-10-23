@@ -15,7 +15,7 @@ async function source(t) {
     image: 'ghcr.io/owner/flowboard-api',
     digest: `sha256:${'b'.repeat(64)}`,
   };
-  const state = { manifest, main: sha, ancestry: null };
+  const state = { ancestry: null, main: sha, manifest };
   const server = createServer((req, res) => {
     const path = decodeURIComponent(
       new URL(req.url, 'http://localhost').pathname.replace('/repos/owner/flowboard', ''),
@@ -23,9 +23,9 @@ async function source(t) {
     let value;
     if (path === '/releases')
       value = [
-        { id: 1, tag_name: 'api/v0.1.0', draft: false, target_commitish: sha },
-        { id: 2, tag_name: 'api/v0.0.1', draft: false, target_commitish: 'main' },
-        { id: 3, tag_name: 'worker/v0.1.0', draft: true, target_commitish: sha },
+        { draft: false, id: 1, tag_name: 'api/v0.1.0', target_commitish: sha },
+        { draft: false, id: 2, tag_name: 'api/v0.0.1', target_commitish: 'main' },
+        { draft: true, id: 3, tag_name: 'worker/v0.1.0', target_commitish: sha },
       ];
     else if (path.startsWith('/compare/'))
       value = { status: state.ancestry ?? (path.endsWith(sha) ? 'identical' : 'ahead') };
@@ -33,7 +33,7 @@ async function source(t) {
       value = { object: { sha: state.main, type: 'commit' } };
     else if (path === '/git/ref/tags/api/v0.1.0') value = { object: { sha, type: 'commit' } };
     else if (path === '/releases/1')
-      value = { id: 1, draft: false, assets: [{ id: 10, name: 'release.json' }] };
+      value = { assets: [{ id: 10, name: 'release.json' }], draft: false, id: 1 };
     else if (path === '/releases/assets/10') value = state.manifest;
     else {
       res.writeHead(404);

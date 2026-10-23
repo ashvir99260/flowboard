@@ -1,5 +1,5 @@
 {
-  "extends": "@flowboard/config-typescript/library.json",
   "compilerOptions": { "outDir": "dist", "rootDir": "src" },
+  "extends": "@flowboard/config-typescript/library.json",
   "include": ["src/**/*.ts"]
 }

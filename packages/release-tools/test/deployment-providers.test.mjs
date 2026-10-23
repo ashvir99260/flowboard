@@ -14,11 +14,11 @@ const manifest = {
   digest: `sha256:${'b'.repeat(64)}`,
 };
 const image = `${manifest.image}@${manifest.digest}`;
-const config = { northflankToken: 'secret-token', northflankProjectId: 'flowboard' };
+const config = { northflankProjectId: 'flowboard', northflankToken: 'secret-token' };
 const json = (data, status = 200) =>
   new globalThis.Response(JSON.stringify(data), {
-    status,
     headers: { 'Content-Type': 'application/json' },
+    status,
   });
 
 test('Northflank updates only the external image and waits for that digest to complete', async () => {
@@ -37,14 +37,14 @@ test('Northflank updates only the external image and waits for that digest to co
       }
       const data = {
         deployment: {
-          instances: 1,
-          external: { imagePath: phase ? image : 'old', credentials: 'registry-credentials' },
+          external: { credentials: 'registry-credentials', imagePath: phase ? image : 'old' },
           imageUrl: phase === 2 ? image : 'old',
+          instances: 1,
         },
         status: {
           deployment: {
-            status: phase === 1 ? 'IN_PROGRESS' : 'COMPLETED',
             lastTransitionTime: phase,
+            status: phase === 1 ? 'IN_PROGRESS' : 'COMPLETED',
           },
         },
       };
@@ -56,7 +56,7 @@ test('Northflank updates only the external image and waits for that digest to co
   assert.deepEqual(writes, [
     {
       deployment: {
-        external: { imagePath: image, credentials: 'registry-credentials' },
+        external: { credentials: 'registry-credentials', imagePath: image },
       },
     },
   ]);
@@ -69,7 +69,7 @@ test('Northflank retry reuses a completed matching digest without another update
       assert.equal(init.method, 'GET');
       return json({
         data: {
-          deployment: { instances: 1, external: { imagePath: image }, imageUrl: image },
+          deployment: { external: { imagePath: image }, imageUrl: image, instances: 1 },
           status: { deployment: { status: 'COMPLETED' } },
         },
       });
@@ -93,7 +93,7 @@ for (const scenario of ['failed', 'old-image', 'unauthorized'])
           ? json({}, 401)
           : json({
               data: {
-                deployment: { instances: 1, external: { imagePath: image }, imageUrl: 'old' },
+                deployment: { external: { imagePath: image }, imageUrl: 'old', instances: 1 },
                 status: { deployment: { status: scenario === 'failed' ? 'FAILED' : 'COMPLETED' } },
               },
             }),

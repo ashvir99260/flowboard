@@ -1,28 +1,4 @@
 {
-  "name": "flowboard",
-  "private": true,
-  "packageManager": "pnpm@12.15.0",
-  "engines": {
-    "node": ">=22.13.0 <23",
-    "pnpm": "12.15.0"
-  },
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "typecheck": "turbo run typecheck",
-    "format": "turbo run format",
-    "format:check": "turbo run format:check",
-    "docker:check": "turbo run docker:check",
-    "release:plan": "turbo run release:plan",
-    "release:publish": "turbo run release:publish",
-    "deploy:preview": "turbo run deploy:preview",
-    "commitlint": "turbo run commitlint",
-    "commitlint:ci": "turbo run commitlint:ci",
-    "hooks:install": "turbo run hooks:install"
-  },
-  "prettier": "@flowboard/config-prettier",
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",
     "@flowboard/config-eslint": "workspace:*",
@@ -31,5 +7,30 @@
     "prettier": "3.9.10",
     "turbo": "2.11.10",
     "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=22.13.0 <23",
+    "pnpm": "12.15.0"
+  },
+  "name": "flowboard",
+  "packageManager": "pnpm@12.15.0",
+  "prettier": "@flowboard/config-prettier",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "commitlint": "turbo run commitlint",
+    "commitlint:ci": "turbo run commitlint:ci",
+    "deploy:preview": "turbo run deploy:preview",
+    "dev": "turbo run dev",
+    "docker:check": "turbo run docker:check",
+    "format": "turbo run format",
+    "format:check": "turbo run format:check",
+    "hooks:install": "turbo run hooks:install",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "release:plan": "turbo run release:plan",
+    "release:publish": "turbo run release:publish",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck"
   }
 }

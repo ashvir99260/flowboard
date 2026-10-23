@@ -11,7 +11,7 @@ import { installHooks } from '../scripts/install-hooks.mjs';
 
 const root = await mkdtemp(path.join(tmpdir(), 'flowboard commits '));
 const cli = fileURLToPath(new URL('../scripts/commitlint.mjs', import.meta.url));
-after(() => rm(root, { recursive: true, force: true }));
+after(() => rm(root, { force: true, recursive: true }));
 
 function git(...args) {
   const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
@@ -58,7 +58,7 @@ for (const message of ['update stuff', 'wrong: add board', 'feat:', '', '   ', '
 }
 
 const pullRequest = (title) => ({
-  pull_request: { title, base: { sha: base }, head: { sha: head } },
+  pull_request: { base: { sha: base }, head: { sha: head }, title },
 });
 
 test('CI validates both actual PR commits and the proposed squash title', async () => {
@@ -78,7 +78,7 @@ test('event text is data, even when it contains shell syntax', () => {
 
 test('CI fails closed on missing or malformed revisions', () => {
   assert.throws(
-    () => checkCiCommits('push', { before: 'HEAD; echo unsafe', after: head }, root),
+    () => checkCiCommits('push', { after: head, before: 'HEAD; echo unsafe' }, root),
     /revision/i,
   );
   assert.throws(
@@ -103,7 +103,7 @@ test('CI rejects an actual empty-message commit instead of dropping it', () => {
     '',
   );
   const emptyHead = git('rev-parse', 'HEAD');
-  assert.throws(() => checkCiCommits('push', { before: head, after: emptyHead }, root), /empty/i);
+  assert.throws(() => checkCiCommits('push', { after: emptyHead, before: head }, root), /empty/i);
 });
 
 test('local hook setup is idempotent and preserves another configured hook path', () => {

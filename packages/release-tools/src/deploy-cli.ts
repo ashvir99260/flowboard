@@ -1,4 +1,4 @@
-import { deployReleasedApps, type DeploymentConfig } from './deploy.js';
+import { type DeploymentConfig, deployReleasedApps } from './deploy.js';
 import { createDeploymentProviders } from './deployment-providers.js';
 import { githubPort } from './github.js';
 

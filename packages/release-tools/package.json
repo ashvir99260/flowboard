@@ -1,8 +1,15 @@
 {
-  "name": "@flowboard/release-tools",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
+  "dependencies": {
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@flowboard/config-eslint": "workspace:*",
+    "@flowboard/config-typescript": "workspace:*",
+    "@types/node": "22.20.5",
+    "eslint": "9.39.5",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,30 +20,24 @@
       "import": "./dist/publisher.js"
     }
   },
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "node --test test/*.test.mjs",
-    "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
-    "release:plan": "node dist/cli.js",
-    "release:publish": "node dist/publish-cli.js",
-    "deploy:preview": "node dist/deploy-cli.js"
-  },
-  "prettier": "@flowboard/config-prettier",
-  "dependencies": {
-    "yaml": "2.9.1"
-  },
-  "devDependencies": {
-    "@flowboard/config-typescript": "workspace:*",
-    "@flowboard/config-eslint": "workspace:*",
-    "@types/node": "22.20.5",
-    "typescript": "6.0.3",
-    "eslint": "9.39.5",
-    "prettier": "3.9.10"
-  },
   "files": [
     "dist"
-  ]
+  ],
+  "name": "@flowboard/release-tools",
+  "prettier": "@flowboard/config-prettier",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "deploy:preview": "node dist/deploy-cli.js",
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint --fix . --max-warnings=0",
+    "release:plan": "node dist/cli.js",
+    "release:publish": "node dist/publish-cli.js",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

@@ -21,7 +21,7 @@ const image = 'ghcr.io/owner/flowboard-api';
 
 async function dockerFixture(t, state) {
   const directory = await mkdtemp(join(tmpdir(), 'flowboard-docker-fixture-'));
-  t.after(() => rm(directory, { recursive: true, force: true }));
+  t.after(() => rm(directory, { force: true, recursive: true }));
   const log = join(directory, 'commands.jsonl');
   await writeFile(log, '');
   const executable = join(directory, 'docker');
@@ -92,7 +92,7 @@ test('Docker publisher reuses matching image and repairs only missing SHA tag', 
 
 for (const [name, state, pattern] of [
   ['dirty source', { dirty: true }, /clean checkout/],
-  ['wrong source', { versionDigest: digest, labels: {} }, /Conflicting existing image/],
+  ['wrong source', { labels: {}, versionDigest: digest }, /Conflicting existing image/],
   [
     'mismatched tags',
     { versionDigest: digest, shaDigest: `sha256:${'c'.repeat(64)}` },
@@ -110,12 +110,12 @@ for (const [name, state, pattern] of [
 
 async function githubFixture(t) {
   const state = {
+    failUpload: false,
+    manifest: null,
     remote: null,
     tag: null,
-    manifest: null,
-    uploads: 0,
-    failUpload: false,
     unauthorized: false,
+    uploads: 0,
   };
   const requests = [];
   const server = createServer(async (request, response) => {
@@ -171,7 +171,7 @@ async function githubFixture(t) {
   const base = `http://127.0.0.1:${server.address().port}`;
   const github = githubPort('owner/flowboard', 'fixture-token', base);
   github.port.ensureImage = async () => digest;
-  return { github, state, requests };
+  return { github, requests, state };
 }
 
 test('GitHub adapter creates explicit source tag, uploads manifest, publishes and safely retries', async (t) => {

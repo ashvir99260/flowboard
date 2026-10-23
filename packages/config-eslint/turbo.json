@@ -6,7 +6,9 @@
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/eslint.config.mjs",
         "$TURBO_ROOT$/scripts/**",
-        "$TURBO_ROOT$/commitlint.config.mjs"
+        "$TURBO_ROOT$/commitlint.config.mjs",
+        "$TURBO_ROOT$/*.json",
+        "$TURBO_ROOT$/packages/config-typescript/**/*.json"
       ]
     }
   }

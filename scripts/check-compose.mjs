@@ -22,8 +22,8 @@ async function run(...args) {
     const operation = execute('docker', [...prefix, ...args], {
       cwd: root,
       env,
-      timeout: 1_800_000,
       maxBuffer: 16 * 1024 * 1024,
+      timeout: 1_800_000,
     });
     if (args.includes('--build')) {
       operation.child.stdout.on('data', (chunk) => process.stdout.write(chunk));

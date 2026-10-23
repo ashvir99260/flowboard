@@ -8,7 +8,7 @@ import { startProcess } from '@flowboard/config-jest/process';
 const cwd = new URL('../', import.meta.url);
 
 test('worker exposes process liveness and stops without claiming queue readiness', async (t) => {
-  const runtime = startProcess(['dist/main.js'], { cwd, env: { PORT: '0', HOST: '127.0.0.1' } });
+  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });
   t.after(() => runtime.stop());
   const [, port] = await runtime.waitFor(/\[worker\] Process listening on port (\d+)/);
   assert.match(runtime.output(), /Queue processing is not implemented/);
@@ -30,7 +30,7 @@ for (const port of ['not-a-port', '65536']) {
 }
 
 test('worker closes a half-open liveness connection during shutdown', async (t) => {
-  const runtime = startProcess(['dist/main.js'], { cwd, env: { PORT: '0', HOST: '127.0.0.1' } });
+  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });
   let client;
   t.after(() => client?.destroy());
   t.after(() => runtime.stop());

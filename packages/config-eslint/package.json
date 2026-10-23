@@ -1,43 +1,54 @@
 {
-  "name": "@flowboard/config-eslint",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
+  "dependencies": {
+    "@commitlint/config-conventional": "21.2.4",
+    "@eslint/js": "9.39.5",
+    "@typescript-eslint/eslint-plugin": "8.72.0",
+    "eslint-config-next": "16.4.2",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-import-x": "4.17.1",
+    "eslint-plugin-jsonc": "3.4.2",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-perfectionist": "5.13.0",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-sonarjs": "4.2.2",
+    "eslint-plugin-unused-imports": "4.4.1",
+    "typescript-eslint": "8.72.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@flowboard/config-typescript": "workspace:*",
+    "@types/node": "22.20.5",
+    "eslint": "9.39.5",
+    "next": "16.4.2",
+    "prettier": "3.9.10",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "typescript": "6.0.3"
+  },
   "exports": {
     ".": "./src/node.mjs",
     "./node": "./src/node.mjs",
     "./next": "./src/next.mjs",
-    "./commitlint": "./src/commitlint.mjs"
+    "./commitlint": "./src/commitlint.mjs",
+    "./react": "./src/react.mjs",
+    "./json": "./src/json.mjs"
   },
+  "name": "@flowboard/config-eslint",
+  "prettier": "@flowboard/config-prettier",
+  "private": true,
   "scripts": {
     "build": "node src/build.mjs",
-    "lint": "eslint . --max-warnings=0 && cd ../.. && eslint eslint.config.mjs commitlint.config.mjs scripts --max-warnings=0",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
-    "test": "node --test test/*.test.mjs",
     "commitlint": "node scripts/commitlint.mjs",
     "commitlint:ci": "node scripts/commitlint.mjs --ci",
-    "hooks:install": "node scripts/install-hooks.mjs"
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
+    "hooks:install": "node scripts/install-hooks.mjs",
+    "lint": "eslint . --max-warnings=0 && cd ../.. && eslint eslint.config.mjs commitlint.config.mjs scripts \"*.json\" \"packages/config-typescript/**/*.json\" --max-warnings=0",
+    "lint:fix": "eslint --fix . --max-warnings=0 && cd ../.. && eslint --fix eslint.config.mjs commitlint.config.mjs scripts \"*.json\" \"packages/config-typescript/**/*.json\" --max-warnings=0",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "prettier": "@flowboard/config-prettier",
-  "dependencies": {
-    "@eslint/js": "9.39.5",
-    "eslint-config-next": "16.4.2",
-    "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-import-x": "4.17.1",
-    "typescript-eslint": "8.72.0",
-    "@commitlint/config-conventional": "21.2.4"
-  },
-  "devDependencies": {
-    "@flowboard/config-typescript": "workspace:*",
-    "@types/node": "22.20.5",
-    "typescript": "6.0.3",
-    "eslint": "9.39.5",
-    "prettier": "3.9.10",
-    "next": "16.4.2",
-    "react": "19.3.1",
-    "react-dom": "19.3.1",
-    "@commitlint/cli": "21.2.4"
-  }
+  "type": "module",
+  "version": "0.0.0"
 }

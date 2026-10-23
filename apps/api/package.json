@@ -1,23 +1,4 @@
 {
-  "name": "@flowboard/api",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    "./package.json": "./package.json"
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
-    "test": "node --test --test-timeout=60000 test/*.test.mjs",
-    "dev": "tsc-watch -p tsconfig.json --onSuccess \"node dist/main.js\"",
-    "start": "node dist/main.js",
-    "docker:check": "node ../../scripts/check-compose.mjs"
-  },
-  "prettier": "@flowboard/config-prettier",
   "dependencies": {
     "@flowboard/contracts": "workspace:*",
     "@flowboard/database": "workspace:*",
@@ -28,16 +9,36 @@
     "rxjs": "7.8.2"
   },
   "devDependencies": {
-    "@flowboard/config-typescript": "workspace:*",
     "@flowboard/config-eslint": "workspace:*",
+    "@flowboard/config-jest": "workspace:*",
+    "@flowboard/config-typescript": "workspace:*",
     "@types/node": "22.20.5",
-    "typescript": "6.0.3",
     "eslint": "9.39.5",
     "prettier": "3.9.10",
-    "@flowboard/config-jest": "workspace:*",
-    "tsc-watch": "7.2.1"
+    "tsc-watch": "7.2.1",
+    "typescript": "6.0.3"
+  },
+  "exports": {
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"
-  ]
+  ],
+  "name": "@flowboard/api",
+  "prettier": "@flowboard/config-prettier",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc-watch -p tsconfig.json --onSuccess \"node dist/main.js\"",
+    "docker:check": "node ../../scripts/check-compose.mjs",
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint --fix . --max-warnings=0",
+    "start": "node dist/main.js",
+    "test": "node --test --test-timeout=60000 test/*.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

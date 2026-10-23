@@ -184,14 +184,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: enforce conventional commit messages`.
   - **Completion evidence:** [P00-20 verification](evidence/P00-20.md): 16 focused cases, 143 repository tests, standard gates and Docker acceptance pass; local hook enabled.
 
-- [ ] **P00-21 — Strengthen shared linting and deterministic ordering**
+- [x] **P00-21 — Strengthen shared linting and deterministic ordering**
   - **Goal:** Apply compatible quality, naming, unused-code and safe sorting rules across backend, frontend and authored JSON.
   - **Requirements:** R105; preserves R93 and application behavior.
   - **Files:** config-eslint dependencies/config/tests, root lint coverage, package JSON/config and authored source fixes, lockfile, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, task evidence.
   - **Dependencies:** P00-20.
-  - **Acceptance:** Add Perfectionist, SonarJS, unused-import and JSON rules without duplicating Next/React, import-x or Prettier. Types/classes/components use PascalCase; runtime names and external JSON contracts retain appropriate case. Sort safe named imports, types, props, destructuring and JSON keys; preserve evaluation order, dependency defaults, spreads, side-effect imports and conditional export semantics. Fix genuine diagnostics without blanket disabling checks or changing generated code.
+  - **Acceptance:** Add Perfectionist, SonarJS, unused-import and JSON rules without duplicating Next/React, import-x or Prettier. Automate PascalCase for types/classes and JSX references; document component declarations as a review convention. Runtime names and external JSON contracts retain appropriate case. Sort safe named imports, types, literal props/objects and JSON keys; preserve destructuring evaluation, dependency defaults, overloads, spreads, side-effect imports and conditional export semantics. Fix genuine diagnostics without blanket disabling checks or changing generated code.
   - **Validation:** Positive/negative JS/TS/TSX/JSON fixtures and semantic ordering regressions; full build/lint/test/type/format, frozen install and Docker checks.
   - **Commit:** `chore: strengthen shared eslint quality rules`.
+  - **Completion evidence:** [P00-21 verification](evidence/P00-21.md): 12 rule/safety fixtures, 155 repository tests, standard gates and Docker acceptance pass; reviewed sorting and naming limits documented.
 
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.

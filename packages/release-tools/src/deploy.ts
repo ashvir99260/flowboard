@@ -1,13 +1,13 @@
 import type { ReleaseManifest } from './publisher.js';
 
 export interface DeploymentConfig {
-  vercelToken?: string;
+  apiServiceId?: string;
+  githubRepoId?: string;
+  northflankProjectId?: string;
+  northflankToken?: string;
   vercelProjectId?: string;
   vercelTeamId?: string;
-  githubRepoId?: string;
-  northflankToken?: string;
-  northflankProjectId?: string;
-  apiServiceId?: string;
+  vercelToken?: string;
   workerServiceId?: string;
 }
 export interface DeploymentProviders {

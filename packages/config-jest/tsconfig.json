@@ -1,13 +1,13 @@
 {
-  "extends": "@flowboard/config-typescript/library.json",
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
     "allowJs": true,
     "checkJs": false,
-    "noEmit": true,
-    "declaration": false
+    "declaration": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true
   },
-  "include": ["src/**/*.mjs"],
-  "exclude": ["dist", "node_modules", "test"]
+  "exclude": ["dist", "node_modules", "test"],
+  "extends": "@flowboard/config-typescript/library.json",
+  "include": ["src/**/*.mjs"]
 }

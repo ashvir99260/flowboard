@@ -1,4 +1,4 @@
 {
-  "extends": "./node.json",
-  "compilerOptions": { "verbatimModuleSyntax": true }
+  "compilerOptions": { "verbatimModuleSyntax": true },
+  "extends": "./node.json"
 }

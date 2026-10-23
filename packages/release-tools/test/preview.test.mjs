@@ -16,12 +16,12 @@ const web = {
 const meta = { flowboardSha: sha, flowboardTag: web.tag };
 const ready = {
   id: 'dpl_preview',
-  target: null,
-  readyState: 'READY',
-  url: 'flowboard-preview.vercel.app',
   meta,
+  readyState: 'READY',
+  target: null,
+  url: 'flowboard-preview.vercel.app',
 };
-const config = { vercelToken: 'fixture', vercelProjectId: 'prj_test', githubRepoId: '123' };
+const config = { githubRepoId: '123', vercelProjectId: 'prj_test', vercelToken: 'fixture' };
 const json = (data) => new globalThis.Response(JSON.stringify(data));
 
 test('Vercel creates a preview from the released SHA and returns its ready URL without promoting', async () => {
@@ -45,7 +45,7 @@ test('Vercel creates a preview from the released SHA and returns its ready URL w
         const body = JSON.parse(init.body);
         assert.equal(body.target, undefined);
         assert.equal(body.autoAssignCustomDomains, false);
-        assert.deepEqual(body.gitSource, { type: 'github', repoId: '123', ref: sha, sha });
+        assert.deepEqual(body.gitSource, { ref: sha, repoId: '123', sha, type: 'github' });
         assert.deepEqual(body.meta, meta);
         return json({ id: ready.id });
       }
@@ -83,7 +83,7 @@ for (const target of [null, undefined, 'preview'])
         if (parsed.pathname === '/v7/deployments') {
           if (!parsed.searchParams.has('until'))
             return json({
-              deployments: [{ uid: 'dpl_production', target: 'production', meta }],
+              deployments: [{ meta, target: 'production', uid: 'dpl_production' }],
               pagination: { next: 50 },
             });
           assert.equal(parsed.searchParams.get('until'), '50');

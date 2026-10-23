@@ -7,19 +7,19 @@ export const applications = ['api', 'web', 'worker'] as const;
 export type Application = (typeof applications)[number];
 export interface Release {
   app: Application;
-  version: string;
-  tag: string;
-  sha: string;
-  previousTag?: string;
   mode: 'new' | 'resume';
+  previousTag?: string;
+  sha: string;
+  tag: string;
+  version: string;
 }
 interface Manifest {
-  name: string;
-  dependencies?: Record<string, string>;
-  optionalDependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  scripts?: Record<string, string>;
   [key: string]: unknown;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  name: string;
+  optionalDependencies?: Record<string, string>;
+  scripts?: Record<string, string>;
 }
 interface Lock {
   importers: Record<string, Record<string, Record<string, { version: string }>>>;
@@ -84,7 +84,7 @@ export function planReleases({
         }),
     );
     const read = (path: string) => (files.has(path) ? git('show', `${commit}:${path}`) : '');
-    const manifests = new Map<string, { path: string; manifest: Manifest }>();
+    const manifests = new Map<string, { manifest: Manifest; path: string }>();
     for (const path of files.keys())
       if (/^(apps|packages)\/[^/]+\/package\.json$/.test(path)) {
         const manifest = JSON.parse(read(path)) as Manifest;
@@ -108,7 +108,7 @@ export function planReleases({
       const snapshot = lock.snapshots[key];
       const metadata = lock.packages[key.replace(/\(.*/, '')];
       if (!snapshot || !metadata) throw new Error(`Unresolved lock dependency ${key}`);
-      inputs[`dependency:${key}`] = { snapshot, metadata };
+      inputs[`dependency:${key}`] = { metadata, snapshot };
       for (const [child, resolved] of Object.entries({
         ...snapshot.dependencies,
         ...snapshot.optionalDependencies,

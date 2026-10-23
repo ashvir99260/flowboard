@@ -6,19 +6,19 @@ import type { ReleaseManifest } from './publisher.js';
 interface NorthflankService {
   data: {
     deployment: {
-      instances: number;
-      external?: { imagePath: string; credentials?: string };
+      external?: { credentials?: string; imagePath: string };
       imageUrl?: string;
+      instances: number;
     };
-    status: { deployment: { status: string; lastTransitionTime?: string | number } };
+    status: { deployment: { lastTransitionTime?: string | number; status: string } };
   };
 }
 interface ProviderOptions {
-  fetch?: typeof fetch;
-  sleep?: (ms: number) => Promise<void>;
-  now?: () => number;
-  timeoutMs?: number;
   assertCurrent: () => Promise<void>;
+  fetch?: typeof fetch;
+  now?: () => number;
+  sleep?: (ms: number) => Promise<void>;
+  timeoutMs?: number;
 }
 
 export function createDeploymentProviders(config: DeploymentConfig, options: ProviderOptions) {
@@ -59,13 +59,13 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
       const projectPath = `/v9/projects/${encodeURIComponent(config.vercelProjectId!)}`;
       type Project = { name: string };
       type Deployment = {
-        uid?: string;
         id?: string;
+        meta?: Record<string, string>;
         readyState?: string;
         state?: string;
         target?: string | null;
+        uid?: string;
         url?: string;
-        meta?: Record<string, string>;
       };
       const readProject = () => request<Project>(vercelUrl(projectPath), config.vercelToken!);
       const project = await readProject();

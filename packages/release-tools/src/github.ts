@@ -4,10 +4,10 @@ import type { Release } from './index.js';
 import type { PublicationPort, ReleaseManifest, RemoteRelease } from './publisher.js';
 
 interface ApiRelease extends RemoteRelease {
+  assets: { id: number; name: string }[];
   tag_name: string;
   target_commitish: string;
   upload_url: string;
-  assets: { id: number; name: string }[];
 }
 
 export function githubPort(repository: string, token: string, baseUrl = 'https://api.github.com') {
@@ -54,7 +54,7 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
       const asset = value?.assets.find((entry) => entry.name === 'release.json');
       if (!asset) return null;
       const response = await fetch(`${baseUrl}/repos/${repository}/releases/assets/${asset.id}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/octet-stream' },
+        headers: { Accept: 'application/octet-stream', Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error(`Cannot read release manifest (${response.status})`);
       return (await response.json()) as ReleaseManifest;
