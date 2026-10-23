@@ -14,9 +14,14 @@ env:
 
 jobs:
   verify:
-    name: Build, lint and test
+    name: Workspace / ${{ matrix.command }}
+    if: github.event.repository.private == false
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        command: [build, lint, test, typecheck, 'format:check']
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -26,12 +31,9 @@ jobs:
           node-version: '22.23.2'
       - run: npm install --global pnpm@12.15.0
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm format:check
+      - run: pnpm ${{ matrix.command }}
       - name: Lint workflow definitions
+        if: matrix.command == 'lint'
         run: |
           curl --fail --silent --show-error --location https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz --output "$RUNNER_TEMP/actionlint.tar.gz"
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check --status
@@ -40,7 +42,7 @@ jobs:
 
   containers:
     name: Compose health and persistence
-    needs: verify
+    if: github.event.repository.private == false
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:

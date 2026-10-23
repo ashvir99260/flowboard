@@ -124,6 +124,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `ci: target initial hosted previews`.
   - **Completion evidence:** [P00-13 verification](evidence/P00-13.md): 122 tests, standard gates and actionlint pass; empty-project bootstrap guard reviewed. Live preview remains P00-14.
 
+- [x] **P00-15 — Parallel CI on free public-repository runners**
+  - **Goal:** Run all workspace build, lint, test and type checks independently in parallel without paid runners or an organization subscription.
+  - **Requirements:** R98; preserves R94–R97 and the preview deployment gate.
+  - **Files:** `.github/workflows/delivery.yml`, `packages/release-tools/test/deployment-gate.test.mjs`, `docs/{CI_CD,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, `docs/evidence/P00-15.md`.
+  - **Dependencies:** P00-13 and the user's explicit parallel/free-CI request.
+  - **Acceptance:** A fail-fast-disabled matrix runs root build/lint/test/typecheck/format commands across all workspaces. Docker checks run concurrently. Every job uses standard `ubuntu-24.04`; entry jobs skip private repositories. No paid runner group, cache service, organization or billing change is introduced. Publication waits for every check and Docker; preview deployment still waits for publication.
+  - **Validation:** Workflow contract regression tests, actionlint, root build/lint/test/type/format checks, independent review; confirm public repository visibility and inspect the pushed PR workflow when available.
+  - **Commit:** `ci: parallelize workspace checks on free runners`.
+  - **Completion evidence:** [P00-15 verification](evidence/P00-15.md): 123 tests, standard gates, actionlint and independent review pass. GitHub public visibility confirmed; paid settings unchanged.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.

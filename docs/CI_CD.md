@@ -5,9 +5,11 @@ The initial hosted environment is a **shared preview** on Vercel (web), Northfla
 ```mermaid
 flowchart LR
   PR[Pull request] --> Checks[Build / lint / types / tests / format]
+  PR --> Docker[Compose health and persistence]
   Main[Merge to main] --> Checks
-  Checks --> Docker[Compose health and persistence]
-  Docker --> Publish[Publish affected app images and releases]
+  Main --> Docker
+  Checks --> Publish[Main only: publish affected app images and releases]
+  Docker --> Publish
   Publish --> Gate[GitHub preview environment / CD_ENABLED]
   Gate --> Web[Vercel preview: released web commit]
   Gate --> API[Northflank preview API: released digest]
@@ -19,6 +21,16 @@ flowchart LR
 ```
 
 Database/queue connections in this diagram describe the target topology. Current app shells do not yet use them; see the limits below.
+
+## Parallel checks and free runners
+
+Five independent GitHub jobs run `pnpm build`, `pnpm lint`, `pnpm test`, `pnpm typecheck` and `pnpm format:check`. Each root command uses Turbo across all applicable apps and packages; new workspaces join through the workspace graph. Turbo still builds required dependencies inside a job before a dependent check can use them. No check waits for another check job. Fail-fast is disabled, so one failed lane does not cancel the remaining results. Workflow lint runs within the lint lane.
+
+Compose health/persistence checks start alongside the five lanes. Publication waits for the complete verification matrix and Compose checks to succeed; deployment waits for publication. Runner availability and the account's concurrency limits can still queue jobs.
+
+Every job uses the standard `ubuntu-24.04` GitHub-hosted runner. [GitHub documents these runners as free and unlimited for public repositories](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories). This setup adds no larger runner, paid cache service, organization subscription or billing change. Entry jobs skip if the repository becomes private, preventing their dependent release/deployment jobs from running under potentially billable private-repository rules. This is a CI-runner guarantee, not a promise about unrelated hosting or storage products.
+
+Branch protection should require the five `Workspace / ...` checks and `Compose health and persistence`, replacing the former `Build, lint and test` check if it was configured. Repository settings are not changed by this workflow commit.
 
 ## Deployment contract
 
