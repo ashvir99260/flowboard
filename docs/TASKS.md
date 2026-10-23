@@ -134,6 +134,36 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `ci: parallelize workspace checks on free runners`.
   - **Completion evidence:** [P00-15 verification](evidence/P00-15.md): 123 tests, standard gates, actionlint and independent review pass. GitHub public visibility confirmed; paid settings unchanged.
 
+- [x] **P00-16 — Local Graphify navigation with untracked data**
+  - **Goal:** Help Codex and contributors navigate real code relationships without publishing generated graph data.
+  - **Requirements:** R100; complements H06.
+  - **Files:** `.graphifyignore`, `.gitignore`, `.dockerignore`, `.prettierignore`, `AGENTS.md`, `README.md`, `docs/{GRAPHIFY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, `packages/config-typescript/test/workspace.test.mjs`, `docs/evidence/P00-16.md`.
+  - **Dependencies:** P00-15; reuse the installed Graphify CLI without changing global settings.
+  - **Acceptance:** Local code-only generation produces a nonempty graph/report and supports a bounded query. Generated outputs, caches and temporary Graphify files are ignored at any workspace depth; authored config/docs remain trackable. Dependencies, build outputs and secrets are excluded from extraction. Codex guidance treats the graph as optional navigation and verifies claims against current source. No runtime dependency, cloud extraction, global hook or generated graph is committed.
+  - **Validation:** Ignore-rule regression, native detection/extraction and bounded query, second cached update, tracked-file audit, standard gates and applicable Docker checks.
+  - **Commit:** `chore: add local graphify navigation`.
+  - **Completion evidence:** [P00-16 verification](evidence/P00-16.md): local graph/query/cache and ignore checks pass; 124 tests and five-service Docker acceptance pass. Generated data remains untracked.
+
+- [x] **P00-17 — Focused local tools for AI-assisted coding**
+  - **Goal:** Add syntax-aware search and local secret checks, and make existing Serena navigation easy to use alongside Graphify.
+  - **Requirements:** R101; preserves R100.
+  - **Files:** root `package.json`, `pnpm-lock.yaml`, targeted pnpm install policy if required, `.gitleaks.toml`, local-data ignores, `AGENTS.md`, `README.md`, `docs/{AI_TOOLS,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, workspace tests and task evidence.
+  - **Dependencies:** P00-16.
+  - **Acceptance:** Pinned ast-grep performs structural searches without editing source; existing Gitleaks scans locally with built-in rules and redacted reports; a synthetic secret is detected. Serena guidance uses the existing connector without global changes. Local reports/state stay ignored and no runtime dependency, paid service or automatic hook is introduced.
+  - **Validation:** Behavioral syntax-search fixture, synthetic secret/redaction and clean-repo scans, ignored-report regression, Serena symbol lookup, standard gates and relevant packaging checks.
+  - **Commit:** `chore: add focused local coding tools`.
+  - **Completion evidence:** [P00-17 verification](evidence/P00-17.md): structural-search/secret-scan checks, 126 tests and Docker pass; fresh Serena indexing works, existing connector needs reconnect. Local state remains untracked.
+
+- [x] **P00-18 — Add local Reverse Engineer Anything tooling**
+  - **Goal:** Inspect shipped JavaScript artifacts with the official REA CLI alongside the existing source-navigation tools.
+  - **Requirements:** R102; preserves R100–R101.
+  - **Files:** `docs/{REA,AI_TOOLS,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, `AGENTS.md`, `README.md`, workspace ignore regression and `docs/evidence/P00-18.md`; installation and output under ignored `.ai-local/rea/` only.
+  - **Dependencies:** P00-17 and the user's explicit REA request.
+  - **Acceptance:** Version-pinned official CLI installs locally without global agent setup, install hooks or optional native instrumentation. Static analysis of our built JavaScript produces inspectable evidence; an invalid target fails. Tool dependencies, cache and reports remain ignored, excluded from Docker/Graphify and outside normal workspace dependencies. Document CLI usage, summary views and the separate status of MCP registration/native engines.
+  - **Validation:** Actual CLI version, owned-artifact analysis and missing-target checks; local-data exclusion regression and tracked-file audit; G01/G03/G04/G05 build/lint/test/type/format checks. No API or runtime image changes.
+  - **Commit:** `chore: add local reverse engineering tools`.
+  - **Completion evidence:** [P00-18 verification](evidence/P00-18.md): pinned CLI, static artifact/non-execution/error checks, 126 tests and all workspace gates pass. Installation and generated data remain local; MCP is not registered.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.

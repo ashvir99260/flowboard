@@ -152,3 +152,11 @@ vite.config.ts.timestamp-*
 # Local agent scratch and operating-system metadata
 .superpowers/
 .DS_Store
+
+# Local Graphify outputs, caches, memory and intermediate extraction files
+graphify-out/
+.graphify_*
+
+# Local AI navigation state and redacted tool reports
+.serena/
+.ai-local/

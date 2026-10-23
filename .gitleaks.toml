@@ -1,0 +1,10 @@
+title = "Flowboard local secret scan"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Dependency, build and local tool data; authored source and env files are scanned"
+paths = [
+  '''(^|/)(node_modules|\.git|\.next|dist|coverage|\.turbo|\.pnpm-store|\.serena|\.ai-local|graphify-out)(/|$)''',
+]

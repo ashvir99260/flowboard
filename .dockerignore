@@ -3,6 +3,11 @@
 .codex
 .agents
 .superpowers
+**/graphify-out
+**/.graphify_*
+.graphifyignore
+**/.ai-local
+.gitleaks.toml
 .pnpm-store
 .turbo
 **/node_modules

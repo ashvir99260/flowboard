@@ -1,0 +1,25 @@
+# Local tooling and generated output; keep authored code and tests in the graph.
+graphify-out/
+.graphify_*
+node_modules/
+.pnpm-store/
+.turbo/
+.cache/
+.next/
+dist/
+out/
+coverage/
+storybook-static/
+playwright-report/
+test-results/
+*.tsbuildinfo
+*.gen.ts
+**/next-env.d.ts
+packages/api-client/src/generated/
+.env
+.env.*
+.git/
+.serena/
+.codex/
+.agents/
+.ai-local/
