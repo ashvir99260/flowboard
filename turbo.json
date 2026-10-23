@@ -29,6 +29,11 @@
     },
     "format:check": {
       "cache": false
+    },
+    "docker:check": {
+      "cache": false,
+      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
+      "outputs": []
     }
   }
 }

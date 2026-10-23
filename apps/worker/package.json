@@ -30,5 +30,8 @@
     "prettier": "3.9.10",
     "@flowboard/config-jest": "workspace:*",
     "tsc-watch": "7.2.1"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

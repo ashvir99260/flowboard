@@ -65,13 +65,32 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: add runnable application shells`.
   - **Completion evidence:** [P00-03 verification](evidence/P00-03.md): three real application processes, shared Next/Node tooling, 44 passing tests including half-open shutdown, and restored Next build cache.
 
-- [ ] **P00-04 — Pruned Docker images and five-service Compose**
+- [x] **P00-04 — Pruned Docker images and five-service Compose**
   - **Goal:** Provide the first working one-command development topology.
   - **Files:** `apps/{api,web,worker}/Dockerfile`, `compose.yaml`, `.dockerignore`, `.env.example`, `apps/{api,web,worker}/.env.example`, `scripts/check-compose.mjs`, `README.md`.
   - **Dependencies:** P00-03.
   - **Acceptance:** Multi-stage `turbo prune --docker` images run non-root. Five services have meaningful healthchecks and healthy dependencies; DB/Redis use named volumes/internal ports. Local demo defaults work without hand-copying environment files; secrets are service-specific. Migration startup is explicitly tracked by P01-05.
   - **Validation:** Compose config, all images build, clean `docker compose up --build`, health wait and restart smoke; standard gate.
   - **Commit:** `chore: add docker compose development stack`.
+  - **Completion evidence:** [P00-04 verification](evidence/P00-04.md): three non-root images, all five services healthy, browser assets served, datastore restart persistence and 44 root tests pass.
+
+- [ ] **P00-05 — Independent application release planning**
+  - **Goal:** Compute per-application semantic releases from source changes and published release baselines.
+  - **Requirements:** R94–R95.
+  - **Files:** `packages/release-tools/**`, application release metadata, `docs/DELIVERY.md`, `docs/DECISIONS.md`.
+  - **Dependencies:** P00-04.
+  - **Acceptance:** API-only and web-only changes are independent; runtime shared dependencies propagate correctly; lockfile changes are selective. Versions use application-specific tags, Conventional Commits and published baselines. Documentation-only changes skip. Retries and stale/diverged histories fail safely or resume without duplicate versions.
+  - **Validation:** Behavioral fixtures for app-only, shared, selective dependency, rename/delete, initial release, feature/breaking/patch, no-op, partial retry and stale runs; standard gate.
+  - **Commit:** `feat: plan independent application releases`.
+
+- [ ] **P00-06 — CI, independent image publication and hosted setup guide**
+  - **Goal:** Validate pull requests and publish only affected application images, tags and GitHub Releases after main merges.
+  - **Requirements:** R94–R97.
+  - **Files:** `.github/workflows/**`, `packages/release-tools/**`, `docs/DELIVERY.md`, `README.md`, environment examples.
+  - **Dependencies:** P00-05.
+  - **Acceptance:** Read-only PR checks; serialized main publication with narrowly scoped write permissions; version/SHA image tags and digest recorded per release; idempotent failure recovery. No production credentials needed for release builds. Document local PostgreSQL, Neon runtime/direct migration URLs and the selected free-tier hosting setup, including honest limits and required secret names. Provider connection is explicit, never a dummy successful deployment.
+  - **Validation:** Workflow lint, publication orchestration tests using a local Git/registry boundary or controlled API fixtures, Docker checks, full standard gate; remote publication only when authorized main workflow runs.
+  - **Commit:** `ci: publish independent app images and releases`.
 
 ## Phase 1 — Contracts, persistence and tenancy
 

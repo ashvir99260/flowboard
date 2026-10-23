@@ -59,3 +59,10 @@ The System Design template supplies the companion Word document. Markdown remain
 ## Planning limitations
 
 Package versions, executable commands and runtime performance are not verified by these documents. Phase 0 records pinned compatibility and adds real commands; Phase 12 validates the final clean Docker run. Documentation guardrails alone are not enforcement: lint, contract checks, integration tests and CI are explicit implementation tasks.
+
+## Independent delivery choices (23 October 2026)
+
+- **D41 — Application-specific tags and releases.** API, web and worker version independently. Runtime dependency changes propagate to their consumers; a build-only spec-export edge is not a reason to release an unchanged web app.
+- **D42 — Publish immutable application artifacts from main.** Build each affected Docker image, record its source/digest and publish its GitHub Release in the same serialized workflow. Use the built-in GitHub token and resumable publication; no version-update commits or production database secrets are needed.
+- **D43 — PostgreSQL locally, Neon when hosted.** Preserve the same PostgreSQL/Prisma model. Runtime and direct migration connection strings are server-side environment configuration; hosted seed remains opt-in. No cloud resources are provisioned by the release workflow.
+- **D44 — Free-tier hosted deployment is a hobby target.** Proposed Vercel UI, Northflank API/worker/Redis and Neon PostgreSQL, subject to the user's host choice and current capacity. A free account does not imply a production SLA or permit silently enabling paid resources.

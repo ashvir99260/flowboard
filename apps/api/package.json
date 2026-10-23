@@ -14,7 +14,8 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
     "test": "node --test --test-timeout=60000 test/*.test.mjs",
     "dev": "tsc-watch -p tsconfig.json --onSuccess \"node dist/main.js\"",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "docker:check": "node ../../scripts/check-compose.mjs"
   },
   "prettier": "@flowboard/config-prettier",
   "dependencies": {
@@ -35,5 +36,8 @@
     "prettier": "3.9.10",
     "@flowboard/config-jest": "workspace:*",
     "tsc-watch": "7.2.1"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

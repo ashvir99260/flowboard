@@ -1,0 +1,85 @@
+name: flowboard
+
+services:
+  web:
+    image: flowboard-web:local
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - '127.0.0.1:${WEB_PORT:-3000}:3000'
+    environment:
+      PORT: '3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    init: true
+    stop_grace_period: 20s
+
+  api:
+    image: flowboard-api:local
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - '127.0.0.1:${API_PORT:-3001}:3001'
+    environment:
+      PORT: '3001'
+      DATABASE_URL: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
+      DATABASE_URL_UNPOOLED: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    init: true
+    stop_grace_period: 20s
+
+  worker:
+    image: flowboard-worker:local
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      PORT: '3002'
+      DATABASE_URL: postgresql://${POSTGRES_USER:-flowboard}:${POSTGRES_PASSWORD:-flowboard-local-only}@postgres:5432/${POSTGRES_DB:-flowboard}?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    init: true
+    stop_grace_period: 20s
+
+  postgres:
+    image: postgres:17-bookworm@sha256:858bb5e98eed02eb8cafbcdc007f9a65d1b613972028944a8ec2133ccaf80d27
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-flowboard}
+      POSTGRES_USER: ${POSTGRES_USER:-flowboard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flowboard-local-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    stop_grace_period: 20s
+
+  redis:
+    image: redis:7-alpine@sha256:57e4255cc971b1c8d6f8a6ca283ac01bc3ecdd914273ef6bfaede87aaecd6541
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory-policy', 'noeviction']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    stop_grace_period: 20s
+
+volumes:
+  postgres-data:
+  redis-data:

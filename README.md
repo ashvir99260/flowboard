@@ -2,7 +2,7 @@
 
 A planned self-hosted project management app for learning sound architecture at hobby scale.
 
-**Current state:** Phase 0 workspace and application shells. Next.js, NestJS and an explicitly idle worker use shared TypeScript, ESLint and Prettier configuration. Domain features and the Docker environment are not implemented yet.
+**Current state:** Phase 0 workspace and application shells. Next.js, NestJS and an explicitly idle worker use shared TypeScript, ESLint and Prettier configuration. Docker runs the five local services; domain features remain in the task backlog.
 
 ## Local tooling
 
@@ -33,9 +33,29 @@ Open [the setup page](http://localhost:3000). Next.js reloads page edits; the AP
 | API     | `http://127.0.0.1:3001` | Nest boots; all routes return 404 until the typed HTTP platform in P01-02. |
 | Worker  | TCP `127.0.0.1:3002`    | Process liveness only; queue processing arrives in P11-02.                 |
 
-The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; pass `--hostname 127.0.0.1` to restrict it locally. No database or Redis connection is needed for these shells.
+The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; set `HOSTNAME=127.0.0.1` to restrict it locally. No database or Redis connection is needed for these shells.
 
 The shared ESLint presets are exported as `@flowboard/config-eslint/node` and `/next`; compiler presets as `@flowboard/config-typescript/{node,nest,next,library}.json`. Workspace boundary violations fail lint. App manifests export their metadata only; apps are not reusable libraries.
+
+## Run with Docker
+
+Start Docker, then run from the repository root:
+
+```sh
+docker compose up --build
+```
+
+This builds separate web, API and worker images and starts PostgreSQL and Redis. Open [Flowboard](http://localhost:3000); the API listens on port 3001. Application containers run as non-root. PostgreSQL, Redis and the worker are private to the Compose network. The local database defaults in `.env.example` require no file copy and are for development only.
+
+API/worker health currently means process liveness. Database-aware readiness, migrations and seed data arrive in P01-02/P01-05; the worker does not process jobs until P11-02. No placeholder migration or successful domain response is provided.
+
+`docker compose down` stops the stack and retains database/Redis volumes. To expose only the development datastore ports to host tools, use `docker compose -f compose.yaml -f compose.local.yaml up -d postgres redis`; these ports bind to localhost only. Do not start both the container apps and host development apps on the same ports.
+
+Run `pnpm docker:check` for an isolated image/build/start/restart check. It uses random published ports, verifies non-root users and datastore persistence, removes its own containers, and leaves its uniquely named test volumes intact. It never targets the development project's volumes.
+
+## Releases and hosted environments
+
+[The delivery plan](docs/DELIVERY.md) defines independent API, web and worker releases and container tags. It also covers local PostgreSQL, Neon connection strings for hosted environments, and the proposed free-tier hosting layout. Current rollout status is tracked in P00-04 through P00-06; a local Docker build does not create a hosted deployment.
 
 ## Project guide
 
