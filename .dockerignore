@@ -3,6 +3,9 @@
 .codex
 .agents
 .superpowers
+**/graphify-out
+**/.graphify_*
+.graphifyignore
 .pnpm-store
 .turbo
 **/node_modules

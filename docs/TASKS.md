@@ -134,6 +134,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `ci: parallelize workspace checks on free runners`.
   - **Completion evidence:** [P00-15 verification](evidence/P00-15.md): 123 tests, standard gates, actionlint and independent review pass. GitHub public visibility confirmed; paid settings unchanged.
 
+- [x] **P00-16 — Local Graphify navigation with untracked data**
+  - **Goal:** Help Codex and contributors navigate real code relationships without publishing generated graph data.
+  - **Requirements:** R100; complements H06.
+  - **Files:** `.graphifyignore`, `.gitignore`, `.dockerignore`, `.prettierignore`, `AGENTS.md`, `README.md`, `docs/{GRAPHIFY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, `packages/config-typescript/test/workspace.test.mjs`, `docs/evidence/P00-16.md`.
+  - **Dependencies:** P00-15; reuse the installed Graphify CLI without changing global settings.
+  - **Acceptance:** Local code-only generation produces a nonempty graph/report and supports a bounded query. Generated outputs, caches and temporary Graphify files are ignored at any workspace depth; authored config/docs remain trackable. Dependencies, build outputs and secrets are excluded from extraction. Codex guidance treats the graph as optional navigation and verifies claims against current source. No runtime dependency, cloud extraction, global hook or generated graph is committed.
+  - **Validation:** Ignore-rule regression, native detection/extraction and bounded query, second cached update, tracked-file audit, standard gates and applicable Docker checks.
+  - **Commit:** `chore: add local graphify navigation`.
+  - **Completion evidence:** [P00-16 verification](evidence/P00-16.md): local graph/query/cache and ignore checks pass; 124 tests and five-service Docker acceptance pass. Generated data remains untracked.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.

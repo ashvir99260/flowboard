@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
@@ -21,6 +22,34 @@ const workspaces = [
 ];
 
 const json = async (path) => JSON.parse(await readFile(new URL(path, root), 'utf8'));
+
+test('Graphify generated data stays untracked while its configuration remains trackable', () => {
+  const outputs = [
+    'graphify-out/graph.json',
+    'graphify-out/graph.html',
+    'graphify-out/GRAPH_REPORT.md',
+    'graphify-out/cache/entry.json',
+    'graphify-out/memory/query.md',
+    'apps/web/graphify-out/graph.json',
+    '.graphify_ast.json',
+    '.graphify_python',
+    'packages/ui/.graphify_detect.json',
+  ];
+  const ignored = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
+    cwd: fileURLToPath(root),
+    input: `${outputs.join('\n')}\n`,
+    encoding: 'utf8',
+  });
+  assert.equal(ignored.status, 0, ignored.stderr);
+  assert.deepEqual(ignored.stdout.trim().split('\n'), outputs);
+  const config = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
+    cwd: fileURLToPath(root),
+    input: '.graphifyignore\ndocs/GRAPHIFY.md\n',
+    encoding: 'utf8',
+  });
+  assert.equal(config.status, 1, config.stderr);
+  assert.equal(config.stdout, '');
+});
 
 test('root commands delegate to Turbo and pin the local package manager', async () => {
   const manifest = await json('package.json');

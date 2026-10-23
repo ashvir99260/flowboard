@@ -8,6 +8,8 @@ node_modules/
 .pnpm-store/
 .serena/
 .superpowers/
+**/graphify-out/**
+**/.graphify_*
 pnpm-lock.yaml
 **/*.gen.ts
 packages/api-client/src/generated/
