@@ -264,3 +264,5 @@ Compatibility will be rechecked against pinned versions before implementation. T
 ### Independent delivery follow-up (23 October 2026)
 
 P00-04 through P00-06 add per-app Docker images, selective semantic releases and CI publication before domain development continues. `packages/release-tools` is CI-only; it compares committed app/runtime/compiler inputs against each app's published baseline. The selected hosted topology is Vercel, Northflank and Neon, while local development keeps PostgreSQL/Redis in Compose. Product implementation order remains unchanged. [DELIVERY.md](DELIVERY.md) defines versioning, image identity, recovery and provider configuration.
+
+P00-08 adds conditional production CD after release publication. It recovers pending per-app versions across later merges and tests readiness/error/retry behavior at provider boundaries. P00-09 owns the first live deployment after the selected providers are connected; no cloud resource or database migration is created by CI.

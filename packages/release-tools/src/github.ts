@@ -5,6 +5,7 @@ import type { PublicationPort, ReleaseManifest, RemoteRelease } from './publishe
 
 interface ApiRelease extends RemoteRelease {
   tag_name: string;
+  target_commitish: string;
   upload_url: string;
   assets: { id: number; name: string }[];
 }
@@ -93,6 +94,62 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
   };
   return {
     port,
+    async assertCurrentMain(sha: string) {
+      const ref = await api<{ object: { sha: string; type: string } }>('/git/ref/heads/main');
+      if (ref?.object.type !== 'commit' || ref.object.sha !== sha)
+        throw new Error('Stale deployment: main no longer matches this workflow');
+    },
+    async assertReachable(source: string, head: string) {
+      const comparison = await api<{ status: string }>(`/compare/${source}...${head}`);
+      if (!comparison || !['ahead', 'identical'].includes(comparison.status))
+        throw new Error('Invalid deployment source: release is not an ancestor of main');
+    },
+    async releasedManifests(head: string) {
+      const latest = new Map<string, { release: ApiRelease; version: number[] }>();
+      for (let page = 1; ; page++) {
+        const releases = await api<ApiRelease[]>(`/releases?per_page=100&page=${page}`);
+        if (!releases) throw new Error('Cannot list deployment releases');
+        for (const release of releases) {
+          if (release.draft) continue;
+          const match = /^(api|web|worker)\/v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(
+            release.tag_name,
+          );
+          if (!match) continue;
+          const version = match.slice(2).map(Number);
+          if (!version.every(Number.isSafeInteger)) throw new Error('Invalid release version');
+          const previous = latest.get(match[1]!);
+          const difference = previous
+            ? (version
+                .map((value, index) => value - previous.version[index]!)
+                .find((value) => value !== 0) ?? 0)
+            : 1;
+          if (difference > 0) latest.set(match[1]!, { release, version });
+        }
+        if (releases.length < 100) break;
+      }
+      const manifests: ReleaseManifest[] = [];
+      for (const { release } of latest.values()) {
+        const manifest = await port.readManifest(release);
+        if (
+          !manifest ||
+          !/^[a-f0-9]{40}$/.test(manifest.sha) ||
+          manifest.tag !== release.tag_name ||
+          manifest.tag !== `${manifest.app}/v${manifest.version}` ||
+          manifest.schemaVersion !== 1 ||
+          !['api', 'web', 'worker'].includes(manifest.app) ||
+          manifest.image !==
+            `ghcr.io/${repository.split('/')[0]!.toLowerCase()}/flowboard-${manifest.app}` ||
+          !/^sha256:[a-f0-9]{64}$/.test(manifest.digest) ||
+          (await port.readTag(release.tag_name)) !== manifest.sha
+        )
+          throw new Error(`Invalid deployment manifest for ${release.tag_name}`);
+        const comparison = await api<{ status: string }>(`/compare/${manifest.sha}...${head}`);
+        if (!comparison || !['ahead', 'identical'].includes(comparison.status))
+          throw new Error('Invalid deployment source: release is not an ancestor of main');
+        manifests.push(manifest);
+      }
+      return manifests;
+    },
     async publishedTags() {
       const tags: string[] = [];
       for (let page = 1; ; page++) {

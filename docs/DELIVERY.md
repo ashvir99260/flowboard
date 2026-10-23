@@ -72,7 +72,7 @@ A completely reverted change causes no publication. Breaking changes in another 
 
 ## GitHub release setup and recovery
 
-The `Verify and release applications` workflow validates pull requests with read-only repository access. On `main`, it also builds the Compose stack and then enters a serialized publisher. Only that job receives `contents: write` and `packages: write`; it uses GitHub's built-in token, so no personal access token or cloud secret is required.
+The `Verify, release and deploy applications` workflow validates pull requests with read-only repository access. On `main`, it also builds the Compose stack and then enters a serialized publisher. Only that job receives `contents: write` and `packages: write`; it uses GitHub's built-in token, so no personal access token or cloud secret is required.
 
 For each affected app it publishes `ghcr.io/<owner>/flowboard-<app>:<version>` and `:sha-<full-commit>`, creates the application tag, uploads `release.json` to a draft release, and publishes the draft. The manifest records app, version, source SHA, image repository and digest. Images target `linux/amd64`. The first successful main run releases each app as `0.1.0`; later runs compare each app's own published baseline. Protected tag/ruleset policies must permit this workflow to create `api/v*`, `web/v*` and `worker/v*` tags.
 
@@ -84,10 +84,10 @@ Enable GitHub Actions and package publication for the repository, and require th
 
 1. Import this GitHub repository into Vercel's Hobby plan. Use **Next.js**, root directory `apps/web`, and Node **22.x**. Enable access to source files outside the root directory so workspace packages are available.
 2. Install command: `cd ../.. && pnpm install --frozen-lockfile`. Build command: `cd ../.. && pnpm build --filter=@flowboard/web`. Keep Next's `.next` output setting. The app package and its dependency builds stay owned by Turbo.
-3. Enable **Skip deployment** under the root-directory build settings for unaffected monorepo projects. UI/package changes deploy the UI; an unrelated backend change does not. Review this setting again when adding build-only OpenAPI dependencies: generated client changes are the web input.
+3. `apps/web/vercel.json` disables automatic Git deployments. The gated GitHub CD job selects released web versions and deploys their exact commits after checks pass. Keep this setting so provider Git events cannot bypass the pipeline.
 4. Production branch is `main`. Add a public API origin only when P07-03 implements the generated client's configuration. Database, Redis, signing and refresh secrets never belong in Vercel browser variables.
 
-Vercel deploys from Git source; the web Docker image is an independently versioned portable artifact. GitHub Releases and provider deployments are separate records.
+Vercel builds the exact released Git commit; the web Docker image remains an independently versioned portable artifact. GitHub Releases and provider deployments are separate records. Follow [CI/CD activation](CI_CD.md) to connect tokens and enable the production job.
 
 ## Northflank API, worker and Redis setup
 
@@ -95,7 +95,7 @@ Vercel deploys from Git source; the web Docker image is an independently version
 2. Create two services from external GHCR images: `flowboard-api:<version>` and `flowboard-worker:<version>` from the respective releases. Prefer the immutable digest from `release.json` for deployment/rollback. Do not build all apps in one service.
 3. API: `HOST=0.0.0.0`, `PORT=3001`; expose HTTP port 3001 with TLS and WebSocket support. Worker: background service, `PORT=3002`, TCP liveness on 3002, with no public ingress. Use the image defaults for commands.
 4. Set the server-only variables below through host secrets. Use the same Redis service for API sockets and worker queues. Keep worker and Redis in the same project/region.
-5. Select a newly published image version independently for the affected service, then deploy. Provider auto-deploy/webhooks can be connected later with provider credentials; this repository currently automates version/image/release publication only. No cloud account is linked by this change.
+5. Follow [CI/CD activation](CI_CD.md) to enable independent digest-based deployment from GitHub. Keep Northflank automatic image updates disabled; the pipeline pins the published digest and checks readiness. No cloud account is linked by this change.
 
 | Variable                | API                   | Worker      | Purpose                                                 |
 | ----------------------- | --------------------- | ----------- | ------------------------------------------------------- |

@@ -94,6 +94,25 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `ci: publish independent app images and releases`.
   - **Completion evidence:** [P00-06 verification](evidence/P00-06.md): 89 tests, actionlint, standard gates and five-service Docker acceptance pass; live publication remains P00-07.
 
+- [x] **P00-08 — Deploy released applications through CI/CD**
+  - **Goal:** Extend passing CI and independent publication with production deployment to the selected Vercel/Northflank hosts.
+  - **Requirements:** R98; preserves R94–R97.
+  - **Files:** `.github/workflows/delivery.yml`, `apps/web/vercel.json`, `packages/release-tools/src/{deploy*,github}.ts`, release-tool tests/config, `docs/CI_CD.md`, `docs/DELIVERY.md`, `docs/DECISIONS.md`, evidence and matrix.
+  - **Dependencies:** P00-06. P00-07 is an external post-merge verification and can follow this implementation.
+  - **Acceptance:** Main-only production job follows CI, Docker and release success; PRs never deploy. Published manifests select exact app digests/commits. Unchanged apps skip. Missing settings, stale runs, provider errors and failed rollouts fail safely. Retries and later unrelated merges reconcile pending releases; already-current provider versions do not roll out again. CD is explicitly disabled until credentials are connected.
+  - **Validation:** Controlled provider HTTP/clock fixtures for selection, payloads, readiness, errors, stale runs and retries; actionlint; build/lint/test/type/format gates.
+  - **Commit:** `ci: deploy released apps to selected hosts`.
+  - **Completion evidence:** [P00-08 verification](evidence/P00-08.md): 117 tests, actionlint, standard gates and five-service Docker acceptance pass. Live activation remains P00-09.
+
+- [ ] **P00-09 — Connect and verify production deployment**
+  - **Goal:** Enable and verify live deployment after provider accounts and targets are connected.
+  - **Requirements:** R98.
+  - **Files:** `docs/evidence/P00-09.md`, `docs/TASKS.md`, requirement matrix; secret values never enter files.
+  - **Dependencies:** P00-07, P00-08 and provider credentials/target IDs.
+  - **Acceptance:** A main run deploys the released app(s), reports real ready provider deployments, and a retry/unchanged app does not trigger an unrelated rollout.
+  - **Validation:** Live workflow/provider deployment records and externally reachable service checks; record honest product-shell limitations.
+  - **Commit:** `docs: record live continuous deployment`.
+
 - [ ] **P00-07 — Verify the first main-branch publication**
   - **Goal:** Record the first real application tags, GHCR digests and GitHub Releases after this workflow is merged.
   - **Requirements:** R94–R95.

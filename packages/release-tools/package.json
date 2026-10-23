@@ -21,7 +21,8 @@
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
     "release:plan": "node dist/cli.js",
-    "release:publish": "node dist/publish-cli.js"
+    "release:publish": "node dist/publish-cli.js",
+    "deploy:production": "node dist/deploy-cli.js"
   },
   "prettier": "@flowboard/config-prettier",
   "dependencies": {
