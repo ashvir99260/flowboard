@@ -26,10 +26,10 @@ import {
 } from '../common/swagger/api-documentation.js';
 
 import { AuthService } from './auth.service.js';
-import { EmptyAuthBodyDto } from './dto/empty-auth-body.dto.js';
-import { LogInDto } from './dto/log-in.dto.js';
-import { SessionResponseDto } from './dto/session-response.dto.js';
-import { SignUpDto } from './dto/sign-up.dto.js';
+import { EmptyAuthBodyDto } from './empty-auth-body.dto.js';
+import { LogInDto } from './log-in.dto.js';
+import { SessionResponseDto } from './session-response.dto.js';
+import { SignUpDto } from './sign-up.dto.js';
 
 import type { SessionEnvelope } from '@flowboard/contracts';
 import type { IncomingMessage } from 'node:http';

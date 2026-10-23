@@ -7,7 +7,7 @@ import { Redis } from 'ioredis';
 import { RedisConnectionOptions } from '../common/config/redis.config.js';
 import { ApiException } from '../common/errors/api-exception.js';
 
-import type { AuthSettings } from './config/auth.config.js';
+import type { AuthSettings } from './auth.config.js';
 import type { Logger } from '@flowboard/logger';
 
 export const AuthRuntimeKey = Symbol('AuthRuntime');

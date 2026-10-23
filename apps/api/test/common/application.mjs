@@ -1,7 +1,7 @@
 import { initializeDatabase } from '@flowboard/database';
 
 import { createApplication } from '../../dist/application.js';
-import { readAuthSettings } from '../../dist/auth/config/auth.config.js';
+import { readAuthSettings } from '../../dist/auth/auth.config.js';
 import { createAuthRuntime } from '../../dist/auth/runtime.js';
 import { runtimeProbe } from '../../dist/platform/dependency-probe.js';
 

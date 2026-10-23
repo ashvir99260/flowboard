@@ -4,7 +4,7 @@ import { initializeDatabase } from '@flowboard/database';
 import { createLogger, readLogLevel } from '@flowboard/logger';
 
 import { createApplication } from './application.js';
-import { readAuthSettings } from './auth/config/auth.config.js';
+import { readAuthSettings } from './auth/auth.config.js';
 import { createAuthRuntime } from './auth/runtime.js';
 import { readApplicationConfig } from './common/config/application.config.js';
 import { runtimeProbe } from './platform/dependency-probe.js';

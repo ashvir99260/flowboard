@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 
-import { readAuthSettings } from '../../../dist/auth/config/auth.config.js';
+import { readAuthSettings } from '../../../dist/auth/auth.config.js';
 import { AuthTestSecret as secret } from '../../common/auth-fixtures.mjs';
 
 test('unsafe or incomplete auth configuration is rejected', () => {

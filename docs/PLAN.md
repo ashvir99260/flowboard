@@ -61,6 +61,8 @@ flowchart LR
 
 PostgreSQL is authoritative. Redis provides queue transport and socket fanout; it is not the source of truth for tasks or permissions. Read paths initially resolve configuration from PostgreSQL without an application cache. This avoids invalidation complexity until measurements justify caching.
 
+Auth and platform source files, including DTOs and auth configuration, live directly in their feature directories with no subfolders (D89). Shared infrastructure stays in `common/`; other feature modules may group DTOs when useful.
+
 ### Package ownership
 
 | Path                         | Responsibility and permitted dependencies                                                                                                                                             |

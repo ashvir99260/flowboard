@@ -9,8 +9,8 @@ import { ApiException } from '../common/errors/api-exception.js';
 import { documentedError, RequestIdHeaders } from '../common/swagger/api-documentation.js';
 
 import { DependencyProbeKey } from './dependency-probe.js';
-import { LivenessResponseDto } from './dto/liveness-response.dto.js';
-import { ReadinessResponseDto } from './dto/readiness-response.dto.js';
+import { LivenessResponseDto } from './liveness-response.dto.js';
+import { ReadinessResponseDto } from './readiness-response.dto.js';
 
 import type { DependencyProbe } from './dependency-probe.js';
 import type { Liveness, Readiness } from '@flowboard/contracts';

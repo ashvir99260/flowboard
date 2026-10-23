@@ -1,6 +1,6 @@
 # Backend structure and coding rules
 
-Status: adopted repository rules, 23 October 2026 (D85/P02-05). P02-06 implements the auth/platform/common split and separated tests. Future workspace files below illustrate conventions, not implemented endpoints. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
+Status: adopted repository rules, 23 October 2026 (D85/P02-05). P02-06 implements the auth/platform/common split and separated tests; P02-09/D89 keeps auth and platform source flat. Future workspace files below illustrate conventions, not implemented endpoints. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
 
 ## Basis and scope
 
@@ -42,16 +42,21 @@ apps/api/
 │   ├── platform/                     # health and dependency probes
 │   │   ├── platform.module.ts
 │   │   ├── health.controller.ts
-│   │   └── dto/
+│   │   ├── dependency-probe.ts
+│   │   ├── liveness-response.dto.ts
+│   │   └── readiness-response.dto.ts
 │   ├── auth/
 │   │   ├── auth.module.ts
 │   │   ├── auth.controller.ts
 │   │   ├── auth.service.ts
 │   │   ├── auth.guard.ts
-│   │   ├── config/                   # auth-only settings
-│   │   └── dto/
-│   │       ├── log-in.dto.ts
-│   │       └── session-response.dto.ts
+│   │   ├── auth.config.ts            # auth-only settings
+│   │   ├── runtime.ts
+│   │   ├── cookie-policy.ts
+│   │   ├── empty-auth-body.dto.ts
+│   │   ├── log-in.dto.ts
+│   │   ├── sign-up.dto.ts
+│   │   └── session-response.dto.ts
 │   └── workspaces/
 │       ├── workspaces.module.ts
 │       ├── workspaces.controller.ts
@@ -62,7 +67,7 @@ apps/api/
 └── test/
     ├── bootstrap/                    # Node startup/process tests
     ├── common/                       # per-suite setup and shared fixtures
-    ├── unit/                         # auth/config, guard, lifecycle, spec
+    ├── unit/                         # auth settings, guard, lifecycle, spec
     └── integration/                  # HTTP suites grouped by feature
 packages/
 ├── contracts/src/                    # shared schemas, types, pure logic
@@ -71,9 +76,9 @@ packages/
 └── api-client/src/generated/         # generated SDK/types/query options
 ```
 
-Auth and platform own their modules and focused DTO adapters; AppModule composes those with CommonModule. Shared code stays in `common/`, while auth-specific configuration remains in `auth/config/`. Tests consume the compiled ESM application and are grouped by purpose. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
+Auth and platform own their modules and focused DTO adapters; AppModule composes those with CommonModule. Shared code stays in `common/`, while auth-specific configuration remains in `auth/auth.config.ts`. Auth and platform have no source subfolders (D89). Tests consume the compiled ESM application and are grouped by purpose. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
 
-Within a feature, use `dto/` for focused request, path, query and response adapters. Add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
+In auth and platform, keep focused request, query and response adapters beside the controllers as `*.dto.ts`; do not add subfolders. Other features may use `dto/` for request, path, query and response adapters. Other features may add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
 
 ## Modules and dependency injection
 
@@ -106,7 +111,7 @@ Controllers return deliberate response DTO projections. Never return complete da
 Follow this order for every endpoint, including its first implementation:
 
 1. Define strict request/path/query/response schemas in `packages/contracts`, using shared field primitives and cursor pagination. Add schema/model/field titles, descriptions and valid examples with Zod `.meta()`; keep secrets synthetic and password fields write-only.
-2. In the owning feature's `dto/`, extend `createZodDto` using those schemas. Use focused names such as `CreateInvitationDto`, `MemberParamsDto`, `MemberPageQueryDto`, `MemberResponseDto` and `MemberPageResponseDto`. Do not repeat properties with `@ApiProperty` or introduce parallel class-validator rules.
+2. In the owning feature, extend `createZodDto` using those schemas. Place auth/platform DTO files directly in the feature directory; other features may group them in `dto/`. Use focused names such as `CreateInvitationDto`, `MemberParamsDto`, `MemberPageQueryDto`, `MemberResponseDto` and `MemberPageResponseDto`. Do not repeat properties with `@ApiProperty` or introduce parallel class-validator rules.
 3. Keep HTTP decorators near the controller method: verb/path, explicit status, guard metadata, and `@ApiOperation` with a unique stable `operationId`, `summary` and `description`. Describe path/query/header semantics and request-body examples. Security decorators describe the actual guard requirements; they do not enforce access themselves.
 4. Use `@ZodResponse` with the concrete response DTO and success status. Keep global `ZodValidationPipe`, `ZodSerializerInterceptor` and sanitized exception filtering. Any supplemental `@ApiResponse` for a payload must retain its concrete `type: ResponseDto.Output`; include description, example and applicable headers. No `Object`, `any` or implicit generic page schema.
 5. Describe relevant typed error responses through the existing platform helper and feature-specific cases. Schema references in custom `@ApiBody` metadata use `getSchemaPath` and registered models, not duplicated inline shapes. A 204 response has a description and applicable headers but no content/body example. Cookie/header examples must match the runtime policy.

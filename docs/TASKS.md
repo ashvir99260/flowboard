@@ -426,6 +426,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add correlated backend logging`.
   - **Completion evidence:** [P02-08](evidence/P02-08.md): 322 tests and build/lint/type/format/contract gates pass; five-service Docker login tracing, secret exclusion and restart checks pass.
 
+- [x] **P02-09 — Flatten auth and platform feature folders**
+  - **Goal:** Keep all auth/platform source files directly in their feature folder as requested, including DTO adapters and auth configuration.
+  - **Requirements:** R120; preserves R116/R117 feature ownership and test separation.
+  - **Files:** `apps/api/src/auth/**`, `apps/api/src/platform/**`, imports in `apps/api/src/main.ts` and API test helpers/unit tests; backend/agent rules, decisions, requirement matrix and evidence.
+  - **Dependencies:** P02-08; prioritized by the user's folder-layout correction.
+  - **Acceptance:** No subdirectories remain in auth/platform source. DTO names, shared Zod contracts, Nest wiring, configuration validation and HTTP/Swagger output remain unchanged. Common infrastructure and purpose-based test folders stay separate. Document this exception to the generic feature DTO-folder convention; no forwarding shims or stale imports.
+  - **Validation:** Before/after directory assertions, clean API output and root build/lint/test/typecheck/format/OpenAPI checks; Docker startup/regression checks and read-only reference review. Refresh the ignored local code graph when available.
+  - **Commit:** `refactor: flatten auth and platform folders`.
+  - **Completion evidence:** [P02-09](evidence/P02-09.md): seven verified moves, no nested source/output folders, 322 tests and all quality/contract/Docker checks pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

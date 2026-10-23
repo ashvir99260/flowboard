@@ -75,6 +75,8 @@ Applications cannot import one another. The OpenAPI tooling exception (D19) is n
 
 The planned build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
 
+Auth and platform source directories remain flat (D89): their DTOs and auth configuration sit beside controllers/services/modules. Common infrastructure and test directories keep their existing grouping.
+
 ## Module responsibility and data ownership
 
 | Owner                                  | What belongs here                                                                             |
