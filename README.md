@@ -70,23 +70,57 @@ Each HTTP response contains a server-generated `X-Request-Id`. Search that ID in
 
 ## Run with Docker
 
-Start Docker, then run from the repository root:
+Start Docker Desktop (or Docker Engine with the Compose v2 plugin). Run the commands below from the repository root. Docker installs dependencies and builds the apps, so this workflow does not require Node.js or pnpm on your host. Stop any running `pnpm dev` processes first to free ports 3000 and 3001.
+
+Create the optional local configuration file, preserving it if it already exists, then build and start all five services:
 
 ```sh
+cp -n .env.example .env
 docker compose up --build
 ```
 
-This builds separate web, API and worker images and starts PostgreSQL and Redis. Open [Flowboard](http://localhost:3000); the API listens on port 3001. Application containers run as non-root. PostgreSQL, Redis and the worker are private to the Compose network. The local database defaults in `.env.example` require no file copy and are for development only.
+This runs in the foreground and shows the logs; Ctrl+C stops the services. To run in the background and wait for health checks instead:
+
+```sh
+docker compose up --build -d --wait
+```
+
+Compose builds separate web, API and worker images and starts PostgreSQL and Redis. The first build can take a few minutes. Once the services are healthy, open:
+
+| Service        | Local URL                                                                |
+| -------------- | ------------------------------------------------------------------------ |
+| Web setup page | [http://localhost:3000](http://localhost:3000)                           |
+| API Swagger UI | [http://localhost:3001/docs](http://localhost:3001/docs)                 |
+| API readiness  | [http://localhost:3001/health/ready](http://localhost:3001/health/ready) |
+
+The web currently shows the application shell; use Swagger to try the implemented auth endpoints. Application containers run as non-root. PostgreSQL, Redis and the worker are private to the Compose network.
+
+Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files are only needed for host development and are excluded from images. Without a root `.env`, Compose uses the development defaults in `compose.yaml`. To use different published ports, set `WEB_PORT` and `API_PORT` in the root file. If you change the web port, also update `AUTH_ALLOWED_ORIGINS` to match its complete origin, such as `http://localhost:3100`. Keep these development credentials local.
+
+### Logs, restart and shutdown
+
+| Action                                        | Command                                 |
+| --------------------------------------------- | --------------------------------------- |
+| Show services and health                      | `docker compose ps`                     |
+| Follow app logs (Ctrl+C exits the log viewer) | `docker compose logs -f web api worker` |
+| Stop services, keeping containers and data    | `docker compose stop`                   |
+| Start again or apply root `.env` changes      | `docker compose up -d --wait`           |
+| Rebuild after source or dependency changes    | `docker compose up --build -d --wait`   |
+| Stop and remove containers, keeping data      | `docker compose down`                   |
+
+PostgreSQL and Redis use named volumes, so your data survives normal stop, rebuild and shutdown commands. Avoid `docker compose down -v` unless you intend to erase the local data. Container apps do not hot-reload source edits; rebuild them with the command above.
 
 Use `localhost` in local browser URLs and host-side connection settings. Compose keeps numeric loopback addresses for host port publishing, and container health probes use IPv4 to match their listeners. These settings keep services local while avoiding differences in IPv4/IPv6 hostname resolution. Container listeners retain `0.0.0.0` so the Compose network can reach them.
 
-The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API health checks PostgreSQL and Redis with bounded timeouts; worker health remains process liveness until queue processing in P11-02. No successful domain response is provided yet.
+### Initialization and demo accounts
+
+The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API health checks PostgreSQL and Redis with bounded timeouts; worker health remains process liveness until queue processing in P11-02. Task-management endpoints remain in the backlog.
 
 Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `carol@example.com` (members), plus `dan@example.com` in a second tenant. Their development-only password is `FlowboardDemo123!`, stored as individually salted Argon2id hashes. Alice is also a member of the second tenant. The main tenant contains 24 tasks across three lists, four field definitions across all four scopes, inherited/overridden statuses, one private list and one list denying Bob. The second tenant has three tasks. Use `POST /v1/auth/login` with `{ "email": "alice@example.com", "password": "FlowboardDemo123!" }` and an allowed `Origin` header (for example `http://localhost:3000`). `POST /v1/auth/signup` also accepts `name` and `workspaceName`; it creates a separate workspace/admin/default statuses. Both return a 15-minute access token and set an httpOnly refresh cookie. Use `POST /v1/auth/refresh` with the refresh cookie and allowed Origin to rotate it; use `POST /v1/auth/logout` to revoke the family and expire the cookie. Both accept an empty body. A reused refresh cookie revokes the whole family, so concurrent refresh requests must be coordinated by the future browser transport.
 
 `DEMO_SEED` defaults to `true` only in local Compose. Leave it `false` on hosted environments. A completed seed marker is committed atomically with the data; later or concurrent boots preserve your edits. Migrations use `DATABASE_URL_UNPOOLED` when supplied (Neon's direct connection), while runtime queries use `DATABASE_URL` (which may be pooled). For explicit local maintenance, export those URLs and run `pnpm db:migrate`, or `DEMO_SEED=true pnpm db:seed` after migration. Neither command resets data.
 
-`docker compose down` stops the stack and retains database/Redis volumes. To expose only the development datastore ports to host tools, use `docker compose -f compose.yaml -f compose.local.yaml up -d postgres redis`; these ports bind to localhost only. Do not start both the container apps and host development apps on the same ports.
+To run the apps with `pnpm dev` while keeping only PostgreSQL and Redis in Docker, follow [Run the application shells](#run-the-application-shells). That workflow uses `compose.local.yaml` to expose datastore ports to host tools. Full Docker startup uses `compose.yaml` alone. Do not run container apps and host development apps on the same ports.
 
 Run `pnpm docker:check` for an isolated image/build/start/restart check. It uses random published ports, verifies non-root users and datastore persistence, removes its own containers, and leaves its uniquely named test volumes intact. It never targets the development project's volumes.
 

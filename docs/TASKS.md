@@ -536,6 +536,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `fix: load local environment files for development`.
   - **Completion evidence:** [P02-19](evidence/P02-19.md): 12 startup-command cases and all 360 tests pass; local API readiness/login and private-file exclusions verified; root build/lint/type/format/contract/Docker checks pass.
 
+- [x] **P02-20 — Document the local Docker run workflow**
+  - **Goal:** Make README startup, configuration, diagnostics and shutdown instructions directly usable for local Docker development.
+  - **Requirements:** R86; documentation slice only.
+  - **Files:** `README.md`, `docs/TASKS.md`, `docs/REQUIREMENTS_MATRIX.md`, `docs/evidence/P02-20.md`.
+  - **Dependencies:** P02-19; prioritized by the user's Docker README request.
+  - **Acceptance:** Explain Docker/Compose prerequisites, root env versus per-app env, foreground/background startup, health and Swagger URLs, demo initialization, logs, port conflicts, rebuilding and shutdown with data retained. Commands match the current Compose configuration; do not change runtime code or the user's running stack.
+  - **Validation:** Compose configuration and CLI option checks, relative-link/Markdown checks, formatting and diff review. G01 plus documentation structural checks; application build/test gates are not applicable to this docs-only change.
+  - **Commit:** `docs: explain local Docker startup and operation`.
+  - **Completion evidence:** [P02-20](evidence/P02-20.md): Compose defaults/local configuration, CLI compatibility, README links and formatting verified; runtime unchanged.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.
