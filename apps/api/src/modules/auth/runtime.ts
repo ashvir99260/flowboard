@@ -29,7 +29,11 @@ export function createAuthRuntime(
   return {
     identities,
     settings,
-    async limit(kind: 'login' | 'signup' | 'refresh' | 'logout', ip: string, email: string) {
+    async limit(
+      kind: 'login' | 'signup' | 'refresh' | 'logout' | 'switch',
+      ip: string,
+      email: string,
+    ) {
       return logger.observe('redis.rate_limit', async () => {
         const hash = (text: string) => createHash('sha256').update(text).digest('hex');
         const policies =

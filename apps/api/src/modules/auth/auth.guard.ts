@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { PublicRouteKey } from '../../core/common/decorators/public.decorator.js';
+import { SessionRouteKey } from '../../core/common/decorators/session-route.decorator.js';
 import { ApiException } from '../../core/common/errors/api-exception.js';
 
 import { AuthService } from './auth.service.js';
@@ -33,8 +34,14 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    request.identity = await this.auth.authenticate(request.headers.authorization);
-    if (!request.identity.activeWorkspace)
+    const sessionPolicy = this.reflector.getAllAndOverride<{ cookie: boolean }>(SessionRouteKey, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (sessionPolicy?.cookie) this.auth.assertOrigin(request.headers.origin);
+
+    request.identity = await this.auth.authenticate(request.headers.authorization, !!sessionPolicy);
+    if (!request.identity.activeWorkspace && !sessionPolicy)
       throw new ApiException(403, 'MEMBERSHIP_REQUIRED', 'Workspace membership required');
 
     return true;

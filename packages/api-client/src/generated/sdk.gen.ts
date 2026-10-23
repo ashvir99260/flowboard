@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, SignUpData, SignUpErrors, SignUpResponses } from './types.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -91,6 +91,133 @@ export const refreshSession = <ThrowOnError extends boolean = false>(options: Op
  */
 export const signUp = <ThrowOnError extends boolean = false>(options: Options<SignUpData, ThrowOnError>): RequestResult<SignUpResponses, SignUpErrors, ThrowOnError> => (options.client ?? client).post<SignUpResponses, SignUpErrors, ThrowOnError>({
     url: '/v1/auth/signup',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Select another workspace for this login
+ *
+ * Require a matching bearer identity, current refresh cookie and allowed Origin. Verify target membership and rotate the cookie atomically without extending the family lifetime. Other login families are unaffected.
+ */
+export const switchWorkspace = <ThrowOnError extends boolean = false>(options: Options<SwitchWorkspaceData, ThrowOnError>): RequestResult<SwitchWorkspaceResponses, SwitchWorkspaceErrors, ThrowOnError> => (options.client ?? client).post<SwitchWorkspaceResponses, SwitchWorkspaceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'flowboard_refresh',
+            type: 'apiKey'
+        }],
+    url: '/v1/auth/switch-workspace',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Accept an invitation with a matching account
+ *
+ * Match the authenticated account email, token digest, unused state and 48-hour expiry atomically. Rejected or already-member invitations never change a role. Acceptance does not switch the current workspace.
+ */
+export const acceptWorkspaceInvitation = <ThrowOnError extends boolean = false>(options: Options<AcceptWorkspaceInvitationData, ThrowOnError>): RequestResult<AcceptWorkspaceInvitationResponses, AcceptWorkspaceInvitationErrors, ThrowOnError> => (options.client ?? client).post<AcceptWorkspaceInvitationResponses, AcceptWorkspaceInvitationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/invitations/accept',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Read the current user and workspace
+ *
+ * Verify the access JWT and live session family. Return the current workspace only if its membership still exists; session-only recovery remains available after removal.
+ */
+export const getCurrentUser = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentUserData, ThrowOnError>): RequestResult<GetCurrentUserResponses, GetCurrentUserErrors, ThrowOnError> => (options?.client ?? client).get<GetCurrentUserResponses, GetCurrentUserErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/me',
+    ...options
+});
+
+/**
+ * List your workspace memberships
+ *
+ * Live keyset page ordered by membership creation time and workspace ID. The signed cursor is bound to this caller and query.
+ */
+export const listWorkspaces = <ThrowOnError extends boolean = false>(options?: Options<ListWorkspacesData, ThrowOnError>): RequestResult<ListWorkspacesResponses, ListWorkspacesErrors, ThrowOnError> => (options?.client ?? client).get<ListWorkspacesResponses, ListWorkspacesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces',
+    ...options
+});
+
+/**
+ * Create a private workspace invitation
+ *
+ * Create a 48-hour single-use token for an exact normalized email and target role. Store only its digest; the administrator receives the raw token once for manual sharing.
+ */
+export const createWorkspaceInvitation = <ThrowOnError extends boolean = false>(options: Options<CreateWorkspaceInvitationData, ThrowOnError>): RequestResult<CreateWorkspaceInvitationResponses, CreateWorkspaceInvitationErrors, ThrowOnError> => (options.client ?? client).post<CreateWorkspaceInvitationResponses, CreateWorkspaceInvitationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}/invitations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List members in the active workspace
+ *
+ * Revision-bound keyset page. Administrators see emails; ordinary members see only their own email. Unknown and offset parameters are rejected.
+ */
+export const listWorkspaceMembers = <ThrowOnError extends boolean = false>(options: Options<ListWorkspaceMembersData, ThrowOnError>): RequestResult<ListWorkspaceMembersResponses, ListWorkspaceMembersErrors, ThrowOnError> => (options.client ?? client).get<ListWorkspaceMembersResponses, ListWorkspaceMembersErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}/members',
+    ...options
+});
+
+/**
+ * Add an existing account to this workspace
+ *
+ * Administrators add a normalized existing account email with a workspace-local target role. Authorization and the expected revision are rechecked inside the workspace transaction.
+ */
+export const addWorkspaceMember = <ThrowOnError extends boolean = false>(options: Options<AddWorkspaceMemberData, ThrowOnError>): RequestResult<AddWorkspaceMemberResponses, AddWorkspaceMemberErrors, ThrowOnError> => (options.client ?? client).post<AddWorkspaceMemberResponses, AddWorkspaceMemberErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}/members',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a member and their workspace access
+ *
+ * Atomically remove membership, grants and assignments. Version affected tasks and persist outbox updates; retain history. The last administrator cannot be removed.
+ */
+export const removeWorkspaceMember = <ThrowOnError extends boolean = false>(options: Options<RemoveWorkspaceMemberData, ThrowOnError>): RequestResult<RemoveWorkspaceMemberResponses, RemoveWorkspaceMemberErrors, ThrowOnError> => (options.client ?? client).delete<RemoveWorkspaceMemberResponses, RemoveWorkspaceMemberErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}/members/{userId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Change a workspace member’s role
+ *
+ * Change only the target role under the workspace lock. Preserve at least one administrator and reject stale revisions. An unchanged role preserves the revision.
+ */
+export const updateWorkspaceMember = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkspaceMemberData, ThrowOnError>): RequestResult<UpdateWorkspaceMemberResponses, UpdateWorkspaceMemberErrors, ThrowOnError> => (options.client ?? client).patch<UpdateWorkspaceMemberResponses, UpdateWorkspaceMemberErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}/members/{userId}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

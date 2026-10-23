@@ -5,9 +5,13 @@ import { createApplication } from '../../../dist/application.js';
 test('application closes each injected runtime once after module composition', async () => {
   const closeProbe = jest.fn(async () => {});
   const closeAuth = jest.fn(async () => {});
+  const closeDatabase = jest.fn(async () => {});
   const { app } = await createApplication(
     { async check() {}, close: closeProbe },
-    { auth: { settings: { allowedOrigins: [] }, close: closeAuth } },
+    {
+      auth: { settings: { allowedOrigins: [] }, close: closeAuth },
+      database: { close: closeDatabase },
+    },
   );
   try {
     await app.init();
@@ -18,4 +22,5 @@ test('application closes each injected runtime once after module composition', a
   }
   expect(closeProbe).toHaveBeenCalledTimes(1);
   expect(closeAuth).toHaveBeenCalledTimes(1);
+  expect(closeDatabase).toHaveBeenCalledTimes(1);
 });

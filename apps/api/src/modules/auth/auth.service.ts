@@ -14,7 +14,7 @@ import { AuthRuntimeKey } from './runtime.js';
 
 import type { AuthRuntime } from './runtime.js';
 import type { LogIn, SessionEnvelope, SignUp } from '@flowboard/contracts';
-import type { IdentitySession } from '@flowboard/database';
+import type { AuthenticatedIdentity, IdentitySession } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
 
 const issuer = 'flowboard';
@@ -163,7 +163,39 @@ export class AuthService {
       return this.expiredCookie();
     });
   }
-  async authenticate(authorization: string | undefined) {
+  async switchWorkspace(
+    identity: AuthenticatedIdentity,
+    workspaceId: string,
+    cookie: string | undefined,
+    ip: string,
+  ) {
+    return this.logger.observe('auth.switchWorkspace', async () => {
+      const runtime = this.requireRuntime();
+      await runtime.limit('switch', ip, '');
+      const token = readRefreshCookie(cookie);
+      if (!token) throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+
+      const replacement = this.credential();
+      const result = await runtime.identities.switchWorkspace(
+        {
+          userId: identity.user.id,
+          familyId: identity.familyId,
+          workspaceId: identity.selectedWorkspaceId,
+        },
+        createHash('sha256').update(token).digest('hex'),
+        replacement.value.tokenDigest,
+        workspaceId,
+      );
+      if (result.status === 'invalid')
+        throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+
+      if (result.status === 'reused')
+        throw new ApiException(401, 'REFRESH_REUSED', 'Refresh credential already used');
+
+      return this.response(result.session, replacement.token);
+    });
+  }
+  async authenticate(authorization: string | undefined, sessionOnly = false) {
     return this.logger.observe('auth.authenticate', async () => {
       const runtime = this.requireRuntime();
       if (!authorization?.match(/^Bearer [A-Za-z0-9_.-]+$/))
@@ -188,11 +220,14 @@ export class AuthService {
       } catch {
         throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
       }
-      const session = await runtime.identities.authenticate({
-        familyId: claims.sid,
-        userId: claims.sub,
-        workspaceId: claims.workspaceId,
-      });
+      const session = await runtime.identities.authenticate(
+        {
+          familyId: claims.sid,
+          userId: claims.sub,
+          workspaceId: claims.workspaceId,
+        },
+        sessionOnly,
+      );
       updateLogContext({
         userId: session.user.id,
         ...(session.activeWorkspace ? { workspaceId: session.activeWorkspace.id } : {}),

@@ -13,3 +13,7 @@ export * from './identifiers.js';
 export * from './pagination.js';
 
 export * from './auth.js';
+
+export * from './workspaces.js';
+
+export * from './events.js';
