@@ -136,7 +136,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Enable and verify live deployment after provider accounts and targets are connected.
   - **Requirements:** R98.
   - **Files:** `docs/evidence/P00-09.md`, `docs/TASKS.md`, requirement matrix; secret values never enter files.
-  - **Dependencies:** P00-07, P00-08 and provider credentials/target IDs.
+  - **Dependencies:** P00-07, P00-08, the selected build-once hosting path (P00-11; P00-12 when four environments are enabled), and provider credentials/target IDs. The old source-build activation path is deferred under the latest clarification.
   - **Acceptance:** A main run deploys the released app(s), reports real ready provider deployments, and a retry/unchanged app does not trigger an unrelated rollout.
   - **Validation:** Live workflow/provider deployment records and externally reachable service checks; record honest product-shell limitations.
   - **Commit:** `docs: record live continuous deployment`.
