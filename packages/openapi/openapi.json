@@ -4,16 +4,46 @@
       "EmptyAuthBodyDto": {
         "additionalProperties": false,
         "default": {},
+        "description": "Refresh and logout accept an empty JSON object or no body. All supplied fields are rejected.",
+        "example": {},
         "properties": {},
+        "title": "Empty authentication request",
         "type": "object"
       },
       "ErrorResponseDto_Output": {
         "additionalProperties": false,
+        "description": "Consistent error envelope for unsuccessful API responses.",
+        "example": {
+          "error": {
+            "code": "VALIDATION_FAILED",
+            "details": [
+              {
+                "code": "unrecognized_keys",
+                "message": "Unexpected request fields",
+                "path": []
+              }
+            ],
+            "message": "Request validation failed"
+          }
+        },
         "properties": {
           "error": {
             "additionalProperties": false,
+            "description": "Stable error code, safe message and optional validation paths.",
+            "example": {
+              "code": "VALIDATION_FAILED",
+              "details": [
+                {
+                  "code": "unrecognized_keys",
+                  "message": "Unexpected request fields",
+                  "path": []
+                }
+              ],
+              "message": "Request validation failed"
+            },
             "properties": {
               "code": {
+                "description": "Stable machine-readable error identifier. Clients should branch on this value rather than message text.",
                 "enum": [
                   "VALIDATION_FAILED",
                   "STATUS_NOT_AVAILABLE",
@@ -42,23 +72,51 @@
                   "INTERNAL_ERROR",
                   "SERVICE_UNAVAILABLE"
                 ],
+                "example": "VALIDATION_FAILED",
+                "title": "Error code",
                 "type": "string"
               },
               "details": {
+                "description": "Optional field-level issues. Non-validation failures usually omit this array.",
+                "example": [
+                  {
+                    "code": "unrecognized_keys",
+                    "message": "Unexpected request fields",
+                    "path": []
+                  }
+                ],
                 "items": {
                   "additionalProperties": false,
+                  "description": "One field-level validation failure.",
+                  "example": {
+                    "code": "invalid_format",
+                    "message": "Invalid email address",
+                    "path": [
+                      "email"
+                    ]
+                  },
                   "properties": {
                     "code": {
+                      "description": "Validator identifier for the rejected value or unknown field.",
+                      "example": "invalid_format",
                       "maxLength": 64,
                       "minLength": 1,
+                      "title": "Validation issue code",
                       "type": "string"
                     },
                     "message": {
+                      "description": "Human-readable explanation of this validation issue.",
+                      "example": "Invalid email address",
                       "maxLength": 500,
                       "minLength": 1,
+                      "title": "Validation message",
                       "type": "string"
                     },
                     "path": {
+                      "description": "Path to the rejected field, using property names and zero-based array indexes. Empty means the request root.",
+                      "example": [
+                        "email"
+                      ],
                       "items": {
                         "anyOf": [
                           {
@@ -71,6 +129,7 @@
                           }
                         ]
                       },
+                      "title": "Field path",
                       "type": "array"
                     }
                   },
@@ -79,13 +138,18 @@
                     "message",
                     "path"
                   ],
+                  "title": "Validation issue",
                   "type": "object"
                 },
+                "title": "Validation details",
                 "type": "array"
               },
               "message": {
+                "description": "Sanitized human-readable explanation. Internal errors never include stack traces or secrets.",
+                "example": "Request validation failed",
                 "maxLength": 500,
                 "minLength": 1,
+                "title": "Error message",
                 "type": "string"
               }
             },
@@ -93,39 +157,60 @@
               "code",
               "message"
             ],
+            "title": "Error details",
             "type": "object"
           }
         },
         "required": [
           "error"
         ],
+        "title": "Error response",
         "type": "object"
       },
       "LivenessResponseDto_Output": {
         "additionalProperties": false,
+        "description": "Public API process liveness result.",
+        "example": {
+          "status": "ok"
+        },
         "properties": {
           "status": {
+            "description": "The API process can respond to requests. This does not verify dependencies.",
             "enum": [
               "ok"
             ],
+            "example": "ok",
+            "title": "Liveness status",
             "type": "string"
           }
         },
         "required": [
           "status"
         ],
+        "title": "Liveness response",
         "type": "object"
       },
       "LogInDto": {
         "additionalProperties": false,
+        "description": "Authenticate an existing account with email and password. Example credentials are illustrative only.",
+        "example": {
+          "email": "alex@example.test",
+          "password": "Example-only-passphrase-42!"
+        },
         "properties": {
           "email": {
+            "description": "Account email, trimmed and normalized to lowercase.",
+            "example": "alex@example.test",
+            "title": "Email address",
             "type": "string"
           },
           "password": {
+            "description": "12–128 Unicode characters. Whitespace is significant. The example is not a configured account password.",
+            "example": "Example-only-passphrase-42!",
             "format": "password",
             "maxLength": 128,
             "minLength": 12,
+            "title": "Password",
             "type": "string",
             "writeOnly": true
           }
@@ -134,62 +219,137 @@
           "email",
           "password"
         ],
+        "title": "Log in request",
         "type": "object"
       },
       "ReadinessResponseDto_Output": {
         "additionalProperties": false,
+        "description": "Public readiness result after successful dependency checks.",
+        "example": {
+          "status": "ready"
+        },
         "properties": {
           "status": {
+            "description": "PostgreSQL and Redis both responded within their bounded probe timeouts.",
             "enum": [
               "ready"
             ],
+            "example": "ready",
+            "title": "Readiness status",
             "type": "string"
           }
         },
         "required": [
           "status"
         ],
+        "title": "Readiness response",
         "type": "object"
       },
       "SessionResponseDto_Output": {
         "additionalProperties": false,
+        "description": "Successful authentication or refresh response. The separate httpOnly cookie carries the opaque refresh credential.",
+        "example": {
+          "data": {
+            "accessToken": "example-only.access-token.not-valid",
+            "activeWorkspace": {
+              "createdAt": "2026-10-23T10:00:00.000Z",
+              "id": "10000000-0000-4000-8000-000000000002",
+              "name": "Alex workspace",
+              "role": "admin",
+              "updatedAt": "2026-10-23T10:00:00.000Z"
+            },
+            "expiresAt": "2026-10-23T10:15:00.000Z",
+            "user": {
+              "createdAt": "2026-10-23T10:00:00.000Z",
+              "email": "alex@example.test",
+              "id": "10000000-0000-4000-8000-000000000001",
+              "name": "Alex Rivera",
+              "updatedAt": "2026-10-23T10:00:00.000Z"
+            }
+          }
+        },
         "properties": {
           "data": {
             "additionalProperties": false,
+            "description": "Access token, safe user details and current workspace. The refresh credential is returned only as a cookie.",
+            "example": {
+              "accessToken": "example-only.access-token.not-valid",
+              "activeWorkspace": {
+                "createdAt": "2026-10-23T10:00:00.000Z",
+                "id": "10000000-0000-4000-8000-000000000002",
+                "name": "Alex workspace",
+                "role": "admin",
+                "updatedAt": "2026-10-23T10:00:00.000Z"
+              },
+              "expiresAt": "2026-10-23T10:15:00.000Z",
+              "user": {
+                "createdAt": "2026-10-23T10:00:00.000Z",
+                "email": "alex@example.test",
+                "id": "10000000-0000-4000-8000-000000000001",
+                "name": "Alex Rivera",
+                "updatedAt": "2026-10-23T10:00:00.000Z"
+              }
+            },
             "properties": {
               "accessToken": {
+                "description": "Short-lived bearer JWT. Keep it in memory. This documentation token is deliberately nonfunctional.",
+                "example": "example-only.access-token.not-valid",
                 "minLength": 1,
+                "title": "Access token",
                 "type": "string"
               },
               "activeWorkspace": {
                 "additionalProperties": false,
+                "description": "Selected workspace, or null when the account has no memberships. Member routes require a workspace.",
+                "example": {
+                  "createdAt": "2026-10-23T10:00:00.000Z",
+                  "id": "10000000-0000-4000-8000-000000000002",
+                  "name": "Alex workspace",
+                  "role": "admin",
+                  "updatedAt": "2026-10-23T10:00:00.000Z"
+                },
                 "nullable": true,
                 "properties": {
                   "createdAt": {
+                    "description": "Server-owned creation timestamp in UTC with millisecond precision.",
+                    "example": "2026-10-23T10:00:00.000Z",
                     "format": "date-time",
                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Created at",
                     "type": "string"
                   },
                   "id": {
+                    "description": "Identifier of the workspace selected for this login family.",
+                    "example": "10000000-0000-4000-8000-000000000002",
                     "format": "uuid",
                     "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Workspace ID",
                     "type": "string"
                   },
                   "name": {
+                    "description": "Display name of the selected workspace.",
+                    "example": "Alex workspace",
                     "maxLength": 120,
                     "minLength": 1,
+                    "title": "Workspace name",
                     "type": "string"
                   },
                   "role": {
+                    "description": "Current membership role read from the database; it is not a global account role.",
                     "enum": [
                       "admin",
                       "member"
                     ],
+                    "example": "admin",
+                    "title": "Workspace role",
                     "type": "string"
                   },
                   "updatedAt": {
+                    "description": "Server-owned last modification timestamp in UTC with millisecond precision.",
+                    "example": "2026-10-23T10:00:00.000Z",
                     "format": "date-time",
                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Updated at",
                     "type": "string"
                   }
                 },
@@ -200,40 +360,67 @@
                   "role",
                   "updatedAt"
                 ],
+                "title": "Active workspace",
                 "type": "object"
               },
               "expiresAt": {
+                "description": "UTC access-token expiry, at most 15 minutes away and never beyond the refresh family’s fixed lifetime.",
+                "example": "2026-10-23T10:15:00.000Z",
                 "format": "date-time",
                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Access expiry",
                 "type": "string"
               },
               "user": {
                 "additionalProperties": false,
+                "description": "Safe account projection. Password hashes and refresh credentials are never included.",
+                "example": {
+                  "createdAt": "2026-10-23T10:00:00.000Z",
+                  "email": "alex@example.test",
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "name": "Alex Rivera",
+                  "updatedAt": "2026-10-23T10:00:00.000Z"
+                },
                 "properties": {
                   "createdAt": {
+                    "description": "Server-owned creation timestamp in UTC with millisecond precision.",
+                    "example": "2026-10-23T10:00:00.000Z",
                     "format": "date-time",
                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Created at",
                     "type": "string"
                   },
                   "email": {
+                    "description": "Account email, trimmed and normalized to lowercase.",
+                    "example": "alex@example.test",
                     "format": "email",
                     "maxLength": 254,
                     "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                    "title": "Email address",
                     "type": "string"
                   },
                   "id": {
+                    "description": "Stable server-generated account identifier.",
+                    "example": "10000000-0000-4000-8000-000000000001",
                     "format": "uuid",
                     "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "User ID",
                     "type": "string"
                   },
                   "name": {
+                    "description": "The authenticated user’s display name.",
+                    "example": "Alex Rivera",
                     "maxLength": 120,
                     "minLength": 1,
+                    "title": "Display name",
                     "type": "string"
                   },
                   "updatedAt": {
+                    "description": "Server-owned last modification timestamp in UTC with millisecond precision.",
+                    "example": "2026-10-23T10:00:00.000Z",
                     "format": "date-time",
                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Updated at",
                     "type": "string"
                   }
                 },
@@ -244,6 +431,7 @@
                   "name",
                   "updatedAt"
                 ],
+                "title": "Authenticated user",
                 "type": "object"
               }
             },
@@ -253,35 +441,56 @@
               "expiresAt",
               "user"
             ],
+            "title": "Session data",
             "type": "object"
           }
         },
         "required": [
           "data"
         ],
+        "title": "Session response",
         "type": "object"
       },
       "SignUpDto": {
         "additionalProperties": false,
+        "description": "Create an account and its first workspace. Acting role and workspace identifiers cannot be supplied.",
+        "example": {
+          "email": "alex@example.test",
+          "name": "Alex Rivera",
+          "password": "Example-only-passphrase-42!",
+          "workspaceName": "Alex workspace"
+        },
         "properties": {
           "email": {
+            "description": "Account email, trimmed and normalized to lowercase.",
+            "example": "alex@example.test",
+            "title": "Email address",
             "type": "string"
           },
           "name": {
+            "description": "User display name, trimmed and limited to 120 Unicode characters.",
+            "example": "Alex Rivera",
             "maxLength": 120,
             "minLength": 1,
+            "title": "Display name",
             "type": "string"
           },
           "password": {
+            "description": "12–128 Unicode characters. Whitespace is significant. The example is not a configured account password.",
+            "example": "Example-only-passphrase-42!",
             "format": "password",
             "maxLength": 128,
             "minLength": 12,
+            "title": "Password",
             "type": "string",
             "writeOnly": true
           },
           "workspaceName": {
+            "description": "Name of the new workspace. The account becomes its administrator.",
+            "example": "Alex workspace",
             "maxLength": 120,
             "minLength": 1,
+            "title": "Workspace name",
             "type": "string"
           }
         },
@@ -291,16 +500,19 @@
           "password",
           "workspaceName"
         ],
+        "title": "Sign up request",
         "type": "object"
       }
     },
     "securitySchemes": {
       "access-token": {
         "bearerFormat": "JWT",
+        "description": "Short-lived access JWT returned by login/signup/refresh. Send Authorization: Bearer <accessToken>. Placeholder documentation tokens are not valid credentials.",
         "scheme": "bearer",
         "type": "http"
       },
       "refresh-cookie": {
+        "description": "Host-only httpOnly refresh cookie set by signup/login/refresh. Send it together with an allowed Origin. It rotates once per refresh and is never included in JSON. Browsers manage this cookie automatically.",
         "in": "cookie",
         "name": "flowboard_refresh",
         "type": "apiKey"
@@ -317,38 +529,97 @@
   "paths": {
     "/health/live": {
       "get": {
+        "description": "Confirm that the API process responds to HTTP requests. This public probe does not access PostgreSQL or Redis and does not accept query parameters.",
         "operationId": "getLiveness",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "status": "ok"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/LivenessResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The API process is alive and responding.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "400": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "summary": "Check process liveness",
@@ -359,48 +630,125 @@
     },
     "/health/ready": {
       "get": {
+        "description": "Check PostgreSQL and Redis with bounded timeouts after API initialization. Returns 503 when a dependency is unavailable; use this public endpoint for service readiness.",
         "operationId": "getReadiness",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "status": "ready"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ReadinessResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "PostgreSQL and Redis are ready to serve requests.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "400": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "503": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "summary": "Check database and Redis readiness",
@@ -411,74 +759,303 @@
     },
     "/v1/auth/login": {
       "post": {
+        "description": "Verify normalized email and the exact password, then create a fresh login family. Select the first workspace membership deterministically, or return a null workspace when none exists. Credentials are never echoed.",
         "operationId": "logIn",
-        "parameters": [],
+        "parameters": [
+          {
+            "description": "Exact allowlisted web origin. Browsers supply Origin automatically; command-line clients must set it. Swagger Try it out requires its own origin to be allowlisted.",
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "description": "An allowed scheme, host and optional port without a path.",
+              "example": "http://localhost:3000",
+              "format": "uri",
+              "title": "Request origin",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
+              "examples": {
+                "login": {
+                  "description": "Illustrative credentials only. Replace them with an account you created.",
+                  "summary": "Sign in to an existing account",
+                  "value": {
+                    "email": "alex@example.test",
+                    "password": "Example-only-passphrase-42!"
+                  }
+                }
+              },
               "schema": {
                 "$ref": "#/components/schemas/LogInDto"
               }
             }
           },
+          "description": "Existing account credentials. Password whitespace is significant; email is trimmed and normalized.",
           "required": true
         },
         "responses": {
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "data": {
+                    "accessToken": "example-only.access-token.not-valid",
+                    "activeWorkspace": {
+                      "createdAt": "2026-10-23T10:00:00.000Z",
+                      "id": "10000000-0000-4000-8000-000000000002",
+                      "name": "Alex workspace",
+                      "role": "admin",
+                      "updatedAt": "2026-10-23T10:00:00.000Z"
+                    },
+                    "expiresAt": "2026-10-23T10:15:00.000Z",
+                    "user": {
+                      "createdAt": "2026-10-23T10:00:00.000Z",
+                      "email": "alex@example.test",
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "Alex Rivera",
+                      "updatedAt": "2026-10-23T10:00:00.000Z"
+                    }
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/SessionResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "Fresh access token, safe user and selected workspace; the refresh credential is set as an httpOnly cookie.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "Opaque single-use refresh credential. Secure on HTTPS; only explicit local HTTP mode omits Secure. This example is synthetic and cannot authenticate.",
+                "example": "flowboard_refresh=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA; Path=/; HttpOnly; SameSite=Lax; Expires=Fri, 30 Oct 2026 10:00:00 GMT; Secure",
+                "schema": {
+                  "description": "Host-only refresh cookie; never copy it into application storage.",
+                  "title": "Refresh cookie",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "400": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Invalid email or password"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "Email or password is incorrect. The same response is used for unknown accounts.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "403": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "ORIGIN_REJECTED",
+                    "message": "Request origin is not allowed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The request origin is not allowed or the selected workspace membership is unavailable.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "PAYLOAD_TOO_LARGE",
+                    "message": "Request is too large"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The JSON request exceeds the 256 KiB body limit.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "429": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMITED",
+                    "message": "Too many authentication attempts"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": "",
+            "description": "The authentication attempt limit was reached. Retry after the indicated number of seconds.",
             "headers": {
-              "Retry-After": {
-                "description": "Seconds before another attempt",
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
                 "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "description": "Remaining wait before retrying. The applicable window depends on the endpoint.",
+                "schema": {
+                  "description": "Positive number of seconds to wait.",
+                  "example": 60,
                   "minimum": 1,
+                  "title": "Retry delay",
                   "type": "integer"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
                 }
               }
             }
@@ -486,22 +1063,76 @@
           "500": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "503": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "summary": "Sign in with email and password",
@@ -512,57 +1143,236 @@
     },
     "/v1/auth/logout": {
       "post": {
+        "description": "Revoke the family identified by the refresh cookie and expire that cookie. Missing, unknown and already revoked credentials succeed idempotently. An allowed Origin is still required.",
         "operationId": "logOut",
-        "parameters": [],
+        "parameters": [
+          {
+            "description": "Exact allowlisted web origin. Browsers supply Origin automatically; command-line clients must set it. Swagger Try it out requires its own origin to be allowlisted.",
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "description": "An allowed scheme, host and optional port without a path.",
+              "example": "http://localhost:3000",
+              "format": "uri",
+              "title": "Request origin",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
+              "examples": {
+                "empty": {
+                  "description": "No user ID, workspace ID or token body is needed.",
+                  "summary": "Empty logout request",
+                  "value": {}
+                }
+              },
               "schema": {
                 "$ref": "#/components/schemas/EmptyAuthBodyDto"
               }
             }
           },
-          "required": true
+          "description": "Optional empty JSON body. Logout identifies the family through its cookie.",
+          "required": false
         },
         "responses": {
           "204": {
-            "description": ""
+            "description": "The session is logged out and the cookie is expired. This response intentionally has no JSON body.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "Expire the refresh cookie with the same path/security attributes after logout or invalid refresh.",
+                "example": "flowboard_refresh=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; Max-Age=0",
+                "schema": {
+                  "description": "Expired host-only refresh cookie.",
+                  "title": "Cleared refresh cookie",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "400": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "403": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "ORIGIN_REJECTED",
+                    "message": "Request origin is not allowed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The request origin is not allowed or the selected workspace membership is unavailable.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "PAYLOAD_TOO_LARGE",
+                    "message": "Request is too large"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The JSON request exceeds the 256 KiB body limit.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "429": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMITED",
+                    "message": "Too many authentication attempts"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": "",
+            "description": "The authentication attempt limit was reached. Retry after the indicated number of seconds.",
             "headers": {
-              "Retry-After": {
-                "description": "Seconds before another attempt",
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
                 "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "description": "Remaining wait before retrying. The applicable window depends on the endpoint.",
+                "schema": {
+                  "description": "Positive number of seconds to wait.",
+                  "example": 60,
                   "minimum": 1,
+                  "title": "Retry delay",
                   "type": "integer"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
                 }
               }
             }
@@ -570,22 +1380,76 @@
           "500": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "503": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -601,74 +1465,323 @@
     },
     "/v1/auth/refresh": {
       "post": {
+        "description": "Exchange the httpOnly refresh cookie for a new access token and rotated cookie. No access JWT is required. The original seven-day family expiry is retained; replay of a consumed cookie revokes the whole family.",
         "operationId": "refreshSession",
-        "parameters": [],
+        "parameters": [
+          {
+            "description": "Exact allowlisted web origin. Browsers supply Origin automatically; command-line clients must set it. Swagger Try it out requires its own origin to be allowlisted.",
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "description": "An allowed scheme, host and optional port without a path.",
+              "example": "http://localhost:3000",
+              "format": "uri",
+              "title": "Request origin",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
+              "examples": {
+                "empty": {
+                  "description": "The credential is sent as a cookie, not a body field.",
+                  "summary": "Empty refresh request",
+                  "value": {}
+                }
+              },
               "schema": {
                 "$ref": "#/components/schemas/EmptyAuthBodyDto"
               }
             }
           },
-          "required": true
+          "description": "Optional empty JSON body. Identity and workspace fields are never accepted.",
+          "required": false
         },
         "responses": {
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "data": {
+                    "accessToken": "example-only.access-token.not-valid",
+                    "activeWorkspace": {
+                      "createdAt": "2026-10-23T10:00:00.000Z",
+                      "id": "10000000-0000-4000-8000-000000000002",
+                      "name": "Alex workspace",
+                      "role": "admin",
+                      "updatedAt": "2026-10-23T10:00:00.000Z"
+                    },
+                    "expiresAt": "2026-10-23T10:15:00.000Z",
+                    "user": {
+                      "createdAt": "2026-10-23T10:00:00.000Z",
+                      "email": "alex@example.test",
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "Alex Rivera",
+                      "updatedAt": "2026-10-23T10:00:00.000Z"
+                    }
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/SessionResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "New access token and safe session data; Set-Cookie contains the rotated refresh credential.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "Opaque single-use refresh credential. Secure on HTTPS; only explicit local HTTP mode omits Secure. This example is synthetic and cannot authenticate.",
+                "example": "flowboard_refresh=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA; Path=/; HttpOnly; SameSite=Lax; Expires=Fri, 30 Oct 2026 10:00:00 GMT; Secure",
+                "schema": {
+                  "description": "Host-only refresh cookie; never copy it into application storage.",
+                  "title": "Refresh cookie",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "400": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "content": {
               "application/json": {
+                "examples": {
+                  "expired": {
+                    "summary": "Expired or missing credential",
+                    "value": {
+                      "error": {
+                        "code": "SESSION_EXPIRED",
+                        "message": "Session expired"
+                      }
+                    }
+                  },
+                  "reused": {
+                    "summary": "Consumed credential replay",
+                    "value": {
+                      "error": {
+                        "code": "REFRESH_REUSED",
+                        "message": "Refresh credential already used"
+                      }
+                    }
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The refresh cookie is missing, invalid, expired or previously consumed. Invalid cookies are cleared; replay revokes the family.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "Expire the refresh cookie with the same path/security attributes after logout or invalid refresh.",
+                "example": "flowboard_refresh=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; Max-Age=0",
+                "schema": {
+                  "description": "Expired host-only refresh cookie.",
+                  "title": "Cleared refresh cookie",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "403": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "ORIGIN_REJECTED",
+                    "message": "Request origin is not allowed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The request origin is not allowed or the selected workspace membership is unavailable.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "PAYLOAD_TOO_LARGE",
+                    "message": "Request is too large"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The JSON request exceeds the 256 KiB body limit.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "429": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMITED",
+                    "message": "Too many authentication attempts"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": "",
+            "description": "The authentication attempt limit was reached. Retry after the indicated number of seconds.",
             "headers": {
-              "Retry-After": {
-                "description": "Seconds before another attempt",
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
                 "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "description": "Remaining wait before retrying. The applicable window depends on the endpoint.",
+                "schema": {
+                  "description": "Positive number of seconds to wait.",
+                  "example": 60,
                   "minimum": 1,
+                  "title": "Retry delay",
                   "type": "integer"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
                 }
               }
             }
@@ -676,22 +1789,76 @@
           "500": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "503": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -707,74 +1874,305 @@
     },
     "/v1/auth/signup": {
       "post": {
+        "description": "Create a user, workspace, admin membership and default statuses atomically. The server chooses all identifiers and the acting role. Returns the initial access token and an httpOnly refresh cookie.",
         "operationId": "signUp",
-        "parameters": [],
+        "parameters": [
+          {
+            "description": "Exact allowlisted web origin. Browsers supply Origin automatically; command-line clients must set it. Swagger Try it out requires its own origin to be allowlisted.",
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "description": "An allowed scheme, host and optional port without a path.",
+              "example": "http://localhost:3000",
+              "format": "uri",
+              "title": "Request origin",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
+              "examples": {
+                "signup": {
+                  "description": "Example-only account details; choose a unique email and your own password.",
+                  "summary": "Create a personal workspace",
+                  "value": {
+                    "email": "alex@example.test",
+                    "name": "Alex Rivera",
+                    "password": "Example-only-passphrase-42!",
+                    "workspaceName": "Alex workspace"
+                  }
+                }
+              },
               "schema": {
                 "$ref": "#/components/schemas/SignUpDto"
               }
             }
           },
+          "description": "New account and workspace details. The example password is illustrative, not a configured demo credential.",
           "required": true
         },
         "responses": {
           "201": {
             "content": {
               "application/json": {
+                "example": {
+                  "data": {
+                    "accessToken": "example-only.access-token.not-valid",
+                    "activeWorkspace": {
+                      "createdAt": "2026-10-23T10:00:00.000Z",
+                      "id": "10000000-0000-4000-8000-000000000002",
+                      "name": "Alex workspace",
+                      "role": "admin",
+                      "updatedAt": "2026-10-23T10:00:00.000Z"
+                    },
+                    "expiresAt": "2026-10-23T10:15:00.000Z",
+                    "user": {
+                      "createdAt": "2026-10-23T10:00:00.000Z",
+                      "email": "alex@example.test",
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "Alex Rivera",
+                      "updatedAt": "2026-10-23T10:00:00.000Z"
+                    }
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/SessionResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "Account and workspace created; initial access token and safe session details returned.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "Opaque single-use refresh credential. Secure on HTTPS; only explicit local HTTP mode omits Secure. This example is synthetic and cannot authenticate.",
+                "example": "flowboard_refresh=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA; Path=/; HttpOnly; SameSite=Lax; Expires=Fri, 30 Oct 2026 10:00:00 GMT; Secure",
+                "schema": {
+                  "description": "Host-only refresh cookie; never copy it into application storage.",
+                  "title": "Refresh cookie",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "400": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "403": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "ORIGIN_REJECTED",
+                    "message": "Request origin is not allowed"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The request origin is not allowed or the selected workspace membership is unavailable.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "409": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "EMAIL_IN_USE",
+                    "message": "Email is already registered"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "The normalized email address is already registered. No partial account or workspace was created.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "PAYLOAD_TOO_LARGE",
+                    "message": "Request is too large"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The JSON request exceeds the 256 KiB body limit.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "429": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMITED",
+                    "message": "Too many authentication attempts"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": "",
+            "description": "The authentication attempt limit was reached. Retry after the indicated number of seconds.",
             "headers": {
-              "Retry-After": {
-                "description": "Seconds before another attempt",
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
                 "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "description": "Remaining wait before retrying. The applicable window depends on the endpoint.",
+                "schema": {
+                  "description": "Positive number of seconds to wait.",
+                  "example": 60,
                   "minimum": 1,
+                  "title": "Retry delay",
                   "type": "integer"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
                 }
               }
             }
@@ -782,22 +2180,76 @@
           "500": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           },
           "503": {
             "content": {
               "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto_Output"
                 }
               }
             },
-            "description": ""
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Authentication responses must not be stored by browsers or shared caches.",
+                "example": "no-store",
+                "schema": {
+                  "description": "Disable response storage.",
+                  "title": "Cache policy",
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "summary": "Create an account and workspace",

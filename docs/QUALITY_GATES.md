@@ -45,6 +45,7 @@ All items must be true in the endpoint's first complete task:
 - Request, path, query and response schemas are exported from contracts, with typed errors and strict fields.
 - DTOs are derived through `nestjs-zod`; no separately maintained duplicate transport type.
 - A stable unique operationId, success responses and relevant error responses appear in OpenAPI.
+- Operations have a summary and description; models and fields have titles, descriptions and schema-valid examples. Document request/response examples and applicable headers without inventing a body for 204 responses. Regression checks retain concrete response schema references.
 - Authentication and resource authorization are explicit; public infrastructure/auth exceptions are named and justified.
 - Acting identity/tenant/role come from verified context. Any target role/workspace parameter is checked by the intended endpoint.
 - Tenant repositories validate all related IDs. Mutations lock, re-read policy, validate and persist atomically.

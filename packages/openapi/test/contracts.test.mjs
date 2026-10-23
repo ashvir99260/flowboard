@@ -52,6 +52,7 @@ test('Spectral rejects unversioned paths, missing IDs, offset paging and untyped
       },
     };
     delete document.paths['/health/ready'].get.operationId;
+    delete document.paths['/health/live'].get.description;
     document.paths['/health/ready'].get.responses['503'] = { description: 'Missing error schema' };
     const target = join(directory, 'invalid.json');
     await writeFile(target, JSON.stringify(document));
@@ -73,6 +74,7 @@ test('Spectral rejects unversioned paths, missing IDs, offset paging and untyped
     for (const code of [
       'flowboard-versioned-paths',
       'operation-operationId',
+      'operation-description',
       'flowboard-list-cursor',
       'flowboard-cursor-only',
       'flowboard-error-envelope',

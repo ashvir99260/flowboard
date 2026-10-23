@@ -8,7 +8,7 @@ Canonical behavior is in [PLAN.md](PLAN.md), the brief in [REQUIREMENTS.md](REQU
 
 - [ ] Write the next behavioral test at the named public seam and observe its expected failure; implement one passing slice at a time. Documentation/config-only tasks use relevant structural checks instead.
 - [ ] Run `pnpm build`, `pnpm lint`, `pnpm test`; fix all failures. Before the scaffold creates these scripts, record the exact available bootstrap checks rather than claim these commands passed.
-- [ ] For every endpoint: shared schema → Zod DTO → typed controller response and explicit operationId → guard metadata → spec regenerated → client regenerated → at least one behavioral test. Never defer contract artifacts to a later phase.
+- [ ] For every endpoint: shared schema with titles/descriptions/examples → Zod DTO → typed controller response and explicit operationId/summary/description → guard metadata → spec regenerated → client regenerated → at least one behavioral test. Verify concrete response schemas and schema-valid examples. Never defer contract artifacts to a later phase.
 - [ ] Run named task-specific checks, inspect the diff, update docs/TODOs, tick the task only when acceptance passes, and commit only its changes.
 - [ ] Give three lines: delivered behavior; checks and result; next task or actual blocker. Link the task's evidence record beneath its completion note; the commit containing that record identifies the task in Git history without a self-referential hash.
 
@@ -375,6 +375,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Cookie flags, rotation, replay, concurrent use, revoked/deleted membership, missing/bad Origin and cross-site refresh; endpoint DoD and standard gate.
   - **Commit:** `feat: rotate refresh sessions securely`.
   - **Completion evidence:** [P02-02](evidence/P02-02.md): 284 tests, all quality/contract gates, real refresh/replay/concurrency/logout checks pass.
+
+- [x] **P02-04 — Complete Swagger descriptions and examples**
+  - **Goal:** Make every current endpoint and DTO understandable from Swagger without duplicating validation definitions.
+  - **Requirements:** R12, R20, R21, R91, R115.
+  - **Files:** shared auth/health/error schemas, API auth/health decorators and documentation helpers, generated spec/client, contract/OpenAPI tests and harness docs.
+  - **Dependencies:** P02-02; prioritized before P02-03 by the user's documentation request.
+  - **Acceptance:** All six operations have summaries/descriptions; body-bearing requests/responses, schema fields and applicable headers have descriptions and examples; schema/field titles are present. Examples satisfy the shared schemas, use no real credentials, preserve write-only passwords, and keep logout204 body-free. Spectral enforces operation descriptions. Runtime behavior and validation remain unchanged.
+  - **Validation:** Contract example validation and exported-document regression tests; full build/lint/test/typecheck/format and OpenAPI/client drift checks.
+  - **Commit:** `docs: enrich swagger contracts with examples`.
+  - **Completion evidence:** [P02-04](evidence/P02-04.md): all six operations and emitted schema fields documented; 290 tests, generated contract checks and standard gates pass; rendered Swagger verified.
 
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.

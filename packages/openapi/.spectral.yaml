@@ -1,7 +1,7 @@
 extends: [spectral:oas]
 rules:
   info-contact: off
-  operation-description: off
+  operation-description: error
   oas3-api-servers: off
   flowboard-versioned-paths:
     description: Domain paths use /v1; health is the explicit operational exception.

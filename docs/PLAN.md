@@ -20,6 +20,8 @@ The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our com
 
 [Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
+The current user follow-up prioritizes P02-04 before membership work: complete Swagger operation summaries/descriptions and schema/header/request/response examples through shared Zod metadata and Nest documentation decorators. This changes documentation only, with generated-artifact and validation checks.
+
 ## 1. Scope and success
 
 Deliver all requested hierarchy, authentication, tenancy, permissions, tasks, inherited configuration, board/list/drawer views, realtime, activity, generated contracts, seed data, and tests. The release runs with `docker compose up --build` and needs no host Node installation. Docker itself is a prerequisite.

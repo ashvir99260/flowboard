@@ -50,8 +50,26 @@ export async function createApplication(
           .setVersion('1.0.0')
           .addTag('Health', 'Service liveness and readiness')
           .addTag('Authentication', 'Account and session lifecycle')
-          .addBearerAuth(undefined, 'access-token')
-          .addCookieAuth('flowboard_refresh', undefined, 'refresh-cookie')
+          .addBearerAuth(
+            {
+              bearerFormat: 'JWT',
+              description:
+                'Short-lived access JWT returned by login/signup/refresh. Send Authorization: Bearer <accessToken>. Placeholder documentation tokens are not valid credentials.',
+              scheme: 'bearer',
+              type: 'http',
+            },
+            'access-token',
+          )
+          .addCookieAuth(
+            'flowboard_refresh',
+            {
+              description:
+                'Host-only httpOnly refresh cookie set by signup/login/refresh. Send it together with an allowed Origin. It rotates once per refresh and is never included in JSON. Browsers manage this cookie automatically.',
+              in: 'cookie',
+              type: 'apiKey',
+            },
+            'refresh-cookie',
+          )
           .build(),
       ),
     );

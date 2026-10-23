@@ -20,16 +20,22 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 
 /**
  * Check process liveness
+ *
+ * Confirm that the API process responds to HTTP requests. This public probe does not access PostgreSQL or Redis and does not accept query parameters.
  */
 export const getLiveness = <ThrowOnError extends boolean = false>(options?: Options<GetLivenessData, ThrowOnError>): RequestResult<GetLivenessResponses, GetLivenessErrors, ThrowOnError> => (options?.client ?? client).get<GetLivenessResponses, GetLivenessErrors, ThrowOnError>({ url: '/health/live', ...options });
 
 /**
  * Check database and Redis readiness
+ *
+ * Check PostgreSQL and Redis with bounded timeouts after API initialization. Returns 503 when a dependency is unavailable; use this public endpoint for service readiness.
  */
 export const getReadiness = <ThrowOnError extends boolean = false>(options?: Options<GetReadinessData, ThrowOnError>): RequestResult<GetReadinessResponses, GetReadinessErrors, ThrowOnError> => (options?.client ?? client).get<GetReadinessResponses, GetReadinessErrors, ThrowOnError>({ url: '/health/ready', ...options });
 
 /**
  * Sign in with email and password
+ *
+ * Verify normalized email and the exact password, then create a fresh login family. Select the first workspace membership deterministically, or return a null workspace when none exists. Credentials are never echoed.
  */
 export const logIn = <ThrowOnError extends boolean = false>(options: Options<LogInData, ThrowOnError>): RequestResult<LogInResponses, LogInErrors, ThrowOnError> => (options.client ?? client).post<LogInResponses, LogInErrors, ThrowOnError>({
     url: '/v1/auth/login',
@@ -42,6 +48,8 @@ export const logIn = <ThrowOnError extends boolean = false>(options: Options<Log
 
 /**
  * Revoke the session family and clear its cookie
+ *
+ * Revoke the family identified by the refresh cookie and expire that cookie. Missing, unknown and already revoked credentials succeed idempotently. An allowed Origin is still required.
  */
 export const logOut = <ThrowOnError extends boolean = false>(options: Options<LogOutData, ThrowOnError>): RequestResult<LogOutResponses, LogOutErrors, ThrowOnError> => (options.client ?? client).post<LogOutResponses, LogOutErrors, ThrowOnError>({
     security: [{
@@ -59,6 +67,8 @@ export const logOut = <ThrowOnError extends boolean = false>(options: Options<Lo
 
 /**
  * Rotate a single-use refresh credential
+ *
+ * Exchange the httpOnly refresh cookie for a new access token and rotated cookie. No access JWT is required. The original seven-day family expiry is retained; replay of a consumed cookie revokes the whole family.
  */
 export const refreshSession = <ThrowOnError extends boolean = false>(options: Options<RefreshSessionData, ThrowOnError>): RequestResult<RefreshSessionResponses, RefreshSessionErrors, ThrowOnError> => (options.client ?? client).post<RefreshSessionResponses, RefreshSessionErrors, ThrowOnError>({
     security: [{
@@ -76,6 +86,8 @@ export const refreshSession = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Create an account and workspace
+ *
+ * Create a user, workspace, admin membership and default statuses atomically. The server chooses all identifiers and the acting role. Returns the initial access token and an httpOnly refresh cookie.
  */
 export const signUp = <ThrowOnError extends boolean = false>(options: Options<SignUpData, ThrowOnError>): RequestResult<SignUpResponses, SignUpErrors, ThrowOnError> => (options.client ?? client).post<SignUpResponses, SignUpErrors, ThrowOnError>({
     url: '/v1/auth/signup',
