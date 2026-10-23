@@ -31,7 +31,7 @@ Proposed routes, implemented in the Next.js App Router:
 | The list route with `task=:taskId`                                   | Open a shareable detail drawer over the selected view.                       |
 | The list route with `fieldKey`, `fieldOperator`, `fieldValue`        | Typed single custom-field filter; values mirror API semantics.               |
 | `/w/:workspaceId/settings/:ownerType/:ownerId/statuses`              | Admin status editor; workspace/space/folder/list owners.                     |
-| `/w/:workspaceId/settings/:ownerType/:ownerId/fields`                | Admin field editor; space/folder/list owners only.                           |
+| `/w/:workspaceId/settings/:ownerType/:ownerId/fields`                | Admin field editor; workspace defaults plus space/folder/list overrides.     |
 
 Workspace IDs in URLs are navigation targets, not proof of access. A URL for another available workspace must complete `switchWorkspace` before loading its data; never issue domain queries with an old active-workspace token. A forbidden target renders access denied without names from stale cache. Browser Back closes a route-opened drawer and restores the prior list/filter state.
 
@@ -105,11 +105,11 @@ Safe Markdown renders without raw HTML; sanitize links and allowed protocols. Th
 
 ### Status and field configuration
 
-Only admins receive editable config routes/actions. Nonadmins may inspect the effective list schema through read-only detail inputs; a direct admin route returns a proper forbidden state. The API remains authoritative for every mutation.
+Workspace settings expose default fields; space/folder/list settings expose local definitions and inherited workspace values. Only admins receive editable config routes/actions. Nonadmins may inspect the effective list schema through read-only detail inputs; a direct admin route returns a proper forbidden state. The API remains authoritative for every mutation.
 
 A scope header shows Workspace/Space/Folder/List breadcrumbs. Display rows with explicit **Inherited**, **Local**, **Overridden** or **Hidden** text, not color alone. Status editing separates shared stable identity from this scope's label/color/position/visibility. “Remove local override” explains that inherited values return; it does not imply deleting the global identity. Hidden inherited entries remain discoverable in configuration with an Unhide action.
 
-Field overrides replace the complete definition for a key, including options/type/required. Show that consequence before save; removing a local row previews the inherited replacement if one exists. A required marker always has text and semantic required state. Option rows retain stable IDs, and “Add option” creates a new ID rather than renumbering existing values.
+Field resolution starts with workspace defaults, then space, folder and list. Field overrides replace the complete definition for a key, including options/type/required. Show that consequence before save; removing a local row previews the inherited replacement if one exists. A required marker always has text and semantic required state. Option rows retain stable IDs, and “Add option” creates a new ID rather than renumbering existing values.
 
 Fetch local rows for the scope and its authorized ancestor chain with a matching configVersion. Use the shared pure resolvers for previews. Server rejection of an in-use status, invalid category set or field schema keeps the draft, identifies the relevant row and refreshes the effective baseline. Do not offer destructive auto-remapping absent the API contract. Successful save refetches descendant list/config data and notifies active views.
 

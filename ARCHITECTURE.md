@@ -13,6 +13,8 @@ The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permis
 
 The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
+[Workspace RBAC and DTO/entity design](docs/BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
+
 ## System shape and authority
 
 Flowboard is a modular NestJS API, a Next.js client and one BullMQ worker. PostgreSQL owns tasks, configuration, access, sessions, activity and delivery intent. Redis transports queued work and socket invalidations; it does not determine authorization or authoritative task state.
@@ -86,7 +88,7 @@ The planned build graph is `contracts/database → api → openapi → api-clien
 
 Controllers translate transport and call services. Services orchestrate policy and transactions; repositories own persistence. Pure contracts functions accept plain data, so both backend validation and UI previews use the same rules.
 
-`User` and credential/session identity are global. Other domain rows and joins carry `workspaceId`, including memberships, nodes/grants, status identities/overrides, field definitions, tasks/assignees, activity and outbox events. Composite tenant foreign keys and repository checks protect relationships. `Workspace.configVersion` identifies the current inherited configuration; task/node versions detect stale edits. Detailed fields/indexes remain in [PLAN section 3](docs/PLAN.md#3-data-model).
+`User` and credential/session identity are global. Other domain rows and joins carry `workspaceId`, including memberships, nodes/grants, status identities/overrides, field definitions, tasks/assignees, activity and outbox events. Composite tenant foreign keys and repository checks protect relationships. `Workspace.configVersion` identifies the current inherited configuration; task/node versions detect stale edits. All 15 persisted models have createdAt/updatedAt; workspace field defaults inherit through space/folder/list. Detailed fields/indexes remain in [PLAN section 3](docs/PLAN.md#3-data-model).
 
 ## Trust boundaries and access
 
@@ -166,7 +168,7 @@ Every response's data and `configVersion` come from the same snapshot; matching 
 - Status identity/key/category are stable; override row IDs are never task status IDs. Resolve root-to-leaf by key; display overrides patch supplied attributes, hiding is reversible by nearer explicit visibility, and order is position/key/ID.
 - Every affected effective status set retains `not_started`, `active`, `done`; `closed` is optional. A cross-list move keeps a visible status or selects the first destination status in the same category. No match rejects the entire move.
 - Status changes cannot remove a status used by live tasks; physical identity deletion also respects archived references. No fallback orphan column disguises invalid data.
-- Fields resolve space → folder → list; the nearest key replaces the whole definition. Enforce all six types, valid option IDs, unique multi-select IDs and real calendar dates. `0` and `false` satisfy required values; required text/multi-select must be nonempty.
+- Fields resolve workspace → space → folder → list; the nearest key replaces the whole definition. Enforce all six types, valid option IDs, unique multi-select IDs and real calendar dates. `0` and `false` satisfy required values; required text/multi-select must be nonempty.
 - Validate the complete task after every write. Unknown keys fail; PATCH omission preserves a value, explicit optional `null` clears it. Cross-list moves explicitly clear source-only keys and supply required destination values.
 - Configuration edits/removals and reparenting validate affected live tasks before commit. Do not silently drop values, invent defaults or remap a whole subtree. Details are canonical in [PLAN section 5](docs/PLAN.md#5-domain-algorithms-and-atomicity).
 

@@ -8,6 +8,8 @@ The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions
 
 The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
+[Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
+
 ## 1. System and deployment boundaries
 
 Use one modular NestJS API, one worker and one PostgreSQL database. Redis transports work and realtime notifications. The Next.js app coordinates generated queries and MUI views. The same domain API serves the UI and curl clients.
@@ -145,7 +147,7 @@ erDiagram
   OUTBOX_EVENT ||--o| ACTIVITY : identifies
 ```
 
-ERD edges express the logical relationship. Composite tenant keys, nullable root parent and polymorphic scope limitations below determine actual foreign keys. Field/status scope owners and generic outbox aggregates are not represented as ordinary Node foreign keys.
+This is a relationship overview; the [complete 15-model ER diagram](DATABASE_DESIGN.md#entity-relationship-model) shows every name/title, nullable field and audit timestamp. Every table stores createdAt/updatedAt. ERD edges express the logical relationship. Composite tenant keys, nullable root parent and polymorphic scope limitations below determine actual foreign keys. Field/status scope owners and generic outbox aggregates are not represented as ordinary Node foreign keys.
 
 | Records                             | Key fields and constraints                                                                                                                                         | Delete/history policy                                                                                                                                |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -155,7 +157,7 @@ ERD edges express the logical relationship. Composite tenant keys, nullable root
 | Grant                               | `(workspaceId,resourceId,userId)` unique; mode allow/deny                                                                                                          | FK to node and membership through workspaceId. Grant never bypasses an ancestor restriction.                                                         |
 | StatusIdentity                      | `(workspaceId,id)` unique; `(workspaceId,key)` unique; immutable category                                                                                          | Referenced by task statusId. Block physical deletion while any task, including archived tasks, references it.                                        |
 | StatusOverride                      | workspaceId, statusId, ownerType/ownerId; unique owner/status; nullable display overrides and visibility (null inherits)                                           | FK to identity; locked scope validation handles polymorphic owners. Removing a row must validate the revealed inherited result.                      |
-| FieldDefinition                     | workspaceId, ownerType/ownerId, key, type, required, options JSON, position; unique owner/key                                                                      | Nearest key replaces the whole definition. Definition/options changes validate affected live values before commit.                                   |
+| FieldDefinition                     | workspaceId, ownerType/ownerId (workspace/space/folder/list), key, name, type, required, options JSON, position; unique owner/key                                  | Nearest key replaces the whole definition. Definition/options changes validate affected live values before commit.                                   |
 | Task                                | UUID, workspaceId, primaryListId, stable statusId, title≤500, markdown, priority, date-only dueDate, JSONB customFields, position, version, timestamps, archivedAt | Composite tenant FKs to list node and status. Node type and effective status/field membership require service validation. Archive rather than erase. |
 | TaskAssignee                        | `(workspaceId,taskId,userId)` unique                                                                                                                               | Composite task/membership FKs. API maps rows to `assigneeIds[]`.                                                                                     |
 | Activity                            | workspaceId, taskId, actorId, eventId unique, type, payload, timestamp                                                                                             | Task and global User references preserve history; actor is not an FK to current Membership.                                                          |

@@ -244,6 +244,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: map linear interactions to mui views`.
   - **Completion evidence:** [P00-26 verification](evidence/P00-26.md): dated public research, complete component/screen mapping, independent review, diagram/link/token/format checks.
 
+- [x] **P00-27 — Refine workspace RBAC, audit fields and decorated contracts**
+  - **Goal:** Complete the ER model and specify workspace-based authorization/field inheritance and the entity/DTO/Swagger/Next.js boundary before implementation.
+  - **Requirements:** R111–R112; refines R12, R14, R16–R22, R30–R31, R56–R57, R67.
+  - **Files:** `docs/{DATABASE_DESIGN,BACKEND_CONTRACTS,API_CATALOG,PLAN,SYSTEM_DESIGN,UI_DESIGN,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, architecture/README links and task evidence.
+  - **Dependencies:** P00-26 and the user's workspace/audit/DTO refinement.
+  - **Acceptance:** All 15 ER models show complete attributes including meaningful names and both timestamps; RBAC is per Membership; workspace field defaults resolve through all four levels. Explicit request/response DTOs, entity boundaries, decorators, safe projections and generated web contract flow are planned. No application implementation is claimed.
+  - **Validation:** Independent database/API review; verify ER/dictionary attribute parity, timestamp coverage,43 unique operations, source links/diagrams, formatting and affected requirement status.
+  - **Commit:** `docs: refine workspace access and api contracts`.
+  - **Completion evidence:** [P00-27 verification](evidence/P00-27.md): all 15 ER/dictionary attribute sets and audit pairs match, 43 operations retained, two independent reviews and documentation checks pass.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.
@@ -295,7 +305,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Define shared enums, errors, pagination and immutable transport primitives.
   - **Files:** `packages/contracts/src/{enums,errors,pagination,identifiers,dates,index}.ts`, `packages/contracts/test/foundations.test.ts`.
   - **Dependencies:** P00-04.
-  - **Acceptance:** Zod schemas infer types for all requested enums, error codes/envelope, cursor page and strict IDs/calendar dates. Domain schemas reject unsupported values and unexpected identity fields.
+  - **Acceptance:** Zod schemas infer types for all requested enums, error codes/envelope, cursor page and strict IDs/calendar dates. Domain schemas reject unsupported values and unexpected identity fields. Include shared audit timestamp schema, workspace-role/action constants and workspace-inclusive field scope enum.
   - **Validation:** Literal valid/invalid fixtures including leap dates, enum typos, negative/oversized limits and malformed issue paths; standard gate.
   - **Commit:** `feat: define shared transport contracts`.
 
@@ -303,7 +313,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.
   - **Files:** `apps/api/src/platform/**`, `apps/api/src/spec-bootstrap.ts`, `packages/contracts/src/health.ts`, `packages/openapi/{scripts/export.ts,openapi.json,.spectral.yaml}`, `packages/api-client/{openapi-ts.config.ts,src/generated/**}`, affected package manifests/Turbo config.
   - **Dependencies:** P01-01.
-  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit.
+  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit. Follow BACKEND_CONTRACTS for createZodDto request/response classes, ZodResponse metadata, global serializer and safe500 output validation; generated response consumer compiles.
   - **Validation:** Supertest error-envelope/response tests; export/generation with runtime dependencies unavailable; malformed response fails safely; standard gate.
   - **Commit:** `feat: establish typed api platform and generation`.
 
@@ -311,8 +321,8 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Persist the model with tenant-safe relations before repositories/endpoints use it.
   - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{migration,schema}.integration.test.ts`, `compose.test.yaml`.
   - **Dependencies:** P01-02.
-  - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, current-session partial unique index and selected-workspace FK, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
-  - **Validation:** Migrate empty database, verify constraints by rejected inserts, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
+  - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, current-session partial unique index and selected-workspace FK, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Every table has createdAt/updatedAt enforced for Prisma/raw SQL/worker paths; workspace field ownership is allowed and checked. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
+  - **Validation:** Migrate empty database, verify constraints by rejected inserts, inspect all audit columns and immutable-createdAt/update-trigger behavior, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
   - **Commit:** `feat: add tenant safe database schema`.
 
 - [ ] **P01-04 — Fail-closed tenant repositories and test harness**
@@ -327,7 +337,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Make clean boot reproducible and demonstrate all major scenarios with real persisted data.
   - **Files:** `packages/database/prisma/seed.ts`, `packages/database/src/initialize.ts`, `packages/database/test/seed.integration.test.ts`, `apps/api/docker/entrypoint.sh`, `compose.yaml`, `README.md`.
   - **Dependencies:** P01-04.
-  - **Acceptance:** Alice/Bob/Carol, two tenants, 2 spaces/2 folders/3 main lists, 24 tasks, inherited/overridden statuses, optional closed, 3+ multilevel fields and private/denied lists exist. Migrate then seed once under a lock before API ready; repeated/concurrent boot preserves edits. Seed disabled outside demo mode.
+  - **Acceptance:** Alice/Bob/Carol, two tenants, 2 spaces/2 folders/3 main lists, 24 tasks, inherited/overridden statuses, optional closed, 3+ multilevel fields (a workspace default, a lower-level definition and a list override) and private/denied lists exist. All seeded tasks satisfy the four-level effective schema. Migrate then seed once under a lock before API ready; repeated/concurrent boot preserves edits. Seed disabled outside demo mode.
   - **Validation:** Assert counts/relations/field validity, two parallel initializers, second boot after editing data, migration failure prevents readiness; standard gate and Compose boot.
   - **Commit:** `feat: initialize database with repeatable demo data`.
 
@@ -353,7 +363,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/workspaces.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P02-02.
-  - **Acceptance:** `/me`, paginated workspaces/members, add/invite/accept/remove/role change and verified workspace switch work. Invite is an expiring manual-share link with digest storage and email match. Establish the one PermissionGuard/PermissionService with the membership/admin policy now; P03-02 extends it to containers. Remove departing members' grants/assignments atomically, bump affected task versions/emit outbox updates, and retain activity. No controller-local authorization, self-escalation or last-admin removal.
+  - **Acceptance:** `/me`, paginated workspaces/members, add/invite/accept/remove/role change and verified workspace switch work. Invite is an expiring manual-share link with digest storage and email match. Establish the one PermissionGuard/PermissionService with the membership/admin policy now; P03-02 extends it to containers. Remove departing members' grants/assignments atomically, bump affected task versions/emit outbox updates, and retain activity. No controller-local authorization, self-escalation or last-admin removal. The same user can be admin in workspace A and member in B; role changes apply on the next request without global-role leakage.
   - **Validation:** Expired/reused invite, wrong email, cross-tenant switch, member cannot grant admin, concurrent last-admin demotions, removed member token fails; endpoint DoD and standard gate.
   - **Commit:** `feat: manage workspace membership and invites`.
 
@@ -415,7 +425,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Share exact field precedence/types across server and forms.
   - **Files:** `packages/contracts/src/{fields,field-resolution,field-values}.ts`, `packages/contracts/test/field-values.test.ts`.
   - **Dependencies:** P04-03.
-  - **Acceptance:** Nearest full definition wins. All six field types, strict calendar dates, finite numbers, unique option IDs, required semantics and path-based errors are specified; null clear and omitted value differ.
+  - **Acceptance:** Resolve workspace → space → folder → list; nearest full definition wins. All six field types, strict calendar dates, finite numbers, unique option IDs, required semantics and path-based errors are specified; null clear and omitted value differ.
   - **Validation:** Wrong types, unknown/duplicate options/keys, blank required text, missing required, invalid dates, zero/false accepted, nearest collision changes entire schema; standard gate.
   - **Commit:** `feat: resolve and validate custom fields`.
 
@@ -423,15 +433,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Add scoped field CRUD and authoritative list schemas.
   - **Files:** `apps/api/src/fields/**`, `apps/api/test/fields.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P05-01.
-  - **Acceptance:** Space/folder/list owners only, admin-only mutations, typed options and provenance, `GET /v1/lists/:id/resolved-fields`. Uses shared resolver and tenant repositories. In-use/descendant validation ships with the first write routes; P05-03 hardens edge coverage. Mutations increment configVersion and resolved reads return a consistent version.
-  - **Validation:** Owner mismatch, field-key collision, sibling independence, member writes 403, foreign fields 404 and schema response shape; endpoint DoD and standard gate.
+  - **Acceptance:** Workspace/space/folder/list owners, workspace ownerId equals active tenant, admin-only mutations, typed options and provenance, `GET /v1/lists/:id/resolved-fields`. Uses shared resolver and tenant repositories. In-use/descendant validation ships with the first write routes; P05-03 hardens edge coverage. Mutations increment configVersion and resolved reads return a consistent version.
+  - **Validation:** Owner mismatch/foreign workspace, workspace defaults inherited across separate spaces, list override, field-key collision, sibling independence, member writes 403, foreign fields 404 and schema response shape; endpoint DoD and standard gate.
   - **Commit:** `feat: expose scoped custom field schemas`.
 
 - [ ] **P05-03 — Reject destructive field-schema changes**
   - **Goal:** Keep stored task values valid after ancestor/local configuration changes.
   - **Files:** `apps/api/src/fields/field-safety.service.ts`, field service/repositories, `apps/api/test/field-safety.e2e-spec.ts`.
   - **Dependencies:** P05-02.
-  - **Acceptance:** Validate affected live tasks transactionally. Block deletion of in-use effective definition, invalid option removal, incompatible type changes, required promotion with missing values, and invalid fallback exposed by deleting override. Document optional→populate→required workflow.
+  - **Acceptance:** Validate every affected live list/task transactionally, including workspace-root changes and the 100-effective-field cap. Shadowed definitions are evaluated from their final resolved schema. Block deletion of in-use effective definition, invalid option removal, incompatible type changes, required promotion with missing values, and invalid fallback exposed by deleting override. Document optional→populate→required workflow.
   - **Validation:** Each rejected mutation returns field paths and preserves definitions/tasks; zero/false do not falsely block required promotion; safe unused deletion succeeds. Endpoint DoD and standard gate.
   - **Commit:** `fix: preserve task validity during field changes`.
 
@@ -586,7 +596,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Configure all six field types without hiding downstream consequences.
   - **Files:** `apps/web/src/features/config/fields/**`, field editor tests and examples.
   - **Dependencies:** P10-01.
-  - **Acceptance:** Space/folder/list field CRUD, local/inherited nearest-key preview, options with stable IDs and required-state guidance. Failed in-use/type/required mutation preserves editor values.
+  - **Acceptance:** Workspace/space/folder/list field CRUD, local/inherited nearest-key preview, options with stable IDs and required-state guidance. Failed in-use/type/required mutation preserves editor values.
   - **Validation:** Dynamic option identity on reorder/remove, duplicate keys/options, required promotion rejection, inherited override removal, field-path errors and role restrictions; standard gate.
   - **Commit:** `feat: manage inherited custom field configuration`.
 
