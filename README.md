@@ -8,6 +8,8 @@ The [system design](docs/SYSTEM_DESIGN.md) covers the UI, backend, database ERD 
 
 The implementation-ready [database and ER specification](docs/DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
+The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+
 ## Local tooling
 
 Use Node 22.23.2 (`nvm use`) and the pinned pnpm version from `package.json`. If pnpm is not already managed by Corepack, enable its shim with `corepack enable pnpm`, then run:

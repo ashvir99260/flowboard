@@ -224,7 +224,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: specify backend database and er model`.
   - **Completion evidence:** [P00-24 verification](evidence/P00-24.md): 15-record design reviewed, diagrams parsed and links checked; no runtime implementation claim.
 
-- [ ] **P00-25 — Specify the REST API catalog and contracts**
+- [x] **P00-25 — Specify the REST API catalog and contracts**
   - **Goal:** Give backend and frontend implementation a shared endpoint-by-endpoint contract.
   - **Requirements:** R109; refines existing API/auth/domain requirements.
   - **Files:** `docs/API_CATALOG.md`, architecture/plan links, decisions, task acceptance refinements and evidence.
@@ -232,6 +232,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Every planned operation has method/path, stable operationId, access policy, typed input/output, error and implementation task. Define pagination, concurrency, configuration previews, refresh cookies and example task/config commands. No generated spec or runtime route is represented as implemented.
   - **Validation:** Unique route/operationId inventory, consistency with DB/requirements, JSON examples, independent API review and formatting.
   - **Commit:** `docs: define rest api implementation catalog`.
+  - **Completion evidence:** [P00-25 verification](evidence/P00-25.md): 43 unique operations, schema examples and cross-document contract review pass; endpoints remain planned.
 
 - [ ] **P00-26 — Analyze Linear interactions and map the MUI UI**
   - **Goal:** Convert observable Linear patterns into a scoped, accessible Flowboard UI implementation guide.
@@ -301,7 +302,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.
   - **Files:** `apps/api/src/platform/**`, `apps/api/src/spec-bootstrap.ts`, `packages/contracts/src/health.ts`, `packages/openapi/{scripts/export.ts,openapi.json,.spectral.yaml}`, `packages/api-client/{openapi-ts.config.ts,src/generated/**}`, affected package manifests/Turbo config.
   - **Dependencies:** P01-01.
-  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear, and generated client compiles. Infrastructure URL exceptions are explicit.
+  - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit.
   - **Validation:** Supertest error-envelope/response tests; export/generation with runtime dependencies unavailable; malformed response fails safely; standard gate.
   - **Commit:** `feat: establish typed api platform and generation`.
 
@@ -309,7 +310,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Persist the model with tenant-safe relations before repositories/endpoints use it.
   - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{migration,schema}.integration.test.ts`, `compose.test.yaml`.
   - **Dependencies:** P01-02.
-  - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
+  - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, current-session partial unique index and selected-workspace FK, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
   - **Validation:** Migrate empty database, verify constraints by rejected inserts, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
   - **Commit:** `feat: add tenant safe database schema`.
 
@@ -343,7 +344,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Provide cookie refresh without token reuse or unsafe replay.
   - **Files:** `apps/api/src/auth/{session.service,cookie-policy,origin.guard}.ts`, auth controller/contracts, `apps/api/test/refresh.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P02-01.
-  - **Acceptance:** Random refresh digest only; atomic single-use rotation under the User lock with same-family lineage and fixed seven-day lifetime; JWT session identity remains familyId; reuse revokes family; logout invalidates session/cookie. Cookie Secure/SameSite/httpOnly policy, Origin validation and credentialed CORS are explicit. Auth endpoints never disclose password/token digests.
+  - **Acceptance:** Random refresh digest only; atomic single-use rotation under the User lock with same-family lineage and fixed seven-day lifetime; JWT session identity remains familyId; reuse revokes family; logout invalidates session/cookie. Refresh with a removed selected membership returns403 without a retry loop; re-login recovers. Cookie Secure/SameSite/httpOnly policy, Origin validation and credentialed CORS are explicit. Auth endpoints never disclose password/token digests.
   - **Validation:** Cookie flags, rotation, replay, concurrent use, revoked/deleted membership, missing/bad Origin and cross-site refresh; endpoint DoD and standard gate.
   - **Commit:** `feat: rotate refresh sessions securely`.
 
@@ -369,7 +370,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Make tree/direct access agree on ancestor-aware visibility.
   - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/permissions/**`, `apps/api/src/hierarchy/tree.controller.ts`, `apps/api/test/permissions.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P03-01.
-  - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Paginated flat tree contains visible nodes/parents only. Grants are admin-managed and transactions recheck authorization.
+  - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Paginated flat tree contains visible nodes/parents only, orders parents before children, and rejects stale revision-bound cursors. Grants are admin-managed and transactions recheck authorization.
   - **Validation:** Alice sees all; Bob lacks private list; Carol allow works; Bob direct denied list 403; child allow cannot bypass parent deny/private; foreign IDs 404; counts/grants do not leak. Endpoint DoD and standard gate.
   - **Commit:** `feat: enforce container permissions centrally`.
 
@@ -463,7 +464,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Audit all task entry points against the required negative scenarios.
   - **Files:** `apps/api/test/{tenant-isolation,task-invariants}.e2e-spec.ts`, `packages/contracts/test/task-patches.test.ts`, necessary task/repository fixes, generated artifacts.
   - **Dependencies:** P06-03.
-  - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts.
+  - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts. Cursor tampering/context changes return400; revision changes return409 and a restart returns each current row once.
   - **Validation:** Full real-Postgres suite with two tenants; standard gate. Fix actual defects rather than weaken expectations.
   - **Commit:** `test: cover task isolation and mutation invariants`.
 
@@ -497,7 +498,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Give web one safe transport integration without handwritten endpoints.
   - **Files:** `packages/api-client/src/{setup-client,session-state}.ts`, `packages/api-client/test/setup-client.test.ts`, auth contract/client tests.
   - **Dependencies:** P07-02.
-  - **Acceptance:** `setupClient` configures an instance with base URL/credentials/token lookup, coordinates refresh and retries each rejected request once. Uses generated refresh SDK through an unwrapped instance; guards recursion and preserves abort. No retry for arbitrary network failure or forbidden 403. Defines origin-scoped tab lock and failure reauth behavior.
+  - **Acceptance:** `setupClient` configures an instance with base URL/credentials/token lookup, coordinates refresh and retries each rejected request once. Uses generated refresh SDK through an unwrapped instance; guards recursion and preserves abort. No retry for arbitrary network failure or forbidden 403. Defines origin-scoped tab lock and failure reauth behavior. Switch and refresh share that lock; generation checks prevent retrying an old-workspace request in a new workspace.
   - **Validation:** Concurrent 401s trigger one refresh; refresh failure/replayed token stops; 403 never refreshes; mutation retried at most once only after 401; aborted request stays aborted; instance state never shared across SSR requests; standard gate.
   - **Commit:** `feat: configure generated client session refresh`.
 

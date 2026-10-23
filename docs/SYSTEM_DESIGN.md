@@ -4,6 +4,8 @@
 
 The implementation-ready [database and ER specification](DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
+The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+
 ## 1. System and deployment boundaries
 
 Use one modular NestJS API, one worker and one PostgreSQL database. Redis transports work and realtime notifications. The Next.js app coordinates generated queries and MUI views. The same domain API serves the UI and curl clients.
@@ -211,7 +213,7 @@ sequenceDiagram
   end
 ```
 
-A single response containing multiple SQL reads uses one consistent snapshot, not independent read-committed statements. Membership/access checks belong in that response transaction too. Separate HTTP responses can still race, hence configVersion matching. Authorization is rechecked on every read, not inferred from possession of a cached tree node.
+A single response containing multiple SQL reads uses one consistent snapshot, not independent read-committed statements. Membership/access checks belong in that response transaction too. Separate HTTP responses can still race: match configVersion for configuration, plus dataVersion across all task pages/columns; discard mismatches and retry within a bounded limit. Authorization is rechecked on every read, not inferred from possession of a cached tree node.
 
 ## 7. Atomic writes and cross-list movement
 

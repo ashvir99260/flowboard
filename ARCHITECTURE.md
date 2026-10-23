@@ -9,6 +9,8 @@ For the dated ClickUp/Asana/Linear research, see [product architecture reference
 
 The implementation-ready [database and ER specification](docs/DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
+The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+
 ## System shape and authority
 
 Flowboard is a modular NestJS API, a Next.js client and one BullMQ worker. PostgreSQL owns tasks, configuration, access, sessions, activity and delivery intent. Redis transports queued work and socket invalidations; it does not determine authorization or authoritative task state.

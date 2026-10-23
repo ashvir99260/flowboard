@@ -14,6 +14,8 @@ Implementation follows the task order, one task at a time. Future agentic worker
 
 The implementation-ready [database and ER specification](DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
+The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+
 ## 1. Scope and success
 
 Deliver all requested hierarchy, authentication, tenancy, permissions, tasks, inherited configuration, board/list/drawer views, realtime, activity, generated contracts, seed data, and tests. The release runs with `docker compose up --build` and needs no host Node installation. Docker itself is a prerequisite.
@@ -164,7 +166,7 @@ Domain routes start `/v1`. Route groups:
 | Fields    | GET/POST `/scopes/:ownerType/:ownerId/fields`; PATCH/DELETE `.../:fieldId`; GET `/lists/:id/resolved-fields`                        |
 | Tasks     | GET/POST `/lists/:id/tasks`; GET/PATCH/DELETE `/tasks/:id`; POST `/tasks/:id/move`, `/tasks/:id/reorder`; GET `/tasks/:id/activity` |
 
-`/health/live`, `/health/ready` and `/docs` are operational exceptions to `/v1`. Lists use `{ items, pageInfo: { nextCursor, hasNextPage } }`, limit default 50/max 100. Cursor is opaque and binds resource, sort/filter and final ID; reject malformed or mismatched cursors. Sort allowlist includes due date and priority (`urgent > high > normal > low > none`); null dates last, ID tie-breaker. Tree is a paginated flat visible-node traversal with parent IDs; the client assembles pages and never presents a partially loaded tree as complete. Resolved configuration is a bounded ordered set, not a collection pagination endpoint. Resolved-status/field responses use `{ items, configVersion }`; task pages extend their page envelope with `configVersion`. Each response reads that version and its data from one consistent snapshot.
+`/health/live`, `/health/ready` and `/docs` are operational exceptions to `/v1`. Lists use `{ items, pageInfo: { nextCursor, hasNextPage } }`, limit default 50/max 100. Cursor is opaque and binds resource, sort/filter and final ID; reject malformed or mismatched cursors. Sort allowlist includes due date and priority (`urgent > high > normal > low > none`); null dates last, ID tie-breaker. Tree is a paginated flat visible-node traversal with parent IDs; the client assembles pages and never presents a partially loaded tree as complete. Resolved configuration is a bounded ordered set, not a collection pagination endpoint. Resolved-status/field responses use `{ items, configVersion }`; task pages extend their page envelope with `configVersion` and `dataVersion`. Task/tree cursors bind both revisions and return409 CURSOR_STALE after changes; per-column board task pages must match both before combining. Each response reads that version and its data from one consistent snapshot.
 
 Global error envelope: `{ error: { code, message, details? } }`. Details is a typed issue array with `path`, `code`, `message`. Use 400 validation, 401 auth, 403 permission, 404 missing/out-of-tenant, 409 conflicts/in-use mutation, and sanitized 500 with request ID. Successful creates return 201, deletes/archives 204, reads/updates 200. Strict request schemas reject identity/role/workspace injection.
 
