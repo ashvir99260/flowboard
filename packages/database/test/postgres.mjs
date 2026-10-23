@@ -81,3 +81,37 @@ export function migrate(connectionString) {
     stdio: 'pipe',
   });
 }
+
+export async function applicationUrl(database) {
+  const role = `flowboard_app_${randomUUID().replaceAll('-', '')}`;
+  const password = randomUUID();
+  // Both identifiers are generated locally, never supplied by callers.
+  await database.client.query(
+    `CREATE ROLE "${role}" LOGIN PASSWORD '${password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT`,
+  );
+  await database.client.query(`GRANT USAGE ON SCHEMA public TO "${role}"`);
+  const tables = [
+    'users',
+    'workspaces',
+    'memberships',
+    'refresh_sessions',
+    'invitations',
+    'nodes',
+    'grants',
+    'status_identities',
+    'status_overrides',
+    'field_definitions',
+    'tasks',
+    'task_assignees',
+    'outbox_events',
+    'activities',
+    'seed_states',
+  ]
+    .map((name) => `"${name}"`)
+    .join(', ');
+  await database.client.query(`GRANT SELECT, INSERT, UPDATE, DELETE ON ${tables} TO "${role}"`);
+  const url = new URL(database.connectionString);
+  url.username = role;
+  url.password = password;
+  return url.toString();
+}

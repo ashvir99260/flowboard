@@ -329,13 +329,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add tenant safe database schema`.
   - **Completion evidence:** [P01-03](evidence/P01-03.md): 43 real-Postgres cases, root gates and five-service Docker checks pass.
 
-- [ ] **P01-04 — Fail-closed tenant repositories and test harness**
+- [x] **P01-04 — Fail-closed tenant repositories and test harness**
   - **Goal:** Make tenant scoping the only persistence entry point for tenant data.
-  - **Files:** `packages/database/src/{tenant-context,tenant-database,transaction,identity-repository}.ts`, `packages/database/src/repositories/**`, `packages/database/test/tenancy.integration.test.ts`, `apps/api/test/support/{database,fixtures,app}.ts`.
+  - **Files:** `packages/database/src/{tenant-context,tenant-database,repositories,index}.ts`, `packages/database/test/{tenancy.integration.test,postgres}.mjs`, database README. API harness/identity access are introduced with their first real HTTP consumers in P01-02/P02-01.
   - **Dependencies:** P01-03.
   - **Acceptance:** Missing context fails; reads/writes/counts/pagination/relations/transaction access inject workspace scope; raw Prisma is not exported to apps. Workspace locking is transaction-bound. Fixtures/harness clean up an isolated database and work with Testcontainers or the documented test service.
   - **Validation:** Tenant A cannot read/update/delete/link tenant B records; forged workspace criteria cannot override context; callback transaction keeps scoping. Standard gate.
   - **Commit:** `feat: centralize tenant scoped persistence`.
+  - **Completion evidence:** [P01-04](evidence/P01-04.md): 20 tenant-boundary tests plus all 43 schema tests; full root gates pass.
 
 - [ ] **P01-05 — Seed-once data and migration startup**
   - **Goal:** Make clean boot reproducible and demonstrate all major scenarios with real persisted data.

@@ -127,3 +127,9 @@ The database package uses Prisma 7's ESM client generator and PostgreSQL driver 
 Real PostgreSQL tests run in task-owned disposable Docker containers with random ports, independently of development or hosted URLs. Reconnect after restart rediscovers Docker's published port. API and worker images include OpenSSL so Prisma's migration engine selects the correct Linux binary. Optional source-generation commands need no database URL; migration commands require an explicit direct URL (falling back to DATABASE_URL only when deliberately supplied). Prisma's offline diff engine currently requires a syntactically valid explicit URL even when neither input connects to a database.
 
 The schema does not enforce polymorphic scope-owner existence, full resolved field/status validity or authorization. Those remain the tested repository/service responsibilities in the following tasks.
+
+## D79 — Tenant repository unit of work
+
+Expose only typed read/write callbacks from the database package; retain Prisma and SQL internally. Every callback verifies membership from the database and rejects caller-provided role/extra context. Read bundles use a read-only Repeatable Read snapshot. Writes acquire the workspace lock under Read Committed, then reload membership so revocation committed by the previous lock holder is visible. Callback repository handles expire with the transaction.
+
+Start with node/member/grant storage primitives, strict flat input allowlists and injected tenant selectors; add other repositories with their first use case. Permissions, revisions and outbox orchestration are service responsibilities, and no task write primitive is exposed yet. Global identity access is added with auth instead of an unused unrestricted API. Integration tests use a separate non-superuser role with CRUD on domain tables and no migration/DDL privileges. Public cursor signing is separate from internal ID-anchored storage reads.
