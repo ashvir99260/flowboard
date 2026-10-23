@@ -12,17 +12,18 @@ import { requestLogging } from './shared/logging/request-logging.js';
 
 import type { AuthRuntime } from './modules/auth/runtime.js';
 import type { DependencyProbe } from './modules/platform/dependency-probe.js';
+import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export async function createApplication(
   probe: DependencyProbe,
-  options: { auth?: AuthRuntime; exposeDocs?: boolean; logger?: Logger } = {},
+  options: { auth?: AuthRuntime; database?: Database; exposeDocs?: boolean; logger?: Logger } = {},
 ) {
   const logger = options.logger ?? SilentLogger;
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule.forProbe(probe, options.auth, logger),
+    AppModule.forProbe(probe, options.auth, logger, options.database),
     new ExpressAdapter(),
     {
       bodyParser: false,
@@ -32,7 +33,7 @@ export async function createApplication(
   );
   try {
     app.use(requestLogging(logger));
-    app.use('/v1/auth', (_request: IncomingMessage, response: ServerResponse, next: () => void) => {
+    app.use('/v1', (_request: IncomingMessage, response: ServerResponse, next: () => void) => {
       response.setHeader('Cache-Control', 'no-store');
       next();
     });
@@ -54,6 +55,7 @@ export async function createApplication(
           .setVersion('1.0.0')
           .addTag('Health', 'Service liveness and readiness')
           .addTag('Authentication', 'Account and session lifecycle')
+          .addTag('Workspaces', 'Workspace memberships, invitations and current identity')
           .addBearerAuth(
             {
               bearerFormat: 'JWT',

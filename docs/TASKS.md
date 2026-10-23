@@ -576,13 +576,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `fix: allow local Swagger authentication requests`.
   - **Completion evidence:** [P02-23](evidence/P02-23.md): browser login/refresh/logout return 200/200/204; real origin rejection and custom-port regressions pass; all 366 tests, Docker and root gates pass.
 
-- [ ] **P02-03 — Membership, invitations and workspace switching**
+- [x] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
-  - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.
+  - **Requirements:** R30, R32, R34; contributes to R42/R92/R114 and preserves R29/R31/R33/R35.
+  - **Files:** `packages/contracts/src/{workspaces,events,pagination}.ts`, database identity/membership repositories and tests, `apps/api/src/modules/{auth,workspaces,permissions}/**`, shared cursor/auth helpers and runtime composition, generated artifacts, README, API catalog, requirement matrix and task evidence.
   - **Dependencies:** P02-02, P02-06.
-  - **Acceptance:** `/me`, paginated workspaces/members, add/invite/accept/remove/role change and verified workspace switch work. Invite is an expiring manual-share link with digest storage and email match. Establish the one PermissionGuard/PermissionService with the membership/admin policy now; P03-02 extends it to containers. Remove departing members' grants/assignments atomically, bump affected task versions/emit outbox updates, and retain activity. No controller-local authorization, self-escalation or last-admin removal. The same user can be admin in workspace A and member in B; role changes apply on the next request without global-role leakage.
+  - **Acceptance:** `/me`, paginated workspaces/members, add/invite/accept/remove/role change and verified workspace switch work. Invite is an expiring manually shared token with digest storage and email match; browser invitation links belong to the later web UI. Establish the one PermissionGuard/PermissionService with the membership/admin policy now; P03-02 extends it to containers. Remove departing members' grants/assignments atomically, bump affected task versions/emit outbox updates, and retain activity. No controller-local authorization, self-escalation or last-admin removal. The same user can be admin in workspace A and member in B; role changes apply on the next request without global-role leakage.
   - **Validation:** Expired/reused invite, wrong email, cross-tenant switch, member cannot grant admin, concurrent last-admin demotions, removed member token fails; endpoint DoD and standard gate.
   - **Commit:** `feat: manage workspace membership and invites`.
+  - **Completion evidence:** [P02-03](evidence/P02-03.md): nine authenticated operations; permission, invitation, cursor, rotation and removal/race regressions; all 383 tests, root gates and Docker acceptance pass.
 
 ## Phase 3 — Hierarchy and authorization
 

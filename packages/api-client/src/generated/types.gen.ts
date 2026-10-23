@@ -5,6 +5,206 @@ export type ClientOptions = {
 };
 
 /**
+ * Accepted invitation response
+ *
+ * Joined workspace and role; current session selection is unchanged.
+ */
+export type AcceptedInvitationResponseDtoOutput = {
+    /**
+     * Active workspace
+     *
+     * Selected workspace and the user’s current membership role.
+     */
+    data: {
+        /**
+         * Created at
+         *
+         * Server-owned creation timestamp in UTC with millisecond precision.
+         */
+        createdAt: string;
+        /**
+         * Workspace ID
+         *
+         * Identifier of the workspace selected for this login family.
+         */
+        id: string;
+        /**
+         * Workspace name
+         *
+         * Display name of the selected workspace.
+         */
+        name: string;
+        /**
+         * Workspace role
+         *
+         * Current membership role read from the database; it is not a global account role.
+         */
+        role: 'admin' | 'member';
+        /**
+         * Updated at
+         *
+         * Server-owned last modification timestamp in UTC with millisecond precision.
+         */
+        updatedAt: string;
+    };
+};
+
+/**
+ * Accept invitation request
+ *
+ * Join using a matching authenticated account email; do not automatically switch workspace.
+ */
+export type AcceptInvitationDto = {
+    /**
+     * Invitation token
+     *
+     * Single-use invitation secret, supplied only in the request body.
+     */
+    token: string;
+};
+
+/**
+ * Add workspace member request
+ *
+ * Administrator adds an existing account with a workspace-local role.
+ */
+export type AddMemberDto = {
+    /**
+     * Existing account email
+     *
+     * Normalized email of the account to add.
+     */
+    email: string;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Membership role
+     *
+     * Role in this workspace, read from current membership.
+     */
+    role: 'admin' | 'member';
+};
+
+/**
+ * Create invitation request
+ *
+ * Create a 48-hour single-use invitation for this email and role.
+ */
+export type CreateInvitationDto = {
+    /**
+     * Existing account email
+     *
+     * Normalized email of the account to add.
+     */
+    email: string;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Membership role
+     *
+     * Role in this workspace, read from current membership.
+     */
+    role: 'admin' | 'member';
+};
+
+/**
+ * Current user response
+ *
+ * Authenticated session identity without access or refresh credentials.
+ */
+export type CurrentUserResponseDtoOutput = {
+    /**
+     * Current identity
+     *
+     * Safe current user and selected workspace projection.
+     */
+    data: {
+        /**
+         * Current workspace
+         *
+         * Selected workspace with current membership, or null if that membership is gone.
+         */
+        activeWorkspace: {
+            /**
+             * Created at
+             *
+             * Server-owned creation timestamp in UTC with millisecond precision.
+             */
+            createdAt: string;
+            /**
+             * Workspace ID
+             *
+             * Identifier of the workspace selected for this login family.
+             */
+            id: string;
+            /**
+             * Workspace name
+             *
+             * Display name of the selected workspace.
+             */
+            name: string;
+            /**
+             * Workspace role
+             *
+             * Current membership role read from the database; it is not a global account role.
+             */
+            role: 'admin' | 'member';
+            /**
+             * Updated at
+             *
+             * Server-owned last modification timestamp in UTC with millisecond precision.
+             */
+            updatedAt: string;
+        } | null;
+        /**
+         * Authenticated user
+         *
+         * Safe account projection. Password hashes and refresh credentials are never included.
+         */
+        user: {
+            /**
+             * Created at
+             *
+             * Server-owned creation timestamp in UTC with millisecond precision.
+             */
+            createdAt: string;
+            /**
+             * Email address
+             *
+             * Account email, trimmed and normalized to lowercase.
+             */
+            email: string;
+            /**
+             * User ID
+             *
+             * Stable server-generated account identifier.
+             */
+            id: string;
+            /**
+             * Display name
+             *
+             * The authenticated user’s display name.
+             */
+            name: string;
+            /**
+             * Updated at
+             *
+             * Server-owned last modification timestamp in UTC with millisecond precision.
+             */
+            updatedAt: string;
+        };
+    };
+};
+
+/**
  * Empty authentication request
  *
  * Refresh and logout accept an empty JSON object or no body. All supplied fields are rejected.
@@ -30,7 +230,7 @@ export type ErrorResponseDtoOutput = {
          *
          * Stable machine-readable error identifier. Clients should branch on this value rather than message text.
          */
-        code: 'VALIDATION_FAILED' | 'STATUS_NOT_AVAILABLE' | 'FIELD_VALUE_INVALID' | 'INVALID_PARENT' | 'INVALID_ANCHOR' | 'INVALID_CURSOR' | 'UNAUTHENTICATED' | 'SESSION_EXPIRED' | 'REFRESH_REUSED' | 'FORBIDDEN' | 'MEMBERSHIP_REQUIRED' | 'ORIGIN_REJECTED' | 'NOT_FOUND' | 'VERSION_CONFLICT' | 'CONFIG_CONFLICT' | 'CURSOR_STALE' | 'STATUS_IN_USE' | 'FIELD_IN_USE' | 'CONFIG_INVALIDATES_TASKS' | 'LAST_ADMIN' | 'EMAIL_IN_USE' | 'INVITATION_UNAVAILABLE' | 'PAYLOAD_TOO_LARGE' | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE';
+        code: 'VALIDATION_FAILED' | 'STATUS_NOT_AVAILABLE' | 'FIELD_VALUE_INVALID' | 'INVALID_PARENT' | 'INVALID_ANCHOR' | 'INVALID_CURSOR' | 'UNAUTHENTICATED' | 'SESSION_EXPIRED' | 'REFRESH_REUSED' | 'FORBIDDEN' | 'MEMBERSHIP_REQUIRED' | 'MEMBERSHIP_EXISTS' | 'ORIGIN_REJECTED' | 'NOT_FOUND' | 'VERSION_CONFLICT' | 'CONFIG_CONFLICT' | 'CURSOR_STALE' | 'STATUS_IN_USE' | 'FIELD_IN_USE' | 'CONFIG_INVALIDATES_TASKS' | 'LAST_ADMIN' | 'EMAIL_IN_USE' | 'INVITATION_UNAVAILABLE' | 'PAYLOAD_TOO_LARGE' | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE';
         /**
          * Validation details
          *
@@ -66,6 +266,59 @@ export type ErrorResponseDtoOutput = {
 };
 
 /**
+ * Configuration precondition
+ *
+ * Required revision check for workspace mutations.
+ */
+export type ExpectedConfigDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+};
+
+/**
+ * Invitation response
+ *
+ * Created invitation and current configuration revision.
+ */
+export type InvitationResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Created invitation
+     *
+     * The raw token is returned only by this creation response.
+     */
+    data: {
+        /**
+         * Invitation expiry
+         *
+         * Database-clock expiry, 48 hours after creation.
+         */
+        expiresAt: string;
+        /**
+         * Invitation ID
+         *
+         * Server-generated invitation identifier.
+         */
+        invitationId: string;
+        /**
+         * Invitation token
+         *
+         * Opaque invitation secret. Share privately and never include in URL query parameters.
+         */
+        token: string;
+    };
+};
+
+/**
  * Liveness response
  *
  * Public API process liveness result.
@@ -91,6 +344,139 @@ export type LogInDto = {
      * Account email, trimmed and normalized to lowercase.
      */
     email: string;
+};
+
+/**
+ * Member mutation response
+ *
+ * Resulting safe member profile and workspace revision.
+ */
+export type MemberMutationResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Workspace member
+     *
+     * Safe membership projection with restricted email visibility.
+     */
+    data: {
+        /**
+         * Membership created at
+         *
+         * Server-owned membership creation timestamp.
+         */
+        createdAt: string;
+        /**
+         * Member email
+         *
+         * Included only for administrators or the member themselves.
+         */
+        email?: string;
+        /**
+         * Member name
+         *
+         * The member’s display name.
+         */
+        name: string;
+        /**
+         * Membership role
+         *
+         * Role in this workspace, read from current membership.
+         */
+        role: 'admin' | 'member';
+        /**
+         * Membership updated at
+         *
+         * Server-owned last membership update timestamp.
+         */
+        updatedAt: string;
+        /**
+         * User ID
+         *
+         * Stable member user identifier.
+         */
+        userId: string;
+    };
+};
+
+/**
+ * Member page
+ *
+ * Revision-bound cursor page of visible member profiles.
+ */
+export type MemberPageResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Items
+     *
+     * Authorized items in stable order.
+     */
+    items: Array<{
+        /**
+         * Membership created at
+         *
+         * Server-owned membership creation timestamp.
+         */
+        createdAt: string;
+        /**
+         * Member email
+         *
+         * Included only for administrators or the member themselves.
+         */
+        email?: string;
+        /**
+         * Member name
+         *
+         * The member’s display name.
+         */
+        name: string;
+        /**
+         * Membership role
+         *
+         * Role in this workspace, read from current membership.
+         */
+        role: 'admin' | 'member';
+        /**
+         * Membership updated at
+         *
+         * Server-owned last membership update timestamp.
+         */
+        updatedAt: string;
+        /**
+         * User ID
+         *
+         * Stable member user identifier.
+         */
+        userId: string;
+    }>;
+    /**
+     * Page information
+     *
+     * Consistent forward-pagination state.
+     */
+    pageInfo: {
+        /**
+         * Has next page
+         *
+         * Whether another page is available.
+         */
+        hasNextPage: boolean;
+        /**
+         * Next cursor
+         *
+         * Continuation token, or null at the end.
+         */
+        nextCursor: string | null;
+    };
 };
 
 /**
@@ -232,6 +618,104 @@ export type SignUpDto = {
      * Name of the new workspace. The account becomes its administrator.
      */
     workspaceName: string;
+};
+
+/**
+ * Switch workspace request
+ *
+ * Select a workspace where the authenticated account has current membership.
+ */
+export type SwitchWorkspaceDto = {
+    /**
+     * Destination workspace ID
+     *
+     * Destination workspace where the authenticated account has current membership; may differ from the active workspace.
+     */
+    workspaceId: string;
+};
+
+/**
+ * Update membership request
+ *
+ * Change the target membership role without removing the last administrator.
+ */
+export type UpdateMemberDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Membership role
+     *
+     * Role in this workspace, read from current membership.
+     */
+    role: 'admin' | 'member';
+};
+
+/**
+ * Workspace page
+ *
+ * Live cursor page of the caller’s memberships.
+ */
+export type WorkspacePageResponseDtoOutput = {
+    /**
+     * Items
+     *
+     * Authorized items in stable order.
+     */
+    items: Array<{
+        /**
+         * Created at
+         *
+         * Server-owned creation timestamp in UTC with millisecond precision.
+         */
+        createdAt: string;
+        /**
+         * Workspace ID
+         *
+         * Identifier of the workspace selected for this login family.
+         */
+        id: string;
+        /**
+         * Workspace name
+         *
+         * Display name of the selected workspace.
+         */
+        name: string;
+        /**
+         * Workspace role
+         *
+         * Current membership role read from the database; it is not a global account role.
+         */
+        role: 'admin' | 'member';
+        /**
+         * Updated at
+         *
+         * Server-owned last modification timestamp in UTC with millisecond precision.
+         */
+        updatedAt: string;
+    }>;
+    /**
+     * Page information
+     *
+     * Consistent forward-pagination state.
+     */
+    pageInfo: {
+        /**
+         * Has next page
+         *
+         * Whether another page is available.
+         */
+        hasNextPage: boolean;
+        /**
+         * Next cursor
+         *
+         * Continuation token, or null at the end.
+         */
+        nextCursor: string | null;
+    };
 };
 
 /**
@@ -592,3 +1076,547 @@ export type SignUpResponses = {
 };
 
 export type SignUpResponse = SignUpResponses[keyof SignUpResponses];
+
+export type SwitchWorkspaceData = {
+    /**
+     * Target workspace where the authenticated account is already a member.
+     */
+    body: SwitchWorkspaceDto;
+    headers: {
+        /**
+         * Request origin
+         *
+         * An allowed scheme, host and optional port without a path.
+         */
+        Origin: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/auth/switch-workspace';
+};
+
+export type SwitchWorkspaceErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The request origin is not allowed or the selected workspace membership is unavailable.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The caller is not a member of the destination workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * The JSON request exceeds the 256 KiB body limit.
+     */
+    413: ErrorResponseDtoOutput;
+    /**
+     * The authentication attempt limit was reached. Retry after the indicated number of seconds.
+     */
+    429: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type SwitchWorkspaceError = SwitchWorkspaceErrors[keyof SwitchWorkspaceErrors];
+
+export type SwitchWorkspaceResponses = {
+    /**
+     * Fresh JWT and rotated cookie selecting the verified workspace.
+     */
+    200: SessionResponseDtoOutput;
+};
+
+export type SwitchWorkspaceResponse = SwitchWorkspaceResponses[keyof SwitchWorkspaceResponses];
+
+export type AcceptWorkspaceInvitationData = {
+    /**
+     * Private invitation token supplied in the body, never in a query string.
+     */
+    body: AcceptInvitationDto;
+    path?: never;
+    query?: never;
+    url: '/v1/invitations/accept';
+};
+
+export type AcceptWorkspaceInvitationErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type AcceptWorkspaceInvitationError = AcceptWorkspaceInvitationErrors[keyof AcceptWorkspaceInvitationErrors];
+
+export type AcceptWorkspaceInvitationResponses = {
+    /**
+     * Joined workspace and role; session selection is unchanged.
+     */
+    200: AcceptedInvitationResponseDtoOutput;
+};
+
+export type AcceptWorkspaceInvitationResponse = AcceptWorkspaceInvitationResponses[keyof AcceptWorkspaceInvitationResponses];
+
+export type GetCurrentUserData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/me';
+};
+
+export type GetCurrentUserErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type GetCurrentUserError = GetCurrentUserErrors[keyof GetCurrentUserErrors];
+
+export type GetCurrentUserResponses = {
+    /**
+     * Safe current identity without credentials.
+     */
+    200: CurrentUserResponseDtoOutput;
+};
+
+export type GetCurrentUserResponse = GetCurrentUserResponses[keyof GetCurrentUserResponses];
+
+export type ListWorkspacesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Cursor
+         *
+         * Opaque server-authenticated continuation token; keep the same query.
+         */
+        cursor?: string;
+        /**
+         * Page limit
+         *
+         * Maximum returned items, from 1 to 100.
+         */
+        limit?: string;
+    };
+    url: '/v1/workspaces';
+};
+
+export type ListWorkspacesErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ListWorkspacesError = ListWorkspacesErrors[keyof ListWorkspacesErrors];
+
+export type ListWorkspacesResponses = {
+    /**
+     * Authorized workspace page.
+     */
+    200: WorkspacePageResponseDtoOutput;
+};
+
+export type ListWorkspacesResponse = ListWorkspacesResponses[keyof ListWorkspacesResponses];
+
+export type CreateWorkspaceInvitationData = {
+    /**
+     * Invited account email, target role and configuration revision.
+     */
+    body: CreateInvitationDto;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Must equal the authenticated session’s active workspace.
+         */
+        workspaceId: string;
+    };
+    query?: never;
+    url: '/v1/workspaces/{workspaceId}/invitations';
+};
+
+export type CreateWorkspaceInvitationErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type CreateWorkspaceInvitationError = CreateWorkspaceInvitationErrors[keyof CreateWorkspaceInvitationErrors];
+
+export type CreateWorkspaceInvitationResponses = {
+    /**
+     * One-time invitation secret, expiry and configuration revision.
+     */
+    201: InvitationResponseDtoOutput;
+};
+
+export type CreateWorkspaceInvitationResponse = CreateWorkspaceInvitationResponses[keyof CreateWorkspaceInvitationResponses];
+
+export type ListWorkspaceMembersData = {
+    body?: never;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Must equal the authenticated session’s active workspace.
+         */
+        workspaceId: string;
+    };
+    query?: {
+        /**
+         * Cursor
+         *
+         * Opaque server-authenticated continuation token; keep the same query.
+         */
+        cursor?: string;
+        /**
+         * Page limit
+         *
+         * Maximum returned items, from 1 to 100.
+         */
+        limit?: string;
+    };
+    url: '/v1/workspaces/{workspaceId}/members';
+};
+
+export type ListWorkspaceMembersErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ListWorkspaceMembersError = ListWorkspaceMembersErrors[keyof ListWorkspaceMembersErrors];
+
+export type ListWorkspaceMembersResponses = {
+    /**
+     * Member page and current configuration revision.
+     */
+    200: MemberPageResponseDtoOutput;
+};
+
+export type ListWorkspaceMembersResponse = ListWorkspaceMembersResponses[keyof ListWorkspaceMembersResponses];
+
+export type AddWorkspaceMemberData = {
+    /**
+     * Existing account, target role and last-read configuration revision.
+     */
+    body: AddMemberDto;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Must equal the authenticated session’s active workspace.
+         */
+        workspaceId: string;
+    };
+    query?: never;
+    url: '/v1/workspaces/{workspaceId}/members';
+};
+
+export type AddWorkspaceMemberErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type AddWorkspaceMemberError = AddWorkspaceMemberErrors[keyof AddWorkspaceMemberErrors];
+
+export type AddWorkspaceMemberResponses = {
+    /**
+     * Created membership and updated configuration revision.
+     */
+    201: MemberMutationResponseDtoOutput;
+};
+
+export type AddWorkspaceMemberResponse = AddWorkspaceMemberResponses[keyof AddWorkspaceMemberResponses];
+
+export type RemoveWorkspaceMemberData = {
+    /**
+     * Last-read configuration revision required for deletion.
+     */
+    body: ExpectedConfigDto;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Must equal the authenticated session’s active workspace.
+         */
+        workspaceId: string;
+        /**
+         * User ID
+         *
+         * Stable member user identifier.
+         */
+        userId: string;
+    };
+    query?: never;
+    url: '/v1/workspaces/{workspaceId}/members/{userId}';
+};
+
+export type RemoveWorkspaceMemberErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type RemoveWorkspaceMemberError = RemoveWorkspaceMemberErrors[keyof RemoveWorkspaceMemberErrors];
+
+export type RemoveWorkspaceMemberResponses = {
+    /**
+     * Membership and dependent access removed. Historical activity is retained.
+     */
+    204: void;
+};
+
+export type RemoveWorkspaceMemberResponse = RemoveWorkspaceMemberResponses[keyof RemoveWorkspaceMemberResponses];
+
+export type UpdateWorkspaceMemberData = {
+    /**
+     * New role and last-read configuration revision.
+     */
+    body: UpdateMemberDto;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Must equal the authenticated session’s active workspace.
+         */
+        workspaceId: string;
+        /**
+         * User ID
+         *
+         * Stable member user identifier.
+         */
+        userId: string;
+    };
+    query?: never;
+    url: '/v1/workspaces/{workspaceId}/members/{userId}';
+};
+
+export type UpdateWorkspaceMemberErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type UpdateWorkspaceMemberError = UpdateWorkspaceMemberErrors[keyof UpdateWorkspaceMemberErrors];
+
+export type UpdateWorkspaceMemberResponses = {
+    /**
+     * Current membership and configuration revision.
+     */
+    200: MemberMutationResponseDtoOutput;
+};
+
+export type UpdateWorkspaceMemberResponse = UpdateWorkspaceMemberResponses[keyof UpdateWorkspaceMemberResponses];

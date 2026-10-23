@@ -4,11 +4,20 @@ import { LogInSchema, SignUpSchema, UuidSchema } from '@flowboard/contracts';
 import { SilentLogger } from '@flowboard/logger';
 
 import { createClient } from './client.js';
+import { recordWorkspaceChange, validateMembershipPage } from './membership-repository.js';
 import { hashPassword, verifyPassword } from './password.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
 
 import type { Prisma, RefreshSession } from './generated/client.js';
-import type { IdentitySession, RefreshResult, SessionCredential } from './identity.entity.js';
+import type {
+  AuthenticatedIdentity,
+  IdentitySession,
+  IdentityWorkspace,
+  RefreshResult,
+  SessionCredential,
+  SessionIdentity,
+} from './identity.entity.js';
+import type { MembershipPageQuery } from './membership.entity.js';
 import type { LogIn, SignUp } from '@flowboard/contracts';
 import type { Logger } from '@flowboard/logger';
 
@@ -62,6 +71,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
     userId: string,
     credential: SessionCredential,
     workspaceId: string | null,
+    allowMissingMembership = false,
   ): Promise<IdentitySession> {
     const user = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: userSelect });
     const membership = workspaceId
@@ -70,7 +80,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
           include: { workspace: { select: workspaceSelect } },
         })
       : null;
-    if (workspaceId && !membership)
+    if (workspaceId && !membership && !allowMissingMembership)
       throw new DatabaseError('MEMBERSHIP_REQUIRED', 'Workspace membership required');
 
     return {
@@ -108,7 +118,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
       if (!owner) return missing;
 
       return client.$transaction(async (tx) => {
-        await tx.$queryRaw`SELECT id FROM users WHERE id = ${owner.userId}::uuid FOR UPDATE`;
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${owner.userId}::uuid FOR NO KEY UPDATE`;
         const row = await tx.refreshSession.findUnique({ where: { tokenDigest: digest } });
         if (!row) return missing;
 
@@ -122,8 +132,185 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
       });
     });
   }
+  async function replaceCredential(
+    tx: Prisma.TransactionClient,
+    row: RefreshSession,
+    now: Date,
+    tokenDigest: string,
+    workspaceId: string | null,
+  ) {
+    const session = await describe(tx, row.userId, row, workspaceId);
+    await tx.refreshSession.update({ where: { id: row.id }, data: { usedAt: now } });
+    const replacement = await tx.refreshSession.create({
+      data: {
+        activeWorkspaceId: workspaceId,
+        expiresAt: row.expiresAt,
+        familyId: row.familyId,
+        tokenDigest,
+        userId: row.userId,
+      },
+    });
+    await tx.refreshSession.update({
+      where: { id: row.id },
+      data: { replacedById: replacement.id },
+    });
+
+    return { session, status: 'rotated' as const };
+  }
+  function validateIdentity(input: SessionIdentity) {
+    exactKeys(input, ['familyId', 'userId', 'workspaceId']);
+    UuidSchema.parse(input.familyId);
+    UuidSchema.parse(input.userId);
+    if (input.workspaceId !== null) UuidSchema.parse(input.workspaceId);
+  }
 
   return {
+    async acceptInvitation(
+      identity: SessionIdentity,
+      tokenDigest: string,
+    ): Promise<IdentityWorkspace> {
+      validateIdentity(identity);
+      if (!/^[a-f0-9]{64}$/.test(tokenDigest))
+        throw new DatabaseError('INVITATION_UNAVAILABLE', 'Invitation is unavailable');
+
+      return available(() =>
+        client.$transaction(async (tx) => {
+          await tx.$queryRaw`SELECT id FROM users WHERE id = ${identity.userId}::uuid FOR NO KEY UPDATE`;
+          const candidate = await tx.invitation.findUnique({
+            where: { tokenDigest },
+            select: { workspaceId: true },
+          });
+          if (!candidate)
+            throw new DatabaseError('INVITATION_UNAVAILABLE', 'Invitation is unavailable');
+
+          await tx.$queryRaw`SELECT id FROM workspaces WHERE id = ${candidate.workspaceId}::uuid FOR UPDATE`;
+          const [clock] = await tx.$queryRaw<
+            { now: Date }[]
+          >`SELECT clock_timestamp()::timestamptz(3) AS now`;
+          if (!clock) throw new Error('Database clock unavailable');
+
+          const credential = await tx.refreshSession.findFirst({
+            where: {
+              userId: identity.userId,
+              familyId: identity.familyId,
+              activeWorkspaceId: identity.workspaceId,
+              usedAt: null,
+              revokedAt: null,
+              expiresAt: { gt: clock.now },
+            },
+          });
+          if (!credential) throw new DatabaseError('UNAUTHENTICATED', 'Session is unavailable');
+
+          const user = await tx.user.findUniqueOrThrow({
+            where: { id: identity.userId },
+            select: { email: true },
+          });
+          const invite = await tx.invitation.findUnique({ where: { tokenDigest } });
+          if (
+            !invite ||
+            invite.workspaceId !== candidate.workspaceId ||
+            invite.email !== user.email ||
+            invite.acceptedAt ||
+            invite.expiresAt <= clock.now ||
+            (await tx.membership.findUnique({
+              where: {
+                workspaceId_userId: { workspaceId: invite.workspaceId, userId: identity.userId },
+              },
+            }))
+          )
+            throw new DatabaseError('INVITATION_UNAVAILABLE', 'Invitation is unavailable');
+
+          await tx.membership.create({
+            data: { workspaceId: invite.workspaceId, userId: identity.userId, role: invite.role },
+          });
+          await tx.invitation.update({
+            where: { id: invite.id },
+            data: { acceptedAt: clock.now, acceptedById: identity.userId },
+          });
+          await recordWorkspaceChange(tx, invite.workspaceId, identity.userId, 'membership');
+          const workspace = await tx.workspace.findUniqueOrThrow({
+            where: { id: invite.workspaceId },
+            select: workspaceSelect,
+          });
+
+          return { ...workspace, role: invite.role };
+        }),
+      );
+    },
+    async switchWorkspace(
+      identity: SessionIdentity,
+      digest: string,
+      replacementDigest: string,
+      workspaceId: string,
+    ): Promise<RefreshResult> {
+      validateIdentity(identity);
+      UuidSchema.parse(workspaceId);
+      if (!/^[a-f0-9]{64}$/.test(replacementDigest))
+        throw new DatabaseError('VALIDATION_FAILED', 'Invalid replacement digest');
+
+      return withCredential<RefreshResult>(digest, { status: 'invalid' }, async (tx, row, now) => {
+        if (row.userId !== identity.userId || row.familyId !== identity.familyId)
+          return { status: 'invalid' };
+
+        if (row.usedAt) {
+          await tx.refreshSession.updateMany({
+            where: { userId: row.userId, familyId: row.familyId, revokedAt: null },
+            data: { revokedAt: now },
+          });
+
+          return { status: 'reused' };
+        }
+
+        if (row.revokedAt || row.expiresAt <= now || row.activeWorkspaceId !== identity.workspaceId)
+          return { status: 'invalid' };
+
+        await tx.$queryRaw`SELECT id FROM workspaces WHERE id = ${workspaceId}::uuid FOR UPDATE`;
+        const member = await tx.membership.findUnique({
+          where: { workspaceId_userId: { userId: identity.userId, workspaceId } },
+        });
+        if (!member) throw new DatabaseError('NOT_FOUND', 'Workspace not found');
+
+        const [clock] = await tx.$queryRaw<
+          { now: Date }[]
+        >`SELECT clock_timestamp()::timestamptz(3) AS now`;
+        if (!clock) throw new Error('Database clock unavailable');
+
+        if (row.expiresAt <= clock.now) return { status: 'invalid' };
+
+        return replaceCredential(tx, row, clock.now, replacementDigest, workspaceId);
+      });
+    },
+    async listWorkspaces(
+      userId: string,
+      query: MembershipPageQuery,
+    ): Promise<{ membershipCreatedAt: Date; workspace: IdentityWorkspace }[]> {
+      UuidSchema.parse(userId);
+      validateMembershipPage(query);
+
+      return available(async () => {
+        const members = await client.membership.findMany({
+          where: {
+            userId,
+            ...(query.after
+              ? {
+                  OR: [
+                    { createdAt: { gt: query.after.createdAt } },
+                    { createdAt: query.after.createdAt, workspaceId: { gt: query.after.id } },
+                  ],
+                }
+              : {}),
+          },
+          orderBy: [{ createdAt: 'asc' }, { workspaceId: 'asc' }],
+          take: query.limit + 1,
+          select: { createdAt: true, role: true, workspace: { select: workspaceSelect } },
+        });
+
+        return members.map(({ workspace, role, createdAt }) => ({
+          workspace: { ...workspace, role },
+          membershipCreatedAt: createdAt,
+        }));
+      });
+    },
     async rotate(digest: string, replacementDigest: string): Promise<RefreshResult> {
       if (!/^[a-f0-9]{64}$/.test(replacementDigest))
         throw new DatabaseError('VALIDATION_FAILED', 'Invalid replacement digest');
@@ -141,23 +328,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
 
         if (row.revokedAt || row.expiresAt <= now) return { status: 'invalid' };
 
-        const session = await describe(tx, row.userId, row, row.activeWorkspaceId);
-        await tx.refreshSession.update({ where: { id: row.id }, data: { usedAt: now } });
-        const replacement = await tx.refreshSession.create({
-          data: {
-            activeWorkspaceId: row.activeWorkspaceId,
-            expiresAt: row.expiresAt,
-            familyId: row.familyId,
-            tokenDigest: replacementDigest,
-            userId: row.userId,
-          },
-        });
-        await tx.refreshSession.update({
-          where: { id: row.id },
-          data: { replacedById: replacement.id },
-        });
-
-        return { session, status: 'rotated' };
+        return replaceCredential(tx, row, now, replacementDigest, row.activeWorkspaceId);
       });
     },
     async revoke(digest: string): Promise<void> {
@@ -226,7 +397,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
           throw new DatabaseError('UNAUTHENTICATED', 'Invalid email or password');
 
         return client.$transaction(async (tx) => {
-          await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id}::uuid FOR UPDATE`;
+          await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id}::uuid FOR NO KEY UPDATE`;
           const current = await tx.user.findUnique({ where: { id: user.id } });
           if (!current || current.passwordHash !== user.passwordHash)
             throw new DatabaseError('UNAUTHENTICATED', 'Invalid email or password');
@@ -235,7 +406,10 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
         });
       });
     },
-    async authenticate(input: { familyId: string; userId: string; workspaceId: string | null }) {
+    async authenticate(
+      input: SessionIdentity,
+      sessionOnly = false,
+    ): Promise<AuthenticatedIdentity> {
       exactKeys(input, ['familyId', 'userId', 'workspaceId']);
       UuidSchema.parse(input.familyId);
       UuidSchema.parse(input.userId);
@@ -256,7 +430,10 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
             if (!row || row.activeWorkspaceId !== input.workspaceId)
               throw new DatabaseError('UNAUTHENTICATED', 'Session is unavailable');
 
-            return describe(tx, row.userId, row, row.activeWorkspaceId);
+            return {
+              ...(await describe(tx, row.userId, row, row.activeWorkspaceId, sessionOnly)),
+              selectedWorkspaceId: row.activeWorkspaceId,
+            };
           },
           { isolationLevel: 'RepeatableRead' },
         ),

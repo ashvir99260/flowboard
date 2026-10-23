@@ -32,20 +32,26 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     if (exception instanceof DatabaseError) {
-      status =
-        exception.code === 'EMAIL_IN_USE'
-          ? 409
-          : exception.code === 'UNAUTHENTICATED'
-            ? 401
-            : exception.code === 'SERVICE_UNAVAILABLE'
-              ? 503
-              : exception.code === 'INTERNAL_ERROR'
-                ? 500
-                : exception.code === 'NOT_FOUND'
-                  ? 404
-                  : exception.code === 'MEMBERSHIP_REQUIRED'
-                    ? 403
-                    : 400;
+      status = [
+        'EMAIL_IN_USE',
+        'MEMBERSHIP_EXISTS',
+        'LAST_ADMIN',
+        'CONFIG_CONFLICT',
+        'CURSOR_STALE',
+        'INVITATION_UNAVAILABLE',
+      ].includes(exception.code)
+        ? 409
+        : exception.code === 'UNAUTHENTICATED'
+          ? 401
+          : exception.code === 'SERVICE_UNAVAILABLE'
+            ? 503
+            : exception.code === 'INTERNAL_ERROR'
+              ? 500
+              : exception.code === 'NOT_FOUND'
+                ? 404
+                : ['MEMBERSHIP_REQUIRED', 'FORBIDDEN'].includes(exception.code)
+                  ? 403
+                  : 400;
     }
 
     let error = failures[status] ?? failures[500]!;

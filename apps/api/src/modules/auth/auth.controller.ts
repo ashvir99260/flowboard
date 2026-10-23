@@ -8,12 +8,14 @@ import {
   ApiNoContentResponse,
   ApiOperation,
   ApiResponse,
+  ApiSecurity,
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
 import { PublicRoute } from '../../core/common/decorators/public.decorator.js';
+import { SessionRoute } from '../../core/common/decorators/session-route.decorator.js';
 import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
 import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.js';
 import { ApiException } from '../../core/common/errors/api-exception.js';
@@ -25,17 +27,18 @@ import {
   SessionResponseHeaders,
 } from '../../core/common/swagger/api-documentation.js';
 
-import { EmptyAuthBodyDto, LogInDto, SignUpDto } from './auth.request.dto.js';
+import { EmptyAuthBodyDto, LogInDto, SignUpDto, SwitchWorkspaceDto } from './auth.request.dto.js';
 import { SessionResponseDto } from './auth.response.dto.js';
 import { AuthService } from './auth.service.js';
 
 import type { SessionEnvelope } from '@flowboard/contracts';
+import type { AuthenticatedIdentity } from '@flowboard/database';
 import type { IncomingMessage } from 'node:http';
 
 type CookieResponse = { setHeader(name: string, value: string): void };
 
 @ApiTags('Authentication')
-@ApiExtraModels(SignUpDto, LogInDto, EmptyAuthBodyDto)
+@ApiExtraModels(SignUpDto, LogInDto, EmptyAuthBodyDto, SwitchWorkspaceDto)
 @ApiHeader(OriginDocumentation)
 @ApiResponse(documentedError(400, true))
 @ApiResponse(documentedError(403, true))
@@ -61,6 +64,68 @@ type CookieResponse = { setHeader(name: string, value: string): void };
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
+  @Post('switch-workspace')
+  @HttpCode(200)
+  @SessionRoute(true)
+  @ApiSecurity({ 'access-token': [], 'refresh-cookie': [] })
+  @ApiOperation({
+    description:
+      'Require a matching bearer identity, current refresh cookie and allowed Origin. Verify target membership and rotate the cookie atomically without extending the family lifetime. Other login families are unaffected.',
+    operationId: 'switchWorkspace',
+    summary: 'Select another workspace for this login',
+  })
+  @ApiBody({
+    description: 'Target workspace where the authenticated account is already a member.',
+    required: true,
+    schema: { $ref: getSchemaPath(SwitchWorkspaceDto) },
+    examples: {
+      workspace: {
+        summary: 'Select a joined workspace',
+        value: { workspaceId: AuthExamples.session.data.activeWorkspace.id },
+      },
+    },
+  })
+  @ApiResponse(documentedError(401, true))
+  @ApiResponse({
+    status: 404,
+    type: ErrorResponseDto.Output,
+    description: 'The caller is not a member of the destination workspace.',
+    example: { error: { code: 'NOT_FOUND', message: 'Workspace not found' } },
+  })
+  @ApiResponse({
+    status: 200,
+    type: SessionResponseDto.Output,
+    example: AuthExamples.session,
+    headers: SessionResponseHeaders,
+  })
+  @ZodResponse({
+    status: 200,
+    type: SessionResponseDto,
+    description: 'Fresh JWT and rotated cookie selecting the verified workspace.',
+  })
+  async switchWorkspace(
+    @Body() input: SwitchWorkspaceDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: IncomingMessage & { identity: AuthenticatedIdentity },
+    @Res({ passthrough: true }) response: CookieResponse,
+  ): Promise<SessionEnvelope> {
+    try {
+      const result = await this.auth.switchWorkspace(
+        request.identity,
+        input.workspaceId,
+        request.headers.cookie,
+        request.socket.remoteAddress ?? 'unknown',
+      );
+      response.setHeader('Set-Cookie', result.cookie);
+
+      return result.body;
+    } catch (error) {
+      if (error instanceof ApiException && error.getStatus() === 401)
+        response.setHeader('Set-Cookie', this.auth.expiredCookie());
+
+      throw error;
+    }
+  }
   @Post('refresh')
   @PublicRoute('cookie')
   @ApiCookieAuth('refresh-cookie')

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { initializeDatabase } from '@flowboard/database';
+import { createDatabase, initializeDatabase } from '@flowboard/database';
 import { createLogger, readLogLevel } from '@flowboard/logger';
 
 import { createApplication } from './application.js';
@@ -31,6 +31,7 @@ async function bootstrap(): Promise<void> {
   stage = 'application';
   const { app } = await createApplication(runtimeProbe(databaseUrl, redisUrl, logger), {
     auth: createAuthRuntime(databaseUrl, redisUrl, authSettings, logger),
+    database: createDatabase(databaseUrl, logger),
     exposeDocs: config.exposeDocs,
     logger,
   });

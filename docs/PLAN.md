@@ -97,6 +97,8 @@ P02-22 publishes PostgreSQL/Redis host ports through the live-development overri
 
 P02-23 corrects local Swagger execution by explicitly allowing the documented web and API origins in local configuration (D102), with custom-port regressions and a real authentication lifecycle check. Runtime origin validation remains strict.
 
+P02-03 implements workspace membership and invitations through the existing schema, central tenant transactions and a single PermissionService/PermissionGuard. Its session-only reads and verified family-scoped switch permit recovery after membership removal without admitting that session to member routes. D103 specifies cursor bindings, invitation conflicts and lock order.
+
 ### Module boundaries inside the API
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.

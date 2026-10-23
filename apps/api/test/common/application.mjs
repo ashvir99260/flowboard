@@ -1,4 +1,4 @@
-import { initializeDatabase } from '@flowboard/database';
+import { createDatabase, initializeDatabase } from '@flowboard/database';
 
 import { createApplication } from '../../dist/application.js';
 import { readAuthSettings } from '../../dist/modules/auth/auth.config.js';
@@ -22,12 +22,13 @@ export async function startTestApplication({
   let app;
   let runtime;
   let probe;
+  let database;
   let closePromise;
   const close = () =>
     (closePromise ??= (async () => {
       try {
         if (app) await app.close();
-        else await Promise.allSettled([runtime?.close(), probe?.close()]);
+        else await Promise.allSettled([runtime?.close(), probe?.close(), database?.close()]);
       } finally {
         infrastructure.close();
       }
@@ -50,7 +51,9 @@ export async function startTestApplication({
 
     probe = runtimeProbe(infrastructure.databaseUrl, infrastructure.redisUrl, logger);
     probe.close = closeOnce(probe.close);
-    ({ app } = await createApplication(probe, { auth: runtime, exposeDocs, logger }));
+    if (auth) database = createDatabase(infrastructure.databaseUrl, logger);
+
+    ({ app } = await createApplication(probe, { auth: runtime, database, exposeDocs, logger }));
     await app.init();
 
     return { app, runtime, infrastructure, close };

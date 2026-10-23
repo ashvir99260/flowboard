@@ -11,6 +11,13 @@ test('the spec-only bootstrap exposes real typed controller metadata without con
     '/v1/auth/logout',
     '/v1/auth/refresh',
     '/v1/auth/signup',
+    '/v1/auth/switch-workspace',
+    '/v1/invitations/accept',
+    '/v1/me',
+    '/v1/workspaces',
+    '/v1/workspaces/{workspaceId}/invitations',
+    '/v1/workspaces/{workspaceId}/members',
+    '/v1/workspaces/{workspaceId}/members/{userId}',
   ]);
   expect(document.paths['/health/live'].get.operationId).toBe('getLiveness');
   expect(document.paths['/health/ready'].get.operationId).toBe('getReadiness');

@@ -28,4 +28,18 @@ export { createIdentityRepository } from './identity.js';
 
 export type { IdentityRepository } from './identity.js';
 
-export type { IdentitySession, RefreshResult, SessionCredential } from './identity.entity.js';
+export type {
+  AuthenticatedIdentity,
+  IdentitySession,
+  IdentityUser,
+  IdentityWorkspace,
+  RefreshResult,
+  SessionCredential,
+  SessionIdentity,
+} from './identity.entity.js';
+
+export type {
+  MemberProfile,
+  MembershipPageQuery,
+  MembershipPosition,
+} from './membership.entity.js';

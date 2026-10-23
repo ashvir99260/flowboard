@@ -14,7 +14,7 @@ const hasExample = (schema) =>
   Object.hasOwn(schema, 'example') || Object.hasOwn(schema, 'examples');
 
 test('every Swagger operation and payload has a description and example', () => {
-  assert.equal(operations.length, 6);
+  assert.equal(operations.length, 15);
   for (const operation of operations) {
     meaningful(operation.summary, `${operation.operationId} summary`);
     meaningful(operation.description, `${operation.operationId} description`);
@@ -65,8 +65,10 @@ test('schema fields carry titles, descriptions and examples, including nullable 
 });
 
 test('auth headers and security document cookie use without inventing a logout body', () => {
-  for (const operation of operations.filter(
-    (operation) => !operation.operationId.startsWith('get'),
+  for (const operation of operations.filter((operation) =>
+    ['logIn', 'signUp', 'refreshSession', 'logOut', 'switchWorkspace'].includes(
+      operation.operationId,
+    ),
   )) {
     const origin = operation.parameters.find(
       (parameter) => parameter.in === 'header' && parameter.name === 'Origin',
@@ -80,20 +82,44 @@ test('auth headers and security document cookie use without inventing a logout b
   assert.deepEqual(logout.security, [{ 'refresh-cookie': [] }]);
   assert.ok(logout.responses['204'].headers['Set-Cookie'].example.includes('Max-Age=0'));
   assert.equal(logout.responses['204'].content, undefined);
+  assert.deepEqual(document.paths['/v1/auth/switch-workspace'].post.security, [
+    { 'access-token': [], 'refresh-cookie': [] },
+  ]);
+  assert.equal(
+    document.components.schemas.SwitchWorkspaceDto.properties.workspaceId.description,
+    'Destination workspace where the authenticated account has current membership; may differ from the active workspace.',
+  );
   assert.equal(document.components.schemas.LogInDto.properties.password.writeOnly, true);
   assert.ok(!JSON.stringify(document).includes('FlowboardDemo123!'));
 });
 
 test('documented success responses retain their concrete DTO schemas', () => {
   const expected = {
+    acceptWorkspaceInvitation: 'AcceptedInvitationResponseDto_Output',
+    addWorkspaceMember: 'MemberMutationResponseDto_Output',
+    createWorkspaceInvitation: 'InvitationResponseDto_Output',
+    getCurrentUser: 'CurrentUserResponseDto_Output',
     getLiveness: 'LivenessResponseDto_Output',
     getReadiness: 'ReadinessResponseDto_Output',
+    listWorkspaceMembers: 'MemberPageResponseDto_Output',
+    listWorkspaces: 'WorkspacePageResponseDto_Output',
     logIn: 'SessionResponseDto_Output',
     refreshSession: 'SessionResponseDto_Output',
     signUp: 'SessionResponseDto_Output',
+    switchWorkspace: 'SessionResponseDto_Output',
+    updateWorkspaceMember: 'MemberMutationResponseDto_Output',
   };
-  for (const operation of operations.filter((item) => item.operationId !== 'logOut')) {
-    const response = operation.responses[operation.operationId === 'signUp' ? '201' : '200'];
+  for (const operation of operations.filter(
+    (item) => !['logOut', 'removeWorkspaceMember'].includes(item.operationId),
+  )) {
+    const response =
+      operation.responses[
+        ['signUp', 'addWorkspaceMember', 'createWorkspaceInvitation'].includes(
+          operation.operationId,
+        )
+          ? '201'
+          : '200'
+      ];
     const name = expected[operation.operationId];
     assert.equal(response.content['application/json'].schema.$ref, `#/components/schemas/${name}`);
     assert.ok(document.components.schemas[name], `${name} exists`);

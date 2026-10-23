@@ -23,6 +23,16 @@ export interface IdentitySession {
   user: IdentityUser;
 }
 
+export interface AuthenticatedIdentity extends IdentitySession {
+  selectedWorkspaceId: string | null;
+}
+
+export interface SessionIdentity {
+  familyId: string;
+  userId: string;
+  workspaceId: string | null;
+}
+
 export interface SessionCredential {
   expiresAt: Date;
   familyId: string;

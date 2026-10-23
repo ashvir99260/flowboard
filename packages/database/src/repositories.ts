@@ -6,6 +6,7 @@ import {
   VisibilitySchema,
 } from '@flowboard/contracts';
 
+import { membershipRepository } from './membership-repository.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
 
 import type { Prisma } from './generated/client.js';
@@ -79,10 +80,12 @@ export interface ReadRepositories {
   context: Readonly<TenantContext>;
   grants: { find(resourceId: string, userId: string): Promise<GrantRecord | null> };
   members: { find(userId: string): Promise<MembershipRecord | null> };
+  memberships: ReturnType<typeof membershipRepository>['read'];
   nodes: NodeReader;
 }
 
 export interface WriteRepositories extends ReadRepositories {
+  memberships: ReturnType<typeof membershipRepository>['write'];
   grants: ReadRepositories['grants'] & {
     remove(resourceId: string, userId: string): Promise<void>;
     set(input: GrantInput): Promise<GrantRecord>;
@@ -223,6 +226,7 @@ export function repositories(
       context: Object.freeze(context),
       grants: Object.freeze({ find: grants.find }),
       members: Object.freeze({ find: member }),
+      memberships: membershipRepository(tx, context, assertActive).read,
       nodes: Object.freeze({
         children: nodes.children,
         countChildren: nodes.countChildren,
@@ -233,6 +237,7 @@ export function repositories(
       context: Object.freeze(context),
       grants,
       members: Object.freeze({ find: member }),
+      memberships: membershipRepository(tx, context, assertActive).write,
       nodes,
     }) satisfies WriteRepositories,
   };
