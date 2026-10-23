@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+
+strictPeerDependencies: true
+autoInstallPeers: false
+
+allowBuilds:
+  unrs-resolver: true
