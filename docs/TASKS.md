@@ -65,13 +65,119 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: add runnable application shells`.
   - **Completion evidence:** [P00-03 verification](evidence/P00-03.md): three real application processes, shared Next/Node tooling, 44 passing tests including half-open shutdown, and restored Next build cache.
 
-- [ ] **P00-04 — Pruned Docker images and five-service Compose**
+- [x] **P00-04 — Pruned Docker images and five-service Compose**
   - **Goal:** Provide the first working one-command development topology.
   - **Files:** `apps/{api,web,worker}/Dockerfile`, `compose.yaml`, `.dockerignore`, `.env.example`, `apps/{api,web,worker}/.env.example`, `scripts/check-compose.mjs`, `README.md`.
   - **Dependencies:** P00-03.
   - **Acceptance:** Multi-stage `turbo prune --docker` images run non-root. Five services have meaningful healthchecks and healthy dependencies; DB/Redis use named volumes/internal ports. Local demo defaults work without hand-copying environment files; secrets are service-specific. Migration startup is explicitly tracked by P01-05.
   - **Validation:** Compose config, all images build, clean `docker compose up --build`, health wait and restart smoke; standard gate.
   - **Commit:** `chore: add docker compose development stack`.
+  - **Completion evidence:** [P00-04 verification](evidence/P00-04.md): three non-root images, all five services healthy, browser assets served, datastore restart persistence and 44 root tests pass.
+
+- [x] **P00-05 — Independent application release planning**
+  - **Goal:** Compute per-application semantic releases from source changes and published release baselines.
+  - **Requirements:** R94–R95.
+  - **Files:** `packages/release-tools/**`, application release metadata, `docs/DELIVERY.md`, `docs/DECISIONS.md`.
+  - **Dependencies:** P00-04.
+  - **Acceptance:** API-only and web-only changes are independent; runtime shared dependencies propagate correctly; lockfile changes are selective. Versions use application-specific tags, Conventional Commits and published baselines. Documentation-only changes skip. Retries and stale/diverged histories fail safely or resume without duplicate versions.
+  - **Validation:** Behavioral fixtures for app-only, shared, selective dependency, rename/delete, initial release, feature/breaking/patch, no-op, partial retry and stale runs; standard gate.
+  - **Commit:** `feat: plan independent application releases`.
+  - **Completion evidence:** [P00-05 verification](evidence/P00-05.md): 31 planner fixtures and 75 total tests pass; publication remains P00-06.
+
+- [x] **P00-06 — CI, independent image publication and hosted setup guide**
+  - **Goal:** Validate pull requests and publish only affected application images, tags and GitHub Releases after main merges.
+  - **Requirements:** R94–R97.
+  - **Files:** `.github/workflows/**`, `packages/release-tools/**`, `docs/DELIVERY.md`, `README.md`, environment examples.
+  - **Dependencies:** P00-05.
+  - **Acceptance:** Read-only PR checks; serialized main publication with narrowly scoped write permissions; version/SHA image tags and digest recorded per release; idempotent failure recovery. No production credentials needed for release builds. Document local PostgreSQL, Neon runtime/direct migration URLs and the selected free-tier hosting setup, including honest limits and required secret names. Provider connection is explicit, never a dummy successful deployment.
+  - **Validation:** Workflow lint, publication orchestration tests using a local Git/registry boundary or controlled API fixtures, Docker checks, full standard gate; remote publication only when authorized main workflow runs.
+  - **Commit:** `ci: publish independent app images and releases`.
+  - **Completion evidence:** [P00-06 verification](evidence/P00-06.md): 89 tests, actionlint, standard gates and five-service Docker acceptance pass; live publication remains P00-07.
+
+- [x] **P00-08 — Deploy released applications through CI/CD**
+  - **Goal:** Extend passing CI and independent publication with production deployment to the selected Vercel/Northflank hosts.
+  - **Requirements:** R98; preserves R94–R97.
+  - **Files:** `.github/workflows/delivery.yml`, `apps/web/vercel.json`, `packages/release-tools/src/{deploy*,github}.ts`, release-tool tests/config, `docs/CI_CD.md`, `docs/DELIVERY.md`, `docs/DECISIONS.md`, evidence and matrix.
+  - **Dependencies:** P00-06. P00-07 is an external post-merge verification and can follow this implementation.
+  - **Acceptance:** Main-only production job follows CI, Docker and release success; PRs never deploy. Published manifests select exact app digests/commits. Unchanged apps skip. Missing settings, stale runs, provider errors and failed rollouts fail safely. Retries and later unrelated merges reconcile pending releases; already-current provider versions do not roll out again. CD is explicitly disabled until credentials are connected.
+  - **Validation:** Controlled provider HTTP/clock fixtures for selection, payloads, readiness, errors, stale runs and retries; actionlint; build/lint/test/type/format gates.
+  - **Commit:** `ci: deploy released apps to selected hosts`.
+  - **Completion evidence:** [P00-08 verification](evidence/P00-08.md): 117 tests, actionlint, standard gates and five-service Docker acceptance pass. The original production target is superseded by P00-13; initial live preview verification is P00-14. P00-09 remains future production verification.
+
+- [x] **P00-10 — Define immutable promotion and runtime configuration**
+  - **Goal:** Record the user's local-Docker and future trunk-based build-once requirements without provisioning environments or claiming the existing source deploy path complies.
+  - **Requirements:** R99; clarifies R95 and R98.
+  - **Files:** `docs/PROMOTION.md`, `docs/PLAN.md`, `docs/DECISIONS.md`, `docs/CI_CD.md`, `docs/DELIVERY.md`, `ARCHITECTURE.md`, `README.md`, task/matrix/evidence records.
+  - **Dependencies:** P00-08 as current-state input; no live-host credentials required for this documentation task.
+  - **Acceptance:** Distinguish local Docker from hosted packaging; specify unchanged artifact promotion, four target environments, runtime/public/secret configuration, Node environment naming, and current Vercel/pipeline gaps. Do not change hosts or build four environments under the user's conditional future request.
+  - **Validation:** Documentation consistency, source-backed technical constraints, local links, formatting and independent review. No application behavior claimed.
+  - **Commit:** `docs: define build-once environment promotion`.
+  - **Completion evidence:** [P00-10 verification](evidence/P00-10.md): promotion/runtime contract, current implementation gaps and future tasks documented; no four-environment implementation claimed.
+
+- [x] **P00-13 — Configure the initial hosted preview**
+  - **Goal:** Deliver the user's initial Vercel/Northflank/Neon preview path independently of future four-environment promotion.
+  - **Requirements:** R98; preserves R94–R97 and keeps R99 deferred.
+  - **Files:** `.github/workflows/delivery.yml`, root/Turbo/release-tool scripts, `packages/release-tools/src/{deploy-cli,deployment-providers}.ts`, provider tests, `docs/{CI_CD,DELIVERY,PROMOTION,PLAN,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, `README.md`, `ARCHITECTURE.md`, task evidence.
+  - **Dependencies:** P00-08, P00-10 and the user's explicit initial-preview clarification.
+  - **Acceptance:** Passing main releases deploy to the GitHub `preview` environment when enabled. Vercel creates/reuses a preview from the released SHA and reports its ready URL without production promotion; an empty project fails before Vercel can force its first deployment to production. Northflank retains exact-digest deployment to preview services. Failures, stale runs and retries remain safe. Document free-tier setup and current shell limitations; live deployment is separately evidenced.
+  - **Validation:** Behavioral HTTP fixtures for preview creation, retry, URL/target validation, failures and stale runs; actionlint; build/lint/test/type/format gates.
+  - **Commit:** `ci: target initial hosted previews`.
+  - **Completion evidence:** [P00-13 verification](evidence/P00-13.md): 122 tests, standard gates and actionlint pass; empty-project bootstrap guard reviewed. Live preview remains P00-14.
+
+- [x] **P00-15 — Parallel CI on free public-repository runners**
+  - **Goal:** Run all workspace build, lint, test and type checks independently in parallel without paid runners or an organization subscription.
+  - **Requirements:** R98; preserves R94–R97 and the preview deployment gate.
+  - **Files:** `.github/workflows/delivery.yml`, `packages/release-tools/test/deployment-gate.test.mjs`, `docs/{CI_CD,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, `docs/evidence/P00-15.md`.
+  - **Dependencies:** P00-13 and the user's explicit parallel/free-CI request.
+  - **Acceptance:** A fail-fast-disabled matrix runs root build/lint/test/typecheck/format commands across all workspaces. Docker checks run concurrently. Every job uses standard `ubuntu-24.04`; entry jobs skip private repositories. No paid runner group, cache service, organization or billing change is introduced. Publication waits for every check and Docker; preview deployment still waits for publication.
+  - **Validation:** Workflow contract regression tests, actionlint, root build/lint/test/type/format checks, independent review; confirm public repository visibility and inspect the pushed PR workflow when available.
+  - **Commit:** `ci: parallelize workspace checks on free runners`.
+  - **Completion evidence:** [P00-15 verification](evidence/P00-15.md): 123 tests, standard gates, actionlint and independent review pass. GitHub public visibility confirmed; paid settings unchanged.
+
+- [ ] **P00-14 — Connect and verify the initial hosted preview**
+  - **Goal:** Put the current foundation online on the selected preview hosts.
+  - **Requirements:** R96–R98.
+  - **Files:** `docs/evidence/P00-14.md`, `docs/TASKS.md`, requirement matrix; credentials remain only in provider/GitHub secret settings.
+  - **Dependencies:** P00-13, P00-07 for automated released-image deployment, authenticated provider access and free-tier availability.
+  - **Acceptance:** Vercel preview, Northflank API/worker/Redis and region-matched Neon exist; runtime secrets are scoped to preview. A real workflow deploys released versions, retries reuse them, and the web URL serves the foundation page. State explicitly that auth/tasks/queues/migrations are not implemented yet. No paid plan, real production site, production data or production credentials are used. Vercel’s mandatory production-labeled first deployment requires an explicitly reviewed bootstrap in the dedicated preview-only project; CI does not perform it.
+  - **Validation:** Real provider resources, workflow records and external HTTP/liveness checks; do not substitute mock results for live evidence.
+  - **Commit:** `docs: record initial hosted preview`.
+
+- [ ] **P00-11 — Implement environment-neutral artifacts and runtime config**
+  - **Goal:** Build each application candidate once and keep all target-specific settings out of its bytes.
+  - **Requirements:** R99.
+  - **Files:** App packaging/build scripts, runtime-config schemas and web bootstrap, deployment artifact tooling and tests; exact files selected with the hosting decision.
+  - **Dependencies:** P00-10 and explicit request to implement the future promotion path.
+  - **Acceptance:** One immutable digest per app candidate; no target-specific build inputs; validated server settings and a safe dynamic public bootstrap. Two runtime configurations use identical bytes. The selected host supports the artifact without rebuilding it.
+  - **Validation:** Missing/invalid config, browser secret exclusion, runtime changes, cache isolation, artifact hash equality and build-toolchain-disabled deployment; standard gates.
+  - **Commit:** `feat: build environment-neutral app artifacts`.
+
+- [ ] **P00-12 — Promote selected artifacts across deployment environments**
+  - **Goal:** Add trunk-based `dev → qa → stage → prod` deployment without environment branches or rebuilds.
+  - **Requirements:** R99.
+  - **Files:** Promotion workflow/tooling, environment configuration documentation and tests.
+  - **Dependencies:** P00-11; selected hosts and environment approval policy.
+  - **Acceptance:** Every promotion names an existing artifact digest and verifies the previous environment's acceptance for it; serialize per environment, preserve version identity, record configuration revision and support safe retry/rollback. No source-based build occurs during promotion.
+  - **Validation:** Same-digest progression, approval/ordering violations, concurrent or stale candidates, failed retry and rollback; standard and workflow gates. Live verification needs connected targets.
+  - **Commit:** `ci: promote immutable artifacts across environments`.
+
+- [ ] **P00-09 — Connect and verify production deployment**
+  - **Goal:** Enable and verify live deployment after provider accounts and targets are connected.
+  - **Requirements:** R98.
+  - **Files:** `docs/evidence/P00-09.md`, `docs/TASKS.md`, requirement matrix; secret values never enter files.
+  - **Dependencies:** P00-07, P00-08, the selected build-once hosting path (P00-11; P00-12 when four environments are enabled), and provider credentials/target IDs. The old source-build activation path is deferred under the latest clarification.
+  - **Acceptance:** A main run deploys the released app(s), reports real ready provider deployments, and a retry/unchanged app does not trigger an unrelated rollout.
+  - **Validation:** Live workflow/provider deployment records and externally reachable service checks; record honest product-shell limitations.
+  - **Commit:** `docs: record live continuous deployment`.
+
+- [ ] **P00-07 — Verify the first main-branch publication**
+  - **Goal:** Record the first real application tags, GHCR digests and GitHub Releases after this workflow is merged.
+  - **Requirements:** R94–R95.
+  - **Files:** `docs/evidence/P00-07.md`, `docs/REQUIREMENTS_MATRIX.md`, `docs/TASKS.md`; workflow fixes only if the first run fails.
+  - **Dependencies:** P00-06 and merge to main.
+  - **Acceptance:** The main run passes and publishes API, web and worker `0.1.0` releases with matching source SHA/digest manifests. A retry does not allocate new versions. Record run/release links without exposing credentials. Provider deployment is separate and requires connected accounts.
+  - **Validation:** Inspect the real workflow run, tags, release manifests and GHCR digests. Apply standard gates if implementation fixes are needed.
+  - **Commit:** `docs: record first independent releases`.
 
 ## Phase 1 — Contracts, persistence and tenancy
 

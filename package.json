@@ -13,7 +13,11 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "format": "turbo run format",
-    "format:check": "turbo run format:check"
+    "format:check": "turbo run format:check",
+    "docker:check": "turbo run docker:check",
+    "release:plan": "turbo run release:plan",
+    "release:publish": "turbo run release:publish",
+    "deploy:preview": "turbo run deploy:preview"
   },
   "prettier": "@flowboard/config-prettier",
   "devDependencies": {

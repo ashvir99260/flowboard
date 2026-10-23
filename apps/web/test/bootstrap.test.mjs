@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import test from 'node:test';
 
@@ -17,18 +16,10 @@ test(
     await new Promise((resolve, reject) =>
       reserve.close((error) => (error ? reject(error) : resolve())),
     );
-    const require = createRequire(import.meta.url);
-    const runtime = startProcess(
-      [
-        require.resolve('next/dist/bin/next'),
-        'start',
-        '--hostname',
-        '127.0.0.1',
-        '--port',
-        String(port),
-      ],
-      { cwd: new URL('../', import.meta.url), env: { NEXT_TELEMETRY_DISABLED: '1' } },
-    );
+    const runtime = startProcess(['.next/standalone/apps/web/server.js'], {
+      cwd: new URL('../', import.meta.url),
+      env: { NEXT_TELEMETRY_DISABLED: '1', HOSTNAME: '127.0.0.1', PORT: String(port) },
+    });
     // Next exits with 128 + SIGTERM's signal number after closing the server.
     t.after(() => runtime.stop(null, 143));
     await runtime.waitFor(/Ready in/);
@@ -40,5 +31,11 @@ test(
     assert.match(html, /<h1[^>]*>Flowboard<\/h1>/);
     assert.match(html, /Application foundation is ready/);
     assert.match(html, /Product features are not implemented yet/);
+    const asset = html.match(/src="([^"]*\/_next\/static\/[^"]+)"/);
+    assert.ok(asset, 'The page references its compiled JavaScript');
+    const assetResponse = await fetch(`http://127.0.0.1:${port}${asset[1]}`, {
+      signal: AbortSignal.timeout(5_000),
+    });
+    assert.equal(assetResponse.status, 200, 'Standalone output includes browser assets');
   },
 );

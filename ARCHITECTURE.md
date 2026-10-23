@@ -50,6 +50,7 @@ These are intended workspace dependencies; external runtime libraries and shared
 | `packages/config-typescript` | Base, Node/Nest, Next and library compiler settings                            | Configuration subpath exports                                             |
 | `packages/config-eslint`     | Shared lint rules, import ordering and boundaries                              | Configuration subpath exports                                             |
 | `packages/config-prettier`   | Shared formatting object and root/workspace format checks                      | Build tooling only                                                        |
+| `packages/release-tools`     | Independent app release planning and GitHub/GHCR publication                   | CI tooling only; reads committed Git snapshots, no runtime app imports    |
 | `packages/config-jest`       | Shared test presets and environment conventions                                | Configuration subpath exports                                             |
 
 Applications cannot import one another. The OpenAPI tooling exception (D19) is narrow: it loads real controllers/DTOs with inert providers, no listening socket and no database/Redis connection. It is not a production API dependency or a fake runtime service.
@@ -187,3 +188,11 @@ Use this table to identify the smallest complete slice, then follow the correspo
 | Build, dependency or Docker change      | Package manifests/exports, Turbo graph, generation and image inputs; boundary fixtures, clean frozen build, drift checks and five-service health/restart (P00, P07, P12-03)                      |
 
 After each implementation task, required build/lint/test and applicable contract/Docker gates must run with recorded results. Until Phase 0 creates them, report their absence instead of claiming they passed. Boundary lint, drift checks, integration tests and CI become enforcement only when their owning tasks are implemented and verified.
+
+## Independent delivery
+
+API, web and worker each have a pruned Dockerfile and independent semantic tags/images. A main workflow validates the repository and Compose stack, then publishes only affected app artifacts from a clean source SHA. The release graph follows runtime dependencies, so the build-only API-to-OpenAPI edge does not release an unchanged UI. GitHub Releases and their source/digest manifests are the publication record. Local PostgreSQL remains in Compose; hosted targets are Vercel UI, Northflank API/worker/Redis and Neon PostgreSQL. See [delivery](docs/DELIVERY.md) for the exact version policy, retry behavior and provider setup.
+
+Shared-preview CD follows successful publication behind `CD_ENABLED`. It reconciles the latest published app versions, verifies source ancestry against current main, and skips provider versions already current. Vercel builds the released commit as a preview and reports its URL without production promotion; Northflank preview services receive immutable API/worker digests. Provider credentials remain outside the repository. See [CI/CD](docs/CI_CD.md).
+
+The later [immutable promotion contract](docs/PROMOTION.md) separates local Docker from hosted packaging. Future environment targets reuse the same candidate bytes with runtime configuration. Existing source-based Vercel deployment is not evidence of build-once promotion.

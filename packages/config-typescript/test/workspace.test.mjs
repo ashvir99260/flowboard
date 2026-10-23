@@ -17,6 +17,7 @@ const workspaces = [
   'packages/config-eslint',
   'packages/config-jest',
   'packages/config-prettier',
+  'packages/release-tools',
 ];
 
 const json = async (path) => JSON.parse(await readFile(new URL(path, root), 'utf8'));

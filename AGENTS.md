@@ -7,7 +7,7 @@ Postman CLI is installed on this device, and can be used for API Engineering wor
 
 ## Start here
 
-Read [ARCHITECTURE.md](ARCHITECTURE.md), [the plan](docs/PLAN.md), [decisions](docs/DECISIONS.md), and the current task in [TASKS.md](docs/TASKS.md) before editing. The canonical brief is [REQUIREMENTS.md](docs/REQUIREMENTS.md); newer direct user instructions take precedence. The user authorized Phase 0 implementation on 22 October 2026, starting with the monorepo, Next.js/NestJS shells and shared lint/format/compiler configuration. Work through authorized tasks in order and commit each one.
+Read [ARCHITECTURE.md](ARCHITECTURE.md), [the plan](docs/PLAN.md), [decisions](docs/DECISIONS.md), and the current task in [TASKS.md](docs/TASKS.md) before editing. The canonical brief is [REQUIREMENTS.md](docs/REQUIREMENTS.md); newer direct user instructions take precedence. The user authorized Phase 0 implementation on 22 October 2026, starting with the monorepo, Next.js/NestJS shells and shared lint/format/compiler configuration. On 23 October 2026 the user also authorized per-app Docker images and independent releases after main merges, with local PostgreSQL and hosted Neon. Work through authorized tasks in order and commit each one.
 
 Follow [DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md). Identify the affected IDs in [REQUIREMENTS_MATRIX.md](docs/REQUIREMENTS_MATRIX.md), applicable gates in [QUALITY_GATES.md](docs/QUALITY_GATES.md), and the task's [evidence record](docs/evidence/README.md). Use [TASK_TEMPLATE.md](docs/TASK_TEMPLATE.md) for new tasks and evidence. These files are the repository harness; they do not replace working code or executable checks.
 

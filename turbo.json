@@ -29,6 +29,42 @@
     },
     "format:check": {
       "cache": false
+    },
+    "docker:check": {
+      "cache": false,
+      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
+      "outputs": []
+    },
+    "release:plan": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "outputs": []
+    },
+    "release:publish": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "outputs": [],
+      "env": ["GITHUB_TOKEN", "GITHUB_REPOSITORY", "GITHUB_SHA", "GITHUB_REF"]
+    },
+    "deploy:preview": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "outputs": [],
+      "env": [
+        "CD_ENABLED",
+        "GITHUB_TOKEN",
+        "GITHUB_REPOSITORY",
+        "GITHUB_REPOSITORY_ID",
+        "GITHUB_SHA",
+        "GITHUB_REF",
+        "VERCEL_TOKEN",
+        "VERCEL_PROJECT_ID",
+        "VERCEL_TEAM_ID",
+        "NORTHFLANK_API_TOKEN",
+        "NORTHFLANK_PROJECT_ID",
+        "NORTHFLANK_API_SERVICE_ID",
+        "NORTHFLANK_WORKER_SERVICE_ID"
+      ]
     }
   }
 }

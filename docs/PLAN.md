@@ -8,7 +8,7 @@
 
 **Delivery harness:** [Architecture reference](../ARCHITECTURE.md), [requirement traceability](REQUIREMENTS_MATRIX.md), [development workflow](DEVELOPMENT_WORKFLOW.md), [quality gates](QUALITY_GATES.md), [templates](TASK_TEMPLATE.md), and [verification evidence](evidence/README.md). These organize implementation and proof without changing the product scope. Automated enforcement arrives in the tasks identified by the gate catalogue.
 
-Implementation follows the task order, one task at a time. Future agentic workers should use the executing-plans workflow or a sequential implementer/reviewer workflow; parallel review is allowed, parallel implementation of separate backlog tasks is not. The user's latest instruction authorizes the foundation setup through shared configuration and Next.js/NestJS shells, with a commit after each task. Docker and domain implementation remain subsequent backlog work.
+Implementation follows the task order, one task at a time. Future agentic workers should use the executing-plans workflow or a sequential implementer/reviewer workflow; parallel review is allowed, parallel implementation of separate backlog tasks is not. The user's latest instruction authorizes the foundation setup through shared configuration and Next.js/NestJS shells, with a commit after each task. The 23 October follow-up authorizes Docker and independent application releases (P00-04 through P00-06); domain implementation remains subsequent work. See [DELIVERY.md](DELIVERY.md) for release and hosted-environment behavior.
 
 ## 1. Scope and success
 
@@ -260,3 +260,13 @@ Compatibility will be rechecked against pinned versions before implementation. T
 - [Turborepo prune](https://turborepo.dev/docs/reference/prune): scoped Docker build context and lockfile.
 - [Compose startup order](https://docs.docker.com/compose/how-tos/startup-order/): dependencies must be healthy, not merely started.
 - [Socket.IO Redis adapter](https://socket.io/docs/v4/redis-adapter/): cross-node fanout, polling affinity and lack of durable connection recovery; reconnect refetch is a Flowboard design choice.
+
+### Independent delivery follow-up (23 October 2026)
+
+P00-04 through P00-06 add per-app Docker images, selective semantic releases and CI publication before domain development continues. `packages/release-tools` is CI-only; it compares committed app/runtime/compiler inputs against each app's published baseline. The selected hosted topology is Vercel, Northflank and Neon, while local development keeps PostgreSQL/Redis in Compose. Product implementation order remains unchanged. [DELIVERY.md](DELIVERY.md) defines versioning, image identity, recovery and provider configuration.
+
+P00-08 established conditional CD after release publication. The user’s initial-preview clarification is implemented by P00-13: a GitHub `preview` environment, Vercel preview builds from released commits and Northflank preview services from immutable digests. P00-14 owns initial live verification after sign-in, resource setup and publication. Pending per-app releases still recover across later merges. Four-environment work does not block this preview; no cloud resource or database migration is created by CI.
+
+### Future build-once promotion (23 October 2026 clarification)
+
+Docker remains the local development/test topology. If four-environment trunk-based delivery is adopted, build a candidate once and promote that exact artifact through `dev → qa → stage → prod`, injecting each target's validated runtime settings. Do not use environment branches, rebuilds or environment-specific public bundle constants. [PROMOTION.md](PROMOTION.md) defines the artifact/runtime contract and identifies the current Vercel source-build gap. P00-10 documents this direction; P00-11/P00-12 remain future implementation tasks.
