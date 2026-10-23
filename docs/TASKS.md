@@ -234,7 +234,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: define rest api implementation catalog`.
   - **Completion evidence:** [P00-25 verification](evidence/P00-25.md): 43 unique operations, schema examples and cross-document contract review pass; endpoints remain planned.
 
-- [ ] **P00-26 — Analyze Linear interactions and map the MUI UI**
+- [x] **P00-26 — Analyze Linear interactions and map the MUI UI**
   - **Goal:** Convert observable Linear patterns into a scoped, accessible Flowboard UI implementation guide.
   - **Requirements:** R110; refines R62–R76.
   - **Files:** `docs/UI_DESIGN.md`, public-source references, architecture/plan links, component/task mapping and evidence.
@@ -242,6 +242,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Dated official sources distinguish observation from proposed design; specify shell, board/table, drawer, configuration, MUI components/tokens, responsive states, generated-query boundaries, accessibility and ordered acceptance tests. Preserve Flowboard hierarchy/multiple assignees and fixed stack. No private Linear internals or shipped UI is claimed.
   - **Validation:** Primary-source review, requirement/component/API traceability, Mermaid/link/format checks and independent UI review.
   - **Commit:** `docs: map linear interactions to mui views`.
+  - **Completion evidence:** [P00-26 verification](evidence/P00-26.md): dated public research, complete component/screen mapping, independent review, diagram/link/token/format checks.
 
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
@@ -446,9 +447,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P06-02 — Validated task create, edit and archive**
   - **Goal:** Persist complete valid tasks and durable event intent.
-  - **Files:** `apps/api/src/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, `apps/api/test/task-writes.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, assignable-member filter/contracts, `apps/api/test/task-writes.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P06-01.
-  - **Acceptance:** Validate title ≤500, Markdown string, dates, destination status, members/assignee access and effective custom fields. PATCH omission/clear semantics and expected versions work. Task update and outbox insert commit together. Archive removes task from normal reads.
+  - **Acceptance:** Validate title ≤500, Markdown string, dates, destination status, members/assignee access and effective custom fields. PATCH omission/clear semantics and expected versions work. Member listing accepts an authorized assignableToListId filter for eligible assignee choices. Task update and outbox insert commit together. Archive removes task from normal reads.
   - **Validation:** Unknown statusId 400; foreign/disallowed assignee; title 501; wrong type/option/missing required; explicit clear; stale edit 409; rollback emits no event. Endpoint DoD and standard gate.
   - **Commit:** `feat: write tasks with scoped validation`.
 
@@ -543,7 +544,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Render each list from its authoritative statuses and tasks.
   - **Files:** `apps/web/src/features/board/{board,board-data,use-board}.tsx`, board tests, board route.
   - **Dependencies:** P08-03.
-  - **Acceptance:** Parallel generated queries load statuses/fields/tasks; render only matching configVersions and refetch mismatches with bounded retries. Exact columns including empty ones, requested card metadata and pagination. No orphan fallback column. List change isolates cached data and reports schema errors.
+  - **Acceptance:** Parallel generated queries load statuses/fields/tasks; render only matching configVersions across schemas/data and matching dataVersions across all task columns/pages; refetch mismatches with bounded retries. Exact columns including empty ones, requested card metadata and pagination. No orphan fallback column. List change isolates cached data and reports schema errors.
   - **Validation:** Sibling lists produce different exact columns; config changes between parallel responses cause safe refetch rather than orphan cards. Cover empty board, long title, deleted/forbidden list, field chip and loading/error state; standard gate.
   - **Commit:** `feat: render list scoped kanban boards`.
 

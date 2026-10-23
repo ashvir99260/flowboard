@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** Foundation present; backend/database/API and UI design refinement in progress. Updated 23 October 2026. The latest request is documentation only; runtime implementation remains a subsequent task.
+**Status:** Foundation present; backend/database/API and UI design documents reviewed. Updated 23 October 2026. The latest request is documentation only; runtime implementation remains a subsequent task.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
@@ -15,6 +15,8 @@ Implementation follows the task order, one task at a time. Future agentic worker
 The implementation-ready [database and ER specification](DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
 The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+
+The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
 ## 1. Scope and success
 

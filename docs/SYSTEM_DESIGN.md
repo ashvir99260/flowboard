@@ -6,6 +6,8 @@ The implementation-ready [database and ER specification](DATABASE_DESIGN.md) def
 
 The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
 
+The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
+
 ## 1. System and deployment boundaries
 
 Use one modular NestJS API, one worker and one PostgreSQL database. Redis transports work and realtime notifications. The Next.js app coordinates generated queries and MUI views. The same domain API serves the UI and curl clients.
