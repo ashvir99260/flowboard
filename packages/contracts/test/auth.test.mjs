@@ -27,3 +27,10 @@ test('auth inputs reject injected ownership, missing fields and oversized creden
     expect(LogInSchema.safeParse(value).success).toBe(false);
   expect(SignUpSchema.safeParse(input).success).toBe(false);
 });
+
+test('cookie actions accept only an empty body, including omitted JSON', async () => {
+  const { EmptyAuthBodySchema } = await import('../dist/index.js');
+  expect(EmptyAuthBodySchema.parse(undefined)).toEqual({});
+  expect(EmptyAuthBodySchema.parse({})).toEqual({});
+  expect(EmptyAuthBodySchema.safeParse({ userId: 'forged' }).success).toBe(false);
+});

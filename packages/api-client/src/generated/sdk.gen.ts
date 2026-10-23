@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, LogInData, LogInErrors, LogInResponses, SignUpData, SignUpErrors, SignUpResponses } from './types.gen.js';
+import type { GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, SignUpData, SignUpErrors, SignUpResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -33,6 +33,40 @@ export const getReadiness = <ThrowOnError extends boolean = false>(options?: Opt
  */
 export const logIn = <ThrowOnError extends boolean = false>(options: Options<LogInData, ThrowOnError>): RequestResult<LogInResponses, LogInErrors, ThrowOnError> => (options.client ?? client).post<LogInResponses, LogInErrors, ThrowOnError>({
     url: '/v1/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Revoke the session family and clear its cookie
+ */
+export const logOut = <ThrowOnError extends boolean = false>(options: Options<LogOutData, ThrowOnError>): RequestResult<LogOutResponses, LogOutErrors, ThrowOnError> => (options.client ?? client).post<LogOutResponses, LogOutErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'flowboard_refresh',
+            type: 'apiKey'
+        }],
+    url: '/v1/auth/logout',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Rotate a single-use refresh credential
+ */
+export const refreshSession = <ThrowOnError extends boolean = false>(options: Options<RefreshSessionData, ThrowOnError>): RequestResult<RefreshSessionResponses, RefreshSessionErrors, ThrowOnError> => (options.client ?? client).post<RefreshSessionResponses, RefreshSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'flowboard_refresh',
+            type: 'apiKey'
+        }],
+    url: '/v1/auth/refresh',
     ...options,
     headers: {
         'Content-Type': 'application/json',

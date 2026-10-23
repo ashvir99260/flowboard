@@ -7,6 +7,7 @@ import { z } from 'zod';
 
 import { ApiException } from '../platform/api-exception.js';
 
+import { clearRefreshCookie, readRefreshCookie, refreshCookie } from './cookie-policy.js';
 import { AuthRuntimeKey } from './runtime.js';
 
 import type { AuthRuntime } from './runtime.js';
@@ -54,6 +55,8 @@ export class AuthService {
         Math.floor(session.expiresAt.getTime() / 1000) * 1000,
       ),
     );
+    if (expiresAt.getTime() <= Date.now())
+      throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
     const accessToken = await new SignJWT({
       sid: session.familyId,
       workspaceId: session.activeWorkspace?.id ?? null,
@@ -80,7 +83,11 @@ export class AuthService {
     };
     return {
       body,
-      cookie: `flowboard_refresh=${refresh}; Path=/; HttpOnly; SameSite=Lax; Expires=${session.expiresAt.toUTCString()}${this.requireRuntime().settings.insecureHttp ? '' : '; Secure'}`,
+      cookie: refreshCookie(
+        refresh,
+        session.expiresAt,
+        this.requireRuntime().settings.insecureHttp,
+      ),
     };
   }
   async signUp(input: SignUp, ip: string) {
@@ -97,6 +104,33 @@ export class AuthService {
     await runtime.limit('login', ip, input.email);
     const credential = this.credential();
     return this.response(await runtime.identities.logIn(input, credential.value), credential.token);
+  }
+  expiredCookie() {
+    return clearRefreshCookie(this.requireRuntime().settings.insecureHttp);
+  }
+  async refresh(cookie: string | undefined, ip: string) {
+    await this.requireRuntime().limit('refresh', ip, '');
+    const token = readRefreshCookie(cookie);
+    if (!token) throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+    const replacement = this.credential();
+    const result = await this.requireRuntime().identities.rotate(
+      createHash('sha256').update(token).digest('hex'),
+      replacement.value.tokenDigest,
+    );
+    if (result.status === 'reused')
+      throw new ApiException(401, 'REFRESH_REUSED', 'Refresh credential already used');
+    if (result.status === 'invalid')
+      throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+    return this.response(result.session, replacement.token);
+  }
+  async logOut(cookie: string | undefined, ip: string) {
+    const token = readRefreshCookie(cookie);
+    await this.requireRuntime().limit('logout', ip, '');
+    if (token)
+      await this.requireRuntime().identities.revoke(
+        createHash('sha256').update(token).digest('hex'),
+      );
+    return this.expiredCookie();
   }
   async authenticate(authorization: string | undefined) {
     const runtime = this.requireRuntime();

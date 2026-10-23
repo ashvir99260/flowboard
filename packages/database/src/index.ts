@@ -21,4 +21,4 @@ export async function verifyDatabaseConnection(connectionString: string): Promis
 
 export { createIdentityRepository } from './identity.js';
 export type { IdentityRepository } from './identity.js';
-export type { IdentitySession, SessionCredential } from './identity.entity.js';
+export type { IdentitySession, RefreshResult, SessionCredential } from './identity.entity.js';

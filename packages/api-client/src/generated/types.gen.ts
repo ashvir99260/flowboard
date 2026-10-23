@@ -4,6 +4,10 @@ export type ClientOptions = {
     baseUrl: string;
 };
 
+export type EmptyAuthBodyDto = {
+    [key: string]: never;
+};
+
 export type ErrorResponseDtoOutput = {
     error: {
         code: 'VALIDATION_FAILED' | 'STATUS_NOT_AVAILABLE' | 'FIELD_VALUE_INVALID' | 'INVALID_PARENT' | 'INVALID_ANCHOR' | 'INVALID_CURSOR' | 'UNAUTHENTICATED' | 'SESSION_EXPIRED' | 'REFRESH_REUSED' | 'FORBIDDEN' | 'MEMBERSHIP_REQUIRED' | 'ORIGIN_REJECTED' | 'NOT_FOUND' | 'VERSION_CONFLICT' | 'CONFIG_CONFLICT' | 'CURSOR_STALE' | 'STATUS_IN_USE' | 'FIELD_IN_USE' | 'CONFIG_INVALIDATES_TASKS' | 'LAST_ADMIN' | 'EMAIL_IN_USE' | 'INVITATION_UNAVAILABLE' | 'PAYLOAD_TOO_LARGE' | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE';
@@ -53,6 +57,10 @@ export type SignUpDto = {
     email: string;
     name: string;
     workspaceName: string;
+};
+
+export type EmptyAuthBodyDtoWritable = {
+    [key: string]: never;
 };
 
 export type LogInDtoWritable = {
@@ -131,6 +139,53 @@ export type LogInResponses = {
 };
 
 export type LogInResponse = LogInResponses[keyof LogInResponses];
+
+export type LogOutData = {
+    body: EmptyAuthBodyDtoWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/logout';
+};
+
+export type LogOutErrors = {
+    400: ErrorResponseDtoOutput;
+    403: ErrorResponseDtoOutput;
+    429: ErrorResponseDtoOutput;
+    500: ErrorResponseDtoOutput;
+    503: ErrorResponseDtoOutput;
+};
+
+export type LogOutError = LogOutErrors[keyof LogOutErrors];
+
+export type LogOutResponses = {
+    204: void;
+};
+
+export type LogOutResponse = LogOutResponses[keyof LogOutResponses];
+
+export type RefreshSessionData = {
+    body: EmptyAuthBodyDtoWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/refresh';
+};
+
+export type RefreshSessionErrors = {
+    400: ErrorResponseDtoOutput;
+    401: ErrorResponseDtoOutput;
+    403: ErrorResponseDtoOutput;
+    429: ErrorResponseDtoOutput;
+    500: ErrorResponseDtoOutput;
+    503: ErrorResponseDtoOutput;
+};
+
+export type RefreshSessionError = RefreshSessionErrors[keyof RefreshSessionErrors];
+
+export type RefreshSessionResponses = {
+    200: SessionResponseDtoOutput;
+};
+
+export type RefreshSessionResponse = RefreshSessionResponses[keyof RefreshSessionResponses];
 
 export type SignUpData = {
     body: SignUpDtoWritable;

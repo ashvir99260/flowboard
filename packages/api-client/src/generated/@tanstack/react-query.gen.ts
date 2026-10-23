@@ -3,8 +3,8 @@
 import { queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { getLiveness, getReadiness, logIn, type Options, signUp } from '../sdk.gen.js';
-import type { GetLivenessData, GetLivenessError, GetLivenessResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, LogInData, LogInError, LogInResponse, SignUpData, SignUpError, SignUpResponse } from '../types.gen.js';
+import { getLiveness, getReadiness, logIn, logOut, type Options, refreshSession, signUp } from '../sdk.gen.js';
+import type { GetLivenessData, GetLivenessError, GetLivenessResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, SignUpData, SignUpError, SignUpResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -82,6 +82,40 @@ export const logInMutation = (options?: Partial<Options<LogInData>>): UseMutatio
     const mutationOptions: UseMutationOptions<LogInResponse, LogInError, Options<LogInData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await logIn({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Revoke the session family and clear its cookie
+ */
+export const logOutMutation = (options?: Partial<Options<LogOutData>>): UseMutationOptions<LogOutResponse, LogOutError, Options<LogOutData>> => {
+    const mutationOptions: UseMutationOptions<LogOutResponse, LogOutError, Options<LogOutData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await logOut({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Rotate a single-use refresh credential
+ */
+export const refreshSessionMutation = (options?: Partial<Options<RefreshSessionData>>): UseMutationOptions<RefreshSessionResponse, RefreshSessionError, Options<RefreshSessionData>> => {
+    const mutationOptions: UseMutationOptions<RefreshSessionResponse, RefreshSessionError, Options<RefreshSessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await refreshSession({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

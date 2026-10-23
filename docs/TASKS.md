@@ -367,13 +367,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add workspace aware authentication`.
   - **Completion evidence:** [P02-01](evidence/P02-01.md): 269 tests, generated contract checks, all quality gates and Docker seeded login/restart pass.
 
-- [ ] **P02-02 — Rotating refresh sessions and logout**
+- [x] **P02-02 — Rotating refresh sessions and logout**
   - **Goal:** Provide cookie refresh without token reuse or unsafe replay.
-  - **Files:** `apps/api/src/auth/{session.service,cookie-policy,origin.guard}.ts`, auth controller/contracts, `apps/api/test/refresh.e2e-spec.ts`, generated artifacts.
+  - **Files:** `apps/api/src/auth/{auth.service,auth.controller,cookie-policy}.ts`, auth guard/DTO/contracts, `packages/database/src/identity.ts`, real API/database refresh tests, generated artifacts.
   - **Dependencies:** P02-01.
   - **Acceptance:** Random refresh digest only; atomic single-use rotation under the User lock with same-family lineage and fixed seven-day lifetime; JWT session identity remains familyId; reuse revokes family; logout invalidates session/cookie. Refresh with a removed selected membership returns403 without a retry loop; re-login recovers. Cookie Secure/SameSite/httpOnly policy, Origin validation and credentialed CORS are explicit. Auth endpoints never disclose password/token digests.
   - **Validation:** Cookie flags, rotation, replay, concurrent use, revoked/deleted membership, missing/bad Origin and cross-site refresh; endpoint DoD and standard gate.
   - **Commit:** `feat: rotate refresh sessions securely`.
+  - **Completion evidence:** [P02-02](evidence/P02-02.md): 284 tests, all quality/contract gates, real refresh/replay/concurrency/logout checks pass.
 
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.

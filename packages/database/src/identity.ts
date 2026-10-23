@@ -6,8 +6,8 @@ import { createClient } from './client.js';
 import { hashPassword, verifyPassword } from './password.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
 
-import type { Prisma } from './generated/client.js';
-import type { IdentitySession, SessionCredential } from './identity.entity.js';
+import type { Prisma, RefreshSession } from './generated/client.js';
+import type { IdentitySession, RefreshResult, SessionCredential } from './identity.entity.js';
 import type { LogIn, SignUp } from '@flowboard/contracts';
 
 const userSelect = { createdAt: true, email: true, id: true, name: true, updatedAt: true } as const;
@@ -86,7 +86,72 @@ export function createIdentityRepository(databaseUrl: string) {
     });
     return describe(tx, userId, credential, workspaceId);
   }
+  async function withCredential<T>(
+    digest: string,
+    missing: T,
+    operation: (tx: Prisma.TransactionClient, row: RefreshSession, now: Date) => Promise<T>,
+  ): Promise<T> {
+    if (!/^[a-f0-9]{64}$/.test(digest))
+      throw new DatabaseError('VALIDATION_FAILED', 'Invalid credential digest');
+    return available(async () => {
+      const owner = await client.refreshSession.findUnique({
+        where: { tokenDigest: digest },
+        select: { userId: true },
+      });
+      if (!owner) return missing;
+      return client.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${owner.userId}::uuid FOR UPDATE`;
+        const row = await tx.refreshSession.findUnique({ where: { tokenDigest: digest } });
+        if (!row) return missing;
+        // Read after the lock: a waited-on rotation may have created newer rows.
+        const [clock] = await tx.$queryRaw<
+          { now: Date }[]
+        >`SELECT clock_timestamp()::timestamptz(3) AS now`;
+        if (!clock) throw new Error('Database clock unavailable');
+        return operation(tx, row, clock.now);
+      });
+    });
+  }
   return {
+    async rotate(digest: string, replacementDigest: string): Promise<RefreshResult> {
+      if (!/^[a-f0-9]{64}$/.test(replacementDigest))
+        throw new DatabaseError('VALIDATION_FAILED', 'Invalid replacement digest');
+      return withCredential<RefreshResult>(digest, { status: 'invalid' }, async (tx, row, now) => {
+        if (row.usedAt) {
+          await tx.refreshSession.updateMany({
+            where: { userId: row.userId, familyId: row.familyId, revokedAt: null },
+            data: { revokedAt: now },
+          });
+          // Returning commits revocation; throwing here would roll it back.
+          return { status: 'reused' };
+        }
+        if (row.revokedAt || row.expiresAt <= now) return { status: 'invalid' };
+        const session = await describe(tx, row.userId, row, row.activeWorkspaceId);
+        await tx.refreshSession.update({ where: { id: row.id }, data: { usedAt: now } });
+        const replacement = await tx.refreshSession.create({
+          data: {
+            activeWorkspaceId: row.activeWorkspaceId,
+            expiresAt: row.expiresAt,
+            familyId: row.familyId,
+            tokenDigest: replacementDigest,
+            userId: row.userId,
+          },
+        });
+        await tx.refreshSession.update({
+          where: { id: row.id },
+          data: { replacedById: replacement.id },
+        });
+        return { session, status: 'rotated' };
+      });
+    },
+    async revoke(digest: string): Promise<void> {
+      return withCredential<void>(digest, undefined, async (tx, row, now) => {
+        await tx.refreshSession.updateMany({
+          where: { userId: row.userId, familyId: row.familyId, revokedAt: null },
+          data: { revokedAt: now },
+        });
+      });
+    },
     async register(input: SignUp, credential: SessionCredential) {
       const data = SignUpSchema.parse(input);
       validateCredential(credential);

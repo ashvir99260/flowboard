@@ -26,7 +26,7 @@ export class AuthGuard implements CanActivate {
         IncomingMessage & { identity?: Awaited<ReturnType<AuthService['authenticate']>> }
       >();
     if (policy === 'health') return true;
-    if (policy === 'auth') {
+    if (policy === 'auth' || policy === 'cookie') {
       this.auth.assertOrigin(request.headers.origin);
       return true;
     }

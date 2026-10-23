@@ -25,3 +25,6 @@ export interface SessionCredential {
   familyId: string;
   tokenDigest: string;
 }
+
+export type RefreshResult =
+  { status: 'invalid' } | { status: 'reused' } | { session: IdentitySession; status: 'rotated' };

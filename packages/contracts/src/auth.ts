@@ -39,3 +39,5 @@ export const SessionEnvelopeSchema = z.strictObject({
 export type SignUp = z.infer<typeof SignUpSchema>;
 export type LogIn = z.infer<typeof LogInSchema>;
 export type SessionEnvelope = z.infer<typeof SessionEnvelopeSchema>;
+
+export const EmptyAuthBodySchema = z.strictObject({}).default({});

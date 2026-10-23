@@ -74,6 +74,8 @@ test('the spec-only bootstrap exposes real typed controller metadata without con
     '/health/live',
     '/health/ready',
     '/v1/auth/login',
+    '/v1/auth/logout',
+    '/v1/auth/refresh',
     '/v1/auth/signup',
   ]);
   expect(document.paths['/health/live'].get.operationId).toBe('getLiveness');

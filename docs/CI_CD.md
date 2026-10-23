@@ -63,7 +63,7 @@ Branch protection should require the five `Workspace / ...` checks and `Compose 
 
 GitHub supplies its token, repository ID and workflow SHA. Never paste provider tokens into a PR, issue, file or chat. Database URLs, Redis credentials and auth keys belong in provider runtime secrets. Vercel receives only settings it needs; no database or Redis secret belongs in the browser.
 
-API runtime settings now include `DATABASE_URL`, optional direct `DATABASE_URL_UNPOOLED`, `REDIS_URL`, a newly generated `AUTH_SECRET` of at least32 bytes, `AUTH_ALLOWED_ORIGINS` listing exact HTTPS web origins, `AUTH_ALLOW_INSECURE_HTTP=false`, `DEMO_SEED=false`, and `API_DOCS=false` unless Swagger exposure is intentional. Store secrets on Northflank; they are never build inputs. Readiness is `/health/ready`. Configure the documented P07-04 trusted proxy transport before routing browser login through Vercel; do not enable arbitrary forwarded-IP trust.
+API runtime settings now include `DATABASE_URL`, optional direct `DATABASE_URL_UNPOOLED`, `REDIS_URL`, a newly generated `AUTH_SECRET` of at least 32 bytes, `AUTH_ALLOWED_ORIGINS` listing exact HTTPS web origins, `AUTH_ALLOW_INSECURE_HTTP=false`, `DEMO_SEED=false`, and `API_DOCS=false` unless Swagger exposure is intentional. Store secrets on Northflank; they are never build inputs. Readiness is `/health/ready`. Configure the documented P07-04 trusted proxy transport before routing browser login through Vercel; do not enable arbitrary forwarded-IP trust.
 
 ## Readiness and recovery
 
@@ -75,7 +75,7 @@ Each provider wait is bounded to 15 minutes. If main changes mid-run, rerun on c
 
 ## Current limits and live acceptance
 
-The web remains a foundation page. The API now provides dependency-aware HTTP health, optional Swagger, signup/login and initial JWT sessions with startup migrations and opt-in local seed. The worker still exposes private TCP liveness and does not consume jobs. Refresh/logout, board and queue processing remain upcoming. These local acceptance results do not establish a verified hosted deployment.
+The web remains a foundation page. The API now provides dependency-aware HTTP health, optional Swagger, signup/login and initial JWT sessions with startup migrations and opt-in local seed. The worker still exposes private TCP liveness and does not consume jobs. Refresh/logout are implemented; board and queue processing remain upcoming. These local acceptance results do not establish a verified hosted deployment.
 
 P00-14 records actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
 

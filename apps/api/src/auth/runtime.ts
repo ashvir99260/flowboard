@@ -22,12 +22,14 @@ export function createAuthRuntime(databaseUrl: string, redisUrl: string, setting
   return {
     identities,
     settings,
-    async limit(kind: 'login' | 'signup', ip: string, email: string) {
+    async limit(kind: 'login' | 'signup' | 'refresh' | 'logout', ip: string, email: string) {
       const hash = (text: string) => createHash('sha256').update(text).digest('hex');
       const policies =
         kind === 'signup'
           ? [[hash(ip), 10, 3_600_000] as const]
-          : [[hash(ip), 100, 900_000] as const, [hash(`${ip}:${email}`), 10, 900_000] as const];
+          : kind === 'login'
+            ? [[hash(ip), 100, 900_000] as const, [hash(`${ip}:${email}`), 10, 900_000] as const]
+            : [[hash(ip), 120, 60_000] as const];
       for (const [key, maximum, window] of policies) {
         let result: unknown;
         try {

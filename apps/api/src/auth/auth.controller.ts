@@ -1,11 +1,18 @@
-import { Body, Controller, Post, Query, Req, Res } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, HttpCode, Post, Query, Req, Res } from '@nestjs/common';
+import {
+  ApiCookieAuth,
+  ApiNoContentResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
+import { ApiException } from '../platform/api-exception.js';
 import { ErrorResponseDto, HealthQueryDto } from '../platform/health.dto.js';
 import { PublicRoute } from '../platform/public.decorator.js';
 
-import { LogInDto, SessionResponseDto, SignUpDto } from './auth.dto.js';
+import { EmptyAuthBodyDto, LogInDto, SessionResponseDto, SignUpDto } from './auth.dto.js';
 import { AuthService } from './auth.service.js';
 
 import type { SessionEnvelope } from '@flowboard/contracts';
@@ -31,6 +38,54 @@ type CookieResponse = { setHeader(name: string, value: string): void };
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
+  @Post('refresh')
+  @PublicRoute('cookie')
+  @ApiCookieAuth('refresh-cookie')
+  @ApiOperation({
+    operationId: 'refreshSession',
+    summary: 'Rotate a single-use refresh credential',
+  })
+  @ApiResponse({ status: 401, type: ErrorResponseDto.Output })
+  @ZodResponse({ status: 200, type: SessionResponseDto })
+  async refresh(
+    @Body() _input: EmptyAuthBodyDto,
+    @Query(new ZodValidationPipe(HealthQueryDto)) _query: Record<string, never>,
+    @Req() request: IncomingMessage,
+    @Res({ passthrough: true }) response: CookieResponse,
+  ): Promise<SessionEnvelope> {
+    try {
+      const session = await this.auth.refresh(
+        request.headers.cookie,
+        request.socket.remoteAddress ?? 'unknown',
+      );
+      response.setHeader('Set-Cookie', session.cookie);
+      return session.body;
+    } catch (error) {
+      if (error instanceof ApiException && error.getStatus() === 401)
+        response.setHeader('Set-Cookie', this.auth.expiredCookie());
+      throw error;
+    }
+  }
+  @Post('logout')
+  @PublicRoute('cookie')
+  @ApiCookieAuth('refresh-cookie')
+  @HttpCode(204)
+  @ApiOperation({
+    operationId: 'logOut',
+    summary: 'Revoke the session family and clear its cookie',
+  })
+  @ApiNoContentResponse()
+  async logOut(
+    @Body() _input: EmptyAuthBodyDto,
+    @Query(new ZodValidationPipe(HealthQueryDto)) _query: Record<string, never>,
+    @Req() request: IncomingMessage,
+    @Res({ passthrough: true }) response: CookieResponse,
+  ): Promise<void> {
+    response.setHeader(
+      'Set-Cookie',
+      await this.auth.logOut(request.headers.cookie, request.socket.remoteAddress ?? 'unknown'),
+    );
+  }
   @Post('signup')
   @PublicRoute('auth')
   @ApiOperation({ operationId: 'signUp', summary: 'Create an account and workspace' })

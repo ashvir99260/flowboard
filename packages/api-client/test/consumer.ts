@@ -21,3 +21,7 @@ export function consumeAuth(
   const role: 'admin' | 'member' | undefined = response.data.activeWorkspace?.role;
   return { password, role };
 }
+
+export function consumeRefresh(input: import('../src/index.js').RefreshSessionData['body']) {
+  return input;
+}
