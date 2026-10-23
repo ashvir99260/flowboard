@@ -7,13 +7,13 @@ import ts from 'typescript';
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const runtimeDependencies = {
   api: ['contracts', 'database'],
-  worker: ['contracts', 'database'],
-  web: ['contracts', 'api-client', 'ui'],
+  'api-client': [],
   contracts: [],
   database: ['contracts'],
-  'api-client': [],
-  ui: ['contracts'],
   openapi: ['contracts'],
+  ui: ['contracts'],
+  web: ['contracts', 'api-client', 'ui'],
+  worker: ['contracts', 'database'],
 };
 
 function workspaceFor(root, filename) {
@@ -48,12 +48,12 @@ function resolveAlias(owner, specifier, options) {
 
 export default {
   meta: {
-    type: 'problem',
     docs: { description: 'Enforce Flowboard workspace and generated-client boundaries' },
-    schema: [
-      { type: 'object', properties: { root: { type: 'string' } }, additionalProperties: false },
-    ],
     messages: { boundary: '{{reason}}' },
+    schema: [
+      { additionalProperties: false, properties: { root: { type: 'string' } }, type: 'object' },
+    ],
+    type: 'problem',
   },
   create(context) {
     const root = context.options[0]?.root ?? repositoryRoot;
@@ -63,7 +63,7 @@ export default {
     const options = compilerOptions(owner);
     const inSource = /(^|[/\\])(src|app)[/\\]/.test(path.relative(owner.directory, filename));
     const report = (node, reason) =>
-      context.report({ node, messageId: 'boundary', data: { reason } });
+      context.report({ data: { reason }, messageId: 'boundary', node });
 
     function check(node, specifier) {
       if (typeof specifier !== 'string') return;

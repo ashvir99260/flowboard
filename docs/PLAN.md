@@ -8,6 +8,8 @@
 
 **Delivery harness:** [Architecture reference](../ARCHITECTURE.md), [requirement traceability](REQUIREMENTS_MATRIX.md), [development workflow](DEVELOPMENT_WORKFLOW.md), [quality gates](QUALITY_GATES.md), [templates](TASK_TEMPLATE.md), and [verification evidence](evidence/README.md). These organize implementation and proof without changing the product scope. Automated enforcement arrives in the tasks identified by the gate catalogue.
 
+**Architecture detail:** [Comparable-product research](REFERENCE_ARCHITECTURES.md) separates published facts from proposed choices. [System design](SYSTEM_DESIGN.md) expands UI composition, database constraints/indexes, pagination, transaction flows and failure recovery. D57/P07-04 correct the hosted browser cookie boundary; the remaining domain scope is unchanged.
+
 Implementation follows the task order, one task at a time. Future agentic workers should use the executing-plans workflow or a sequential implementer/reviewer workflow; parallel review is allowed, parallel implementation of separate backlog tasks is not. The user's latest instruction authorizes the foundation setup through shared configuration and Next.js/NestJS shells, with a commit after each task. The 23 October follow-up authorizes Docker and independent application releases (P00-04 through P00-06); domain implementation remains subsequent work. See [DELIVERY.md](DELIVERY.md) for release and hosted-environment behavior.
 
 ## 1. Scope and success
@@ -22,7 +24,8 @@ Do not add billing, teams, email delivery, full-text search, file uploads, offli
 flowchart LR
   Web[Next.js web UI] --> SDK[Generated Hey API client]
   CLI[curl cookbook] --> HTTP
-  SDK --> HTTP[REST /v1]
+  SDK --> Proxy[Same-origin Next.js HTTP proxy]
+  Proxy --> HTTP[REST /v1]
   subgraph API[NestJS API auth boundary]
     HTTP --> Auth[JWT and DB membership guard]
     Auth --> Perm[PermissionGuard and PermissionService]
@@ -102,6 +105,8 @@ Initial indexes: nodes `(workspaceId,parentId,archivedAt,position,id)`; tasks `(
 `TenantContext` contains a verified user, workspace and DB membership role. `TenantDatabase.forWorkspace(context)` exposes scoped repositories, including transaction-bound variants. It fails if no tenant is present, injects workspace filters on all reads/writes, validates relation targets and rejects workspace overrides in payloads. Raw Prisma is private to this package and auth's narrow identity repository. Worker jobs receive validated event identity and use the same scoped access. Imports enforce this boundary; tests prove its behavior.
 
 Use Argon2id passwords. Access JWTs live for 15 minutes and carry `sub`, `workspaceId`, session identity, audience and issuer; role comes from current membership, not the token/body. Refresh tokens are random, last 7 days, are stored as digests, rotate atomically, and revoke their family on reuse. HTTP-only SameSite=Lax cookies use Secure in HTTPS; local HTTP is an explicit development exception. Check allowed Origin on cookie-authenticated mutations, including refresh/logout, and restrict credentialed CORS. Rate-limit credential endpoints.
+
+For the Vercel/Northflank default-domain preview, browsers use generated SDK requests through a same-origin web `/api/v1` proxy (D57/P07-04), rather than cross-site cookie fetches. The API emits host-only Path=/ cookies; the proxy preserves separate Set-Cookie headers, origin checks and no-store behavior. API upstream configuration is server-only and runtime-read. Direct API `/v1` remains available to non-browser clients; Socket.IO connects directly with the access JWT. CORS alone does not make SameSite=Lax cookies work across those sites.
 
 Browser access tokens stay in memory. Reload obtains a token with the refresh cookie. Login/signup are public exceptions, refresh uses its cookie guard, health is operationally public, and Swagger uses a documented development-only exposure policy. Everything else is guarded by default. `401` means absent/expired authentication, `403` means forbidden in the active tenant, `404` means absent or outside that tenant. Never reveal another tenant's existence.
 

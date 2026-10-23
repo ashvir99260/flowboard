@@ -92,6 +92,6 @@ export async function ensureImage(release: Release, image: string): Promise<stri
     if (!digest) throw new Error('Build did not record an image digest');
     return digest;
   } finally {
-    rmSync(directory, { recursive: true, force: true });
+    rmSync(directory, { force: true, recursive: true });
   }
 }

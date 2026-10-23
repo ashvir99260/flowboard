@@ -6,7 +6,7 @@ import { startProcess } from '@flowboard/config-jest/process';
 const cwd = new URL('../', import.meta.url);
 
 test('Nest starts without infrastructure, has no domain endpoints, and stops cleanly', async (t) => {
-  const runtime = startProcess(['dist/main.js'], { cwd, env: { PORT: '0', HOST: '127.0.0.1' } });
+  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });
   // Nest re-emits SIGTERM after its shutdown hooks complete.
   t.after(() => runtime.stop('SIGTERM'));
   const [, url] = await runtime.waitFor(/\[api\] Listening at (http:\/\/\S+)/);

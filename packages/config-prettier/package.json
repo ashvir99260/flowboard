@@ -8,18 +8,19 @@
   },
   "scripts": {
     "build": "node src/build.mjs",
-    "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint --fix . --max-warnings=0",
     "format": "prettier --write . \"../../*.{json,yaml,mjs,md}\" \"../../scripts/**/*.mjs\" \"../../docs/**/*.md\" \"../../.github/**/*.{md,yaml,yml}\" --ignore-path ../../.prettierignore",
     "format:check": "prettier --check . \"../../*.{json,yaml,mjs,md}\" \"../../scripts/**/*.mjs\" \"../../docs/**/*.md\" \"../../.github/**/*.{md,yaml,yml}\" --ignore-path ../../.prettierignore"
   },
-  "prettier": "@flowboard/config-prettier",
   "devDependencies": {
-    "@flowboard/config-typescript": "workspace:*",
     "@flowboard/config-eslint": "workspace:*",
+    "@flowboard/config-typescript": "workspace:*",
     "@types/node": "22.20.5",
-    "typescript": "6.0.3",
     "eslint": "9.39.5",
-    "prettier": "3.9.10"
-  }
+    "prettier": "3.9.10",
+    "typescript": "6.0.3"
+  },
+  "prettier": "@flowboard/config-prettier"
 }

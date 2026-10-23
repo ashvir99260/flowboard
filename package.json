@@ -1,25 +1,28 @@
 {
   "name": "flowboard",
   "private": true,
-  "packageManager": "pnpm@12.15.0",
   "engines": {
     "node": ">=22.13.0 <23",
     "pnpm": "12.15.0"
   },
+  "packageManager": "pnpm@12.15.0",
   "scripts": {
-    "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
+    "build": "turbo run build",
     "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "test": "turbo run test",
     "format": "turbo run format",
     "format:check": "turbo run format:check",
+    "commitlint": "turbo run commitlint",
+    "commitlint:ci": "turbo run commitlint:ci",
+    "hooks:install": "turbo run hooks:install",
     "docker:check": "turbo run docker:check",
     "release:plan": "turbo run release:plan",
     "release:publish": "turbo run release:publish",
     "deploy:preview": "turbo run deploy:preview"
   },
-  "prettier": "@flowboard/config-prettier",
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",
     "@flowboard/config-eslint": "workspace:*",
@@ -28,5 +31,6 @@
     "prettier": "3.9.10",
     "turbo": "2.11.10",
     "typescript": "6.0.3"
-  }
+  },
+  "prettier": "@flowboard/config-prettier"
 }

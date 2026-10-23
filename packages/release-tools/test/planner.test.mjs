@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 
 import { stringify } from 'yaml';
@@ -12,7 +12,7 @@ import { planReleases } from '../dist/index.js';
 const apps = ['api', 'web', 'worker'];
 async function fixture(t) {
   const cwd = await mkdtemp(join(tmpdir(), 'flowboard-release-'));
-  t.after(() => rm(cwd, { recursive: true, force: true }));
+  t.after(() => rm(cwd, { force: true, recursive: true }));
   const git = (...args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
   const put = async (path, value) => {
     await mkdir(dirname(join(cwd, path)), { recursive: true });
@@ -25,8 +25,8 @@ async function fixture(t) {
   };
   git('init', '-q');
   await put('package.json', {
-    packageManager: 'pnpm@12.15.0',
     devDependencies: { turbo: '2.11.10' },
+    packageManager: 'pnpm@12.15.0',
   });
   await put('pnpm-workspace.yaml', 'packages: [apps/*, packages/*]\n');
   await put('turbo.json', { tasks: { build: { dependsOn: ['^build'], outputs: ['dist/**'] } } });
@@ -85,11 +85,11 @@ test('API-only change publishes only the API patch', async (t) => {
   assert.deepEqual(await f.plan(), [
     {
       app: 'api',
-      version: '0.1.1',
-      tag: 'api/v0.1.1',
-      sha,
-      previousTag: 'api/v0.1.0',
       mode: 'new',
+      previousTag: 'api/v0.1.0',
+      sha,
+      tag: 'api/v0.1.1',
+      version: '0.1.1',
     },
   ]);
 });
@@ -284,8 +284,8 @@ test('an unbootstrapped repository fails instead of publishing empty application
 test('unresolved locked dependencies fail closed', async (t) => {
   const f = await fixture(t);
   await f.put('apps/api/package.json', {
-    name: '@flowboard/api',
     dependencies: { missing: '1.0.0' },
+    name: '@flowboard/api',
   });
   f.commit('fix: broken dependency');
   assert.throws(() => f.plan(), /Missing locked dependency missing/);
@@ -312,8 +312,8 @@ test('single-document lockfiles work and package-manager document changes affect
 test('removing a runtime workspace dependency still releases its former consumer', async (t) => {
   const f = await fixture(t);
   await f.put('apps/web/package.json', {
+    dependencies: { '@flowboard/api-client': 'workspace:*', '@flowboard/contracts': 'workspace:*' },
     name: '@flowboard/web',
-    dependencies: { '@flowboard/contracts': 'workspace:*', '@flowboard/api-client': 'workspace:*' },
   });
   f.git('rm', '-r', 'packages/ui');
   f.commit('fix: remove unused UI package');
@@ -326,8 +326,8 @@ test('removing a runtime workspace dependency still releases its former consumer
 test('package import mapping changes ship to consumers', async (t) => {
   const f = await fixture(t);
   await f.put('packages/ui/package.json', {
-    name: '@flowboard/ui',
     imports: { '#style': './src/style.js' },
+    name: '@flowboard/ui',
   });
   f.commit('fix: runtime import mapping');
   assert.deepEqual(
@@ -339,8 +339,8 @@ test('package import mapping changes ship to consumers', async (t) => {
 test('a valid final commit tolerates an intermediate unlocked dependency', async (t) => {
   const f = await fixture(t);
   await f.put('apps/api/package.json', {
-    name: '@flowboard/api',
     dependencies: { library: '1.0.0' },
+    name: '@flowboard/api',
   });
   f.commit('feat(api): add library');
   f.lock.importers['apps/api'].dependencies.library = { version: '1.0.0' };

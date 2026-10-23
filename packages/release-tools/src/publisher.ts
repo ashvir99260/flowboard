@@ -1,17 +1,17 @@
 import type { Release } from './index.js';
 
 export interface RemoteRelease {
-  id: number;
   draft: boolean;
+  id: number;
 }
 export interface ReleaseManifest {
-  schemaVersion: 1;
   app: string;
-  version: string;
-  tag: string;
-  sha: string;
-  image: string;
   digest: string;
+  image: string;
+  schemaVersion: 1;
+  sha: string;
+  tag: string;
+  version: string;
 }
 export interface PublicationPort {
   readRelease(tag: string): Promise<RemoteRelease | null>;

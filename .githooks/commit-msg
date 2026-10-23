@@ -1,0 +1,6 @@
+#!/bin/sh
+case "$1" in
+  /*) message_file="$1" ;;
+  *) message_file="$PWD/$1" ;;
+esac
+exec pnpm commitlint -- --edit "$message_file"

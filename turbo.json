@@ -5,51 +5,18 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "typecheck": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    },
-    "lint": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    },
-    "test": {
-      "dependsOn": ["build"],
+    "commitlint": {
       "cache": false,
       "outputs": []
     },
-    "dev": {
-      "dependsOn": ["^build"],
+    "commitlint:ci": {
       "cache": false,
-      "persistent": true,
-      "env": ["HOST", "PORT", "NEXT_TELEMETRY_DISABLED"]
-    },
-    "format": {
-      "cache": false
-    },
-    "format:check": {
-      "cache": false
-    },
-    "docker:check": {
-      "cache": false,
-      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
+      "env": ["GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH"],
       "outputs": []
-    },
-    "release:plan": {
-      "dependsOn": ["build"],
-      "cache": false,
-      "outputs": []
-    },
-    "release:publish": {
-      "dependsOn": ["build"],
-      "cache": false,
-      "outputs": [],
-      "env": ["GITHUB_TOKEN", "GITHUB_REPOSITORY", "GITHUB_SHA", "GITHUB_REF"]
     },
     "deploy:preview": {
-      "dependsOn": ["build"],
       "cache": false,
-      "outputs": [],
+      "dependsOn": ["build"],
       "env": [
         "CD_ENABLED",
         "GITHUB_TOKEN",
@@ -64,7 +31,58 @@
         "NORTHFLANK_PROJECT_ID",
         "NORTHFLANK_API_SERVICE_ID",
         "NORTHFLANK_WORKER_SERVICE_ID"
-      ]
+      ],
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "env": ["HOST", "PORT", "NEXT_TELEMETRY_DISABLED"],
+      "persistent": true
+    },
+    "docker:check": {
+      "cache": false,
+      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
+      "outputs": []
+    },
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "cache": false
+    },
+    "hooks:install": {
+      "cache": false,
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "lint:fix": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "release:plan": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "release:publish": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "env": ["GITHUB_TOKEN", "GITHUB_REPOSITORY", "GITHUB_SHA", "GITHUB_REF"],
+      "outputs": []
+    },
+    "test": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
     }
   }
 }

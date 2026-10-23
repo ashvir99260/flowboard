@@ -1,8 +1,9 @@
 {
-  "extends": "@flowboard/config-typescript/next.json",
   "compilerOptions": {
     "incremental": true
   },
+  "exclude": ["node_modules", "test"],
+  "extends": "@flowboard/config-typescript/next.json",
   "include": [
     "next-env.d.ts",
     "app/**/*.ts",
@@ -10,6 +11,5 @@
     "next.config.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
-  ],
-  "exclude": ["node_modules", "test"]
+  ]
 }

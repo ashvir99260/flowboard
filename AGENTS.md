@@ -39,7 +39,7 @@ Use [REA](docs/REA.md) only for an explicit built-artifact question, with its pi
 - `contracts` imports Zod and its own files only; no Nest, React, Prisma, environment access, network or filesystem side effects. Export inferred types; do not maintain duplicate DTO shapes.
 - Raw Prisma/client construction and SQL live only in `packages/database`. Auth may use its narrow global identity repository; all tenant data uses tenant repositories. Never trust mutation bodies for acting user, active tenant or acting role. Explicit target-role changes and workspace-switch destinations are allowed only on their typed endpoints, after checking the actor's DB permissions/membership.
 - Never add a new endpoint without a contract schema → `nestjs-zod` DTO → explicit `operationId`/typed response → guard metadata → spec generation → client generation → behavior test. Do not hand-edit generated files.
-- `packages/ui` is presentational. `apps/web` coordinates data with generated Hey API options. No handwritten fetch/Axios endpoint calls, alternate server-state library or import of backend internals. Transport customization belongs in `setup-client.ts` only.
+- `packages/ui` is presentational. `apps/web` coordinates data with generated Hey API options. No handwritten fetch/Axios endpoint calls, alternate server-state library or import of backend internals. Client transport customization belongs in `setup-client.ts`. The planned server-only HTTP proxy (D57/P07-04) may generically forward `/api/v1` to a fixed API origin; it must not implement domain endpoints, duplicate SDK calls or accept arbitrary destinations.
 
 ## Integrity and access guardrails
 

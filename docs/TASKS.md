@@ -164,6 +164,56 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: add local reverse engineering tools`.
   - **Completion evidence:** [P00-18 verification](evidence/P00-18.md): pinned CLI, static artifact/non-execution/error checks, 126 tests and all workspace gates pass. Installation and generated data remain local; MCP is not registered.
 
+- [x] **P00-19 — Research comparable products and detail Flowboard's system design**
+  - **Goal:** Turn published ClickUp/Asana/Linear patterns into a concrete UI, backend, database and request-flow design for the existing requirements.
+  - **Requirements:** R103; clarifies H01–H03 and planned R28–R89 without claiming those features work.
+  - **Files:** `docs/{REFERENCE_ARCHITECTURES,SYSTEM_DESIGN,PLAN,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, `ARCHITECTURE.md`, `AGENTS.md`, `README.md`, `docs/evidence/P00-19.md`.
+  - **Dependencies:** Existing architecture/requirements and P00-18; the user's research/design request takes priority over the deferred live-host task.
+  - **Acceptance:** Primary sources have dates and distinguish published internals, public behavior and Flowboard proposals. Design includes UI/state ownership, modular backend, tenant-aware ERD/constraints/indexes, inheritance examples, reads/writes/auth/events/failure flows and implementation-task mapping. Correct cross-site refresh-cookie topology in the plan and track its implementation separately. Preserve the fixed stack, scope, permissions and atomicity rules.
+  - **Validation:** Source/claim review, document links, Mermaid syntax, requirement/task consistency, formatting and independent design review. Documentation only; no runtime or migration claims.
+  - **Commit:** `docs: detail Flowboard system architecture`.
+  - **Completion evidence:** [P00-19 verification](evidence/P00-19.md): primary-source/architecture reviews, 10 parsed diagrams, document/requirement checks and all workspace gates pass. Domain and proxy implementation remain future tasks.
+
+- [x] **P00-20 — Enforce conventional commits locally and in CI**
+  - **Goal:** Reject malformed commit messages and PR titles with the same conventional-commit policy.
+  - **Requirements:** R104; preserves parallel CI and existing task commit rules.
+  - **Files:** `.githooks/commit-msg`, `commitlint.config.mjs`, root/Turbo/config-eslint manifests, config-eslint scripts/tests, delivery workflow/regression tests, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, README and task evidence.
+  - **Dependencies:** P00-19 and the user's commitlint request.
+  - **Acceptance:** Pinned commitlint accepts conventional and breaking-change messages and rejects invalid ones. An explicitly installed repository-local hook handles spaced paths without overwriting another hook configuration. CI checks actual PR commits and title via event data, including edited titles, without shell interpolation or new paid runners. Root commands delegate to uncached Turbo tasks; failures block publication.
+  - **Validation:** Positive/negative message and metadata fixtures, Git range/zero-SHA errors, local hook/install behavior, workflow regression, actionlint, build/lint/test/type/format and relevant Docker checks.
+  - **Commit:** `chore: enforce conventional commit messages`.
+  - **Completion evidence:** [P00-20 verification](evidence/P00-20.md): 16 focused cases, 143 repository tests, standard gates and Docker acceptance pass; local hook enabled.
+
+- [x] **P00-21 — Strengthen shared linting and deterministic ordering**
+  - **Goal:** Apply compatible quality, naming, unused-code and safe sorting rules across backend, frontend and authored JSON.
+  - **Requirements:** R105; preserves R93 and application behavior.
+  - **Files:** config-eslint dependencies/config/tests, root lint coverage, package JSON/config and authored source fixes, lockfile, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, task evidence.
+  - **Dependencies:** P00-20.
+  - **Acceptance:** Add Perfectionist, SonarJS, unused-import and JSON rules without duplicating Next/React, import-x or Prettier. Automate PascalCase for types/classes and JSX references; document component declarations as a review convention. Runtime names and external JSON contracts retain appropriate case. Sort safe named imports, types, literal props/objects and JSON keys; preserve destructuring evaluation, dependency defaults, overloads, spreads, side-effect imports and conditional export semantics. Fix genuine diagnostics without blanket disabling checks or changing generated code.
+  - **Validation:** Positive/negative JS/TS/TSX/JSON fixtures and semantic ordering regressions; full build/lint/test/type/format, frozen install and Docker checks.
+  - **Commit:** `chore: strengthen shared eslint quality rules`.
+  - **Completion evidence:** [P00-21 verification](evidence/P00-21.md): 12 rule/safety fixtures, 155 repository tests, standard gates and Docker acceptance pass; reviewed sorting and naming limits documented.
+
+- [x] **P00-22 — Preserve package manifests and enforce exact dependency versions**
+  - **Goal:** Keep `package.json` key order unchanged while rejecting unpinned dependency specifications through shared ESLint.
+  - **Requirements:** R106; preserves R105 JSON syntax checks and the workspace dependency convention.
+  - **Files:** `packages/config-eslint/src/{json,exact-dependency-versions}.mjs`, config-eslint tests/manifest, lockfile if needed, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, task evidence.
+  - **Dependencies:** P00-21 and the user's manifest-policy correction.
+  - **Acceptance:** No sorting diagnostics or sorting fixes anywhere in `package.json`; other JSON still sorts and strict JSON syntax/duplicate-key checks remain active. Runtime/dev/optional/peer dependency declarations accept exact semantic versions and `workspace:*`; reject ranges, tags and unpinned sources without guessing replacement versions. Engine compatibility ranges remain allowed.
+  - **Validation:** Actual ESLint manifest fixtures for preserved order, exact/prerelease/build versions, rejected ranges/tags/sources and non-dependency fields; root/workspace integration, build/lint/test/type/format and frozen install if dependencies change.
+  - **Commit:** `chore: enforce pinned manifest dependencies`.
+  - **Completion evidence:** [P00-22 verification](evidence/P00-22.md): seven manifest regression tests, 162 repository tests and standard gates pass; package sorting disabled and exact versions enforced without autofix.
+
+- [x] **P00-23 — Organize package manifests for maintainers**
+  - **Goal:** Replace the earlier alphabetical layout with consistent semantic grouping across the root and all workspace manifests.
+  - **Requirements:** R107; preserves R106 exact versions and disabled manifest sorting.
+  - **Files:** root `package.json`, `apps/*/package.json`, `packages/*/package.json`, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, task evidence.
+  - **Dependencies:** P00-22 and the user's manifest-layout request.
+  - **Acceptance:** Identity and module/toolchain metadata come first, then exports/files, lifecycle and verification scripts, dependencies and formatter settings. Group scripts by purpose. Preserve every existing field/value, dependency order, export condition order and arrays. Do not add an automatic ordering rule or change versions, commands or publishing behavior.
+  - **Validation:** Check all 14 manifests against their pre-change data and ordered export trees; existing workspace/build/lint/test/type/format gates and frozen install. No new style-only unit test.
+  - **Commit:** `chore: organize package manifests by purpose`.
+  - **Completion evidence:** [P00-23 verification](evidence/P00-23.md): all 14 manifests retain identical data and nested order; 162 tests and standard gates pass.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.
@@ -423,6 +473,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Concurrent 401s trigger one refresh; refresh failure/replayed token stops; 403 never refreshes; mutation retried at most once only after 401; aborted request stays aborted; instance state never shared across SSR requests; standard gate.
   - **Commit:** `feat: configure generated client session refresh`.
 
+- [ ] **P07-04 — Same-origin browser transport for hosted authentication**
+  - **Goal:** Preserve rotating httpOnly cookies when the web and API use separate provider domains.
+  - **Requirements:** R29, R33, R91; follows D57.
+  - **Files:** `apps/web/app/api/v1/[...path]/route.ts`, `apps/web/src/server/api-proxy.ts`, proxy integration tests, `packages/api-client/src/setup-client.ts`, `packages/config-eslint/src/boundaries.mjs`, `packages/config-eslint/test/boundaries.test.mjs`, server environment docs.
+  - **Dependencies:** P07-03.
+  - **Acceptance:** Browser-generated requests use same-origin `/api/v1`; the server forwards only to a fixed runtime-configured API origin and `/v1` paths. Preserve abort/status/body and separate Set-Cookie headers; forward only approved headers, validate browser Origin for cookie mutations, bypass caches and reject arbitrary destinations/redirects. Host-only refresh cookies use Path=/, Secure on HTTPS and SameSite=Lax. Forward only approved cookie names. The lint exception permits direct fetch only in the designated server-only proxy module; feature-code fetches remain rejected. No domain logic or second endpoint client in the proxy. Socket.IO connects directly to API with memory-held access JWT. CLI clients retain direct `/v1` access.
+  - **Validation:** Integration tests with distinct web/API origins cover login/refresh/logout cookies, malicious origins/paths, no caching, upstream failure/abort, rejection of feature-code fetches, and no browser exposure of the upstream configuration. Browser tests prove refresh on separate-site hosts; standard gate.
+  - **Commit:** `feat: proxy browser api transport on same origin`.
+
 ## Phase 8 — UI package and application shell
 
 - [ ] **P08-01 — MUI theme and presentational display components**
@@ -444,7 +503,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 - [ ] **P08-03 — Auth pages, providers and visible sidebar**
   - **Goal:** Connect generated transport to an authenticated app shell.
   - **Files:** `apps/web/app/{layout,(auth)/**,(workspace)/**}`, `apps/web/src/{providers,features/auth/**,features/tree/**,lib/query-scope.ts}`, web component tests.
-  - **Dependencies:** P08-02.
+  - **Dependencies:** P08-02, P07-04.
   - **Acceptance:** Signup/login/refresh bootstrap/logout/workspace switch, one browser QueryClient, accessible collapsible paginated tree, list selection in URL. Loading/error/empty/forbidden states. Clear caches and sockets when identity changes; no prior-tenant flash.
   - **Validation:** Login errors, refresh expiry, logout then Bob after Alice, private list hidden, tree loading all pages, browser-back selection and mobile sidebar; standard gate.
   - **Commit:** `feat: add authenticated workspace shell`.

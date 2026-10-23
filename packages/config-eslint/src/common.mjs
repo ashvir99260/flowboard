@@ -9,18 +9,25 @@ export const ignoredFiles = [
   '**/.turbo/**',
   '**/coverage/**',
   '**/next-env.d.ts',
+  '**/.ai-local/**',
+  '**/.serena/**',
+  '**/graphify-out/**',
+  '**/.graphify_*',
+  '**/*.gen.*',
+  '**/src/generated/**',
+  '**/openapi.json',
 ];
 
 export const commonRules = {
-  plugins: { 'import-x': importX, flowboard: { rules: { boundaries } } },
+  plugins: { flowboard: { rules: { boundaries } }, 'import-x': importX },
   rules: {
     'flowboard/boundaries': 'error',
     'import-x/order': [
       'error',
       {
+        alphabetize: { caseInsensitive: true, order: 'asc' },
         groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'type'],
         'newlines-between': 'always',
-        alphabetize: { order: 'asc', caseInsensitive: true },
       },
     ],
   },

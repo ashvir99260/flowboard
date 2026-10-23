@@ -6,21 +6,21 @@ import { deployReleasedApps } from '../dist/deploy.js';
 const sha = 'a'.repeat(40);
 const digest = `sha256:${'b'.repeat(64)}`;
 const manifest = (app) => ({
-  schemaVersion: 1,
   app,
-  version: '0.1.0',
-  tag: `${app}/v0.1.0`,
-  sha,
-  image: `ghcr.io/owner/flowboard-${app}`,
   digest,
+  image: `ghcr.io/owner/flowboard-${app}`,
+  schemaVersion: 1,
+  sha,
+  tag: `${app}/v0.1.0`,
+  version: '0.1.0',
 });
 const config = {
-  vercelToken: 'fixture',
-  vercelProjectId: 'prj_test',
-  githubRepoId: '123',
-  northflankToken: 'fixture',
-  northflankProjectId: 'flowboard',
   apiServiceId: 'api',
+  githubRepoId: '123',
+  northflankProjectId: 'flowboard',
+  northflankToken: 'fixture',
+  vercelProjectId: 'prj_test',
+  vercelToken: 'fixture',
   workerServiceId: 'worker',
 };
 
@@ -68,7 +68,7 @@ test('all required settings are checked before any provider is changed', async (
     deployReleasedApps({
       sha,
       manifests: [manifest('api'), manifest('web')],
-      config: { northflankToken: 'token', northflankProjectId: 'p', apiServiceId: 'api' },
+      config: { apiServiceId: 'api', northflankProjectId: 'p', northflankToken: 'token' },
       assertReachable: async (source) => {
         if (source !== sha) throw new Error('Invalid source');
       },

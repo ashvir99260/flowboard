@@ -36,7 +36,7 @@ function fixture() {
     async createDraft() {
       calls.push('draft');
       tagSha = release.sha;
-      remote = { id: 1, draft: true };
+      remote = { draft: true, id: 1 };
       return remote;
     },
     async readManifest() {
@@ -120,7 +120,7 @@ test('conflicting tag or published manifest is rejected without image writes', a
   await assert.rejects(publishRelease(release, 'owner/flowboard', f.port), /Conflicting tag/);
   assert.ok(!f.calls.includes('image'));
   f.setTag(release.sha);
-  f.setRemote({ id: 1, draft: false });
+  f.setRemote({ draft: false, id: 1 });
   await assert.rejects(publishRelease(release, 'owner/flowboard', f.port), /manifest/);
   assert.ok(!f.calls.includes('image'));
 });

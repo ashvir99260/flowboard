@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { after, test } from 'node:test';
@@ -32,7 +32,7 @@ await writeFile(
   path.join(root, 'apps/web/tsconfig.json'),
   JSON.stringify({ compilerOptions: { paths: { '@api/*': ['../api/src/*'] } } }),
 );
-after(() => rm(root, { recursive: true, force: true }));
+after(() => rm(root, { force: true, recursive: true }));
 
 const eslint = new ESLint({
   cwd: root,

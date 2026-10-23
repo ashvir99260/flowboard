@@ -1,9 +1,9 @@
 {
-  "extends": "@flowboard/config-typescript/node.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["dist", "node_modules", "test"]
+  "exclude": ["dist", "node_modules", "test"],
+  "extends": "@flowboard/config-typescript/node.json",
+  "include": ["src/**/*.ts"]
 }
