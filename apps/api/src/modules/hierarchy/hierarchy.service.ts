@@ -11,6 +11,7 @@ import type {
   NodeEnvelope,
   NodeVersion,
   PermissionAction,
+  ReorderNode,
   UpdateNode,
 } from '@flowboard/contracts';
 import type {
@@ -81,6 +82,11 @@ export class HierarchyService {
           return operation(store);
         });
       } catch (error) {
+        if (error instanceof DatabaseError && error.code === 'INVALID_ANCHOR')
+          throw new ApiException(400, error.code, error.message, [
+            { code: 'invalid_anchor', message: error.message, path: ['placement'] },
+          ]);
+
         if (error instanceof DatabaseError && error.code === 'INVALID_PARENT')
           throw new ApiException(400, error.code, error.message, [
             { code: 'invalid_parent', message: error.message, path: ['parentId'] },
@@ -120,6 +126,22 @@ export class HierarchyService {
   }
   async update(identity: IdentitySession, nodeId: string, input: UpdateNode) {
     return present(await this.write(identity, (store) => store.hierarchy.update(nodeId, input)));
+  }
+  async reorder(identity: IdentitySession, nodeId: string, input: ReorderNode) {
+    return present(
+      await this.write(identity, async (store) => {
+        await this.permissions.assertNode(store, nodeId, 'container.write');
+        const anchorId =
+          'beforeId' in input.placement
+            ? input.placement.beforeId
+            : 'afterId' in input.placement
+              ? input.placement.afterId
+              : undefined;
+        if (anchorId) await this.permissions.assertNode(store, anchorId, 'container.read');
+
+        return store.hierarchy.reorder(nodeId, input);
+      }),
+    );
   }
   async find(identity: IdentitySession, nodeId: string) {
     const context = this.scope(identity, 'container.read');

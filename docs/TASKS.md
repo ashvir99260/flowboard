@@ -606,9 +606,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Alice sees all; Bob lacks private list; Carol allow works; Bob direct denied list 403; child allow cannot bypass parent deny/private; foreign IDs 404; counts/grants do not leak. Endpoint DoD and standard gate.
   - **Commit:** `feat: enforce container permissions centrally`.
 
-- [ ] **P03-03 — Deterministic sibling reordering**
+- [x] **P03-03 — Deterministic sibling reordering**
   - **Goal:** Order visible hierarchy without client-controlled positions or race corruption.
-  - **Files:** `packages/contracts/src/ordering.ts`, `apps/api/src/modules/hierarchy/ordering.service.ts`, nodes controller, `apps/api/test/integration/node-ordering.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/ordering.ts`, hierarchy service/controller, `packages/database/src/hierarchy-repository.ts`, colocated ordering API and repository tests, generated artifacts.
   - **Dependencies:** P03-02.
   - **Acceptance:** Neighbor-ID move API assigns integer positions transactionally, validates sibling set, increments every changed sibling version once and the workspace collection revisions, with stable ID tie-breaks.
   - **Validation:** First/last/empty position, wrong-parent/foreign anchors, duplicate anchors, stale version and concurrent reorder; endpoint DoD and standard gate.

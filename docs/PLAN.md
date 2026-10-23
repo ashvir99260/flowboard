@@ -181,7 +181,7 @@ Strict parent types: workspace → space → folder → list; tasks have exactly
 
 For the hobby scale, lock the workspace row for domain/config/grant writes, re-read membership/permissions, resolve and validate, then commit changes and outbox events together. Use one lock order across entry points. This simple policy deliberately serializes writes within a workspace; improve lock granularity only after measurement. Read endpoints use a consistent transaction snapshot for multi-query board/config responses.
 
-Explicit reorder accepts neighbor IDs and expected version, never a client-chosen arbitrary position. Validate both anchors share the target sibling set or list/status column. Renumber that bounded set atomically. Task and node optimistic versions return `409 VERSION_CONFLICT` for stale edits. No partial moves; no mutation event before commit.
+Explicit reorder accepts neighbor IDs and expected version, never a client-chosen arbitrary position. Validate the selected anchor belongs to the target sibling set or list/status column. Renumber that bounded set atomically. Task and node optimistic versions return `409 VERSION_CONFLICT` for stale edits. No partial moves; no mutation event before commit.
 
 ## 6. API conventions and contract pipeline
 

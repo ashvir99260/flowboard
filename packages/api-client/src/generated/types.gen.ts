@@ -780,6 +780,53 @@ export type ReadinessResponseDtoOutput = {
 };
 
 /**
+ * Reorder container request
+ *
+ * Move within the existing parent using current node and workspace revisions.
+ */
+export type ReorderNodeDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Expected node version
+     *
+     * Last observed node revision; a stale revision is a conflict.
+     */
+    expectedVersion: number;
+    /**
+     * Sibling placement
+     *
+     * Exactly one edge or one sibling anchor. Numeric positions and multiple anchors are rejected.
+     */
+    placement: {
+        /**
+         * Placement edge
+         *
+         * Place before all siblings or after all siblings.
+         */
+        edge: 'start' | 'end';
+    } | {
+        /**
+         * Sibling anchor ID
+         *
+         * A distinct live sibling in the selected workspace.
+         */
+        beforeId: string;
+    } | {
+        /**
+         * Sibling anchor ID
+         *
+         * A distinct live sibling in the selected workspace.
+         */
+        afterId: string;
+    };
+};
+
+/**
  * Session response
  *
  * Successful authentication or refresh response. The separate httpOnly cookie carries the opaque refresh credential.
@@ -2141,6 +2188,65 @@ export type RemoveNodeGrantResponses = {
 };
 
 export type RemoveNodeGrantResponse = RemoveNodeGrantResponses[keyof RemoveNodeGrantResponses];
+
+export type ReorderNodeData = {
+    /**
+     * One placement variant and current node/workspace revisions.
+     */
+    body: ReorderNodeDto;
+    path: {
+        /**
+         * Target node ID
+         *
+         * Container identifier within the selected workspace.
+         */
+        nodeId: string;
+    };
+    query?: never;
+    url: '/v1/nodes/{nodeId}/reorder';
+};
+
+export type ReorderNodeErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token and current membership are required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The member cannot access this container or perform this administrative action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The container or a live ancestor is missing or outside the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * The workspace configuration or node version changed; read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ReorderNodeError = ReorderNodeErrors[keyof ReorderNodeErrors];
+
+export type ReorderNodeResponses = {
+    /**
+     * Target container and committed workspace revisions.
+     */
+    200: NodeResponseDtoOutput;
+};
+
+export type ReorderNodeResponse = ReorderNodeResponses[keyof ReorderNodeResponses];
 
 export type ListVisibleTreeData = {
     body?: never;

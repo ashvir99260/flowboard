@@ -30,6 +30,7 @@ import {
   CreateNodeDto,
   NodeParamsDto,
   NodeVersionDto,
+  ReorderNodeDto,
   UpdateNodeDto,
 } from './hierarchy.request.dto.js';
 import { NodeResponseDto } from './hierarchy.response.dto.js';
@@ -73,6 +74,39 @@ const responseExample = { data: NodeExamples.node, configVersion: 2, dataVersion
 @Controller('nodes')
 export class NodesController {
   constructor(private readonly hierarchy: HierarchyService) {}
+  @Post(':nodeId/reorder')
+  @HttpCode(200)
+  @NodePermission('container.write')
+  @ApiOperation({
+    description:
+      'Administrators place a live container at an edge or beside a live sibling. The transaction checks both revisions and renumbers the complete sibling set; changed rows advance once and a no-op preserves revisions.',
+    operationId: 'reorderNode',
+    summary: 'Reorder a container among siblings',
+  })
+  @ApiBody({
+    type: ReorderNodeDto,
+    description: 'One placement variant and current node/workspace revisions.',
+    examples: {
+      start: {
+        summary: 'Move to the beginning',
+        value: { placement: { edge: 'start' }, expectedConfigVersion: 2, expectedVersion: 1 },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, type: NodeResponseDto.Output, example: responseExample })
+  @ZodResponse({
+    status: 200,
+    type: NodeResponseDto,
+    description: 'Target container and committed workspace revisions.',
+  })
+  reorder(
+    @Param() params: NodeParamsDto,
+    @Body() input: ReorderNodeDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ): Promise<NodeEnvelope> {
+    return this.hierarchy.reorder(request.identity, params.nodeId, input);
+  }
   @Post()
   @ActiveWorkspacePermission('container.write')
   @ApiOperation({
