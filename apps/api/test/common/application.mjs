@@ -12,6 +12,8 @@ import { startInfrastructure } from './infrastructure.mjs';
 // Every call owns independent containers; the module has no mutable suite state or hooks.
 export async function startTestApplication({
   auth = false,
+  exposeDocs = false,
+  insecureHttp = false,
   logger,
   origin = AuthTestOrigin,
   secret = AuthTestSecret,
@@ -36,7 +38,11 @@ export async function startTestApplication({
       runtime = createAuthRuntime(
         infrastructure.databaseUrl,
         infrastructure.redisUrl,
-        readAuthSettings({ AUTH_SECRET: secret, AUTH_ALLOWED_ORIGINS: origin }),
+        readAuthSettings({
+          AUTH_SECRET: secret,
+          AUTH_ALLOWED_ORIGINS: origin,
+          AUTH_ALLOW_INSECURE_HTTP: String(insecureHttp),
+        }),
         logger,
       );
 
@@ -44,7 +50,7 @@ export async function startTestApplication({
 
     probe = runtimeProbe(infrastructure.databaseUrl, infrastructure.redisUrl, logger);
     probe.close = closeOnce(probe.close);
-    ({ app } = await createApplication(probe, { auth: runtime, logger }));
+    ({ app } = await createApplication(probe, { auth: runtime, exposeDocs, logger }));
     await app.init();
 
     return { app, runtime, infrastructure, close };

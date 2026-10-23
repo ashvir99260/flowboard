@@ -566,6 +566,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: expose development datastore ports locally`.
   - **Completion evidence:** [P02-22](evidence/P02-22.md): localhost defaults/overrides and base privacy checked; real PostgreSQL/Redis host probes and full development Docker suite pass; current stack updated with preserved data; all 360 tests and root checks pass.
 
+- [x] **P02-23 — Make local Swagger authentication executable**
+  - **Goal:** Allow Swagger's browser origin to use the documented local authentication endpoints.
+  - **Requirements:** R133; preserves R20/R33/R35.
+  - **Files:** Root/API `.env.example`, `compose.yaml`, README, auth configuration/integration tests, shared test fixture, plan/decision/matrix/evidence docs. Update ignored local env files without committing secrets.
+  - **Dependencies:** P02-22; prioritized by the user's reported Swagger Execute failure.
+  - **Acceptance:** Local defaults explicitly allow the web and Swagger origins; Compose defaults follow custom published ports. Explicit allowlist overrides remain authoritative. Browser login, cookie refresh and logout work in Swagger; missing/unlisted origins still fail. Existing credentials and data remain intact.
+  - **Validation:** Failing local configuration regressions, real PostgreSQL/Redis auth lifecycle test, browser Execute reproduction and recovery, root build/lint/type/test/format/OpenAPI checks and Docker configuration/runtime checks. G01–G05/G07/G11.
+  - **Commit:** `fix: allow local Swagger authentication requests`.
+  - **Completion evidence:** [P02-23](evidence/P02-23.md): browser login/refresh/logout return 200/200/204; real origin rejection and custom-port regressions pass; all 366 tests, Docker and root gates pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

@@ -95,6 +95,8 @@ P02-21 adds an opt-in `compose.dev.yaml` for live code updates in Docker (D100).
 
 P02-22 publishes PostgreSQL/Redis host ports through the live-development override, bound only to localhost and configurable with POSTGRES_PORT/REDIS_PORT (D101). Base Compose retains private datastore networking.
 
+P02-23 corrects local Swagger execution by explicitly allowing the documented web and API origins in local configuration (D102), with custom-port regressions and a real authentication lifecycle check. Runtime origin validation remains strict.
+
 ### Module boundaries inside the API
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.

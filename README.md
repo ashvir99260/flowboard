@@ -95,7 +95,9 @@ Compose builds separate web, API and worker images and starts PostgreSQL and Red
 
 The web currently shows the application shell; use Swagger to try the implemented auth endpoints. Application containers run as non-root. Without the development override, PostgreSQL, Redis and the worker are private to the Compose network.
 
-Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files are only needed for host development and are excluded from images. Without a root `.env`, Compose uses the development defaults in `compose.yaml`. To use different published ports, set `WEB_PORT` and `API_PORT` in the root file. If you change the web port, also update `AUTH_ALLOWED_ORIGINS` to match its complete origin, such as `http://localhost:3100`. Keep these development credentials local.
+Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files are only needed for host development and are excluded from images. Without a root `.env`, Compose uses the development defaults in `compose.yaml`. To use different published ports, set `WEB_PORT` and `API_PORT` in the root file. An explicit `AUTH_ALLOWED_ORIGINS` must list both full browser origins, such as `http://localhost:3100,http://localhost:3101`. Without an explicit allowlist, Compose derives both localhost origins from the published ports. Keep these development credentials local.
+
+For Swagger, open **Try it out**, replace illustrative credentials with a real account (for example the seeded Alice account below), and select **Execute**. The local allowlist includes `http://localhost:3001` because browsers send the Swagger page's own origin; changing the displayed Origin input cannot override that browser header. A `403 ORIGIN_REJECTED` means the page's exact origin is missing from the API's `AUTH_ALLOWED_ORIGINS`. Update the root `.env` for Docker or `apps/api/.env` for host development, then recreate/restart the API. Refresh and logout use the httpOnly cookie set by a successful login in the same browser. Keep hosted allowlists explicit and restricted to your intended HTTPS origins.
 
 ### Live code updates while developing
 

@@ -239,3 +239,7 @@ Use opt-in development stages and `compose.dev.yaml` with read-only source mount
 ## D101 — Development datastores are reachable on localhost
 
 The live-development override publishes PostgreSQL and Redis to IPv4 loopback only, matching the existing host-development override. Default host ports are 5432 and 6379; POSTGRES_PORT and REDIS_PORT may override them through root Compose configuration. Base Compose remains private. Integration checks publish ephemeral ports and make real PostgreSQL/Redis protocol requests so they neither conflict with nor alter the user's running datastores.
+
+## D102 — Explicit local Swagger origin
+
+Local examples allow both `http://localhost:3000` (web) and `http://localhost:3001` (Swagger). When no explicit allowlist is supplied, local Compose derives these exact origins from WEB_PORT/API_PORT. An explicit AUTH_ALLOWED_ORIGINS remains authoritative and must match custom ports. Browser-controlled Origin cannot be replaced with Swagger's editable header input. Keep exact origin validation, missing-origin rejection and production operator configuration unchanged; do not trust request Host, enable wildcard credentials or bypass authentication for documentation.
