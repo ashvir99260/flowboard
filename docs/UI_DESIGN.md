@@ -82,7 +82,7 @@ Serialize in-flight mutations per task. Snapshot only affected cache entries, ca
 
 Use an accessible MUI Table, not a paid grid dependency. Columns: title, status, assignees, priority, due date, and at least **two effective custom fields** on the seeded demonstration list. Field column labels/types come from resolved schema; long values truncate visually with accessible full content. If a real list has fewer than two definitions, render its actual fields rather than inventing data.
 
-Due-date and priority sorting runs on the server and resets the cursor. Priority order is urgent/high/normal/low/none; dates are nulls-last. The field-filter control is schema-aware: select an effective field, operator and typed value. “Clear filter” restores the unfiltered query. View switches retain list, task and compatible filter state. Never sort only the loaded page and label it a global order. Show accessible Load more and loaded-count text; no made-up total.
+Due-date and priority sorting runs on the server and resets the cursor. Priority order is urgent/high/normal/low/none; dates are nulls-last. The field-filter control is schema-aware: select an effective field, operator and typed value. “Clear filter” restores the unfiltered query. View switches retain list, task and compatible filter state. Never sort only the loaded page and label it a global order. Show accessible Load more and loaded-count text; no numbered-page/offset controls or made-up total. Expired/stale cursors reset the page chain without discarding dirty drawer edits.
 
 ### Task create/detail drawer
 

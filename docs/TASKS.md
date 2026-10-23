@@ -254,6 +254,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: refine workspace access and api contracts`.
   - **Completion evidence:** [P00-27 verification](evidence/P00-27.md): all 15 ER/dictionary attribute sets and audit pairs match, 43 operations retained, two independent reviews and documentation checks pass.
 
+- [x] **P00-28 — Specify every field and cursor-only pagination**
+  - **Goal:** Make each stored/embedded field implementable from explicit types, relations and validation; allow only cursor pagination in the public API.
+  - **Requirements:** R113–R114; refines R11–R14, R21, R31, R49, R58.
+  - **Files:** `docs/{FIELD_REFERENCE,DATABASE_DESIGN,API_CATALOG,BACKEND_CONTRACTS,PLAN,UI_DESIGN,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, architecture/README links and evidence.
+  - **Dependencies:** P00-27 and the user's field/pagination refinement.
+  - **Acceptance:** All135 stored fields plus embedded/derived/request controls have type, null/default/ownership, relation and validation responsibility. Paginated operations use only cursor/limit; reject page/offset aliases, duplicate query keys, invalid/expired/context-mismatched cursors. Bound complete schemas are not paginated. No runtime behavior is claimed.
+  - **Validation:** Exact field-reference/ER/dictionary parity,43 unique operations, independent DB/API reviews, diagrams/local links and formatting. Runtime constraints and pagination remain Planned until implemented tests pass.
+  - **Commit:** `docs: specify field rules and cursor pagination`.
+  - **Completion evidence:** [P00-28 verification](evidence/P00-28.md):135 stored-field rows match the ER/dictionary; typed embedded/request controls, cursor-only policy,43-operation inventory and documentation checks reviewed.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.
@@ -305,7 +315,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Define shared enums, errors, pagination and immutable transport primitives.
   - **Files:** `packages/contracts/src/{enums,errors,pagination,identifiers,dates,index}.ts`, `packages/contracts/test/foundations.test.ts`.
   - **Dependencies:** P00-04.
-  - **Acceptance:** Zod schemas infer types for all requested enums, error codes/envelope, cursor page and strict IDs/calendar dates. Domain schemas reject unsupported values and unexpected identity fields. Include shared audit timestamp schema, workspace-role/action constants and workspace-inclusive field scope enum.
+  - **Acceptance:** Zod schemas infer types for all requested enums, error codes/envelope, cursor page and strict IDs/calendar dates. Domain schemas reject unsupported values and unexpected identity fields. Include shared audit timestamp schema, workspace-role/action constants and workspace-inclusive field scope enum. Follow FIELD_REFERENCE bounds/types, reject NUL/lone-surrogate strings but preserve valid supplementary characters, and use cursor-only queries; reject offset/page aliases and duplicate query inputs.
   - **Validation:** Literal valid/invalid fixtures including leap dates, enum typos, negative/oversized limits and malformed issue paths; standard gate.
   - **Commit:** `feat: define shared transport contracts`.
 
@@ -322,7 +332,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Files:** `packages/database/prisma/{schema.prisma,migrations/**}`, `packages/database/src/{client,index}.ts`, `packages/database/test/{migration,schema}.integration.test.ts`, `compose.test.yaml`.
   - **Dependencies:** P01-02.
   - **Acceptance:** All DATABASE_DESIGN entities exist, including stable status identity, current-session partial unique index and selected-workspace FK, nullable inherited visibility, field JSONB, row/collection versions, refresh lineage, join tables and outbox. Every table has createdAt/updatedAt enforced for Prisma/raw SQL/worker paths; workspace field ownership is allowed and checked. Composite FKs prevent cross-tenant relations. Owner shape checks and indexes are checked in. A dedicated real Postgres test database is isolated from development.
-  - **Validation:** Migrate empty database, verify constraints by rejected inserts, inspect all audit columns and immutable-createdAt/update-trigger behavior, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
+  - **Validation:** Migrate empty database, verify constraints by rejected inserts, inspect all audit columns and immutable-createdAt/update-trigger behavior, field CHECKs and paired invitation/refresh/outbox state rules, restart/reapply migration, inspect required indexes; standard gate with real Postgres.
   - **Commit:** `feat: add tenant safe database schema`.
 
 - [ ] **P01-04 — Fail-closed tenant repositories and test harness**
@@ -381,7 +391,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Make tree/direct access agree on ancestor-aware visibility.
   - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/permissions/**`, `apps/api/src/hierarchy/tree.controller.ts`, `apps/api/test/permissions.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P03-01.
-  - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Paginated flat tree contains visible nodes/parents only, orders parents before children, and rejects stale revision-bound cursors. Grants are admin-managed and transactions recheck authorization.
+  - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Cursor-only paginated flat tree contains visible nodes/parents only, orders parents before children, and rejects stale revision-bound cursors. Grants are admin-managed and transactions recheck authorization.
   - **Validation:** Alice sees all; Bob lacks private list; Carol allow works; Bob direct denied list 403; child allow cannot bypass parent deny/private; foreign IDs 404; counts/grants do not leak. Endpoint DoD and standard gate.
   - **Commit:** `feat: enforce container permissions centrally`.
 
@@ -475,7 +485,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Goal:** Audit all task entry points against the required negative scenarios.
   - **Files:** `apps/api/test/{tenant-isolation,task-invariants}.e2e-spec.ts`, `packages/contracts/test/task-patches.test.ts`, necessary task/repository fixes, generated artifacts.
   - **Dependencies:** P06-03.
-  - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts. Cursor tampering/context changes return400; revision changes return409 and a restart returns each current row once.
+  - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts. Cursor tampering/expiry/context changes and offset/page/duplicate parameters return400; visible rows determine limit+1/hasNextPage; revision changes return409 and a restart returns each current row once.
   - **Validation:** Full real-Postgres suite with two tenants; standard gate. Fix actual defects rather than weaken expectations.
   - **Commit:** `test: cover task isolation and mutation invariants`.
 

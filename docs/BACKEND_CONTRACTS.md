@@ -57,6 +57,8 @@ Use five explicit representations, with one source of truth for public shapes:
 
 Keep Prisma as the ORM. The Prisma schema defines persistence entities; plain entity types may describe repository results where useful. Do not add TypeORM @Entity classes, decorate a Prisma model as an HTTP response or make Next.js import a backend class. Do not add a second class for every table solely for symmetry; internal entity aliases/read models can derive from repository selections. This preserves the user's DTO/entity distinction without duplicating every domain shape.
 
+The [field reference](FIELD_REFERENCE.md) fixes field-by-field validation and enforcement ownership; API pagination uses only cursor/limit with strict query schemas.
+
 Public contracts stay in framework-free Zod schemas in packages/contracts. Request and response schemas are separate: CreateTaskSchema cannot accept id, acting tenant, timestamps or raw position, while TaskSchema includes server-generated values. Shared fields compose schemas, but a mutation schema must explicitly pick allowed fields rather than omit a few secrets from a full DB shape.
 
 Response projection is an explicit mapper/use-case result followed by Zod serialization. Never return or spread a Prisma record and depend on undocumented serializer stripping to remove secrets. Contract schemas use serializable ISO timestamps and date-only strings. Invalid server output becomes sanitized 500, not a success response or a400 blaming the caller.
