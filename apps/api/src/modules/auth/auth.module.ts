@@ -2,7 +2,7 @@ import { SilentLogger } from '@flowboard/logger';
 import { Inject, Injectable, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
-import { LoggingModule } from '../common/logging/logging.module.js';
+import { LoggingModule } from '../../shared/logging/logging.module.js';
 
 import { AuthController } from './auth.controller.js';
 import { AuthGuard } from './auth.guard.js';

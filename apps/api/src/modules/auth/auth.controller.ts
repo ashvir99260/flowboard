@@ -13,17 +13,17 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { PublicRoute } from '../common/decorators/public.decorator.js';
-import { EmptyQueryDto } from '../common/dto/empty-query.dto.js';
-import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
-import { ApiException } from '../common/errors/api-exception.js';
+import { PublicRoute } from '../../common/decorators/public.decorator.js';
+import { EmptyQueryDto } from '../../common/dto/empty-query.dto.js';
+import { ErrorResponseDto } from '../../common/dto/error-response.dto.js';
+import { ApiException } from '../../common/errors/api-exception.js';
 import {
   AuthResponseHeaders,
   ClearedSessionHeaders,
   documentedError,
   OriginDocumentation,
   SessionResponseHeaders,
-} from '../common/swagger/api-documentation.js';
+} from '../../common/swagger/api-documentation.js';
 
 import { EmptyAuthBodyDto, LogInDto, SignUpDto } from './auth.request.dto.js';
 import { SessionResponseDto } from './auth.response.dto.js';

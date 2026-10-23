@@ -20,7 +20,7 @@ The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our com
 
 [Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
-P02-04 completed Swagger operation summaries/descriptions and schema/header/request/response examples through shared Zod metadata and Nest documentation decorators. The next user follow-up prioritizes P02-05: [feature-based backend rules](BACKEND_GUIDELINES.md) based on the supplied NestJS structure article. P02-06 aligns auth/platform modules, extracts common config/utilities/infrastructure and separates tests before P02-03 membership work. D86 records the follow-up common-folder choice.
+P02-04 completed Swagger operation summaries/descriptions and schema/header/request/response examples through shared Zod metadata and Nest documentation decorators. The next user follow-up prioritizes P02-05: [feature-based backend rules](BACKEND_GUIDELINES.md) based on the supplied NestJS structure article. P02-06 aligns auth/platform modules, extracts common config/utilities/infrastructure and separates tests before P02-03 membership work. D86 records that common-folder choice; P02-13/D93 later separates config/utils/shared and moves features under modules.
 
 P02-07 applies the user's blank-line convention after exported declarations, including NestJS module classes, through shared lint presets. It precedes further feature work and preserves runtime code and generated contracts (D87).
 
@@ -61,7 +61,7 @@ flowchart LR
 
 PostgreSQL is authoritative. Redis provides queue transport and socket fanout; it is not the source of truth for tasks or permissions. Read paths initially resolve configuration from PostgreSQL without an application cache. This avoids invalidation complexity until measurements justify caching.
 
-Auth and platform source files, including DTOs and auth configuration, live directly in their feature directories with no subfolders (D89). Related DTO classes share feature/type files: auth request, auth response and health response groups (D92). Auth/platform unit and integration tests sit beside source with `.unit.spec.mjs`/`.integration.spec.mjs` suffixes (D90); helpers and bootstrap tests remain under `test/`. Shared infrastructure stays in `common/`; other feature modules may group DTOs when useful.
+Feature source lives under `apps/api/src/modules/<feature>/` (D93). Auth and platform stay flat with grouped DTOs, feature settings and colocated `.unit.spec.mjs`/`.integration.spec.mjs` tests (D89/D90/D92); helpers and bootstrap tests remain under `test/`. Reusable settings and pure helpers live in `src/config/` and `src/utils/`. SharedModule and logging live in `src/shared/`; `src/common/` retains HTTP decorators, DTO helpers, errors, filters and Swagger support.
 
 ### Package ownership
 
@@ -87,7 +87,7 @@ All workspaces have `package.json`, explicit `exports`, a local `tsconfig`, and 
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.
 
-`common` owns reusable application/Redis configuration, utilities, decorators, exception mapping and Swagger support; `platform` owns health and dependency probes. `auth` owns credentials, sessions and token verification. `workspaces` owns membership/invitations. `permissions` owns a single resource authorization policy. `hierarchy` owns container paths and archive operations. `statuses` and `fields` own scoped configuration. `tasks` composes both resolvers inside transactions. `activity` exposes stored events. `realtime` owns authenticated subscriptions and Redis fanout. `outbox` retries committed events.
+`config` owns reusable application/Redis settings; `utils` owns pure helpers; `shared` owns shared Nest modules/logging; `common` owns decorators, DTO helpers, exception mapping and Swagger support. Features live under `modules`: `platform` owns health and dependency probes; `auth` owns credentials, sessions and token verification; `workspaces` owns membership/invitations; `permissions` owns a single resource authorization policy; `hierarchy` owns container paths and archive operations; `statuses` and `fields` own scoped configuration; `tasks` composes both resolvers inside transactions; `activity` exposes stored events; `realtime` owns authenticated subscriptions and Redis fanout; `outbox` retries committed events.
 
 Controllers translate HTTP and call services; they contain no business rules or Prisma calls. Repositories centralize tenant filters and relation checks. Services orchestrate transactions; pure functions hold deterministic domain logic.
 

@@ -15,7 +15,7 @@ The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to ou
 
 [Workspace RBAC and DTO/entity design](docs/BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
-[Backend structure and coding rules](docs/BACKEND_GUIDELINES.md) define feature-owned Nest modules, DTO placement, provider exports, test layout and the Swagger workflow. The [API-scoped instructions](apps/api/AGENTS.md) apply these rules to future changes; P02-06 covers auth/platform/common ownership; P02-10 colocates auth/platform tests while retaining shared helpers and process tests.
+[Backend structure and coding rules](docs/BACKEND_GUIDELINES.md) define feature-owned Nest modules, DTO placement, provider exports, test layout and the Swagger workflow. The [API-scoped instructions](apps/api/AGENTS.md) apply these rules to future changes; P02-06 covers auth/platform/common ownership; P02-10 colocates auth/platform tests while retaining shared helpers and process tests; P02-13 moves features under modules and separates config/utils/shared.
 
 [Field validation reference](docs/FIELD_REFERENCE.md) defines every stored/embedded field and its enforcement layer; paginated APIs use cursor/limit only.
 
@@ -75,24 +75,26 @@ Applications cannot import one another. The OpenAPI tooling exception (D19) is n
 
 The planned build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
 
-Auth and platform source directories remain flat (D89): their DTOs and auth configuration sit beside controllers/services/modules. DTOs are grouped by feature and request/response type (D92): `auth.request.dto.ts`, `auth.response.dto.ts`, `health.response.dto.ts`. Their unit/integration tests sit beside source files with descriptive suffixes (D90). Common infrastructure, shared test helpers and process tests keep their existing grouping.
+Features live under `apps/api/src/modules/` (D93). Auth and platform remain flat (D89): grouped DTOs and auth configuration sit beside controllers/services/modules, with colocated unit/integration tests (D90/D92). `src/config/` holds reusable settings, `src/utils/` pure helpers, and `src/shared/` SharedModule and logging. SharedModule registers common HTTP filters/validation/serialization once; `src/common/` retains their implementations plus decorators, DTO helpers and Swagger support. Shared test helpers and process tests keep their existing grouping.
 
 ## Module responsibility and data ownership
 
-| Owner                                  | What belongs here                                                                             |
-| -------------------------------------- | --------------------------------------------------------------------------------------------- |
-| API `common`                           | Shared configuration, validation/serialization, request logging and sanitized errors          |
-| API `platform`                         | Liveness/readiness and dependency probes                                                      |
-| API `auth`                             | Credentials, session rotation, JWT verification; narrow global identity repository            |
-| API `workspaces`                       | Membership, invitations, verified workspace switching, last-admin protection                  |
-| API `permissions`                      | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions            |
-| API `hierarchy`                        | Typed parent relationships, container ordering/reparenting and subtree archive                |
-| API `statuses` / `fields`              | Scoped configuration changes and validation of affected descendants                           |
-| API `tasks`                            | Task CRUD/moves/reorders, composing shared validation inside a transaction                    |
-| API `activity` / `realtime` / `outbox` | Authorized feed reads / safe subscriptions and fanout / durable dispatch retries              |
-| Worker                                 | Verify persisted event identity, idempotent activity insertion and retryable publication      |
-| Database package                       | Tenant filters, relation checks, storage operations, locks and transaction-bound repositories |
-| Contracts / UI / web                   | Deterministic domain rules / plain presentation / data and interaction coordination           |
+| Owner                                                          | What belongs here                                                                             |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| API `config` / `utils`                                         | Reusable application/Redis settings / pure helpers                                            |
+| API `shared`                                                   | SharedModule validation/serialization/filter wiring and shared logging providers              |
+| API `common`                                                   | HTTP decorators, DTO helpers, sanitized errors/filters and Swagger support                    |
+| API `modules/platform`                                         | Liveness/readiness and dependency probes                                                      |
+| API `modules/auth`                                             | Credentials, session rotation, JWT verification; narrow global identity repository            |
+| API `modules/workspaces`                                       | Membership, invitations, verified workspace switching, last-admin protection                  |
+| API `modules/permissions`                                      | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions            |
+| API `modules/hierarchy`                                        | Typed parent relationships, container ordering/reparenting and subtree archive                |
+| API `modules/statuses` / `modules/fields`                      | Scoped configuration changes and validation of affected descendants                           |
+| API `modules/tasks`                                            | Task CRUD/moves/reorders, composing shared validation inside a transaction                    |
+| API `modules/activity` / `modules/realtime` / `modules/outbox` | Authorized feed reads / safe subscriptions and fanout / durable dispatch retries              |
+| Worker                                                         | Verify persisted event identity, idempotent activity insertion and retryable publication      |
+| Database package                                               | Tenant filters, relation checks, storage operations, locks and transaction-bound repositories |
+| Contracts / UI / web                                           | Deterministic domain rules / plain presentation / data and interaction coordination           |
 
 Controllers translate transport and call services. Services orchestrate policy and transactions; repositories own persistence. Pure contracts functions accept plain data, so both backend validation and UI previews use the same rules.
 

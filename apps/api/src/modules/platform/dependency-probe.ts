@@ -2,7 +2,7 @@ import { verifyDatabaseConnection } from '@flowboard/database';
 import { SilentLogger } from '@flowboard/logger';
 import { Redis } from 'ioredis';
 
-import { RedisConnectionOptions } from '../common/config/redis.config.js';
+import { RedisConnectionOptions } from '../../config/redis.config.js';
 
 import type { Logger } from '@flowboard/logger';
 

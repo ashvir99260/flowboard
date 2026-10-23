@@ -2,8 +2,8 @@ import { ErrorEnvelopeSchema } from '@flowboard/contracts';
 import { afterAll, beforeAll, expect, jest, test } from '@jest/globals';
 import request from 'supertest';
 
-import { createApplication } from '../../dist/application.js';
-import { HealthController } from '../../dist/platform/health.controller.js';
+import { createApplication } from '../../../dist/application.js';
+import { HealthController } from '../../../dist/modules/platform/health.controller.js';
 
 let app;
 beforeAll(async () => {

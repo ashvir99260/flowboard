@@ -1,12 +1,12 @@
 import { SilentLogger } from '@flowboard/logger';
 import { Module } from '@nestjs/common';
 
-import { AuthModule } from './auth/auth.module.js';
-import { CommonModule } from './common/common.module.js';
-import { PlatformModule } from './platform/platform.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { PlatformModule } from './modules/platform/platform.module.js';
+import { SharedModule } from './shared/shared.module.js';
 
-import type { AuthRuntime } from './auth/runtime.js';
-import type { DependencyProbe } from './platform/dependency-probe.js';
+import type { AuthRuntime } from './modules/auth/runtime.js';
+import type { DependencyProbe } from './modules/platform/dependency-probe.js';
 import type { Logger } from '@flowboard/logger';
 import type { DynamicModule } from '@nestjs/common';
 
@@ -20,7 +20,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [
-        CommonModule.forLogger(logger),
+        SharedModule.forLogger(logger),
         PlatformModule.forProbe(probe),
         AuthModule.forRuntime(auth, logger),
       ],

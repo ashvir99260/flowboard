@@ -4,10 +4,10 @@ import { initializeDatabase } from '@flowboard/database';
 import { createLogger, readLogLevel } from '@flowboard/logger';
 
 import { createApplication } from './application.js';
-import { readAuthSettings } from './auth/auth.config.js';
-import { createAuthRuntime } from './auth/runtime.js';
-import { readApplicationConfig } from './common/config/application.config.js';
-import { runtimeProbe } from './platform/dependency-probe.js';
+import { readApplicationConfig } from './config/application.config.js';
+import { readAuthSettings } from './modules/auth/auth.config.js';
+import { createAuthRuntime } from './modules/auth/runtime.js';
+import { runtimeProbe } from './modules/platform/dependency-probe.js';
 
 import type { Server } from 'node:http';
 

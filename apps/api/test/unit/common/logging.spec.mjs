@@ -3,8 +3,8 @@ import { EventEmitter } from 'node:events';
 import { createLogger, updateLogContext } from '@flowboard/logger';
 import { expect, test } from '@jest/globals';
 
-import { NestLogger } from '../../../dist/common/logging/nest-logger.js';
-import { requestLogging } from '../../../dist/common/logging/request-logging.js';
+import { NestLogger } from '../../../dist/shared/logging/nest-logger.js';
+import { requestLogging } from '../../../dist/shared/logging/request-logging.js';
 
 test('aborted requests emit one correlated outcome even outside their async context', () => {
   const records = [];

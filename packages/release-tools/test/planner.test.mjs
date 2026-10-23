@@ -130,8 +130,8 @@ test('docs, tests and build-only spec tooling do not release an application', as
   for (const path of [
     'README.md',
     'apps/api/test/new.test.ts',
-    'apps/api/src/auth/auth-guard.unit.spec.mjs',
-    'apps/api/src/platform/health.integration.spec.mjs',
+    'apps/api/src/modules/auth/auth-guard.unit.spec.mjs',
+    'apps/api/src/modules/platform/health.integration.spec.mjs',
     'apps/web/src/item.test.ts',
     'packages/openapi/src/index.ts',
     'packages/config-eslint/index.js',

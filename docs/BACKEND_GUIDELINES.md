@@ -1,18 +1,18 @@
 # Backend structure and coding rules
 
-Status: adopted repository rules, 23 October 2026 (D85/P02-05). P02-06 implements the auth/platform/common split and separated tests; P02-09/D89 keeps auth and platform source flat, with colocated feature tests in P02-10/D90. Future workspace files below illustrate conventions, not implemented endpoints. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
+Status: adopted repository rules, 23 October 2026 (D85/P02-05). P02-13/D93 places features under modules, separates config/utils and introduces SharedModule. Auth/platform remain flat (D89), with colocated tests (D90) and grouped DTOs (D92). Future workspace files below illustrate conventions, not implemented endpoints. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
 
 ## Basis and scope
 
 The requested [Encore NestJS structure guide](https://encore.dev/articles/nestjs-project-structure-best-practices) recommends grouping related code by feature, limiting module exports, separating transport DTOs from persistence, and keeping HTTP controllers thin. Flowboard adopts those organizational principles. The article is a design reference; repository rules and the fixed stack govern implementation.
 
-| Article guidance            | Flowboard rule                                                                                                       |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Feature folders             | One folder per domain under `apps/api/src/`; no app-wide controllers/services/DTOs directories.                      |
-| Module encapsulation        | Explicit Nest imports/providers/exports; only expose capabilities another feature needs.                             |
-| Shared/core concerns        | Use `common/` for shared infrastructure/config/utilities; `platform/` owns health and dependency probes (D86).       |
-| DTOs separate from entities | Shared Zod contracts → local `createZodDto` adapters → explicit safe responses; Prisma stays in `packages/database`. |
-| Unit and end-to-end tests   | Colocate auth/platform `.mjs` suites by feature, with explicit discovery and isolated integration fixtures (D90).    |
+| Article guidance            | Flowboard rule                                                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Feature folders             | One folder per domain under `apps/api/src/modules/`; no app-wide controllers/services/DTOs directories.                        |
+| Module encapsulation        | Explicit Nest imports/providers/exports; only expose capabilities another feature needs.                                       |
+| Shared/core concerns        | Use `config/` for shared settings, `utils/` for pure helpers, `shared/` for Nest modules and `common/` for HTTP helpers (D93). |
+| DTOs separate from entities | Shared Zod contracts → local `createZodDto` adapters → explicit safe responses; Prisma stays in `packages/database`.           |
+| Unit and end-to-end tests   | Colocate auth/platform `.mjs` suites by feature, with explicit discovery and isolated integration fixtures (D90).              |
 
 The article's TypeORM/class-validator examples, alternate error envelope and Encore migration are not adopted. NestJS, Prisma, Zod, Turborepo, PostgreSQL, Redis and the generated client remain the selected stack.
 
@@ -30,50 +30,59 @@ apps/api/
 │   ├── application.ts                # shared HTTP application setup
 │   ├── app.module.ts                 # module composition
 │   ├── spec-bootstrap.ts             # same controllers, isolated spec providers
+│   ├── config/
+│   │   ├── application.config.ts
+│   │   └── redis.config.ts
+│   ├── utils/
+│   │   └── read-boolean-setting.ts
+│   ├── shared/
+│   │   ├── shared.module.ts          # global filter/validation/serialization
+│   │   └── logging/
+│   │       ├── logging.module.ts
+│   │       ├── nest-logger.ts
+│   │       └── request-logging.ts
 │   ├── common/
-│   │   ├── common.module.ts          # global filter/validation/serialization
-│   │   ├── config/                   # application and shared Redis options
 │   │   ├── decorators/
 │   │   ├── dto/                      # errors and empty-query adapters
 │   │   ├── errors/
 │   │   ├── filters/
-│   │   ├── swagger/                  # shared error/header documentation
-│   │   └── utils/                    # small helpers with real consumers
-│   ├── platform/                     # health and dependency probes
-│   │   ├── platform.module.ts
-│   │   ├── health.controller.ts
-│   │   ├── dependency-probe.ts
-│   │   ├── health.response.dto.ts
-│   │   ├── health.integration.spec.mjs
-│   │   ├── http.integration.spec.mjs
-│   │   └── openapi.unit.spec.mjs
-│   ├── auth/
-│   │   ├── auth.module.ts
-│   │   ├── auth.controller.ts
-│   │   ├── auth.service.ts
-│   │   ├── auth.guard.ts
-│   │   ├── auth.config.ts            # auth-only settings
-│   │   ├── runtime.ts
-│   │   ├── cookie-policy.ts
-│   │   ├── auth.request.dto.ts
-│   │   ├── auth.response.dto.ts
-│   │   ├── auth-config.unit.spec.mjs
-│   │   ├── auth-guard.unit.spec.mjs
-│   │   ├── credentials.integration.spec.mjs
-│   │   ├── refresh.integration.spec.mjs
-│   │   └── outage.integration.spec.mjs
-│   └── workspaces/
-│       ├── workspaces.module.ts
-│       ├── workspaces.controller.ts
-│       ├── workspaces.service.ts
-│       └── dto/
-│           ├── workspaces.request.dto.ts
-│           └── workspaces.response.dto.ts
+│   │   └── swagger/                  # shared error/header documentation
+│   └── modules/
+│       ├── platform/                 # flat health/probe feature
+│       │   ├── platform.module.ts
+│       │   ├── health.controller.ts
+│       │   ├── dependency-probe.ts
+│       │   ├── health.response.dto.ts
+│       │   ├── health.integration.spec.mjs
+│       │   ├── http.integration.spec.mjs
+│       │   └── openapi.unit.spec.mjs
+│       ├── auth/                     # flat auth feature
+│       │   ├── auth.module.ts
+│       │   ├── auth.controller.ts
+│       │   ├── auth.service.ts
+│       │   ├── auth.guard.ts
+│       │   ├── auth.config.ts        # auth-only settings
+│       │   ├── runtime.ts
+│       │   ├── cookie-policy.ts
+│       │   ├── auth.request.dto.ts
+│       │   ├── auth.response.dto.ts
+│       │   ├── auth-config.unit.spec.mjs
+│       │   ├── auth-guard.unit.spec.mjs
+│       │   ├── credentials.integration.spec.mjs
+│       │   ├── refresh.integration.spec.mjs
+│       │   └── outage.integration.spec.mjs
+│       └── workspaces/               # future P02-03 example
+│           ├── workspaces.module.ts
+│           ├── workspaces.controller.ts
+│           ├── workspaces.service.ts
+│           └── dto/
+│               ├── workspaces.request.dto.ts
+│               └── workspaces.response.dto.ts
 └── test/
     ├── bootstrap/                    # Node startup/process tests
     ├── common/                       # per-suite setup and shared fixtures
-    ├── unit/                         # common configuration, lifecycle and helper suites
-    └── integration/                  # common HTTP integration suites
+    ├── unit/                         # config, lifecycle, logging and helper suites
+    └── integration/                  # shared HTTP integration suites
 packages/
 ├── contracts/src/                    # shared schemas, types, pure logic
 ├── database/                         # Prisma, migrations, scoped persistence
@@ -81,7 +90,7 @@ packages/
 └── api-client/src/generated/         # generated SDK/types/query options
 ```
 
-Auth and platform own their modules and focused DTO adapters; AppModule composes those with CommonModule. Shared code stays in `common/`, while auth-specific configuration remains in `auth/auth.config.ts`. Auth and platform have no source subfolders (D89). Auth/platform tests live directly beside their source, with `.unit.spec.mjs` and `.integration.spec.mjs` suffixes distinguishing purpose (D90). They still consume the compiled ESM application. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
+Domain modules live in `src/modules/`; AppModule composes AuthModule, PlatformModule and SharedModule. Reusable configuration and pure helpers live in `src/config/` and `src/utils/`. SharedModule and logging providers live in `src/shared/`; `common/` retains HTTP helpers. Auth-specific configuration remains in `modules/auth/auth.config.ts`. Auth and platform have no source subfolders (D89/D93). Auth/platform tests live directly beside their source, with `.unit.spec.mjs` and `.integration.spec.mjs` suffixes distinguishing purpose (D90). They still consume the compiled ESM application. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
 
 Keep DTO classes together by feature and request/response role (D92). Auth uses `auth.request.dto.ts` for signup/login/empty-body inputs and `auth.response.dto.ts` for sessions; health uses `health.response.dto.ts` for liveness/readiness outputs. These files sit beside their controllers without subfolders. Other features may use `dto/` for request, path, query and response adapters. Other features may add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
 
@@ -91,7 +100,7 @@ Each new feature has one Nest module owning its controllers and providers. `AppM
 
 Use constructor injection for services. A consumer imports the owning module and references its exported provider; importing a TypeScript class alone does not register it with Nest. Export only deliberately shared services or injection tokens, never all controllers/providers by default. These boundaries follow [Nest module encapsulation](https://docs.nestjs.com/modules).
 
-Avoid cycles: move orchestration to the feature responsible for the use case, or extract genuinely shared pure logic to contracts. Do not add `forwardRef()` as a routine workaround. Keep global modules exceptional and justified by a real cross-cutting lifecycle need. Do not add parallel shared/core folders. `common/` contains reusable infrastructure, not domain services or feature state; utilities must have an actual consumer.
+Avoid cycles: move orchestration to the feature responsible for the use case, or extract genuinely shared pure logic to contracts. Do not add `forwardRef()` as a routine workaround. Keep global modules exceptional and justified by a real cross-cutting lifecycle need. Use the explicit `shared/`, `common/`, `config/` and `utils/` ownership above; do not add a parallel core folder. Shared modules must have actual consumers, and common/helpers must not own domain state. Avoid a pass-through module that only re-exports all features.
 
 ## Controller, service and persistence responsibilities
 
@@ -123,7 +132,7 @@ Follow this order for every endpoint, including its first implementation:
 6. Keep common error/header documentation in `common/swagger/api-documentation.ts`. Feature-specific repeated documentation may live beside its controller. Do not hide runtime behavior or typed response checking inside a generic decorator factory.
 7. Add success, invalid-input, permission/tenant and relevant race tests. Validate examples against contracts and retain concrete schema references in exported-document tests. Run `pnpm gen:api` and `pnpm openapi:check`; generated client checks run in the build/tests. Never hand-edit OpenAPI or generated client files.
 
-The existing [auth controller](../apps/api/src/auth/auth.controller.ts), [contract schemas](../packages/contracts/src/auth.ts) and [documentation regressions](../packages/openapi/test/documentation.test.mjs) show the implemented conventions. The module and DTO file split preserves the exported OpenAPI contract. The [nestjs-zod reference](https://github.com/BenLorantfy/nestjs-zod) and [Nest operation decorators](https://docs.nestjs.com/openapi/operations) explain the underlying integration.
+The existing [auth controller](../apps/api/src/modules/auth/auth.controller.ts), [contract schemas](../packages/contracts/src/auth.ts) and [documentation regressions](../packages/openapi/test/documentation.test.mjs) show the implemented conventions. The module and DTO file split preserves the exported OpenAPI contract. The [nestjs-zod reference](https://github.com/BenLorantfy/nestjs-zod) and [Nest operation decorators](https://docs.nestjs.com/openapi/operations) explain the underlying integration.
 
 ## Coding and tests
 
@@ -139,6 +148,6 @@ For every implementation task, follow red → green → refactor, then the root 
 
 ## Logging boundaries
 
-`common/logging` owns the injectable logging module, Nest adapter and request middleware. API services receive the same Pino-backed `@flowboard/logger` facade; database functions accept it as an optional dependency. Production entrypoints create it from `LOG_LEVEL`. Spec export and default test fixtures use a silent instance. Controllers rely on the common request/error events instead of logging request payloads.
+`shared/logging` owns the injectable logging module, Nest adapter and request middleware. API services receive the same Pino-backed `@flowboard/logger` facade; database functions accept it as an optional dependency. Production entrypoints create it from `LOG_LEVEL`. Spec export and default test fixtures use a silent instance. Controllers rely on the common request/error events instead of logging request payloads.
 
 Keep Pino behind that shared facade so raw request/error serializers cannot bypass safe metadata. Use static semantic names with `logger.observe('feature.operation', async () => ...)` around an operation. Record completion after awaited transaction resolution. Let the global filter record sanitized HTTP errors. Add future permission/resolution/outbox/queue events where those real features are implemented, following the same policy; do not invent successful events for deferred behavior. See [LOGGING.md](LOGGING.md) for fields, correlation and debugging.

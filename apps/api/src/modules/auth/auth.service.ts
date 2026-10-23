@@ -6,8 +6,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { jwtVerify, SignJWT } from 'jose';
 import { z } from 'zod';
 
-import { ApiException } from '../common/errors/api-exception.js';
-import { ApiLoggerKey } from '../common/logging/logging.module.js';
+import { ApiException } from '../../common/errors/api-exception.js';
+import { ApiLoggerKey } from '../../shared/logging/logging.module.js';
 
 import { clearRefreshCookie, readRefreshCookie, refreshCookie } from './cookie-policy.js';
 import { AuthRuntimeKey } from './runtime.js';

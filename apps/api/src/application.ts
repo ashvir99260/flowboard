@@ -6,11 +6,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { AppModule } from './app.module.js';
-import { NestLogger } from './common/logging/nest-logger.js';
-import { requestLogging } from './common/logging/request-logging.js';
+import { NestLogger } from './shared/logging/nest-logger.js';
+import { requestLogging } from './shared/logging/request-logging.js';
 
-import type { AuthRuntime } from './auth/runtime.js';
-import type { DependencyProbe } from './platform/dependency-probe.js';
+import type { AuthRuntime } from './modules/auth/runtime.js';
+import type { DependencyProbe } from './modules/platform/dependency-probe.js';
 import type { Logger } from '@flowboard/logger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { IncomingMessage, ServerResponse } from 'node:http';

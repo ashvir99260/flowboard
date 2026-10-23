@@ -6,14 +6,14 @@ import { Test } from '@nestjs/testing';
 import { SignJWT } from 'jose';
 import request from 'supertest';
 
-import { AppModule } from '../../dist/app.module.js';
-import { startTestApplication } from '../../test/common/application.mjs';
+import { AppModule } from '../../../dist/app.module.js';
+import { startTestApplication } from '../../../test/common/application.mjs';
 import {
   AuthTestOrigin as origin,
   AuthTestSecret as secret,
   SignupFixture as signup,
-} from '../../test/common/auth-fixtures.mjs';
-import { ProtectedController } from '../../test/common/protected-controller.mjs';
+} from '../../../test/common/auth-fixtures.mjs';
+import { ProtectedController } from '../../../test/common/protected-controller.mjs';
 
 const records = [];
 const logger = createLogger({

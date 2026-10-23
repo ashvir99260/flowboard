@@ -1,9 +1,9 @@
 import { initializeDatabase } from '@flowboard/database';
 
 import { createApplication } from '../../dist/application.js';
-import { readAuthSettings } from '../../dist/auth/auth.config.js';
-import { createAuthRuntime } from '../../dist/auth/runtime.js';
-import { runtimeProbe } from '../../dist/platform/dependency-probe.js';
+import { readAuthSettings } from '../../dist/modules/auth/auth.config.js';
+import { createAuthRuntime } from '../../dist/modules/auth/runtime.js';
+import { runtimeProbe } from '../../dist/modules/platform/dependency-probe.js';
 
 import { AuthTestOrigin, AuthTestSecret } from './auth-fixtures.mjs';
 import { closeOnce } from './cleanup.mjs';
