@@ -37,6 +37,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         'MEMBERSHIP_EXISTS',
         'LAST_ADMIN',
         'CONFIG_CONFLICT',
+        'VERSION_CONFLICT',
         'CURSOR_STALE',
         'INVITATION_UNAVAILABLE',
       ].includes(exception.code)

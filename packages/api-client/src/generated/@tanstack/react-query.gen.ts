@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, createWorkspaceInvitation, getCurrentUser, getLiveness, getReadiness, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeWorkspaceMember, signUp, switchWorkspace, updateWorkspaceMember } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createWorkspaceInvitation, getCurrentUser, getLiveness, getNode, getReadiness, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeWorkspaceMember, signUp, switchWorkspace, updateNode, updateWorkspaceMember } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -212,6 +212,83 @@ export const getCurrentUserOptions = (options?: Options<GetCurrentUserData>) => 
     },
     queryKey: getCurrentUserQueryKey(options)
 });
+
+/**
+ * Create a hierarchy container
+ *
+ * Append a space, folder or list under its required live parent in the selected workspace. Administrator access and the current configuration revision are required.
+ */
+export const createNodeMutation = (options?: Partial<Options<CreateNodeData>>): UseMutationOptions<CreateNodeResponse, CreateNodeError, Options<CreateNodeData>> => {
+    const mutationOptions: UseMutationOptions<CreateNodeResponse, CreateNodeError, Options<CreateNodeData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createNode({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Archive a hierarchy subtree
+ *
+ * Atomically archive the live container, descendant containers and their live tasks. Preserve historical data and existing archived rows; repeated archive returns 404.
+ */
+export const archiveNodeMutation = (options?: Partial<Options<ArchiveNodeData>>): UseMutationOptions<ArchiveNodeResponse, ArchiveNodeError, Options<ArchiveNodeData>> => {
+    const mutationOptions: UseMutationOptions<ArchiveNodeResponse, ArchiveNodeError, Options<ArchiveNodeData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await archiveNode({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getNodeQueryKey = (options: Options<GetNodeData>) => createQueryKey('getNode', options);
+
+/**
+ * Read a live hierarchy container
+ *
+ * Read a container with a complete live ancestor chain in the selected workspace. Administrator access is required until member visibility is implemented.
+ */
+export const getNodeOptions = (options: Options<GetNodeData>) => queryOptions<GetNodeResponse, GetNodeError, GetNodeResponse, ReturnType<typeof getNodeQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getNode({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getNodeQueryKey(options)
+});
+
+/**
+ * Update a hierarchy container
+ *
+ * Change the name or visibility of a live container using node and workspace revisions. A no-op preserves timestamps and versions. Reparenting is not supported by this endpoint.
+ */
+export const updateNodeMutation = (options?: Partial<Options<UpdateNodeData>>): UseMutationOptions<UpdateNodeResponse, UpdateNodeError, Options<UpdateNodeData>> => {
+    const mutationOptions: UseMutationOptions<UpdateNodeResponse, UpdateNodeError, Options<UpdateNodeData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateNode({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listWorkspacesQueryKey = (options?: Options<ListWorkspacesData>) => createQueryKey('listWorkspaces', options);
 

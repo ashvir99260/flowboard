@@ -4,7 +4,11 @@ import { Reflector } from '@nestjs/core';
 
 import { ApiException } from '../../core/common/errors/api-exception.js';
 
-import { PermissionActionKey, PermissionService } from './permission.service.js';
+import {
+  ActiveWorkspaceKey,
+  PermissionActionKey,
+  PermissionService,
+} from './permission.service.js';
 
 import type { PermissionAction } from '@flowboard/contracts';
 import type { IdentitySession } from '@flowboard/database';
@@ -31,7 +35,11 @@ export class PermissionGuard implements CanActivate {
     if (!workspace)
       throw new ApiException(403, 'MEMBERSHIP_REQUIRED', 'Workspace membership required');
 
-    const target = UuidSchema.safeParse(request.params.workspaceId);
+    const activeScope = this.reflector.getAllAndOverride<boolean>(ActiveWorkspaceKey, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    const target = UuidSchema.safeParse(activeScope ? workspace.id : request.params.workspaceId);
     if (!target.success)
       throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid workspace ID', [
         { code: 'invalid_format', message: 'Expected workspace UUID', path: ['workspaceId'] },

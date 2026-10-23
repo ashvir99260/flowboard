@@ -4,6 +4,8 @@ import { ApiException } from '../../core/common/errors/api-exception.js';
 
 import type { PermissionAction, WorkspaceRole } from '@flowboard/contracts';
 
+export const ActiveWorkspaceKey = 'flowboard:active-workspace-permission';
+
 export const PermissionActionKey = 'flowboard:permission-action';
 
 @Injectable()
@@ -20,6 +22,8 @@ export class PermissionService {
       'workspace.read': ['admin', 'member'],
       'member.list': ['admin', 'member'],
       'member.manage': ['admin'],
+      'container.read': ['admin'],
+      'container.write': ['admin'],
     };
     if (!allowed[action]?.includes(context.role))
       throw new ApiException(403, 'FORBIDDEN', 'Access denied');

@@ -14,6 +14,8 @@ test('the spec-only bootstrap exposes real typed controller metadata without con
     '/v1/auth/switch-workspace',
     '/v1/invitations/accept',
     '/v1/me',
+    '/v1/nodes',
+    '/v1/nodes/{nodeId}',
     '/v1/workspaces',
     '/v1/workspaces/{workspaceId}/invitations',
     '/v1/workspaces/{workspaceId}/members',

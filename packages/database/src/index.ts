@@ -43,3 +43,5 @@ export type {
   MembershipPageQuery,
   MembershipPosition,
 } from './membership.entity.js';
+
+export type { NodeSnapshot } from './hierarchy-repository.js';

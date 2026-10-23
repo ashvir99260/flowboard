@@ -99,6 +99,8 @@ P02-23 corrects local Swagger execution by explicitly allowing the documented we
 
 P02-03 implements workspace membership and invitations through the existing schema, central tenant transactions and a single PermissionService/PermissionGuard. Its session-only reads and verified family-scoped switch permit recovery after membership removal without admitting that session to member routes. D103 specifies cursor bindings, invitation conflicts and lock order.
 
+P03-01 implements strict container creation/read/update/archive with admin-only access, typed node responses and versioned transactional invalidations. D104 defines append, no-op and subtree archive behavior; P03-02 adds member visibility and the tree.
+
 ### Module boundaries inside the API
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.
