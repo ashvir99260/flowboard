@@ -36,6 +36,7 @@ export function startProcess(args, options) {
       events.emit('change');
     });
   }
+
   return {
     exited,
     output: () => output,
@@ -64,6 +65,7 @@ export function startProcess(args, options) {
     },
     async stop(expectedSignal = null, expectedCode = expectedSignal ? null : 0) {
       if (!result && !spawnError) child.kill('SIGTERM');
+
       let timer;
       const timeout = new Promise((resolve) => {
         timer = setTimeout(() => {

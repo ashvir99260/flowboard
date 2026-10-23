@@ -45,9 +45,12 @@ test('all documented contract and field examples satisfy their actual validators
       expect(metadata.title).toBeTruthy();
       expect(metadata.description).toBeTruthy();
     }
+
     if (schema instanceof z.ZodObject)
       for (const [key, field] of Object.entries(schema.shape)) visit(field, `${path}.${key}`);
+
     if (schema instanceof z.ZodArray) visit(schema.element, `${path}[]`);
+
     if (
       schema instanceof z.ZodNullable ||
       schema instanceof z.ZodOptional ||

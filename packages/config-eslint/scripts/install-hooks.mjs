@@ -12,11 +12,13 @@ export function installHooks(cwd = root) {
   if (existing.error || (existing.status !== 0 && existing.status !== 1)) {
     throw new Error(`Cannot inspect existing hooks: ${existing.error?.message ?? existing.stderr}`);
   }
+
   if (existing.stdout.trim() && existing.stdout.trim() !== '.githooks') {
     throw new Error(
       `Preserving existing hooksPath: ${existing.stdout.trim()}. Integrate commitlint there explicitly.`,
     );
   }
+
   const result = spawnSync('git', ['config', '--local', 'core.hooksPath', '.githooks'], {
     cwd,
     encoding: 'utf8',

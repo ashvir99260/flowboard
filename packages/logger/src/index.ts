@@ -55,6 +55,7 @@ export function withLogContext<T>(input: LogContext, action: () => T): T {
 
 export function bindLogContext(action: () => void): () => void {
   const current = context.getStore() ?? {};
+
   return () => context.run(current, action);
 }
 
@@ -65,13 +66,16 @@ export function updateLogContext(input: LogContext): void {
 
 export function readLogLevel(input: string | undefined): LogLevel {
   if (input === undefined) return 'info';
+
   if (input === 'silent' || Object.hasOwn(pino.levels.values, input)) return input as LogLevel;
+
   throw new Error('LOG_LEVEL must be trace, debug, info, warn, error, fatal, or silent');
 }
 
 function safeFields(fields: LogFields) {
   const strings = ['component', 'operation', 'code', 'method', 'outcome'] as const;
   const numbers = ['statusCode', 'durationMs', 'port'] as const;
+
   return {
     ...Object.fromEntries(
       strings
@@ -137,6 +141,7 @@ export function createLogger(options: {
     (level: Exclude<LogLevel, 'silent'>): Write =>
     (event, fields = {}) => {
       if (!backend.isLevelEnabled(level) || !identifier.test(event)) return;
+
       try {
         backend[level]({
           event,
@@ -160,6 +165,7 @@ export function createLogger(options: {
       try {
         const result = await action();
         logger.debug('operation.completed', { operation, durationMs: performance.now() - start });
+
         return result;
       } catch (error) {
         logger.debug('operation.failed', { operation, durationMs: performance.now() - start });
@@ -167,6 +173,7 @@ export function createLogger(options: {
       }
     },
   };
+
   return Object.freeze(logger);
 }
 

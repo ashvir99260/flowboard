@@ -102,7 +102,9 @@ test('all seeded values fit their effective fields and visible status fixtures',
     expect(typeof task.custom_fields.effort).toBe('number');
     expect(task.custom_fields.effort).toBeGreaterThan(0);
     if (task.list === 'Product backlog') expect(idsFor('space')).toContain(task.custom_fields.team);
+
     if (task.list === 'Private launch') expect(idsFor('list')).toContain(task.custom_fields.team);
+
     if (task.list === 'Discovery') {
       expect(Object.keys(task.custom_fields)).toEqual(['effort']);
       expect(task.status_key).not.toBe('closed');

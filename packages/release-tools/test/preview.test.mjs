@@ -34,23 +34,30 @@ test('Vercel creates a preview from the released SHA and returns its ready URL w
       const parsed = new URL(url);
       calls.push(`${init.method} ${parsed.pathname}`);
       if (parsed.pathname === '/v9/projects/prj_test') return json({ name: 'flowboard-web' });
+
       if (parsed.pathname === '/v7/deployments') {
         if (!parsed.searchParams.has('target'))
           return json({ deployments: [{ uid: 'dpl_bootstrap' }] });
+
         assert.equal(parsed.searchParams.get('target'), 'preview');
         assert.equal(parsed.searchParams.get('sha'), sha);
+
         return json({ deployments: [] });
       }
+
       if (parsed.pathname === '/v13/deployments') {
         const body = JSON.parse(init.body);
         assert.equal(body.target, undefined);
         assert.equal(body.autoAssignCustomDomains, false);
         assert.deepEqual(body.gitSource, { ref: sha, repoId: '123', sha, type: 'github' });
         assert.deepEqual(body.meta, meta);
+
         return json({ id: ready.id });
       }
+
       if (parsed.pathname === '/v13/deployments/dpl_preview')
         return json({ ...ready, readyState: ++polls === 1 ? 'BUILDING' : 'READY' });
+
       assert.fail(`Unexpected provider request ${parsed.pathname}`);
     },
   });
@@ -66,6 +73,7 @@ test('an empty Vercel project fails before its first deployment can become produ
       assert.equal(init.method, 'GET');
       if (new URL(url).pathname === '/v9/projects/prj_test')
         return json({ name: 'flowboard-preview' });
+
       return json({ deployments: [] });
     },
   });
@@ -80,16 +88,21 @@ for (const target of [null, undefined, 'preview'])
         assert.equal(init.method, 'GET');
         const parsed = new URL(url);
         if (parsed.pathname === '/v9/projects/prj_test') return json({ name: 'flowboard-web' });
+
         if (parsed.pathname === '/v7/deployments') {
           if (!parsed.searchParams.has('until'))
             return json({
               deployments: [{ meta, target: 'production', uid: 'dpl_production' }],
               pagination: { next: 50 },
             });
+
           assert.equal(parsed.searchParams.get('until'), '50');
+
           return json({ deployments: [{ uid: ready.id, target, state: 'BUILDING', meta }] });
         }
+
         if (parsed.pathname === '/v13/deployments/dpl_preview') return json({ ...ready, target });
+
         assert.fail(`Unexpected provider request ${parsed.pathname}`);
       },
     });
@@ -110,9 +123,12 @@ for (const state of ['ERROR', 'CANCELED', 'BLOCKED', 'BUILDING'])
         assert.equal(init.method, 'GET');
         const path = new URL(url).pathname;
         if (path === '/v9/projects/prj_test') return json({ name: 'flowboard-web' });
+
         if (path === '/v7/deployments')
           return json({ deployments: [{ uid: ready.id, target: null, state: 'BUILDING', meta }] });
+
         if (path === '/v13/deployments/dpl_preview') return json({ ...ready, readyState: state });
+
         assert.fail(`Unexpected provider request ${path}`);
       },
     });
@@ -133,9 +149,12 @@ for (const value of [
         assert.equal(init.method, 'GET');
         const path = new URL(url).pathname;
         if (path === '/v9/projects/prj_test') return json({ name: 'flowboard-web' });
+
         if (path === '/v7/deployments')
           return json({ deployments: [{ uid: ready.id, target: null, meta }] });
+
         if (path === '/v13/deployments/dpl_preview') return json({ ...ready, ...value });
+
         assert.fail(`Unexpected provider request ${path}`);
       },
     });
@@ -150,7 +169,9 @@ test('a stale workflow cannot create a Vercel preview', async () => {
     fetch: async (url, init) => {
       assert.equal(init.method, 'GET');
       if (new URL(url).pathname === '/v9/projects/prj_test') return json({ name: 'flowboard-web' });
+
       const parsed = new URL(url);
+
       return json({
         deployments: parsed.searchParams.has('target') ? [] : [{ uid: 'dpl_bootstrap' }],
       });

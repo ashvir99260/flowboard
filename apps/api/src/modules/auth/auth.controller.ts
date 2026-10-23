@@ -117,10 +117,12 @@ export class AuthController {
         request.socket.remoteAddress ?? 'unknown',
       );
       response.setHeader('Set-Cookie', session.cookie);
+
       return session.body;
     } catch (error) {
       if (error instanceof ApiException && error.getStatus() === 401)
         response.setHeader('Set-Cookie', this.auth.expiredCookie());
+
       throw error;
     }
   }
@@ -204,6 +206,7 @@ export class AuthController {
   ): Promise<SessionEnvelope> {
     const session = await this.auth.signUp(input, request.socket.remoteAddress ?? 'unknown');
     response.setHeader('Set-Cookie', session.cookie);
+
     return session.body;
   }
   @Post('login')
@@ -248,6 +251,7 @@ export class AuthController {
   ): Promise<SessionEnvelope> {
     const session = await this.auth.logIn(input, request.socket.remoteAddress ?? 'unknown');
     response.setHeader('Set-Cookie', session.cookie);
+
     return session.body;
   }
 }

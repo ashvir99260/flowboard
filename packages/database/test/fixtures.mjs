@@ -9,6 +9,7 @@ export async function insert(client, table, values) {
     `INSERT INTO "${table}" (${columns}) VALUES (${parameters}) RETURNING *`,
     entries.map(([, value]) => value),
   );
+
   return rows[0];
 }
 
@@ -60,6 +61,7 @@ export async function fixtures(client) {
     workspace_id: a.workspace.id,
   });
   await insert(client, 'seed_states', { version: 'integration-fixture' });
+
   return { a, b, otherUser, session, user };
 }
 
@@ -149,5 +151,6 @@ async function tenant(client, user, name) {
     type: 'task.status_changed',
     workspace_id: workspace.id,
   });
+
   return { event, folder, list, space, status, task, workspace };
 }

@@ -28,6 +28,7 @@ export function parseQueryEntries(entries: Iterable<readonly [string, string]>) 
     if (Object.hasOwn(query, key)) {
       throw new z.ZodError([{ code: 'custom', message: 'Duplicate query parameter', path: [key] }]);
     }
+
     Object.defineProperty(query, key, {
       configurable: true,
       enumerable: true,
@@ -35,5 +36,6 @@ export function parseQueryEntries(entries: Iterable<readonly [string, string]>) 
       writable: true,
     });
   }
+
   return PaginationQuerySchema.parse(query);
 }

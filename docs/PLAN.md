@@ -85,6 +85,8 @@ All workspaces have `package.json`, explicit `exports`, a local `tsconfig`, and 
 
 All authored workspaces and root tooling use ESM with explicit module manifests and verbatim TypeScript syntax (D95). Keep NodeNext for Node-compatible output and ESNext/Bundler for Next.js. Shared lint rejects CommonJS loading/exports; compiler fixtures verify actual ESM execution and reject accidental CommonJS rewriting. Generated framework/vendor internals remain managed by their tools.
 
+Shared Node, React and Next lint presets also enforce readable control-flow spacing (P02-17/D97): blank lines after complete if/else chains and before returns, plus after returns where another statement follows. Keep closing braces and else clauses attached and retain the existing export/module spacing. Autofix must preserve syntax and remain stable under Prettier.
+
 ### Module boundaries inside the API
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.

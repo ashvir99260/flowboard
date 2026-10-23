@@ -506,6 +506,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: adopt feature-first core layers`.
   - **Completion evidence:** [P02-16](evidence/P02-16.md): guarded layer directions, explicit Express, preserved contracts and flat features; 340 tests and all build/lint/type/format/contract/Docker gates pass.
 
+- [x] **P02-17 — Shared control-flow spacing for readable code**
+  - **Goal:** Separate conditionals and return paths visually in frontend, backend and shared code.
+  - **Requirements:** R128; preserve R118.
+  - **Files:** `packages/config-eslint/src/spacing.mjs`, `test/spacing.test.mjs`, autofixed authored app/package/tooling files, shared coding rules, plan/decision/matrix docs and task evidence.
+  - **Dependencies:** P02-16; prioritized by the user's readability request.
+  - **Acceptance:** Node, React and Next presets require blank lines after complete if/else chains, before returns and after returns when a sibling statement follows. Preserve export spacing, comments, attached else clauses, return expressions, generated exclusions and JSON formatting. Do not add blank lines before closing braces or impose unrelated style rewrites.
+  - **Validation:** Red/green real ESLint fixtures across three presets, comment/early-return/JSX cases, autofix/Prettier stability and unchanged syntax trees; root build/lint/typecheck/test/format and OpenAPI preservation checks. Docker checks if runtime syntax changes. G01–G06 as applicable.
+  - **Commit:** `style: separate control flow with blank lines`.
+  - **Completion evidence:** [P02-17](evidence/P02-17.md): three-preset spacing/autofix tests, unchanged existing syntax and 348 tests; build/lint/type/format/contract checks pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

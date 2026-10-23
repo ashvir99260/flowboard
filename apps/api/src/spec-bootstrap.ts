@@ -9,5 +9,6 @@ export async function exportOpenApi() {
     async close() {},
   });
   await app.close();
+
   return document;
 }

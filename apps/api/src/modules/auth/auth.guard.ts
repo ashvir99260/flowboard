@@ -26,13 +26,17 @@ export class AuthGuard implements CanActivate {
         IncomingMessage & { identity?: Awaited<ReturnType<AuthService['authenticate']>> }
       >();
     if (policy === 'health') return true;
+
     if (policy === 'auth' || policy === 'cookie') {
       this.auth.assertOrigin(request.headers.origin);
+
       return true;
     }
+
     request.identity = await this.auth.authenticate(request.headers.authorization);
     if (!request.identity.activeWorkspace)
       throw new ApiException(403, 'MEMBERSHIP_REQUIRED', 'Workspace membership required');
+
     return true;
   }
 }

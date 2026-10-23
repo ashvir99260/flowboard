@@ -33,6 +33,7 @@ export async function publishRelease(
   port: PublicationPort,
 ): Promise<ReleaseManifest> {
   if (!/^[\w.-]+\/[\w.-]+$/.test(repository)) throw new Error('Invalid GitHub repository');
+
   const image = `ghcr.io/${repository.split('/')[0]!.toLowerCase()}/flowboard-${release.app}`;
   const identity = {
     schemaVersion: 1 as const,
@@ -46,6 +47,7 @@ export async function publishRelease(
   const existingTag = await port.readTag(release.tag);
   if ((existingTag && existingTag !== release.sha) || (remote && !existingTag))
     throw new Error(`Conflicting tag ${release.tag}`);
+
   if (remote && !remote.draft) {
     const manifest = await port.readManifest(remote);
     if (
@@ -56,16 +58,22 @@ export async function publishRelease(
       !/^sha256:[a-f0-9]{64}$/.test(manifest.digest)
     )
       throw new Error(`Conflicting or missing published manifest for ${release.tag}`);
+
     return manifest;
   }
+
   const digest = await port.ensureImage(release, image);
   if (!/^sha256:[a-f0-9]{64}$/.test(digest)) throw new Error('Registry returned an invalid digest');
+
   const manifest = { ...identity, digest };
   if (!existingTag) await port.createTag(release);
+
   remote ??= await port.createDraft(release);
   if ((await port.readTag(release.tag)) !== release.sha)
     throw new Error(`Conflicting tag ${release.tag}`);
+
   await port.uploadManifest(remote, manifest);
   await port.publish(remote);
+
   return manifest;
 }

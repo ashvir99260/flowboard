@@ -22,6 +22,7 @@ export async function initializeDatabase(options: InitializeOptions): Promise<{ 
   const logger = options.logger ?? SilentLogger;
   const databaseUrl = options.directDatabaseUrl ?? options.databaseUrl;
   if (!databaseUrl) throw new Error('DATABASE_URL is required');
+
   const lock = new pg.Client({
     connectionString: databaseUrl,
     connectionTimeoutMillis: 5_000,
@@ -61,14 +62,17 @@ export async function initializeDatabase(options: InitializeOptions): Promise<{ 
       },
     );
     if (lockLost) throw new Error('Initialization lock lost');
+
     logger.info('database.migration.completed', { component: 'database' });
     stage = 'seed';
     const seeded = options.demoSeed === true ? await seedDemoData(databaseUrl) : false;
     if (lockLost) throw new Error('Initialization lock lost');
+
     logger.info('database.initialization.completed', {
       component: 'database',
       outcome: seeded ? 'seeded' : 'unchanged',
     });
+
     return { seeded };
   } catch {
     logger.error('database.initialization.failed', {

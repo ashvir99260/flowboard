@@ -6,7 +6,9 @@ export function readRefreshCookie(header: string | undefined): string | undefine
     .map((part) => part.trim())
     .filter((part) => part.startsWith(`${name}=`));
   if (values.length !== 1) return undefined;
+
   const value = values[0]!.slice(name.length + 1);
+
   return /^[A-Za-z0-9_-]{43}$/.test(value) ? value : undefined;
 }
 

@@ -27,6 +27,7 @@ export function createDatabase(connectionString: string, logger: Logger = Silent
     action: (store: ReturnType<typeof repositories>) => Promise<T>,
   ) {
     const request = tenantRequest(input);
+
     return logger.observe(write ? 'database.transaction.write' : 'database.transaction.read', () =>
       client.$transaction(
         async (tx: Prisma.TransactionClient) => {
@@ -35,11 +36,13 @@ export function createDatabase(connectionString: string, logger: Logger = Silent
           } else {
             await tx.$executeRaw`SET TRANSACTION READ ONLY`;
           }
+
           const membership = await tx.membership.findFirst({
             where: { userId: request.actorUserId, workspaceId: request.workspaceId },
           });
           if (!membership)
             throw new DatabaseError('MEMBERSHIP_REQUIRED', 'Workspace membership required');
+
           let active = true;
           const store = repositories(tx, { ...request, role: membership.role }, () => {
             if (!active) throw new DatabaseError('INTERNAL_ERROR', 'Transaction is closed');

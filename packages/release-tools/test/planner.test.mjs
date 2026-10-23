@@ -21,6 +21,7 @@ async function fixture(t) {
   const commit = (message) => {
     git('add', '.');
     git('-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-qm', message);
+
     return git('rev-parse', 'HEAD');
   };
   git('init', '-q');
@@ -66,6 +67,7 @@ async function fixture(t) {
   const base = commit('chore: initial');
   const publishedTags = apps.map((app) => `${app}/v0.1.0`);
   for (const tag of publishedTags) git('tag', tag);
+
   return {
     cwd,
     git,

@@ -12,8 +12,10 @@ function bootstrap() {
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     logger.fatal('worker.startup.failed', { code: 'INVALID_PORT' });
     process.exitCode = 1;
+
     return;
   }
+
   // TODO(P11-02): Replace process-only liveness with the real BullMQ worker lifecycle.
   const server = createServer((socket) => socket.end(() => socket.destroy()));
   server.on('error', () => {

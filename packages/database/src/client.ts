@@ -8,6 +8,7 @@ export function createClient(connectionString: string, timeoutMs?: number): Pris
   if (!['postgres:', 'postgresql:'].includes(url.protocol)) {
     throw new Error('A PostgreSQL connection URL is required');
   }
+
   return new PrismaClient({
     adapter: new PrismaPg({
       connectionString,

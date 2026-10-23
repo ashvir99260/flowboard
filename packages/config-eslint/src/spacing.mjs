@@ -6,7 +6,8 @@ export default {
   rules: {
     'padding-line-between-statements': [
       'error',
-      { blankLine: 'always', next: '*', prev: 'export' },
+      { blankLine: 'always', next: '*', prev: ['export', 'if', 'return'] },
+      { blankLine: 'always', next: 'return', prev: '*' },
     ],
   },
 };

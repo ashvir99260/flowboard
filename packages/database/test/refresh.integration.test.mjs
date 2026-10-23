@@ -21,6 +21,7 @@ async function fresh(expiresAt = new Date(Date.now() + 86400_000)) {
     },
     credential,
   );
+
   return {
     credential,
     session,

@@ -14,6 +14,7 @@ async function inspect(code, file = 'apps/api/src/quality-fixture.ts', config = 
   const eslint = new ESLint({ cwd: root, fix, overrideConfig: config, overrideConfigFile: true });
   const [result] = await eslint.lintText(code, { filePath: file });
   assert.ok(!result.messages.some((message) => message.fatal), JSON.stringify(result.messages));
+
   return result;
 }
 const hasRule = (result, rule) => result.messages.some((message) => message.ruleId === rule);
@@ -124,9 +125,9 @@ test('literal properties sort while destructuring and positional parameters stay
 
 test('sorting preserves tagged-template and coercion calls and inherited binding reads', async () => {
   const fixtures = [
-    'const trace = []; function tag([value]) { trace.push(value); return value; } const object = { zebra: tag`zebra`, alpha: tag`alpha` }; JSON.stringify([trace, object]);',
+    'const trace = []; function tag([value]) { trace.push(value);\n\nreturn value; } const object = { zebra: tag`zebra`, alpha: tag`alpha` }; JSON.stringify([trace, object]);',
     'let counter = 0; const source = { valueOf() { return ++counter; } }; const object = { zebra: +source, alpha: +source }; JSON.stringify(object);',
-    'const trace = []; Object.defineProperties(Object.prototype, { zebra: { get() { trace.push("zebra"); return 1; } }, alpha: { get() { trace.push("alpha"); return 2; } } }); const { zebra, alpha } = {}; JSON.stringify([trace, zebra, alpha]);',
+    'const trace = []; Object.defineProperties(Object.prototype, { zebra: { get() { trace.push("zebra");\n\nreturn 1; } }, alpha: { get() { trace.push("alpha");\n\nreturn 2; } } }); const { zebra, alpha } = {}; JSON.stringify([trace, zebra, alpha]);',
   ];
   for (const code of fixtures) {
     const result = await inspect(code, undefined, node, true);

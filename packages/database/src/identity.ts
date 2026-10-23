@@ -49,9 +49,11 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
           if (meta.modelName === 'User' && emailConstraint)
             throw new DatabaseError('EMAIL_IN_USE', 'Email is already registered');
         }
+
         if (['P1001', 'P1002', 'P1017', 'ECONNREFUSED', 'ETIMEDOUT'].includes(String(error.code)))
           throw new DatabaseError('SERVICE_UNAVAILABLE', 'Identity storage unavailable');
       }
+
       throw error;
     }
   }
@@ -70,6 +72,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
       : null;
     if (workspaceId && !membership)
       throw new DatabaseError('MEMBERSHIP_REQUIRED', 'Workspace membership required');
+
     return {
       activeWorkspace: membership ? { ...membership.workspace, role: membership.role } : null,
       expiresAt: credential.expiresAt,
@@ -86,6 +89,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
     await tx.refreshSession.create({
       data: { ...credential, activeWorkspaceId: workspaceId, userId },
     });
+
     return describe(tx, userId, credential, workspaceId);
   }
   async function withCredential<T>(
@@ -95,39 +99,48 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
   ): Promise<T> {
     if (!/^[a-f0-9]{64}$/.test(digest))
       throw new DatabaseError('VALIDATION_FAILED', 'Invalid credential digest');
+
     return available(async () => {
       const owner = await client.refreshSession.findUnique({
         where: { tokenDigest: digest },
         select: { userId: true },
       });
       if (!owner) return missing;
+
       return client.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT id FROM users WHERE id = ${owner.userId}::uuid FOR UPDATE`;
         const row = await tx.refreshSession.findUnique({ where: { tokenDigest: digest } });
         if (!row) return missing;
+
         // Read after the lock: a waited-on rotation may have created newer rows.
         const [clock] = await tx.$queryRaw<
           { now: Date }[]
         >`SELECT clock_timestamp()::timestamptz(3) AS now`;
         if (!clock) throw new Error('Database clock unavailable');
+
         return operation(tx, row, clock.now);
       });
     });
   }
+
   return {
     async rotate(digest: string, replacementDigest: string): Promise<RefreshResult> {
       if (!/^[a-f0-9]{64}$/.test(replacementDigest))
         throw new DatabaseError('VALIDATION_FAILED', 'Invalid replacement digest');
+
       return withCredential<RefreshResult>(digest, { status: 'invalid' }, async (tx, row, now) => {
         if (row.usedAt) {
           await tx.refreshSession.updateMany({
             where: { userId: row.userId, familyId: row.familyId, revokedAt: null },
             data: { revokedAt: now },
           });
+
           // Returning commits revocation; throwing here would roll it back.
           return { status: 'reused' };
         }
+
         if (row.revokedAt || row.expiresAt <= now) return { status: 'invalid' };
+
         const session = await describe(tx, row.userId, row, row.activeWorkspaceId);
         await tx.refreshSession.update({ where: { id: row.id }, data: { usedAt: now } });
         const replacement = await tx.refreshSession.create({
@@ -143,6 +156,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
           where: { id: row.id },
           data: { replacedById: replacement.id },
         });
+
         return { session, status: 'rotated' };
       });
     },
@@ -158,6 +172,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
       const data = SignUpSchema.parse(input);
       validateCredential(credential);
       const passwordHash = await hashPassword(data.password);
+
       return available(() =>
         client.$transaction(async (tx) => {
           const user = await tx.user.create({
@@ -192,6 +207,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
               },
             });
           }
+
           return open(tx, user.id, credential);
         }),
       );
@@ -199,6 +215,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
     async logIn(input: LogIn, credential: SessionCredential) {
       const data = LogInSchema.parse(input);
       validateCredential(credential);
+
       return available(async () => {
         const user = await client.user.findUnique({ where: { email: data.email } });
         const matches = await verifyPassword(
@@ -207,11 +224,13 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
         );
         if (!user || !matches)
           throw new DatabaseError('UNAUTHENTICATED', 'Invalid email or password');
+
         return client.$transaction(async (tx) => {
           await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id}::uuid FOR UPDATE`;
           const current = await tx.user.findUnique({ where: { id: user.id } });
           if (!current || current.passwordHash !== user.passwordHash)
             throw new DatabaseError('UNAUTHENTICATED', 'Invalid email or password');
+
           return open(tx, user.id, credential);
         });
       });
@@ -221,6 +240,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
       UuidSchema.parse(input.familyId);
       UuidSchema.parse(input.userId);
       if (input.workspaceId !== null) UuidSchema.parse(input.workspaceId);
+
       return available(() =>
         client.$transaction(
           async (tx) => {
@@ -235,6 +255,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
             });
             if (!row || row.activeWorkspaceId !== input.workspaceId)
               throw new DatabaseError('UNAUTHENTICATED', 'Session is unavailable');
+
             return describe(tx, row.userId, row, row.activeWorkspaceId);
           },
           { isolationLevel: 'RepeatableRead' },

@@ -182,6 +182,7 @@ test('successful creation injects only the verified workspace and supports keyse
   const pages = await database.read(context(), async (view) => {
     const first = await view.nodes.children({ limit: 1, parentId: null });
     const second = await view.nodes.children({ afterId: first[0].id, limit: 1, parentId: null });
+
     return [...first, ...second];
   });
   expect(new Set(pages.map((node) => node.id))).toEqual(new Set([data.a.space.id, created.id]));
@@ -199,6 +200,7 @@ test('case-insensitive UUIDs work across nested cursor pages', async () => {
   const pages = await database.read(context(), async (view) => {
     const first = await view.nodes.children({ limit: 1, parentId });
     const second = await view.nodes.children({ afterId: first[0].id, limit: 1, parentId });
+
     return [...first, ...second];
   });
   expect(new Set(pages.map((node) => node.id)).size).toBe(2);
@@ -243,6 +245,7 @@ test('membership revocation wins over a write waiting for the workspace lock', a
       waiting = true;
       break;
     }
+
     await setTimeout(10);
   }
   if (!waiting) {
@@ -250,6 +253,7 @@ test('membership revocation wins over a write waiting for the workspace lock', a
     await pending;
     throw new Error('The member write never waited for the workspace lock');
   }
+
   await postgres.client.query('DELETE FROM memberships WHERE user_id = $1 AND workspace_id = $2', [
     data.user.id,
     data.b.workspace.id,

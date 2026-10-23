@@ -19,6 +19,7 @@ export function requestLogging(logger: Logger) {
       let completed = false;
       const finish = bindLogContext(() => {
         if (completed) return;
+
         completed = true;
         const route = typeof request.route?.path === 'string' ? request.route.path : 'unmatched';
         const aborted = !response.writableFinished;

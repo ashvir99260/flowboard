@@ -5,6 +5,7 @@ import { exportOpenApi } from '@flowboard/api/spec';
 
 function ordered(value) {
   if (Array.isArray(value)) return value.map(ordered);
+
   if (value && typeof value === 'object') {
     return Object.fromEntries(
       Object.entries(value)
@@ -12,6 +13,7 @@ function ordered(value) {
         .map(([key, item]) => [key, ordered(item)]),
     );
   }
+
   return value;
 }
 

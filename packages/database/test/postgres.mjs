@@ -33,6 +33,7 @@ export async function startPostgres() {
   const stop = () => execFileSync('docker', ['rm', '--force', name], { stdio: 'pipe' });
   const connectionUrl = () => {
     const mapping = execFileSync('docker', ['port', name, '5432/tcp'], { encoding: 'utf8' }).trim();
+
     return `postgresql://postgres:${password}@${mapping}/flowboard_test`;
   };
   try {
@@ -50,6 +51,7 @@ export async function startPostgres() {
       },
       stop,
     };
+
     return database;
   } catch (error) {
     stop();
@@ -62,6 +64,7 @@ async function connect(connectionString) {
     const client = new pg.Client({ connectionString });
     try {
       await client.connect();
+
       return client;
     } catch {
       await client.end();
@@ -113,5 +116,6 @@ export async function applicationUrl(database) {
   const url = new URL(database.connectionString);
   url.username = role;
   url.password = password;
+
   return url.toString();
 }

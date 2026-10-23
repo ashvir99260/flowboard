@@ -23,20 +23,25 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
     if (response.status === 404 && method === 'GET') return null;
+
     if (!response.ok) throw new Error(`GitHub ${method} ${path} failed (${response.status})`);
+
     return response.status === 204 ? null : ((await response.json()) as T);
   };
   const port: PublicationPort = {
     async readRelease(tag) {
       const published = await api<ApiRelease>(`/releases/tags/${encodeURIComponent(tag)}`);
       if (published) return published;
+
       // The tag endpoint returns published releases only. Authenticated listing
       // is required to resume a draft after an interrupted upload/publication.
       for (let page = 1; ; page++) {
         const releases = await api<ApiRelease[]>(`/releases?per_page=100&page=${page}`);
         if (!releases) throw new Error('Cannot inspect draft releases');
+
         const draft = releases.find((release) => release.tag_name === tag);
         if (draft) return draft;
+
         if (releases.length < 100) return null;
       }
     },
@@ -47,16 +52,19 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
       for (let depth = 0; ref?.object.type === 'tag' && depth < 8; depth++)
         ref = await api(`/git/tags/${ref.object.sha}`);
       if (ref && ref.object.type !== 'commit') throw new Error(`Invalid release tag ${tag}`);
+
       return ref?.object.sha ?? null;
     },
     async readManifest(remote) {
       const value = await api<ApiRelease>(`/releases/${remote.id}`);
       const asset = value?.assets.find((entry) => entry.name === 'release.json');
       if (!asset) return null;
+
       const response = await fetch(`${baseUrl}/repos/${repository}/releases/assets/${asset.id}`, {
         headers: { Accept: 'application/octet-stream', Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error(`Cannot read release manifest (${response.status})`);
+
       return (await response.json()) as ReleaseManifest;
     },
     ensureImage,
@@ -72,13 +80,16 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
         body: `Independent ${release.app} release from ${release.sha}.\n\nSee release.json for the immutable container digest and source manifest.`,
       });
       if (!remote) throw new Error('GitHub did not return a draft release');
+
       return remote;
     },
     async uploadManifest(remote, manifest) {
       const value = await api<ApiRelease>(`/releases/${remote.id}`);
       if (!value?.draft) throw new Error('Refusing to modify a published release');
+
       const existing = value.assets.find((asset) => asset.name === 'release.json');
       if (existing) await api(`/releases/assets/${existing.id}`, 'DELETE');
+
       const url = new URL(value.upload_url.replace(/\{.*$/, ''));
       url.searchParams.set('name', 'release.json');
       const response = await fetch(url, {
@@ -92,6 +103,7 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
       await api(`/releases/${remote.id}`, 'PATCH', { draft: false });
     },
   };
+
   return {
     port,
     async assertCurrentMain(sha: string) {
@@ -109,14 +121,18 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
       for (let page = 1; ; page++) {
         const releases = await api<ApiRelease[]>(`/releases?per_page=100&page=${page}`);
         if (!releases) throw new Error('Cannot list deployment releases');
+
         for (const release of releases) {
           if (release.draft) continue;
+
           const match = /^(api|web|worker)\/v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(
             release.tag_name,
           );
           if (!match) continue;
+
           const version = match.slice(2).map(Number);
           if (!version.every(Number.isSafeInteger)) throw new Error('Invalid release version');
+
           const previous = latest.get(match[1]!);
           const difference = previous
             ? (version
@@ -143,11 +159,14 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
           (await port.readTag(release.tag_name)) !== manifest.sha
         )
           throw new Error(`Invalid deployment manifest for ${release.tag_name}`);
+
         const comparison = await api<{ status: string }>(`/compare/${manifest.sha}...${head}`);
         if (!comparison || !['ahead', 'identical'].includes(comparison.status))
           throw new Error('Invalid deployment source: release is not an ancestor of main');
+
         manifests.push(manifest);
       }
+
       return manifests;
     },
     async publishedTags() {
@@ -155,6 +174,7 @@ export function githubPort(repository: string, token: string, baseUrl = 'https:/
       for (let page = 1; ; page++) {
         const releases = await api<ApiRelease[]>(`/releases?per_page=100&page=${page}`);
         if (!releases) throw new Error('Cannot list repository releases');
+
         tags.push(
           ...releases.filter((release) => !release.draft).map((release) => release.tag_name),
         );

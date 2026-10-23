@@ -26,6 +26,7 @@ export function runtimeProbe(
   redis.on('error', () =>
     logger.warn('dependency.unavailable', { component: 'redis', operation: 'health' }),
   );
+
   return {
     async check() {
       return logger.observe('dependencies.check', async () => {

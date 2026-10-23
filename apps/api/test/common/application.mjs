@@ -39,11 +39,14 @@ export async function startTestApplication({
         readAuthSettings({ AUTH_SECRET: secret, AUTH_ALLOWED_ORIGINS: origin }),
         logger,
       );
+
     if (runtime) runtime.close = closeOnce(runtime.close);
+
     probe = runtimeProbe(infrastructure.databaseUrl, infrastructure.redisUrl, logger);
     probe.close = closeOnce(probe.close);
     ({ app } = await createApplication(probe, { auth: runtime, logger }));
     await app.init();
+
     return { app, runtime, infrastructure, close };
   } catch (error) {
     await close();

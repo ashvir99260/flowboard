@@ -75,6 +75,7 @@ export class HealthController {
     } catch {
       throw new ApiException(503, 'SERVICE_UNAVAILABLE', 'Required dependencies unavailable');
     }
+
     return { status: 'ready' };
   }
 }

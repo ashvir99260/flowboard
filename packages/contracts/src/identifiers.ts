@@ -7,6 +7,7 @@ export const UnicodeStringSchema = z.string().refine((value) => {
     const point = character.codePointAt(0) ?? 0;
     if (point === 0 || (point >= 0xd800 && point <= 0xdfff)) return false;
   }
+
   return true;
 }, 'Text contains an unsupported Unicode character');
 

@@ -25,6 +25,7 @@ export async function seedDemoData(databaseUrl: string): Promise<boolean> {
       async (tx) => {
         await tx.$queryRaw`SELECT pg_advisory_xact_lock(706270, 1)::text`;
         if (await tx.seedState.findUnique({ where: { version } })) return false;
+
         for (const account of DemoAccounts) {
           await tx.user.create({
             data: { ...account, passwordHash: await hashPassword(DemoPassword) },
@@ -33,6 +34,7 @@ export async function seedDemoData(databaseUrl: string): Promise<boolean> {
         await mainWorkspace(tx);
         await otherWorkspace(tx);
         await tx.seedState.create({ data: { version } });
+
         return true;
       },
       { maxWait: 10_000, timeout: 30_000 },
@@ -159,8 +161,11 @@ async function mainWorkspace(tx: Prisma.TransactionClient) {
       list === 1 ? [400, 401, 402, 405] : list === 2 ? [400, 401, 402] : [400, 401, 402, 403];
     const customFields: Record<string, string | number> = { effort: (index % 8) + 1 };
     if (list === 0) customFields['team'] = id(index % 2 ? 610 : 611);
+
     if (list === 1) customFields['team'] = id(index % 2 ? 612 : 613);
+
     if (list < 2 && index % 2 === 0) customFields['release_date'] = '2026-11-20';
+
     const taskId = id(700 + index);
     await tx.task.create({
       data: {

@@ -34,6 +34,7 @@ export class AuthService {
   private requireRuntime() {
     if (!this.runtime)
       throw new ApiException(503, 'SERVICE_UNAVAILABLE', 'Authentication service unavailable');
+
     return this.runtime;
   }
   assertOrigin(origin: string | string[] | undefined) {
@@ -45,6 +46,7 @@ export class AuthService {
   }
   private credential() {
     const token = randomBytes(32).toString('base64url');
+
     return {
       token,
       value: {
@@ -63,6 +65,7 @@ export class AuthService {
     );
     if (expiresAt.getTime() <= Date.now())
       throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+
     const accessToken = await new SignJWT({
       sid: session.familyId,
       workspaceId: session.activeWorkspace?.id ?? null,
@@ -91,6 +94,7 @@ export class AuthService {
         user: serializeAudit(session.user),
       },
     };
+
     return {
       body,
       cookie: refreshCookie(
@@ -105,6 +109,7 @@ export class AuthService {
       const runtime = this.requireRuntime();
       await runtime.limit('signup', ip, input.email);
       const credential = this.credential();
+
       return this.response(
         await runtime.identities.register(input, credential.value),
         credential.token,
@@ -116,6 +121,7 @@ export class AuthService {
       const runtime = this.requireRuntime();
       await runtime.limit('login', ip, input.email);
       const credential = this.credential();
+
       return this.response(
         await runtime.identities.logIn(input, credential.value),
         credential.token,
@@ -130,6 +136,7 @@ export class AuthService {
       await this.requireRuntime().limit('refresh', ip, '');
       const token = readRefreshCookie(cookie);
       if (!token) throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+
       const replacement = this.credential();
       const result = await this.requireRuntime().identities.rotate(
         createHash('sha256').update(token).digest('hex'),
@@ -137,8 +144,10 @@ export class AuthService {
       );
       if (result.status === 'reused')
         throw new ApiException(401, 'REFRESH_REUSED', 'Refresh credential already used');
+
       if (result.status === 'invalid')
         throw new ApiException(401, 'SESSION_EXPIRED', 'Session expired');
+
       return this.response(result.session, replacement.token);
     });
   }
@@ -150,6 +159,7 @@ export class AuthService {
         await this.requireRuntime().identities.revoke(
           createHash('sha256').update(token).digest('hex'),
         );
+
       return this.expiredCookie();
     });
   }
@@ -158,6 +168,7 @@ export class AuthService {
       const runtime = this.requireRuntime();
       if (!authorization?.match(/^Bearer [A-Za-z0-9_.-]+$/))
         throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
+
       let claims: z.infer<typeof claimsSchema>;
       try {
         const { payload, protectedHeader } = await jwtVerify(
@@ -172,6 +183,7 @@ export class AuthService {
           },
         );
         if (protectedHeader.typ !== 'JWT') throw new Error('Invalid token type');
+
         claims = claimsSchema.parse(payload);
       } catch {
         throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
@@ -185,6 +197,7 @@ export class AuthService {
         userId: session.user.id,
         ...(session.activeWorkspace ? { workspaceId: session.activeWorkspace.id } : {}),
       });
+
       return session;
     });
   }

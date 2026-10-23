@@ -37,6 +37,7 @@ export default {
 
         if (node.value.type !== 'JSONObjectExpression') {
           context.report({ data: { section }, messageId: 'section', node: node.value });
+
           return;
         }
 

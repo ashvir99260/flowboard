@@ -12,6 +12,7 @@ async function files(directory, prefix = '') {
     const path = join(prefix, entry.name);
     result.push(...(entry.isDirectory() ? await files(directory, path) : [path]));
   }
+
   return result.sort();
 }
 
@@ -28,6 +29,7 @@ if (process.argv.includes('--write')) {
     const committed = await files(target);
     if (JSON.stringify(expected) !== JSON.stringify(committed))
       throw new Error('Generated API client files drifted. Run pnpm gen:api.');
+
     for (const path of expected) {
       const [actual, existing] = await Promise.all([
         readFile(join(temporary, path)),

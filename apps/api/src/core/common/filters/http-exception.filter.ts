@@ -30,6 +30,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       if (exception.type === 'entity.too.large') status = 413;
       else if (exception.type === 'entity.parse.failed') status = 400;
     }
+
     if (exception instanceof DatabaseError) {
       status =
         exception.code === 'EMAIL_IN_USE'
@@ -46,6 +47,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
                     ? 403
                     : 400;
     }
+
     let error = failures[status] ?? failures[500]!;
     let details: ValidationIssue[] | undefined;
     if (exception instanceof ApiException && status < 500) {
@@ -62,12 +64,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
           path: issue.path.map((part) => (typeof part === 'symbol' ? String(part) : part)),
         }));
     }
+
     const response = host.switchToHttp().getResponse<{
       setHeader(name: string, value: string): void;
       status(code: number): { json(body: unknown): void };
     }>();
     if (status === 429 && exception instanceof ApiException && exception.retryAfterSeconds)
       response.setHeader('Retry-After', String(exception.retryAfterSeconds));
+
     this.logger[status >= 500 ? 'error' : 'warn']('http.error', {
       component: 'http',
       code: error.code,

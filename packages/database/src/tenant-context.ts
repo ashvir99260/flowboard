@@ -38,6 +38,7 @@ export function exactKeys(
 
 export function tenantRequest(value: TenantRequest): TenantRequest {
   exactKeys(value, ['actorUserId', 'workspaceId']);
+
   return {
     actorUserId: UuidSchema.parse(value.actorUserId).toLowerCase(),
     workspaceId: UuidSchema.parse(value.workspaceId).toLowerCase(),

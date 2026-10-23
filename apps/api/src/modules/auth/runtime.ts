@@ -25,6 +25,7 @@ export function createAuthRuntime(
   redis.on('error', () =>
     logger.warn('dependency.unavailable', { component: 'redis', operation: 'auth.rate_limit' }),
   );
+
   return {
     identities,
     settings,
@@ -60,6 +61,7 @@ export function createAuthRuntime(
               'SERVICE_UNAVAILABLE',
               'Authentication service unavailable',
             );
+
           if (result[0] > maximum)
             throw new ApiException(
               429,

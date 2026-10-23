@@ -24,6 +24,7 @@ test('every Swagger operation and payload has a description and example', () => 
         assert.equal(response.content, undefined);
         continue;
       }
+
       const media = response.content?.['application/json'];
       assert.ok(media && hasExample(media), `${operation.operationId} ${status} response example`);
     }
@@ -40,6 +41,7 @@ test('every Swagger operation and payload has a description and example', () => 
 test('schema fields carry titles, descriptions and examples, including nullable fields', () => {
   const visit = (schema, path) => {
     if (!schema || typeof schema !== 'object') return;
+
     for (const [key, value] of Object.entries(schema.properties ?? {})) {
       meaningful(value.title, `${path}.${key} title`);
       meaningful(value.description, `${path}.${key} description`);

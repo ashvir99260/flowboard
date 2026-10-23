@@ -34,7 +34,9 @@ async function run(...args) {
       operation.child.stdout.on('data', (chunk) => process.stdout.write(chunk));
       operation.child.stderr.on('data', (chunk) => process.stdout.write(chunk));
     }
+
     const { stdout } = await operation;
+
     return stdout.trim();
   } catch (error) {
     throw new Error(`Docker check failed: ${args.join(' ')}\n${error.stderr ?? error.message}`);

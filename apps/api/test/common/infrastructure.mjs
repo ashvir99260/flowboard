@@ -46,9 +46,11 @@ export async function startInfrastructure() {
         break;
       } catch {
         if (attempt >= 100) throw new Error('Test dependencies did not become ready');
+
         await setTimeout(100);
       }
     }
+
     return {
       close,
       databaseUrl: `postgresql://postgres:${password}@${docker('port', postgres, '5432/tcp')}/flowboard_api_test`,

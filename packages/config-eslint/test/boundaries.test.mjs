@@ -59,6 +59,7 @@ async function check(file, code) {
     !result.messages.some((m) => m.fatal),
     'syntax errors must not count as boundary detection',
   );
+
   return result.messages.filter((m) => m.ruleId === 'flowboard/boundaries');
 }
 

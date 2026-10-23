@@ -47,6 +47,7 @@ async function fresh() {
     workspaceName: 'Fresh workspace',
   });
   expect(response.status).toBe(201);
+
   return response;
 }
 
@@ -107,6 +108,7 @@ test('logout revokes the family, expires the cookie and is idempotent', async ()
   ]) {
     const req = call('logout');
     if (cookie) req.set('Cookie', cookie);
+
     const response = await req.send({});
     expect(response.status).toBe(204);
     expect(response.text).toBe('');
@@ -155,6 +157,7 @@ test('missing, malformed, unknown and duplicate cookies fail closed and are clea
   ]) {
     const req = call('refresh');
     if (cookie) req.set('Cookie', cookie);
+
     const response = await req.send({});
     expect(response.status).toBe(401);
     expect(response.headers['set-cookie'][0]).toContain('Max-Age=0');

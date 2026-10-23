@@ -100,6 +100,7 @@ test('missing and disallowed origins cannot obtain cookies; credentialed CORS is
   for (const value of [undefined, 'https://evil.example']) {
     const req = request(app.getHttpServer()).post('/v1/auth/login');
     if (value) req.set('Origin', value);
+
     const response = await req.send({ email: signup.email, password: signup.password });
     expect(response.status).toBe(403);
     expect(response.body.error.code).toBe('ORIGIN_REJECTED');

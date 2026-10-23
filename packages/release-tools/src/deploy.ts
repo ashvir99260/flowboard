@@ -48,8 +48,10 @@ export async function deployReleasedApps({
       !new RegExp(`^ghcr\\.io/[\\w.-]+/flowboard-${manifest.app}$`).test(manifest.image)
     )
       throw new Error('Invalid deployment manifest');
+
     await assertReachable(manifest.sha);
     if (seen.has(manifest.app)) throw new Error(`Duplicate deployment for ${manifest.app}`);
+
     seen.add(manifest.app);
     if (manifest.app === 'web') {
       for (const key of ['vercelToken', 'vercelProjectId', 'githubRepoId'] as const)
@@ -61,6 +63,7 @@ export async function deployReleasedApps({
   }
   if (seen.has('api') && seen.has('worker') && config.apiServiceId === config.workerServiceId)
     throw new Error('API and worker require different service IDs');
+
   for (const manifest of [...manifests].sort(
     (a, b) => ['api', 'worker', 'web'].indexOf(a.app) - ['api', 'worker', 'web'].indexOf(b.app),
   )) {

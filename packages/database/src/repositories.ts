@@ -103,23 +103,27 @@ export function repositories(
 
   async function node(id: string) {
     assertActive();
+
     return tx.node.findFirst({ where: nodeWhere(id) });
   }
 
   async function requireNode(id: string) {
     const result = await node(id);
     if (!result) throw new DatabaseError('NOT_FOUND', 'Container not found');
+
     return result;
   }
 
   async function member(userId: string) {
     assertActive();
+
     return tx.membership.findFirst({ where: memberWhere(userId) });
   }
 
   async function parentWhere(parentId: string | null) {
     assertActive();
     const parent = parentId === null ? null : await requireNode(parentId);
+
     return { archivedAt: null, parentId: parent?.id ?? null, workspaceId };
   }
 
@@ -127,6 +131,7 @@ export function repositories(
     assertActive();
     await requireNode(resourceId);
     if (!(await member(userId))) throw new DatabaseError('NOT_FOUND', 'Member not found');
+
     return { resourceId, userId, workspaceId };
   }
 
@@ -138,11 +143,13 @@ export function repositories(
       if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
         throw new DatabaseError('VALIDATION_FAILED', 'Limit must be between 1 and 100');
       }
+
       if (query.afterId !== undefined) {
         const anchor = await requireNode(query.afterId);
         if (anchor.parentId !== where.parentId)
           throw new DatabaseError('INVALID_CURSOR', 'Cursor parent does not match');
       }
+
       // Internal keyset page only. Public cursors are signed by the API layer.
       return tx.node.findMany({
         ...(query.afterId ? { cursor: { id: query.afterId }, skip: 1 } : {}),
@@ -166,6 +173,7 @@ export function repositories(
       ) {
         throw new DatabaseError('INVALID_PARENT', 'Container parent does not match its type');
       }
+
       return tx.node.create({
         data: {
           name: NameSchema.parse(input.name),
@@ -181,6 +189,7 @@ export function repositories(
     find: node,
     async rename(id: string, name: string) {
       await requireNode(id);
+
       return tx.node.update({
         data: { name: NameSchema.parse(name) },
         where: { workspaceId_id: { id, workspaceId } },
@@ -200,6 +209,7 @@ export function repositories(
       exactKeys(input, ['resourceId', 'userId', 'mode']);
       const where = await grantWhere(input.resourceId, input.userId);
       const mode = PermissionModeSchema.parse(input.mode);
+
       return tx.grant.upsert({
         create: { ...where, mode },
         update: { mode },

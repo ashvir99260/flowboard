@@ -14,6 +14,7 @@ const requestB = '10000000-0000-4000-8000-000000000002';
 const workspace = '10000000-0000-4000-8000-000000000003';
 const capture = (level = 'trace') => {
   const records = [];
+
   return {
     records,
     logger: createLogger({

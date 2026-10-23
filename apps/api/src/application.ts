@@ -42,6 +42,7 @@ export async function createApplication(
         credentials: true,
         exposedHeaders: ['X-Request-Id'],
       });
+
     app.useBodyParser('json', { limit: '256kb' });
     app.setGlobalPrefix('v1', { exclude: ['health/live', 'health/ready'] });
     const document = cleanupOpenApiDoc(
@@ -77,6 +78,7 @@ export async function createApplication(
       ),
     );
     if (options.exposeDocs) SwaggerModule.setup('docs', app, document);
+
     return { app, document };
   } catch (error) {
     await app.close();
