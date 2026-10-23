@@ -139,3 +139,23 @@ test('bound completion retains verified context while nested scopes restore thei
   );
   assert.equal(records[2].workspaceId, workspace);
 });
+
+test('logger construction rejects invalid levels without exposing their value', () => {
+  assert.throws(
+    () => createLogger({ level: 'secret-invalid-level', service: 'api' }),
+    (error) =>
+      error instanceof Error &&
+      error.message.startsWith('LOG_LEVEL must be') &&
+      !error.message.includes('secret-invalid-level'),
+  );
+});
+
+test('structured output retains the public envelope without extra process metadata', () => {
+  const { logger, records } = capture();
+  logger.info('test.envelope');
+  assert.deepEqual(Object.keys(records[0]).sort(), ['event', 'level', 'service', 'time']);
+  assert.equal(records[0].level, 'info');
+  assert.equal(records[0].service, 'api');
+  assert.equal(records[0].event, 'test.envelope');
+  assert.ok(Number.isFinite(Date.parse(records[0].time)));
+});

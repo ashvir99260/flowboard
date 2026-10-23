@@ -1,12 +1,15 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { performance } from 'node:perf_hooks';
 
-const levels = { debug: 20, error: 50, fatal: 60, info: 30, silent: 70, trace: 10, warn: 40 };
+import pino from 'pino';
+
+import type { LevelWithSilent } from 'pino';
+
 const context = new AsyncLocalStorage<LogContext>();
 const identifier = /^[\w.-]{1,100}$/;
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i;
 
-export type LogLevel = keyof typeof levels;
+export type LogLevel = LevelWithSilent;
 
 export interface LogContext {
   requestId?: string;
@@ -62,7 +65,7 @@ export function updateLogContext(input: LogContext): void {
 
 export function readLogLevel(input: string | undefined): LogLevel {
   if (input === undefined) return 'info';
-  if (Object.hasOwn(levels, input)) return input as LogLevel;
+  if (input === 'silent' || Object.hasOwn(pino.levels.values, input)) return input as LogLevel;
   throw new Error('LOG_LEVEL must be trace, debug, info, warn, error, fatal, or silent');
 }
 
@@ -93,21 +96,53 @@ export function createLogger(options: {
   write?: (line: string) => void;
 }): Logger {
   const sink = options.write ?? ((line: string) => process.stdout.write(line));
+  const backend = pino(
+    {
+      level: readLogLevel(options.level),
+      base: { service: options.service },
+      timestamp: pino.stdTimeFunctions.isoTime,
+      formatters: { level: (level) => ({ level }) },
+      redact: {
+        paths: [
+          'password',
+          'passwordHash',
+          'token',
+          'accessToken',
+          'refreshToken',
+          'tokenDigest',
+          'authorization',
+          'cookie',
+          'headers',
+          'body',
+          'url',
+          'req',
+          'res',
+          'err',
+          'error',
+        ],
+        remove: true,
+      },
+    },
+    {
+      write(line) {
+        try {
+          sink(line);
+        } catch {
+          // A failed log destination must not replace a business result or exception.
+        }
+      },
+    },
+  );
   const emit =
     (level: Exclude<LogLevel, 'silent'>): Write =>
     (event, fields = {}) => {
-      if (levels[level] < levels[options.level] || !identifier.test(event)) return;
+      if (!backend.isLevelEnabled(level) || !identifier.test(event)) return;
       try {
-        sink(
-          `${JSON.stringify({
-            time: new Date().toISOString(),
-            level,
-            service: options.service,
-            event,
-            ...safeContext(context.getStore() ?? {}),
-            ...safeFields(fields),
-          })}\n`,
-        );
+        backend[level]({
+          event,
+          ...safeContext(context.getStore() ?? {}),
+          ...safeFields(fields),
+        });
       } catch {
         // Logging must not replace the original result or exception when a sink fails.
       }

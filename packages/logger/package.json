@@ -21,6 +21,9 @@
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore"
   },
+  "dependencies": {
+    "pino": "10.4.0"
+  },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",
     "@flowboard/config-typescript": "workspace:*",

@@ -446,6 +446,25 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: colocate auth and platform tests`.
   - **Completion evidence:** [P02-10](evidence/P02-10.md): all 13 Jest suites retained, 322 tests and quality/contract/Docker checks pass; production image excludes colocated tests.
 
+- [x] **P02-11 — Use Pino for shared structured logging**
+  - **Goal:** Replace handwritten log serialization/severity handling with a maintained logging library while preserving the safe shared facade and Nest adapter.
+  - **Requirements:** R122; preserves R119 correlation/redaction guarantees.
+  - **Files:** `packages/logger/{src/index.ts,test/logger.test.mjs,package.json}`, lockfile, logging/architecture/agent documentation and evidence.
+  - **Dependencies:** P02-10; prioritized by the user's library request.
+  - **Acceptance:** Pinned Pino handles JSON output, timestamps and severity filtering across API/database/worker. Preserve current event shape, isolated request context, safe metadata, silent spec/tests and non-interfering sink failures. Reject invalid levels before Pino can expose the supplied value. No framework dependency enters database/logger and no duplicate HTTP middleware is added.
+  - **Validation:** Red/green invalid-level regression, existing logging/HTTP/auth/transaction tests, full build/lint/test/typecheck/format/OpenAPI and Docker checks.
+  - **Commit:** `refactor: use pino for shared logging`.
+  - **Completion evidence:** [P02-11](evidence/P02-11.md): 324 tests and all build/lint/type/format/contract/Docker gates pass with Pino-backed logging.
+
+- [ ] **P02-12 — Group DTO adapters by feature and type**
+  - **Goal:** Reduce one-class DTO files while retaining separate request/response roles and every concrete schema/class.
+  - **Requirements:** R123; preserves R120 flat folders and existing typed Swagger contracts.
+  - **Files:** grouped auth/health DTO files and their controller imports; backend/agent/architecture rules, task/evidence records.
+  - **Dependencies:** P02-11; execute after the logging task is verified and committed.
+  - **Acceptance:** Use `auth.request.dto.ts`, `auth.response.dto.ts` and `health.response.dto.ts` for the existing six classes; no new DTO folder, forwarding exports, renamed schemas/classes or altered request/response behavior. Generated OpenAPI/client stay identical.
+  - **Validation:** Class/content preservation and import checks, clean build, root lint/test/typecheck/format/OpenAPI and Docker verification.
+  - **Commit:** `refactor: group dtos by feature and type`.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

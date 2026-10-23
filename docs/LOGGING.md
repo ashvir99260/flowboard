@@ -1,6 +1,6 @@
 # Backend logging
 
-The API, database boundary and worker share `@flowboard/logger`. It writes one JSON object per stdout line. There is no external collector, file writer or paid service dependency. Hosted platforms collect stdout; log retention and access belong to deployment configuration. User/workspace IDs are operational identifiers, so restrict log access and retention.
+The API, database boundary and worker share the Pino-backed `@flowboard/logger`. Pino 10.4.0 handles severity filtering, timestamps and JSON serialization; the shared facade limits metadata and carries request context. The API supplies Nest's `LoggerService` adapter. Each stdout line contains one JSON object. There is no external collector, file writer or paid service dependency. Hosted platforms collect stdout; log retention and access belong to deployment configuration. User/workspace IDs are operational identifiers, so restrict log access and retention.
 
 ## Runtime configuration
 
@@ -55,4 +55,6 @@ A failed synchronous output sink is best effort and cannot replace a business re
 
 To diagnose failures, first locate the response's request ID and `http.error` code. With debug enabled, find the last operation start and matching failure. A `database.initialization.failed` record identifies migration/seed stage; a `api.startup.failed` record identifies application config, auth config, database, app creation or listen stage. Inspect the relevant validated configuration and migration in a trusted development environment; do not publish secret-bearing raw driver output. Future feature events must follow this same schema and have tests for their failure boundaries.
 
-Implementation references: [Nest custom loggers](https://docs.nestjs.com/techniques/logger), [Node AsyncLocalStorage](https://nodejs.org/docs/latest-v22.x/api/async_context.html). The implementation uses Node22-compatible `run`/`getStore` only.
+The current single stdout destination uses string severity labels for compatibility. Any future multi-target Pino transport must retain numeric severity for target routing. Do not expose raw Pino instances or attach automatic request/error serializers that bypass the safe facade.
+
+Implementation references: [Pino 10.4.0 API](https://github.com/pinojs/pino/blob/v10.4.0/docs/api.md), [Nest custom loggers](https://docs.nestjs.com/techniques/logger), [Node AsyncLocalStorage](https://nodejs.org/docs/latest-v22.x/api/async_context.html). The implementation uses Node22-compatible `run`/`getStore` only.
