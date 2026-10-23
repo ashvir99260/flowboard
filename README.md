@@ -93,7 +93,7 @@ Compose builds separate web, API and worker images and starts PostgreSQL and Red
 | API Swagger UI | [http://localhost:3001/docs](http://localhost:3001/docs)                 |
 | API readiness  | [http://localhost:3001/health/ready](http://localhost:3001/health/ready) |
 
-The web currently shows the application shell; use Swagger to try the implemented auth endpoints. Application containers run as non-root. PostgreSQL, Redis and the worker are private to the Compose network.
+The web currently shows the application shell; use Swagger to try the implemented auth endpoints. Application containers run as non-root. Without the development override, PostgreSQL, Redis and the worker are private to the Compose network.
 
 Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files are only needed for host development and are excluded from images. Without a root `.env`, Compose uses the development defaults in `compose.yaml`. To use different published ports, set `WEB_PORT` and `API_PORT` in the root file. If you change the web port, also update `AUTH_ALLOWED_ORIGINS` to match its complete origin, such as `http://localhost:3100`. Keep these development credentials local.
 
@@ -107,6 +107,15 @@ docker compose -f compose.yaml -f compose.dev.yaml up --build
 ```
 
 Open the same [web URL](http://localhost:3000) or [Swagger UI](http://localhost:3001/docs). Next.js updates the page as you save; the API and worker recompile and restart. Shared source changes rebuild the affected packages and update their consumers. Compilation errors appear in the logs; correct the source to resume. Database contents survive these reloads.
+
+Development also exposes the datastores to tools on your computer:
+
+| Service    | Host address     | Port override in root `.env` |
+| ---------- | ---------------- | ---------------------------- |
+| PostgreSQL | `localhost:5432` | `POSTGRES_PORT`              |
+| Redis      | `localhost:6379` | `REDIS_PORT`                 |
+
+Use the database name, user and password configured in the root `.env`. The ports bind only to this computer's loopback interface. If a port is already occupied, choose another value in the root `.env`, then reapply `docker compose -f compose.yaml -f compose.dev.yaml up -d --wait`. Container-to-container connections continue using `postgres:5432` and `redis:6379`.
 
 Development containers restart after watcher failures, including filesystem-watch errors while generated files are replaced. A restart can briefly interrupt the page or API; logs show the failure and recovery.
 

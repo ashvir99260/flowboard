@@ -1,5 +1,13 @@
 # Opt-in live source updates. Release targets in compose.yaml remain unchanged.
 services:
+  postgres:
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+
+  redis:
+    ports:
+      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
+
   api:
     image: flowboard-api:dev
     restart: on-failure

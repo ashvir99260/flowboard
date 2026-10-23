@@ -556,6 +556,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: reload source changes in Docker development`.
   - **Completion evidence:** [P02-21](evidence/P02-21.md): real app/shared-package live edits, compile-error recovery, stable health and restart counts, source/output isolation and data preservation verified; 360 tests and both Docker suites pass; parallel CI checks added.
 
+- [x] **P02-22 — Publish development datastore ports on localhost**
+  - **Goal:** Connect host database/Redis tools to the live Docker development stack.
+  - **Requirements:** R132.
+  - **Files:** `compose.dev.yaml`, `scripts/check-compose-dev.mjs`, README, plan/decision/matrix/evidence docs.
+  - **Dependencies:** P02-21; prioritized by the user's development port request.
+  - **Acceptance:** Development publishes PostgreSQL on localhost:5432 and Redis on localhost:6379 by default, with POSTGRES_PORT/REDIS_PORT overrides. Base Compose keeps datastores private. Isolated tests use random ports and verify PostgreSQL and Redis protocol responses from the host; preserve data and existing credentials.
+  - **Validation:** Red/green Compose configuration assertions and host protocol probes, full development Docker suite, base Compose privacy check, root build/lint/type/test/format/OpenAPI checks. G01–G05/G11.
+  - **Commit:** `feat: expose development datastore ports locally`.
+  - **Completion evidence:** [P02-22](evidence/P02-22.md): localhost defaults/overrides and base privacy checked; real PostgreSQL/Redis host probes and full development Docker suite pass; current stack updated with preserved data; all 360 tests and root checks pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

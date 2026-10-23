@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createConnection } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +17,8 @@ const env = {
   ...process.env,
   WEB_PORT: '0',
   API_PORT: '0',
+  POSTGRES_PORT: '0',
+  REDIS_PORT: '0',
   POSTGRES_USER: 'flowboard',
   POSTGRES_PASSWORD: 'flowboard-dev-check-only',
   POSTGRES_DB: 'flowboard',
@@ -77,6 +80,33 @@ async function probeHeader(url) {
   }
 }
 
+async function probePort(service, port, request, expected) {
+  const address = await docker('port', service, String(port));
+  const [host, published] = address.split(':');
+  assert.equal(host, '127.0.0.1');
+  await new Promise((resolve, reject) => {
+    const socket = createConnection({ host: 'localhost', port: Number(published) });
+    let response = '';
+    socket.setTimeout(3000, () => socket.destroy(new Error(`${service} probe timed out`)));
+    socket.once('error', reject);
+    socket.once('close', () => reject(new Error(`${service} closed before the expected reply`)));
+    socket.once('connect', () => socket.write(request));
+    socket.on('data', (data) => {
+      response += data.toString();
+      if (response.length < expected.length) return;
+
+      try {
+        assert.equal(response, expected);
+        resolve();
+      } catch (error) {
+        reject(error);
+      } finally {
+        socket.destroy();
+      }
+    });
+  });
+}
+
 async function runtimeState() {
   return Promise.all(
     ['web', 'api', 'worker'].map(async (service) => {
@@ -133,6 +163,19 @@ try {
   prefix.push('-f', 'compose.probe.yaml');
   if (!control) {
     const { services } = JSON.parse(await docker('config', '--format', 'json'));
+    for (const [service, target] of [
+      ['postgres', 5432],
+      ['redis', 6379],
+    ]) {
+      assert.equal(
+        services[service].ports?.length,
+        1,
+        `${service} must publish a development port`,
+      );
+      assert.equal(services[service].ports[0].host_ip, '127.0.0.1');
+      assert.equal(services[service].ports[0].published, '0');
+      assert.equal(services[service].ports[0].target, target);
+    }
     for (const service of ['web', 'api', 'worker']) {
       assert.equal(services[service].build.target, 'development');
       assert.equal(services[service].restart, 'on-failure');
@@ -166,6 +209,15 @@ try {
     `[${project}] Build and start isolated ${control ? 'production control' : 'development'} services`,
   );
   await docker('up', '--build', '-d', '--wait', '--wait-timeout', '180');
+  if (!control) {
+    const sslRequest = Buffer.alloc(8);
+    sslRequest.writeInt32BE(8);
+    sslRequest.writeInt32BE(80877103, 4);
+    await probePort('postgres', 5432, sslRequest, 'N');
+    await probePort('redis', 6379, '*1\r\n$4\r\nPING\r\n', '+PONG\r\n');
+    console.info(`[${project}] Localhost PostgreSQL and Redis protocol probes passed`);
+  }
+
   const web = `http://${await docker('port', 'web', '3000')}`;
   const api = `http://${await docker('port', 'api', '3001')}`;
   const containers = await docker('ps', '-q');
