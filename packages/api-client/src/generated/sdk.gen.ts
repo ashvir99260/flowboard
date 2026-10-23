@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses } from './types.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -176,7 +176,7 @@ export const archiveNode = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Read a live hierarchy container
  *
- * Read a container with a complete live ancestor chain in the selected workspace. Administrator access is required until member visibility is implemented.
+ * Read a container in the selected workspace. Members require access through every ancestor; administrators bypass tenant-local grants.
  */
 export const getNode = <ThrowOnError extends boolean = false>(options: Options<GetNodeData, ThrowOnError>): RequestResult<GetNodeResponses, GetNodeErrors, ThrowOnError> => (options.client ?? client).get<GetNodeResponses, GetNodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -197,6 +197,58 @@ export const updateNode = <ThrowOnError extends boolean = false>(options: Option
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List container grants
+ *
+ * Administrators can page explicit grants for a live container. Cursor binds caller, workspace, container, limit and configuration revision; no member profile or hidden count is returned.
+ */
+export const listNodeGrants = <ThrowOnError extends boolean = false>(options: Options<ListNodeGrantsData, ThrowOnError>): RequestResult<ListNodeGrantsResponses, ListNodeGrantsErrors, ThrowOnError> => (options.client ?? client).get<ListNodeGrantsResponses, ListNodeGrantsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/nodes/{nodeId}/grants',
+    ...options
+});
+
+/**
+ * Set a container grant
+ *
+ * Administrators may allow or deny a current workspace member on this container. Rechecks access and revision inside the locked transaction; same-value writes preserve timestamps and revisions.
+ */
+export const upsertNodeGrant = <ThrowOnError extends boolean = false>(options: Options<UpsertNodeGrantData, ThrowOnError>): RequestResult<UpsertNodeGrantResponses, UpsertNodeGrantErrors, ThrowOnError> => (options.client ?? client).put<UpsertNodeGrantResponses, UpsertNodeGrantErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/nodes/{nodeId}/grants',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a container grant
+ *
+ * Administrators remove a current member grant under a configuration revision precondition. An absent grant is a no-op after resource, member and revision checks. Removal restores inherited/public visibility.
+ */
+export const removeNodeGrant = <ThrowOnError extends boolean = false>(options: Options<RemoveNodeGrantData, ThrowOnError>): RequestResult<RemoveNodeGrantResponses, RemoveNodeGrantErrors, ThrowOnError> => (options.client ?? client).delete<RemoveNodeGrantResponses, RemoveNodeGrantErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/nodes/{nodeId}/grants/{userId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List visible hierarchy containers
+ *
+ * Return only authorized live nodes in depth/full ancestor path order. Follow the opaque cursor with the same limit; changed workspace revisions require restarting. Parent nodes precede children across pages.
+ */
+export const listVisibleTree = <ThrowOnError extends boolean = false>(options?: Options<ListVisibleTreeData, ThrowOnError>): RequestResult<ListVisibleTreeResponses, ListVisibleTreeErrors, ThrowOnError> => (options?.client ?? client).get<ListVisibleTreeResponses, ListVisibleTreeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/tree',
+    ...options
 });
 
 /**

@@ -338,9 +338,9 @@ test('all hierarchy operations require identity and keep administration workspac
     .send({ workspaceId: other.activeWorkspace.id });
   expect(switched.status).toBe(200);
   const memberAuth = { Authorization: `Bearer ${switched.body.data.accessToken}` };
+  expect((await request(server).get(foreignPath).set(memberAuth)).status).toBe(200);
   for (const [method, path] of [
     ['post', '/v1/nodes'],
-    ['get', foreignPath],
     ['patch', foreignPath],
     ['delete', foreignPath],
   ])

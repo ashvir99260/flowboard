@@ -3,7 +3,6 @@ import { Inject, Injectable, Module } from '@nestjs/common';
 
 import { CursorCodec } from '../../core/common/cursor.js';
 import { LoggingModule } from '../../shared/logging/logging.module.js';
-import { PermissionsModule } from '../permissions/permissions.module.js';
 
 import { WorkspacesController } from './workspaces.controller.js';
 import { WorkspacesRuntimeKey } from './workspaces.runtime.js';
@@ -24,7 +23,6 @@ class WorkspaceLifecycle implements OnApplicationShutdown {
 
 @Module({
   controllers: [WorkspacesController],
-  imports: [PermissionsModule],
   providers: [WorkspacesService, WorkspaceLifecycle],
 })
 export class WorkspacesModule {
@@ -33,10 +31,11 @@ export class WorkspacesModule {
     identities?: IdentityRepository,
     secret?: Uint8Array,
     logger: Logger = SilentLogger,
+    permissions?: DynamicModule,
   ): DynamicModule {
     return {
       module: WorkspacesModule,
-      imports: [LoggingModule.forLogger(logger)],
+      imports: [LoggingModule.forLogger(logger), ...(permissions ? [permissions] : [])],
       providers: [
         {
           provide: WorkspacesRuntimeKey,

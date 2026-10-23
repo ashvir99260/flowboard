@@ -57,6 +57,7 @@ export async function createApplication(
           .addTag('Authentication', 'Account and session lifecycle')
           .addTag('Workspaces', 'Workspace memberships, invitations and current identity')
           .addTag('Hierarchy', 'Workspace spaces, folders and lists')
+          .addTag('Permissions', 'Administrator-managed container access grants')
           .addBearerAuth(
             {
               bearerFormat: 'JWT',

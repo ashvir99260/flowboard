@@ -318,6 +318,141 @@ export type ExpectedConfigDto = {
 };
 
 /**
+ * Grant page
+ *
+ * Admin-only grants ordered by creation time and user ID.
+ */
+export type GrantPageResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Items
+     *
+     * Authorized items in stable order.
+     */
+    items: Array<{
+        /**
+         * Created at
+         *
+         * Immutable grant creation time.
+         */
+        createdAt: string;
+        /**
+         * Grant mode
+         *
+         * Deny blocks this subtree; allow satisfies privacy on this container only.
+         */
+        mode: 'allow' | 'deny';
+        /**
+         * Node ID
+         *
+         * Server-generated container identifier.
+         */
+        resourceId: string;
+        /**
+         * Updated at
+         *
+         * Time of the last changed grant command.
+         */
+        updatedAt: string;
+        /**
+         * Target member ID
+         *
+         * Current member receiving the grant; never the acting identity.
+         */
+        userId: string;
+    }>;
+    /**
+     * Page information
+     *
+     * Consistent forward-pagination state.
+     */
+    pageInfo: {
+        /**
+         * Has next page
+         *
+         * Whether another page is available.
+         */
+        hasNextPage: boolean;
+        /**
+         * Next cursor
+         *
+         * Continuation token, or null at the end.
+         */
+        nextCursor: string | null;
+    };
+};
+
+/**
+ * Grant response
+ *
+ * Persisted grant with current workspace configuration revision.
+ */
+export type GrantResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Container grant
+     *
+     * Explicit access for one current member and container.
+     */
+    data: {
+        /**
+         * Created at
+         *
+         * Immutable grant creation time.
+         */
+        createdAt: string;
+        /**
+         * Grant mode
+         *
+         * Deny blocks this subtree; allow satisfies privacy on this container only.
+         */
+        mode: 'allow' | 'deny';
+        /**
+         * Node ID
+         *
+         * Server-generated container identifier.
+         */
+        resourceId: string;
+        /**
+         * Updated at
+         *
+         * Time of the last changed grant command.
+         */
+        updatedAt: string;
+        /**
+         * Target member ID
+         *
+         * Current member receiving the grant; never the acting identity.
+         */
+        userId: string;
+    };
+};
+
+/**
+ * Configuration precondition
+ *
+ * Required revision check for workspace mutations.
+ */
+export type GrantVersionDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+};
+
+/**
  * Invitation response
  *
  * Created invitation and current configuration revision.
@@ -786,6 +921,143 @@ export type SwitchWorkspaceDto = {
 };
 
 /**
+ * Visible tree page
+ *
+ * Authorized live nodes ordered by depth and full sibling path.
+ */
+export type TreePageResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Data version
+     *
+     * Workspace collection revision from the same database snapshot.
+     */
+    dataVersion: number;
+    /**
+     * Items
+     *
+     * Authorized items in stable order.
+     */
+    items: Array<{
+        /**
+         * Archived at
+         *
+         * Server archive timestamp or null for a live container.
+         */
+        archivedAt: string | null;
+        /**
+         * Created at
+         *
+         * Immutable creation time from the database clock.
+         */
+        createdAt: string;
+        /**
+         * Node ID
+         *
+         * Server-generated container identifier.
+         */
+        id: string;
+        /**
+         * Container name
+         *
+         * Trimmed name containing 1 to 120 Unicode characters.
+         */
+        name: string;
+        /**
+         * Parent ID
+         *
+         * Null for spaces; a space ID for folders; a folder ID for lists.
+         */
+        parentId: string | null;
+        /**
+         * Sibling position
+         *
+         * Server-assigned position among live siblings.
+         */
+        position: number;
+        /**
+         * Container type
+         *
+         * A space contains folders; a folder contains lists; lists contain tasks.
+         */
+        type: 'space' | 'folder' | 'list';
+        /**
+         * Updated at
+         *
+         * Database-maintained time of the last changed command.
+         */
+        updatedAt: string;
+        /**
+         * Node version
+         *
+         * Optimistic revision incremented by each changed command.
+         */
+        version: number;
+        /**
+         * Visibility
+         *
+         * Container visibility policy; private access requires an explicit grant for members.
+         */
+        visibility: 'public' | 'private';
+        /**
+         * Workspace ID
+         *
+         * Tenant owning this container, resolved from the authenticated session.
+         */
+        workspaceId: string;
+    }>;
+    /**
+     * Page information
+     *
+     * Consistent forward-pagination state.
+     */
+    pageInfo: {
+        /**
+         * Has next page
+         *
+         * Whether another page is available.
+         */
+        hasNextPage: boolean;
+        /**
+         * Next cursor
+         *
+         * Continuation token, or null at the end.
+         */
+        nextCursor: string | null;
+    };
+    /**
+     * Workspace root
+     *
+     * Selected workspace from the same snapshot.
+     */
+    root: {
+        /**
+         * Node ID
+         *
+         * Server-generated container identifier.
+         */
+        id: string;
+        /**
+         * Container name
+         *
+         * Trimmed name containing 1 to 120 Unicode characters.
+         */
+        name: string;
+        /**
+         * Root type
+         *
+         * Virtual workspace root.
+         */
+        type: 'workspace';
+    };
+};
+
+/**
  * Update membership request
  *
  * Change the target membership role without removing the last administrator.
@@ -835,6 +1107,32 @@ export type UpdateNodeDto = {
      * Container visibility policy; private access requires an explicit grant for members.
      */
     visibility?: 'public' | 'private';
+};
+
+/**
+ * Set grant request
+ *
+ * Admin-only grant change with workspace revision precondition.
+ */
+export type UpsertGrantDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Grant mode
+     *
+     * Deny blocks this subtree; allow satisfies privacy on this container only.
+     */
+    mode: 'allow' | 'deny';
+    /**
+     * Target member ID
+     *
+     * Current member receiving the grant; never the acting identity.
+     */
+    userId: string;
 };
 
 /**
@@ -1445,7 +1743,7 @@ export type CreateNodeErrors = {
      */
     401: ErrorResponseDtoOutput;
     /**
-     * Only workspace administrators may use container endpoints in this phase.
+     * The member cannot access this container or perform this administrative action.
      */
     403: ErrorResponseDtoOutput;
     /**
@@ -1504,7 +1802,7 @@ export type ArchiveNodeErrors = {
      */
     401: ErrorResponseDtoOutput;
     /**
-     * Only workspace administrators may use container endpoints in this phase.
+     * The member cannot access this container or perform this administrative action.
      */
     403: ErrorResponseDtoOutput;
     /**
@@ -1560,7 +1858,7 @@ export type GetNodeErrors = {
      */
     401: ErrorResponseDtoOutput;
     /**
-     * Only workspace administrators may use container endpoints in this phase.
+     * The member cannot access this container or perform this administrative action.
      */
     403: ErrorResponseDtoOutput;
     /**
@@ -1619,7 +1917,7 @@ export type UpdateNodeErrors = {
      */
     401: ErrorResponseDtoOutput;
     /**
-     * Only workspace administrators may use container endpoints in this phase.
+     * The member cannot access this container or perform this administrative action.
      */
     403: ErrorResponseDtoOutput;
     /**
@@ -1650,6 +1948,257 @@ export type UpdateNodeResponses = {
 };
 
 export type UpdateNodeResponse = UpdateNodeResponses[keyof UpdateNodeResponses];
+
+export type ListNodeGrantsData = {
+    body?: never;
+    path: {
+        /**
+         * Target node ID
+         *
+         * Container identifier within the selected workspace.
+         */
+        nodeId: string;
+    };
+    query?: {
+        /**
+         * Cursor
+         *
+         * Opaque server-authenticated continuation token; keep the same query.
+         */
+        cursor?: string;
+        /**
+         * Page limit
+         *
+         * Maximum returned items, from 1 to 100.
+         */
+        limit?: string;
+    };
+    url: '/v1/nodes/{nodeId}/grants';
+};
+
+export type ListNodeGrantsErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ListNodeGrantsError = ListNodeGrantsErrors[keyof ListNodeGrantsErrors];
+
+export type ListNodeGrantsResponses = {
+    /**
+     * Cursor page of grants and current configuration revision.
+     */
+    200: GrantPageResponseDtoOutput;
+};
+
+export type ListNodeGrantsResponse = ListNodeGrantsResponses[keyof ListNodeGrantsResponses];
+
+export type UpsertNodeGrantData = {
+    /**
+     * Target member, grant mode and current configuration precondition.
+     */
+    body: UpsertGrantDto;
+    path: {
+        /**
+         * Target node ID
+         *
+         * Container identifier within the selected workspace.
+         */
+        nodeId: string;
+    };
+    query?: never;
+    url: '/v1/nodes/{nodeId}/grants';
+};
+
+export type UpsertNodeGrantErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type UpsertNodeGrantError = UpsertNodeGrantErrors[keyof UpsertNodeGrantErrors];
+
+export type UpsertNodeGrantResponses = {
+    /**
+     * Persisted grant and current configuration revision.
+     */
+    200: GrantResponseDtoOutput;
+};
+
+export type UpsertNodeGrantResponse = UpsertNodeGrantResponses[keyof UpsertNodeGrantResponses];
+
+export type RemoveNodeGrantData = {
+    /**
+     * Current workspace configuration revision.
+     */
+    body: GrantVersionDto;
+    path: {
+        /**
+         * Target node ID
+         *
+         * Container identifier within the selected workspace.
+         */
+        nodeId: string;
+        /**
+         * Target member ID
+         *
+         * Current member receiving the grant; never the acting identity.
+         */
+        userId: string;
+    };
+    query?: never;
+    url: '/v1/nodes/{nodeId}/grants/{userId}';
+};
+
+export type RemoveNodeGrantErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type RemoveNodeGrantError = RemoveNodeGrantErrors[keyof RemoveNodeGrantErrors];
+
+export type RemoveNodeGrantResponses = {
+    /**
+     * Grant removed or already absent; no response body.
+     */
+    204: void;
+};
+
+export type RemoveNodeGrantResponse = RemoveNodeGrantResponses[keyof RemoveNodeGrantResponses];
+
+export type ListVisibleTreeData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Cursor
+         *
+         * Opaque server-authenticated continuation token; keep the same query.
+         */
+        cursor?: string;
+        /**
+         * Page limit
+         *
+         * Maximum returned items, from 1 to 100.
+         */
+        limit?: string;
+    };
+    url: '/v1/tree';
+};
+
+export type ListVisibleTreeErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ListVisibleTreeError = ListVisibleTreeErrors[keyof ListVisibleTreeErrors];
+
+export type ListVisibleTreeResponses = {
+    /**
+     * Authorized containers, virtual workspace root and revisions from one snapshot.
+     */
+    200: TreePageResponseDtoOutput;
+};
+
+export type ListVisibleTreeResponse = ListVisibleTreeResponses[keyof ListVisibleTreeResponses];
 
 export type ListWorkspacesData = {
     body?: never;

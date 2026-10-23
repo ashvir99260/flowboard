@@ -633,6 +633,253 @@
         "title": "Configuration precondition",
         "type": "object"
       },
+      "GrantPageResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Admin-only grants ordered by creation time and user ID.",
+        "example": {
+          "configVersion": 1,
+          "items": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "nextCursor": null
+          }
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Authorized items in stable order.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "Explicit access for one current member and container.",
+              "example": {
+                "createdAt": "2026-10-24T10:00:00.000Z",
+                "mode": "allow",
+                "resourceId": "10000000-0000-4000-8000-000000000010",
+                "updatedAt": "2026-10-24T10:00:00.000Z",
+                "userId": "10000000-0000-4000-8000-000000000003"
+              },
+              "properties": {
+                "createdAt": {
+                  "description": "Immutable grant creation time.",
+                  "example": "2026-10-24T10:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Created at",
+                  "type": "string"
+                },
+                "mode": {
+                  "description": "Deny blocks this subtree; allow satisfies privacy on this container only.",
+                  "enum": [
+                    "allow",
+                    "deny"
+                  ],
+                  "example": "allow",
+                  "title": "Grant mode",
+                  "type": "string"
+                },
+                "resourceId": {
+                  "description": "Server-generated container identifier.",
+                  "example": "10000000-0000-4000-8000-000000000010",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Node ID",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "Time of the last changed grant command.",
+                  "example": "2026-10-24T10:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Updated at",
+                  "type": "string"
+                },
+                "userId": {
+                  "description": "Current member receiving the grant; never the acting identity.",
+                  "example": "10000000-0000-4000-8000-000000000003",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Target member ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "resourceId",
+                "userId",
+                "mode",
+                "createdAt",
+                "updatedAt"
+              ],
+              "title": "Container grant",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Items",
+            "type": "array"
+          },
+          "pageInfo": {
+            "additionalProperties": false,
+            "description": "Consistent forward-pagination state.",
+            "example": {
+              "hasNextPage": false,
+              "nextCursor": null
+            },
+            "properties": {
+              "hasNextPage": {
+                "description": "Whether another page is available.",
+                "example": false,
+                "title": "Has next page",
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "description": "Continuation token, or null at the end.",
+                "example": null,
+                "maxLength": 2048,
+                "minLength": 1,
+                "nullable": true,
+                "title": "Next cursor",
+                "type": "string"
+              }
+            },
+            "required": [
+              "hasNextPage",
+              "nextCursor"
+            ],
+            "title": "Page information",
+            "type": "object"
+          }
+        },
+        "required": [
+          "items",
+          "pageInfo",
+          "configVersion"
+        ],
+        "title": "Grant page",
+        "type": "object"
+      },
+      "GrantResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Persisted grant with current workspace configuration revision.",
+        "example": {
+          "configVersion": 2,
+          "data": {
+            "createdAt": "2026-10-24T10:00:00.000Z",
+            "mode": "allow",
+            "resourceId": "10000000-0000-4000-8000-000000000010",
+            "updatedAt": "2026-10-24T10:00:00.000Z",
+            "userId": "10000000-0000-4000-8000-000000000003"
+          }
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "data": {
+            "additionalProperties": false,
+            "description": "Explicit access for one current member and container.",
+            "example": {
+              "createdAt": "2026-10-24T10:00:00.000Z",
+              "mode": "allow",
+              "resourceId": "10000000-0000-4000-8000-000000000010",
+              "updatedAt": "2026-10-24T10:00:00.000Z",
+              "userId": "10000000-0000-4000-8000-000000000003"
+            },
+            "properties": {
+              "createdAt": {
+                "description": "Immutable grant creation time.",
+                "example": "2026-10-24T10:00:00.000Z",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Created at",
+                "type": "string"
+              },
+              "mode": {
+                "description": "Deny blocks this subtree; allow satisfies privacy on this container only.",
+                "enum": [
+                  "allow",
+                  "deny"
+                ],
+                "example": "allow",
+                "title": "Grant mode",
+                "type": "string"
+              },
+              "resourceId": {
+                "description": "Server-generated container identifier.",
+                "example": "10000000-0000-4000-8000-000000000010",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Node ID",
+                "type": "string"
+              },
+              "updatedAt": {
+                "description": "Time of the last changed grant command.",
+                "example": "2026-10-24T10:00:00.000Z",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Updated at",
+                "type": "string"
+              },
+              "userId": {
+                "description": "Current member receiving the grant; never the acting identity.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Target member ID",
+                "type": "string"
+              }
+            },
+            "required": [
+              "resourceId",
+              "userId",
+              "mode",
+              "createdAt",
+              "updatedAt"
+            ],
+            "title": "Container grant",
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "configVersion"
+        ],
+        "title": "Grant response",
+        "type": "object"
+      },
+      "GrantVersionDto": {
+        "additionalProperties": false,
+        "description": "Required revision check for workspace mutations.",
+        "example": {
+          "expectedConfigVersion": 1
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedConfigVersion"
+        ],
+        "title": "Configuration precondition",
+        "type": "object"
+      },
       "InvitationResponseDto_Output": {
         "additionalProperties": false,
         "description": "Created invitation and current configuration revision.",
@@ -1510,6 +1757,261 @@
         "title": "Switch workspace request",
         "type": "object"
       },
+      "TreePageResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Authorized live nodes ordered by depth and full sibling path.",
+        "example": {
+          "configVersion": 1,
+          "dataVersion": 1,
+          "items": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "nextCursor": null
+          },
+          "root": {
+            "id": "10000000-0000-4000-8000-000000000002",
+            "name": "Engineering",
+            "type": "workspace"
+          }
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "dataVersion": {
+            "description": "Workspace collection revision from the same database snapshot.",
+            "example": 2,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Data version",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Authorized items in stable order.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "Safe tenant-owned hierarchy container.",
+              "example": {
+                "archivedAt": null,
+                "createdAt": "2026-10-24T10:00:00.000Z",
+                "id": "10000000-0000-4000-8000-000000000010",
+                "name": "Engineering",
+                "parentId": null,
+                "position": 0,
+                "type": "space",
+                "updatedAt": "2026-10-24T10:00:00.000Z",
+                "version": 1,
+                "visibility": "public",
+                "workspaceId": "10000000-0000-4000-8000-000000000002"
+              },
+              "properties": {
+                "archivedAt": {
+                  "description": "Server archive timestamp or null for a live container.",
+                  "example": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Archived at",
+                  "type": "string"
+                },
+                "createdAt": {
+                  "description": "Immutable creation time from the database clock.",
+                  "example": "2026-10-24T10:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Created at",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Server-generated container identifier.",
+                  "example": "10000000-0000-4000-8000-000000000010",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Node ID",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Trimmed name containing 1 to 120 Unicode characters.",
+                  "example": "Engineering",
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "title": "Container name",
+                  "type": "string"
+                },
+                "parentId": {
+                  "description": "Null for spaces; a space ID for folders; a folder ID for lists.",
+                  "example": null,
+                  "format": "uuid",
+                  "nullable": true,
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Parent ID",
+                  "type": "string"
+                },
+                "position": {
+                  "description": "Server-assigned position among live siblings.",
+                  "example": 0,
+                  "maximum": 2147483647,
+                  "minimum": 0,
+                  "title": "Sibling position",
+                  "type": "integer"
+                },
+                "type": {
+                  "description": "A space contains folders; a folder contains lists; lists contain tasks.",
+                  "enum": [
+                    "space",
+                    "folder",
+                    "list"
+                  ],
+                  "example": "space",
+                  "title": "Container type",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "Database-maintained time of the last changed command.",
+                  "example": "2026-10-24T10:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Updated at",
+                  "type": "string"
+                },
+                "version": {
+                  "description": "Optimistic revision incremented by each changed command.",
+                  "example": 1,
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "title": "Node version",
+                  "type": "integer"
+                },
+                "visibility": {
+                  "description": "Container visibility policy; private access requires an explicit grant for members.",
+                  "enum": [
+                    "public",
+                    "private"
+                  ],
+                  "example": "public",
+                  "title": "Visibility",
+                  "type": "string"
+                },
+                "workspaceId": {
+                  "description": "Tenant owning this container, resolved from the authenticated session.",
+                  "example": "10000000-0000-4000-8000-000000000002",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Workspace ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "workspaceId",
+                "name",
+                "type",
+                "parentId",
+                "position",
+                "visibility",
+                "version",
+                "archivedAt",
+                "createdAt",
+                "updatedAt"
+              ],
+              "title": "Container",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Items",
+            "type": "array"
+          },
+          "pageInfo": {
+            "additionalProperties": false,
+            "description": "Consistent forward-pagination state.",
+            "example": {
+              "hasNextPage": false,
+              "nextCursor": null
+            },
+            "properties": {
+              "hasNextPage": {
+                "description": "Whether another page is available.",
+                "example": false,
+                "title": "Has next page",
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "description": "Continuation token, or null at the end.",
+                "example": null,
+                "maxLength": 2048,
+                "minLength": 1,
+                "nullable": true,
+                "title": "Next cursor",
+                "type": "string"
+              }
+            },
+            "required": [
+              "hasNextPage",
+              "nextCursor"
+            ],
+            "title": "Page information",
+            "type": "object"
+          },
+          "root": {
+            "additionalProperties": false,
+            "description": "Selected workspace from the same snapshot.",
+            "example": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "name": "Engineering",
+              "type": "workspace"
+            },
+            "properties": {
+              "id": {
+                "description": "Server-generated container identifier.",
+                "example": "10000000-0000-4000-8000-000000000010",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Node ID",
+                "type": "string"
+              },
+              "name": {
+                "description": "Trimmed name containing 1 to 120 Unicode characters.",
+                "example": "Engineering",
+                "maxLength": 120,
+                "minLength": 1,
+                "title": "Container name",
+                "type": "string"
+              },
+              "type": {
+                "description": "Virtual workspace root.",
+                "enum": [
+                  "workspace"
+                ],
+                "example": "workspace",
+                "title": "Root type",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "type"
+            ],
+            "title": "Workspace root",
+            "type": "object"
+          }
+        },
+        "required": [
+          "items",
+          "pageInfo",
+          "configVersion",
+          "dataVersion",
+          "root"
+        ],
+        "title": "Visible tree page",
+        "type": "object"
+      },
       "UpdateMemberDto": {
         "additionalProperties": false,
         "description": "Change the target membership role without removing the last administrator.",
@@ -1593,6 +2095,50 @@
           "expectedVersion"
         ],
         "title": "Update container request",
+        "type": "object"
+      },
+      "UpsertGrantDto": {
+        "additionalProperties": false,
+        "description": "Admin-only grant change with workspace revision precondition.",
+        "example": {
+          "expectedConfigVersion": 1,
+          "mode": "allow",
+          "userId": "10000000-0000-4000-8000-000000000003"
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "mode": {
+            "description": "Deny blocks this subtree; allow satisfies privacy on this container only.",
+            "enum": [
+              "allow",
+              "deny"
+            ],
+            "example": "allow",
+            "title": "Grant mode",
+            "type": "string"
+          },
+          "userId": {
+            "description": "Current member receiving the grant; never the acting identity.",
+            "example": "10000000-0000-4000-8000-000000000003",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "title": "Target member ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mode",
+          "userId",
+          "expectedConfigVersion"
+        ],
+        "title": "Set grant request",
         "type": "object"
       },
       "WorkspacePageResponseDto_Output": {
@@ -4432,7 +4978,7 @@
                 }
               }
             },
-            "description": "Only workspace administrators may use container endpoints in this phase."
+            "description": "The member cannot access this container or perform this administrative action."
           },
           "404": {
             "content": {
@@ -4642,7 +5188,7 @@
                 }
               }
             },
-            "description": "Only workspace administrators may use container endpoints in this phase."
+            "description": "The member cannot access this container or perform this administrative action."
           },
           "404": {
             "content": {
@@ -4744,7 +5290,7 @@
         ]
       },
       "get": {
-        "description": "Read a container with a complete live ancestor chain in the selected workspace. Administrator access is required until member visibility is implemented.",
+        "description": "Read a container in the selected workspace. Members require access through every ancestor; administrators bypass tenant-local grants.",
         "operationId": "getNode",
         "parameters": [
           {
@@ -4854,7 +5400,7 @@
                 }
               }
             },
-            "description": "Only workspace administrators may use container endpoints in this phase."
+            "description": "The member cannot access this container or perform this administrative action."
           },
           "404": {
             "content": {
@@ -5087,7 +5633,7 @@
                 }
               }
             },
-            "description": "Only workspace administrators may use container endpoints in this phase."
+            "description": "The member cannot access this container or perform this administrative action."
           },
           "404": {
             "content": {
@@ -5184,6 +5730,1073 @@
           }
         ],
         "summary": "Update a hierarchy container",
+        "tags": [
+          "Hierarchy"
+        ]
+      }
+    },
+    "/v1/nodes/{nodeId}/grants": {
+      "get": {
+        "description": "Administrators can page explicit grants for a live container. Cursor binds caller, workspace, container, limit and configuration revision; no member profile or hidden count is returned.",
+        "operationId": "listNodeGrants",
+        "parameters": [
+          {
+            "description": "Container identifier within the selected workspace.",
+            "in": "path",
+            "name": "nodeId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000010",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Target node ID",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque server-authenticated continuation token; keep the same query.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "example": "opaque.cursor",
+              "maxLength": 2048,
+              "minLength": 1,
+              "title": "Cursor",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum returned items, from 1 to 100.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": "50",
+              "example": "50",
+              "pattern": "^(?:[1-9]\\d?|100)$",
+              "title": "Page limit",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "items": [],
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "nextCursor": null
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GrantPageResponseDto_Output"
+                }
+              }
+            },
+            "description": "Cursor page of grants and current configuration revision."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List container grants",
+        "tags": [
+          "Permissions"
+        ]
+      },
+      "put": {
+        "description": "Administrators may allow or deny a current workspace member on this container. Rechecks access and revision inside the locked transaction; same-value writes preserve timestamps and revisions.",
+        "operationId": "upsertNodeGrant",
+        "parameters": [
+          {
+            "description": "Container identifier within the selected workspace.",
+            "in": "path",
+            "name": "nodeId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000010",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Target node ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "allow": {
+                  "summary": "Allow a member on a private container",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "mode": "allow",
+                    "userId": "10000000-0000-4000-8000-000000000003"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpsertGrantDto"
+              }
+            }
+          },
+          "description": "Target member, grant mode and current configuration precondition.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 2,
+                  "data": {
+                    "createdAt": "2026-10-24T10:00:00.000Z",
+                    "mode": "allow",
+                    "resourceId": "10000000-0000-4000-8000-000000000010",
+                    "updatedAt": "2026-10-24T10:00:00.000Z",
+                    "userId": "10000000-0000-4000-8000-000000000003"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GrantResponseDto_Output"
+                }
+              }
+            },
+            "description": "Persisted grant and current configuration revision."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Set a container grant",
+        "tags": [
+          "Permissions"
+        ]
+      }
+    },
+    "/v1/nodes/{nodeId}/grants/{userId}": {
+      "delete": {
+        "description": "Administrators remove a current member grant under a configuration revision precondition. An absent grant is a no-op after resource, member and revision checks. Removal restores inherited/public visibility.",
+        "operationId": "removeNodeGrant",
+        "parameters": [
+          {
+            "description": "Container identifier within the selected workspace.",
+            "in": "path",
+            "name": "nodeId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000010",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Target node ID",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Current member receiving the grant; never the acting identity.",
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000003",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Target member ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "remove": {
+                  "summary": "Remove the observed grant",
+                  "value": {
+                    "expectedConfigVersion": 2
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GrantVersionDto"
+              }
+            }
+          },
+          "description": "Current workspace configuration revision.",
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Grant removed or already absent; no response body."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Remove a container grant",
+        "tags": [
+          "Permissions"
+        ]
+      }
+    },
+    "/v1/tree": {
+      "get": {
+        "description": "Return only authorized live nodes in depth/full ancestor path order. Follow the opaque cursor with the same limit; changed workspace revisions require restarting. Parent nodes precede children across pages.",
+        "operationId": "listVisibleTree",
+        "parameters": [
+          {
+            "description": "Opaque server-authenticated continuation token; keep the same query.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "example": "opaque.cursor",
+              "maxLength": 2048,
+              "minLength": 1,
+              "title": "Cursor",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum returned items, from 1 to 100.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": "50",
+              "example": "50",
+              "pattern": "^(?:[1-9]\\d?|100)$",
+              "title": "Page limit",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "dataVersion": 1,
+                  "items": [],
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "nextCursor": null
+                  },
+                  "root": {
+                    "id": "10000000-0000-4000-8000-000000000002",
+                    "name": "Engineering",
+                    "type": "workspace"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TreePageResponseDto_Output"
+                }
+              }
+            },
+            "description": "Authorized containers, virtual workspace root and revisions from one snapshot."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List visible hierarchy containers",
         "tags": [
           "Hierarchy"
         ]
@@ -6639,6 +8252,10 @@
     {
       "description": "Workspace spaces, folders and lists",
       "name": "Hierarchy"
+    },
+    {
+      "description": "Administrator-managed container access grants",
+      "name": "Permissions"
     }
   ]
 }

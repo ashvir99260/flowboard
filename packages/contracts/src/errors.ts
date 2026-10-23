@@ -12,6 +12,7 @@ export const ErrorExamples = {
   },
   401: { error: { code: 'UNAUTHENTICATED', message: 'Invalid email or password' } },
   403: { error: { code: 'ORIGIN_REJECTED', message: 'Request origin is not allowed' } },
+  404: { error: { code: 'NOT_FOUND', message: 'Resource not found' } },
   409: { error: { code: 'EMAIL_IN_USE', message: 'Email is already registered' } },
   413: { error: { code: 'PAYLOAD_TOO_LARGE', message: 'Request is too large' } },
   429: { error: { code: 'RATE_LIMITED', message: 'Too many authentication attempts' } },

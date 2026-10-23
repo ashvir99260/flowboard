@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-import { TimestampSchema, UuidSchema } from '@flowboard/contracts';
+import { TimestampSchema, TreePositionSchema, UuidSchema } from '@flowboard/contracts';
 import { z } from 'zod';
 
 import { ApiException } from './errors/api-exception.js';
@@ -16,6 +16,13 @@ const payloadSchema = z.strictObject({
   configVersion: z.number().int().positive().optional(),
 });
 
+const treePayloadSchema = payloadSchema.extend({
+  kind: z.literal('tree'),
+  after: TreePositionSchema,
+  configVersion: z.number().int().positive(),
+  dataVersion: z.number().int().positive(),
+});
+
 export type CursorBinding = Pick<
   z.infer<typeof payloadSchema>,
   'caller' | 'workspaceId' | 'resource' | 'limit'
@@ -27,6 +34,16 @@ export class CursorCodec {
     return createHmac('sha256', this.secret).update(`flowboard:cursor:v1:${value}`).digest();
   }
   decode(value: string | undefined, binding: CursorBinding) {
+    return this.decodePayload(value, binding, payloadSchema);
+  }
+  decodeTree(value: string | undefined, binding: CursorBinding) {
+    return this.decodePayload(value, binding, treePayloadSchema);
+  }
+  private decodePayload<T extends CursorBinding & { expiresAt: number }>(
+    value: string | undefined,
+    binding: CursorBinding,
+    schema: z.ZodType<T>,
+  ) {
     if (value === undefined) return undefined;
 
     try {
@@ -39,9 +56,7 @@ export class CursorCodec {
       if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected))
         throw new Error('Invalid signature');
 
-      const payload = payloadSchema.parse(
-        JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8')),
-      );
+      const payload = schema.parse(JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8')));
       if (
         payload.expiresAt <= Date.now() ||
         Object.entries(binding).some(
@@ -73,6 +88,25 @@ export class CursorCodec {
       after: { createdAt: after.createdAt.toISOString(), id: after.id },
       expiresAt: previous?.expiresAt ?? Date.now() + 900_000,
       ...(configVersion === undefined ? {} : { configVersion }),
+    });
+    const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
+
+    return `${encoded}.${this.signature(encoded).toString('base64url')}`;
+  }
+  encodeTree(
+    binding: CursorBinding,
+    after: z.infer<typeof TreePositionSchema>,
+    revisions: { configVersion: number; dataVersion: number },
+    previous?: ReturnType<CursorCodec['decodeTree']>,
+  ) {
+    const payload = treePayloadSchema.parse({
+      ...binding,
+      configVersion: revisions.configVersion,
+      dataVersion: revisions.dataVersion,
+      v: 1,
+      kind: 'tree',
+      after,
+      expiresAt: previous?.expiresAt ?? Date.now() + 900_000,
     });
     const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
 

@@ -24,7 +24,7 @@ import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
 import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.js';
 import { documentedError } from '../../core/common/swagger/api-documentation.js';
-import { ActiveWorkspacePermission } from '../permissions/permission.decorator.js';
+import { ActiveWorkspacePermission, NodePermission } from '../permissions/permission.decorator.js';
 
 import {
   CreateNodeDto,
@@ -52,7 +52,7 @@ const responseExample = { data: NodeExamples.node, configVersion: 2, dataVersion
 @ApiResponse({
   status: 403,
   type: ErrorResponseDto.Output,
-  description: 'Only workspace administrators may use container endpoints in this phase.',
+  description: 'The member cannot access this container or perform this administrative action.',
   example: { error: { code: 'FORBIDDEN', message: 'Access denied' } },
 })
 @ApiResponse({
@@ -100,10 +100,10 @@ export class NodesController {
     return this.hierarchy.create(request.identity, input);
   }
   @Get(':nodeId')
-  @ActiveWorkspacePermission('container.read')
+  @NodePermission('container.read')
   @ApiOperation({
     description:
-      'Read a container with a complete live ancestor chain in the selected workspace. Administrator access is required until member visibility is implemented.',
+      'Read a container in the selected workspace. Members require access through every ancestor; administrators bypass tenant-local grants.',
     operationId: 'getNode',
     summary: 'Read a live hierarchy container',
   })
@@ -121,7 +121,7 @@ export class NodesController {
     return this.hierarchy.find(request.identity, params.nodeId);
   }
   @Patch(':nodeId')
-  @ActiveWorkspacePermission('container.write')
+  @NodePermission('container.write')
   @ApiOperation({
     description:
       'Change the name or visibility of a live container using node and workspace revisions. A no-op preserves timestamps and versions. Reparenting is not supported by this endpoint.',
@@ -164,7 +164,7 @@ export class NodesController {
 
   @Delete(':nodeId')
   @HttpCode(204)
-  @ActiveWorkspacePermission('container.write')
+  @NodePermission('container.write')
   @ApiOperation({
     description:
       'Atomically archive the live container, descendant containers and their live tasks. Preserve historical data and existing archived rows; repeated archive returns 404.',
