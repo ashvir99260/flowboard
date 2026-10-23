@@ -11,7 +11,7 @@ test('application configuration preserves defaults and explicit runtime settings
   expect(readApplicationConfig(environment)).toEqual({
     databaseUrl: environment.DATABASE_URL,
     redisUrl: environment.REDIS_URL,
-    host: '127.0.0.1',
+    host: 'localhost',
     port: 3001,
     demoSeed: false,
     exposeDocs: true,

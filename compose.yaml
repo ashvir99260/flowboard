@@ -32,7 +32,7 @@ services:
       DEMO_SEED: ${DEMO_SEED:-true}
       API_DOCS: ${API_DOCS:-true}
       AUTH_SECRET: ${AUTH_SECRET:-flowboard-local-only-change-before-hosting-64-bytes}
-      AUTH_ALLOWED_ORIGINS: ${AUTH_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      AUTH_ALLOWED_ORIGINS: ${AUTH_ALLOWED_ORIGINS:-http://localhost:3000}
       AUTH_ALLOW_INSECURE_HTTP: ${AUTH_ALLOW_INSECURE_HTTP:-true}
     depends_on:
       postgres:

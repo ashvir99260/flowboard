@@ -16,7 +16,7 @@ export function readApplicationConfig(environment: NodeJS.ProcessEnv) {
   return {
     databaseUrl,
     redisUrl,
-    host: environment.HOST ?? '127.0.0.1',
+    host: environment.HOST ?? 'localhost',
     port,
     demoSeed: readBooleanSetting(environment.DEMO_SEED, 'DEMO_SEED') ?? false,
     exposeDocs: docs ?? environment.NODE_ENV !== 'production',

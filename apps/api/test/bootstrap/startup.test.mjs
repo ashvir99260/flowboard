@@ -6,7 +6,7 @@ import { startProcess } from '@flowboard/config-jest/process';
 const cwd = new URL('../../', import.meta.url);
 
 test('Nest refuses to start the HTTP platform without database configuration', async (t) => {
-  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });
+  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: 'localhost', PORT: '0' } });
   t.after(() => runtime.stop(null, 1));
   const { code } = await runtime.exited;
   assert.equal(code, 1);
@@ -33,11 +33,11 @@ test('migration failure prevents listening and does not print credentials', asyn
       AUTH_ALLOW_INSECURE_HTTP: 'true',
       AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
       AUTH_SECRET: 'test-only-abcdefghijklmnopqrstuvwxyz123456',
-      DATABASE_URL: 'postgresql://test:never-print-this@127.0.0.1:1/unavailable',
-      DATABASE_URL_UNPOOLED: 'postgresql://test:never-print-this@127.0.0.1:1/unavailable',
-      HOST: '127.0.0.1',
+      DATABASE_URL: 'postgresql://test:never-print-this@localhost:1/unavailable',
+      DATABASE_URL_UNPOOLED: 'postgresql://test:never-print-this@localhost:1/unavailable',
+      HOST: 'localhost',
       PORT: '0',
-      REDIS_URL: 'redis://127.0.0.1:1',
+      REDIS_URL: 'redis://localhost:1',
     },
   });
   t.after(() => runtime.stop(null, 1));

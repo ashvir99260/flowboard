@@ -45,11 +45,11 @@ Open [the setup page](http://localhost:3000). Next.js reloads page edits; the AP
 
 | Process | Default address         | Current behavior                                                    |
 | ------- | ----------------------- | ------------------------------------------------------------------- |
-| Web     | `http://127.0.0.1:3000` | Static setup page; no login or task data yet.                       |
-| API     | `http://127.0.0.1:3001` | Signup/login, JWT guard, health and development Swagger at `/docs`. |
-| Worker  | TCP `127.0.0.1:3002`    | Process liveness only; queue processing arrives in P11-02.          |
+| Web     | `http://localhost:3000` | Static setup page; no login or task data yet.                       |
+| API     | `http://localhost:3001` | Signup/login, JWT guard, health and development Swagger at `/docs`. |
+| Worker  | TCP `localhost:3002`    | Process liveness only; queue processing arrives in P11-02.          |
 
-The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; set `HOSTNAME=127.0.0.1` to restrict it locally. The API requires `DATABASE_URL` and `REDIS_URL`, migrates before listening and serves `/health/live` and dependency-aware `/health/ready`. `API_DOCS=true` enables `/docs`; it defaults on in development and off in hosted production. Local Compose explicitly enables it.
+The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; set `HOSTNAME=localhost` to restrict it locally. The API requires `DATABASE_URL` and `REDIS_URL`, migrates before listening and serves `/health/live` and dependency-aware `/health/ready`. `API_DOCS=true` enables `/docs`; it defaults on in development and off in hosted production. Local Compose explicitly enables it.
 
 The shared ESLint presets are exported as `@flowboard/config-eslint/node` and `/next`; compiler presets as `@flowboard/config-typescript/{node,nest,next,library}.json`. Workspace boundary violations fail lint. App manifests export their metadata only; apps are not reusable libraries.
 
@@ -68,6 +68,8 @@ docker compose up --build
 ```
 
 This builds separate web, API and worker images and starts PostgreSQL and Redis. Open [Flowboard](http://localhost:3000); the API listens on port 3001. Application containers run as non-root. PostgreSQL, Redis and the worker are private to the Compose network. The local database defaults in `.env.example` require no file copy and are for development only.
+
+Use `localhost` in local browser URLs and host-side connection settings. Compose keeps numeric loopback addresses for host port publishing, and container health probes use IPv4 to match their listeners. These settings keep services local while avoiding differences in IPv4/IPv6 hostname resolution. Container listeners retain `0.0.0.0` so the Compose network can reach them.
 
 The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API health checks PostgreSQL and Redis with bounded timeouts; worker health remains process liveness until queue processing in P11-02. No successful domain response is provided yet.
 

@@ -516,6 +516,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `style: separate control flow with blank lines`.
   - **Completion evidence:** [P02-17](evidence/P02-17.md): three-preset spacing/autofix tests, unchanged existing syntax and 348 tests; build/lint/type/format/contract checks pass.
 
+- [x] **P02-18 — Use localhost for local development**
+  - **Goal:** Make localhost the consistent address developers use for the web, API, worker and local datastore examples.
+  - **Requirements:** R129.
+  - **Files:** App development/runtime configuration, app environment examples and startup tests, Compose origin default, README, plan/decision/matrix docs and task evidence.
+  - **Dependencies:** P02-17; prioritized by the user's localhost request.
+  - **Acceptance:** Web development and local API/worker listeners default to localhost; documented URLs and local connection examples use localhost; default browser origin is exactly http://localhost:3000. Explicit hosted/container host overrides remain valid. Keep numeric Docker loopback port bindings and IPv4 health probes; never broaden exposure. Preserve security validation of alternate explicitly configured loopback origins.
+  - **Validation:** Failing/passing default-config test, web/worker localhost startup and shutdown, auth regressions, root build/lint/typecheck/test/format/OpenAPI checks and isolated Docker startup/restart. G01–G07 and G11 as applicable.
+  - **Commit:** `fix: use localhost for local development`.
+  - **Completion evidence:** [P02-18](evidence/P02-18.md): localhost defaults, dev/production smoke checks and 348 tests pass; build/lint/type/format/contract/Docker checks pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

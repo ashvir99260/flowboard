@@ -7,13 +7,13 @@ import { startProcess } from '@flowboard/config-jest/process';
 
 const cwd = new URL('../', import.meta.url);
 
-test('worker exposes process liveness and stops without claiming queue readiness', async (t) => {
-  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });
+test('worker defaults to localhost liveness and stops without claiming queue readiness', async (t) => {
+  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: undefined, PORT: '0' } });
   t.after(() => runtime.stop());
   const [line] = await runtime.waitFor(/\{[^\n]*"event":"worker.started"[^\n]*\}/);
   const { port } = JSON.parse(line);
   assert.match(runtime.output(), /"outcome":"process_only"/);
-  const connection = createConnection({ host: '127.0.0.1', port: Number(port) });
+  const connection = createConnection({ host: 'localhost', port: Number(port) });
   t.after(() => connection.destroy());
   await once(connection, 'connect');
   connection.resume();
@@ -31,13 +31,13 @@ for (const port of ['not-a-port', '65536']) {
 }
 
 test('worker closes a half-open liveness connection during shutdown', async (t) => {
-  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });
+  const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: 'localhost', PORT: '0' } });
   let client;
   t.after(() => client?.destroy());
   t.after(() => runtime.stop());
   const [line] = await runtime.waitFor(/\{[^\n]*"event":"worker.started"[^\n]*\}/);
   const { port } = JSON.parse(line);
-  client = createConnection({ host: '127.0.0.1', port: Number(port), allowHalfOpen: true });
+  client = createConnection({ host: 'localhost', port: Number(port), allowHalfOpen: true });
   client.resume();
   await once(client, 'end');
   await runtime.stop();
