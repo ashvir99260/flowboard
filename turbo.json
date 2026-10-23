@@ -34,6 +34,11 @@
       "cache": false,
       "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
       "outputs": []
+    },
+    "release:plan": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "outputs": []
     }
   }
 }

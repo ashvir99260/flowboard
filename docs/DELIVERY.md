@@ -36,7 +36,7 @@ Local PostgreSQL stays in Docker. A localhost-only port override supports runnin
 
 ## Hosted hobby target
 
-Recommended, pending the user's host preference: Vercel Hobby for Next.js, Northflank Sandbox for the API and worker, Northflank Redis, and Neon PostgreSQL. These are separate deployment targets, so releasing one application does not deploy the others. Keep Redis private, enable persistence, and use `noeviction` for BullMQ.
+Selected by the user: Vercel Hobby for Next.js, Northflank Sandbox for the API and worker, Northflank Redis, and Neon PostgreSQL. These are separate deployment targets, so releasing one application does not deploy the others. Keep Redis private, enable persistence, and use `noeviction` for BullMQ.
 
 Northflank currently offers two always-on services and one database addon, which fits API + worker + Redis. Its Sandbox is intended for hobby/testing use; it is not a production SLA. Vercel Hobby is for personal, noncommercial use. Free-tier capacity and account eligibility must be checked before provisioning; no paid plan is enabled by this repository.
 
@@ -55,3 +55,17 @@ Provider configuration and credentials are separate from releases. This work doe
 - [Northflank Redis](https://northflank.com/docs/v1/application/databases-and-persistence/deploy-databases-on-northflank/deploy-redis-on-northflank)
 - [Neon with Prisma](https://neon.com/docs/guides/prisma)
 - [BullMQ production guidance](https://docs.bullmq.io/guide/going-to-production)
+
+## Inspecting a release plan
+
+`packages/release-tools` reads committed Git trees, never uncommitted changes. Save the successful GitHub Release tag names as a JSON array and run:
+
+```sh
+pnpm release:plan -- --published-tags /absolute/path/published-tags.json
+```
+
+Use `[]` only for a repository that has never published. Local Git tags alone are not evidence of completed publication. Fetch all history and tags first. The output contains the affected app, source SHA, version, tag, prior release and whether an unfinished tag can resume. The workflow supplies the authoritative published list automatically.
+
+The planner compares runtime dependencies recursively on both snapshots, including peer-qualified/transitive lock entries and integrity metadata. Shared TypeScript configuration and TypeScript/type build dependencies count as artifact inputs; development servers, lint and test tools do not. Build/start commands, package exports, Docker inputs and source file modes count. When adding a different compiler/code generator to the build, add its build dependency to the planner and a behavioral fixture. Markdown documentation, environment examples and test files are excluded; `public/**` assets always participate. Runtime content outside `public` should live outside documentation/test conventions. A valid final PR may contain intermediate commits with incomplete dependency locks; those commits are classified using runtime ownership at the valid release endpoints.
+
+A completely reverted change causes no publication. Breaking changes in another app do not inflate this app's version. A pending tag at an older source must be completed by retrying that workflow before newer publication; unexpected versions or rewritten histories stop with an actionable error.

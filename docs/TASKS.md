@@ -74,7 +74,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: add docker compose development stack`.
   - **Completion evidence:** [P00-04 verification](evidence/P00-04.md): three non-root images, all five services healthy, browser assets served, datastore restart persistence and 44 root tests pass.
 
-- [ ] **P00-05 — Independent application release planning**
+- [x] **P00-05 — Independent application release planning**
   - **Goal:** Compute per-application semantic releases from source changes and published release baselines.
   - **Requirements:** R94–R95.
   - **Files:** `packages/release-tools/**`, application release metadata, `docs/DELIVERY.md`, `docs/DECISIONS.md`.
@@ -82,6 +82,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** API-only and web-only changes are independent; runtime shared dependencies propagate correctly; lockfile changes are selective. Versions use application-specific tags, Conventional Commits and published baselines. Documentation-only changes skip. Retries and stale/diverged histories fail safely or resume without duplicate versions.
   - **Validation:** Behavioral fixtures for app-only, shared, selective dependency, rename/delete, initial release, feature/breaking/patch, no-op, partial retry and stale runs; standard gate.
   - **Commit:** `feat: plan independent application releases`.
+  - **Completion evidence:** [P00-05 verification](evidence/P00-05.md): 31 planner fixtures and 75 total tests pass; publication remains P00-06.
 
 - [ ] **P00-06 — CI, independent image publication and hosted setup guide**
   - **Goal:** Validate pull requests and publish only affected application images, tags and GitHub Releases after main merges.
