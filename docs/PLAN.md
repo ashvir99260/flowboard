@@ -20,7 +20,7 @@ The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our com
 
 [Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
-The current user follow-up prioritizes P02-04 before membership work: complete Swagger operation summaries/descriptions and schema/header/request/response examples through shared Zod metadata and Nest documentation decorators. This changes documentation only, with generated-artifact and validation checks.
+P02-04 completed Swagger operation summaries/descriptions and schema/header/request/response examples through shared Zod metadata and Nest documentation decorators. The next user follow-up prioritizes P02-05: [feature-based backend rules](BACKEND_GUIDELINES.md) based on the supplied NestJS structure article. P02-06 separately aligns existing auth/platform modules before P02-03 membership work; the rules task does not move runtime code.
 
 ## 1. Scope and success
 
@@ -79,6 +79,8 @@ PostgreSQL is authoritative. Redis provides queue transport and socket fanout; i
 All workspaces have `package.json`, explicit `exports`, a local `tsconfig`, and a real build or config-copy step. Config packages publish configuration subpaths; applications are private and expose only intentional tooling entry points. Public imports use package exports, never `../../other-package/src`.
 
 ### Module boundaries inside the API
+
+Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.
 
 `platform` owns bootstrap, configuration, exception mapping, request IDs and health. `auth` owns credentials, sessions and token verification. `workspaces` owns membership/invitations. `permissions` owns a single resource authorization policy. `hierarchy` owns container paths and archive operations. `statuses` and `fields` own scoped configuration. `tasks` composes both resolvers inside transactions. `activity` exposes stored events. `realtime` owns authenticated subscriptions and Redis fanout. `outbox` retries committed events.
 

@@ -1,0 +1,114 @@
+# Backend structure and coding rules
+
+Status: adopted repository rules, 23 October 2026 (D85/P02-05). The target module layout below is a convention for new work, not a claim that all features exist. P02-06 covers the existing auth/platform module extraction. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
+
+## Basis and scope
+
+The requested [Encore NestJS structure guide](https://encore.dev/articles/nestjs-project-structure-best-practices) recommends grouping related code by feature, limiting module exports, separating transport DTOs from persistence, and keeping HTTP controllers thin. Flowboard adopts those organizational principles. The article is a design reference; repository rules and the fixed stack govern implementation.
+
+| Article guidance            | Flowboard rule                                                                                                               |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Feature folders             | One folder per domain under `apps/api/src/`; no app-wide controllers/services/DTOs directories.                              |
+| Module encapsulation        | Explicit Nest imports/providers/exports; only expose capabilities another feature needs.                                     |
+| Shared/core concerns        | Use the existing `platform/` boundary for shared HTTP/bootstrap infrastructure.                                              |
+| DTOs separate from entities | Shared Zod contracts → local `createZodDto` adapters → explicit safe responses; Prisma stays in `packages/database`.         |
+| Unit and end-to-end tests   | Group tests by feature using the current executable `.mjs` runners; change discovery before adopting source-colocated tests. |
+
+The article's TypeORM/class-validator examples, alternate error envelope and Encore migration are not adopted. NestJS, Prisma, Zod, Turborepo, PostgreSQL, Redis and the generated client remain the selected stack.
+
+## Folder ownership
+
+Use feature names from the domain: `auth`, `workspaces`, `permissions`, `hierarchy`, `statuses`, `fields`, `tasks`, `activity`, `realtime`, `outbox`. Add only folders that have an implemented responsibility. A resource does not need a separate Nest module for every table.
+
+The following is a target layout, with workspace files illustrating upcoming P02-03:
+
+```text
+apps/api/
+├── AGENTS.md
+├── src/
+│   ├── main.ts                       # process entry
+│   ├── application.ts                # shared HTTP application setup
+│   ├── app.module.ts                 # module composition
+│   ├── spec-bootstrap.ts             # same controllers, isolated spec providers
+│   ├── platform/                     # errors, validation, request IDs, health
+│   │   ├── platform.module.ts
+│   │   ├── api-documentation.ts       # shared error/header documentation
+│   │   └── http-exception.filter.ts
+│   ├── auth/
+│   │   ├── auth.module.ts
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   ├── auth.guard.ts
+│   │   └── dto/
+│   │       ├── log-in.dto.ts
+│   │       └── session-response.dto.ts
+│   └── workspaces/
+│       ├── workspaces.module.ts
+│       ├── workspaces.controller.ts
+│       ├── workspaces.service.ts
+│       └── dto/
+│           ├── create-invitation.dto.ts
+│           └── member-page-response.dto.ts
+└── test/
+    ├── bootstrap.test.mjs
+    ├── auth.spec.mjs
+    └── workspaces.spec.mjs
+packages/
+├── contracts/src/                    # shared schemas, types, pure logic
+├── database/                         # Prisma, migrations, scoped persistence
+├── openapi/                          # exported document and drift checks
+└── api-client/src/generated/         # generated SDK/types/query options
+```
+
+Current auth DTOs are together in `src/auth/auth.dto.ts`, and `AppModule` directly registers auth/health providers and controllers. Those are existing implementation facts; the module/DTO split is P02-06. Existing test files stay valid. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
+
+Within a feature, use `dto/` for focused request, path, query and response adapters. Add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
+
+## Modules and dependency injection
+
+Each new feature has one Nest module owning its controllers and providers. `AppModule` composes feature modules. Keep authentication guard wiring, shared validation/serialization, exception handling and resource cleanup registered once. Providers that own connections close them on shutdown. The spec-only bootstrap uses the same controller/module graph with isolated providers; it must neither connect to services nor start listeners.
+
+Use constructor injection for services. A consumer imports the owning module and references its exported provider; importing a TypeScript class alone does not register it with Nest. Export only deliberately shared services or injection tokens, never all controllers/providers by default. These boundaries follow [Nest module encapsulation](https://docs.nestjs.com/modules).
+
+Avoid cycles: move orchestration to the feature responsible for the use case, or extract genuinely shared pure logic to contracts. Do not add `forwardRef()` as a routine workaround. Keep global modules exceptional and justified by a real cross-cutting lifecycle need. Do not introduce new global/shared/core abstractions to satisfy a directory diagram.
+
+## Controller, service and persistence responsibilities
+
+| Layer                               | Owns                                                                                                  | Does not own                                                                           |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Controller                          | Route/status, DTO inputs, guard metadata, Swagger, call to service, typed output                      | Business policy, raw SQL, Prisma, inline tenant filters                                |
+| Feature service                     | Use case, shared domain validation, permission-aware transaction orchestration, safe response mapping | Connection construction, duplicate authorization rules, arbitrary HTTP error envelopes |
+| PermissionGuard / PermissionService | Central resource policy and access metadata                                                           | A separate policy copy per controller                                                  |
+| Database package                    | Raw Prisma/SQL, tenant-scoped repositories, locks, relation checks, atomic persistence                | Nest request objects or public response serialization                                  |
+| Contracts                           | Pure Zod shapes, enums, deterministic status/field resolution                                         | Nest, Prisma, environment access or side effects                                       |
+| Platform                            | Global error mapping, HTTP validation/serialization, request IDs, reusable documentation              | Domain-specific status/field/task rules                                                |
+
+Services orchestrate mutations using transaction-bound repositories: lock, re-read current membership/access/configuration, validate all relations, write changes and required outbox events, then commit. Never publish before commit. Authentication uses the narrow global identity repository; tenant features use verified tenant context. Preserve 401/403/404 distinctions and the global `{ error: { code, message, details? } }` envelope.
+
+Prisma/PostgreSQL connections belong to the database package. Redis connections may be owned by API runtime providers (as in the existing auth runtime and dependency probe) with explicit cleanup; feature controllers/services consume injected capabilities rather than opening per-request connections.
+
+Controllers return deliberate response DTO projections. Never return complete database rows, ORM models or an entity merely because its current fields look safe. Password hashes, refresh digests, lease/internal error fields and private columns must stay out of the wire response and the generated spec. See [response projections](BACKEND_CONTRACTS.md#5-response-projections-and-audit-fields).
+
+## DTOs, Swagger and generated clients
+
+Follow this order for every endpoint, including its first implementation:
+
+1. Define strict request/path/query/response schemas in `packages/contracts`, using shared field primitives and cursor pagination. Add schema/model/field titles, descriptions and valid examples with Zod `.meta()`; keep secrets synthetic and password fields write-only.
+2. In the owning feature's `dto/`, extend `createZodDto` using those schemas. Use focused names such as `CreateInvitationDto`, `MemberParamsDto`, `MemberPageQueryDto`, `MemberResponseDto` and `MemberPageResponseDto`. Do not repeat properties with `@ApiProperty` or introduce parallel class-validator rules.
+3. Keep HTTP decorators near the controller method: verb/path, explicit status, guard metadata, and `@ApiOperation` with a unique stable `operationId`, `summary` and `description`. Describe path/query/header semantics and request-body examples. Security decorators describe the actual guard requirements; they do not enforce access themselves.
+4. Use `@ZodResponse` with the concrete response DTO and success status. Keep global `ZodValidationPipe`, `ZodSerializerInterceptor` and sanitized exception filtering. Any supplemental `@ApiResponse` for a payload must retain its concrete `type: ResponseDto.Output`; include description, example and applicable headers. No `Object`, `any` or implicit generic page schema.
+5. Describe relevant typed error responses through the existing platform helper and feature-specific cases. Schema references in custom `@ApiBody` metadata use `getSchemaPath` and registered models, not duplicated inline shapes. A 204 response has a description and applicable headers but no content/body example. Cookie/header examples must match the runtime policy.
+6. Keep common error/header documentation in `platform/api-documentation.ts`. Feature-specific repeated documentation may live beside its controller. Do not hide runtime behavior or typed response checking inside a generic decorator factory.
+7. Add success, invalid-input, permission/tenant and relevant race tests. Validate examples against contracts and retain concrete schema references in exported-document tests. Run `pnpm gen:api` and `pnpm openapi:check`; generated client checks run in the build/tests. Never hand-edit OpenAPI or generated client files.
+
+The existing [auth controller](../apps/api/src/auth/auth.controller.ts), [contract schemas](../packages/contracts/src/auth.ts) and [documentation regressions](../packages/openapi/test/documentation.test.mjs) show the implemented conventions. DTO names/files can split under P02-06 without changing their contract. The [nestjs-zod reference](https://github.com/BenLorantfy/nestjs-zod) and [Nest operation decorators](https://docs.nestjs.com/openapi/operations) explain the underlying integration.
+
+## Coding and tests
+
+Keep backend filenames in kebab-case with role suffixes (`*.module.ts`, `*.controller.ts`, `*.service.ts`, `*.dto.ts`, `*.entity.ts`); classes/types use PascalCase and functions/variables use camelCase. Match the existing ESM setup: explicit `.js` extensions for relative runtime imports, public workspace exports and type-only imports where appropriate. Follow the committed compiler target and supported Node version; do not switch module systems or enable untested language/runtime features for style.
+
+Prefer `const`, destructuring and explicit typed data. Use `let` for actual reassignment. Typed lookup tables suit closed value-to-handler mappings; ordinary conditionals suit validation, authorization and branching that is clearer when read in order. Avoid forced dispatch tables, needless abstraction, swallowed errors and unrelated formatting changes. Validate configuration once at startup, inject the result, and keep credentials/task content out of logs.
+
+Tests currently consume built ESM output. Jest discovers `apps/api/test/**/*.spec.mjs`; Node's runner discovers top-level `test/*.test.mjs` for startup checks. Organize new API integration tests by feature within that existing pattern and use the real PostgreSQL/Redis harness where required. Do not drop `.spec.ts` beside source and claim it runs: source-colocated unit tests require a runner/compiler change with discovery evidence first. Pure contracts tests stay with contracts; persistence tests stay with database.
+
+For every implementation task, follow red → green → refactor, then the root build/lint/test gates plus type, format and contract checks as applicable. Consult [quality gates](QUALITY_GATES.md) and record evidence. These folder/module conventions are review rules today; existing lint enforces package/import boundaries and existing contract tests cover Swagger. No new automatic intra-API feature-boundary checker is claimed by this document.

@@ -65,6 +65,8 @@ Response projection is an explicit mapper/use-case result followed by Zod serial
 
 ## 4. Decorators and Swagger generation
 
+Feature ownership, DTO placement and the implementation checklist follow [the backend coding guide](BACKEND_GUIDELINES.md). Shared schemas remain in contracts, feature DTO adapters remain in the API, and Prisma persistence remains in database.
+
 ```mermaid
 flowchart TD
   Schemas[Shared Zod request and response schemas] --> DTOs[Nest createZodDto classes]

@@ -34,6 +34,7 @@ Use [REA](docs/REA.md) only for an explicit built-artifact question, with its pi
 
 ## Architecture guardrails
 
+- Backend work also follows [the feature-based guide](docs/BACKEND_GUIDELINES.md) and [API-scoped instructions](apps/api/AGENTS.md): domain-owned modules/controllers/services/DTOs, narrow Nest exports, shared Zod contracts and database-only persistence. P02-06 tracks the current auth/platform layout alignment.
 - Keep the fixed stack. Root scripts delegate to `turbo run`; packages own tasks and declared outputs. Use `workspace:*`, explicit exports, pinned compatible dependencies and the lockfile.
 - No app imports another app. Packages do not import apps except `packages/openapi`'s documented build-only API spec entry point. No circular dependencies or cross-package source-path shortcuts.
 - `contracts` imports Zod and its own files only; no Nest, React, Prisma, environment access, network or filesystem side effects. Export inferred types; do not maintain duplicate DTO shapes.

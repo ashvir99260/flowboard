@@ -14,6 +14,8 @@ The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to ou
 
 [Workspace RBAC and DTO/entity design](docs/BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
+[Backend coding guide](docs/BACKEND_GUIDELINES.md) defines the feature-based NestJS layout, module boundaries, DTO/entity rules and Swagger workflow used for backend changes.
+
 [Field validation reference](docs/FIELD_REFERENCE.md) defines every stored/embedded field and its enforcement layer; paginated APIs use cursor/limit only.
 
 ## Local tooling
