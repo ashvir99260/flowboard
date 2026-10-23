@@ -34,7 +34,7 @@ export const TaskUpdatedEventSchema = z.strictObject({
 export const WorkspaceConfigUpdatedEventSchema = z.strictObject({
   ...eventIdentity,
   configVersion: VersionSchema,
-  reason: z.enum(['membership', 'invitation', 'hierarchy', 'permission']),
+  reason: z.enum(['membership', 'invitation', 'hierarchy', 'permission', 'status']),
 });
 
 export type TaskUpdatedEvent = z.infer<typeof TaskUpdatedEventSchema>;

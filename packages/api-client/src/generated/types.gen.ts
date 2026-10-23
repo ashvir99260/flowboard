@@ -154,6 +154,99 @@ export type CreateNodeDto = {
 };
 
 /**
+ * Create scoped status request
+ *
+ * Define a complete local status or override one inherited identity.
+ */
+export type CreateScopeStatusDto = {
+    /**
+     * Status category
+     *
+     * Immutable behavior category of this identity.
+     */
+    category: 'not_started' | 'active' | 'done' | 'closed';
+    /**
+     * Resolved color
+     *
+     * Nearest nonnull hexadecimal color.
+     */
+    color: string;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Status key
+     *
+     * Immutable workspace-unique key.
+     */
+    key: string;
+    /**
+     * Definition command
+     *
+     * Introduce a status with complete display values.
+     */
+    kind: 'define';
+    /**
+     * Resolved name
+     *
+     * Nearest nonnull display name.
+     */
+    name: string;
+    /**
+     * Resolved position
+     *
+     * Nearest nonnull position; key and ID break ties.
+     */
+    position: number;
+} | {
+    /**
+     * Display color
+     *
+     * Null inherits; first introduction requires a hexadecimal color.
+     */
+    color?: string | null;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Hidden override
+     *
+     * Null inherits; true hides; false explicitly restores visibility.
+     */
+    hidden?: boolean | null;
+    /**
+     * Override command
+     *
+     * Configure an inherited canonical identity, including hidden identities.
+     */
+    kind: 'override';
+    /**
+     * Display name
+     *
+     * Null inherits; first introduction requires a name.
+     */
+    name?: string | null;
+    /**
+     * Display position
+     *
+     * Null inherits; zero is a valid explicit position.
+     */
+    position?: number | null;
+    /**
+     * Status ID
+     *
+     * Stable identity referenced by tasks; never an override-row ID.
+     */
+    statusId: string;
+};
+
+/**
  * Current user response
  *
  * Authenticated session identity without access or refresh credentials.
@@ -780,6 +873,20 @@ export type ReadinessResponseDtoOutput = {
 };
 
 /**
+ * Configuration precondition
+ *
+ * Required revision check for workspace mutations.
+ */
+export type RemoveScopeStatusDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+};
+
+/**
  * Reorder container request
  *
  * Move within the existing parent using current node and workspace revisions.
@@ -824,6 +931,566 @@ export type ReorderNodeDto = {
          */
         afterId: string;
     };
+};
+
+/**
+ * Resolved status collection
+ *
+ * Effective list configuration and same-snapshot revision.
+ */
+export type ResolvedStatusResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Resolved statuses
+     *
+     * Complete visible statuses ordered by position, key and ID.
+     */
+    items: Array<{
+        /**
+         * Status category
+         *
+         * Immutable behavior category of this identity.
+         */
+        category: 'not_started' | 'active' | 'done' | 'closed';
+        /**
+         * Resolved color
+         *
+         * Nearest nonnull hexadecimal color.
+         */
+        color: string;
+        /**
+         * Created at
+         *
+         * Immutable database creation timestamp.
+         */
+        createdAt: string;
+        /**
+         * Status ID
+         *
+         * Stable identity referenced by tasks; never an override-row ID.
+         */
+        id: string;
+        /**
+         * Inherited identity
+         *
+         * The first introduction in this path is above the target scope.
+         */
+        isInherited: boolean;
+        /**
+         * Local configuration
+         *
+         * The target scope has a row for this identity, including a partial override.
+         */
+        isLocal: boolean;
+        /**
+         * Overridden attributes
+         *
+         * A later row explicitly supplies an attribute or visibility value.
+         */
+        isOverridden: boolean;
+        /**
+         * Status key
+         *
+         * Immutable workspace-unique key.
+         */
+        key: string;
+        /**
+         * Resolved name
+         *
+         * Nearest nonnull display name.
+         */
+        name: string;
+        /**
+         * Resolved position
+         *
+         * Nearest nonnull position; key and ID break ties.
+         */
+        position: number;
+        /**
+         * Resolved attribute provenance
+         *
+         * Each attribute retains its actual source and audit timestamps.
+         */
+        provenance: {
+            /**
+             * Status attribute source
+             *
+             * Exact override row supplying an effective attribute.
+             */
+            color: {
+                /**
+                 * Created at
+                 *
+                 * Immutable database creation timestamp.
+                 */
+                createdAt: string;
+                /**
+                 * Override row ID
+                 *
+                 * Display configuration row ID; never a task statusId.
+                 */
+                overrideId: string;
+                /**
+                 * Owner ID
+                 *
+                 * Identifier of the owning workspace or container.
+                 */
+                ownerId: string;
+                /**
+                 * Owner type
+                 *
+                 * Workspace or a live hierarchy container.
+                 */
+                ownerType: 'workspace' | 'space' | 'folder' | 'list';
+                /**
+                 * Updated at
+                 *
+                 * Database timestamp of the last changed write.
+                 */
+                updatedAt: string;
+            };
+            /**
+             * Visibility source
+             *
+             * Null means implicit initially-visible behavior.
+             */
+            hidden: {
+                /**
+                 * Created at
+                 *
+                 * Immutable database creation timestamp.
+                 */
+                createdAt: string;
+                /**
+                 * Override row ID
+                 *
+                 * Display configuration row ID; never a task statusId.
+                 */
+                overrideId: string;
+                /**
+                 * Owner ID
+                 *
+                 * Identifier of the owning workspace or container.
+                 */
+                ownerId: string;
+                /**
+                 * Owner type
+                 *
+                 * Workspace or a live hierarchy container.
+                 */
+                ownerType: 'workspace' | 'space' | 'folder' | 'list';
+                /**
+                 * Updated at
+                 *
+                 * Database timestamp of the last changed write.
+                 */
+                updatedAt: string;
+            } | null;
+            /**
+             * Status attribute source
+             *
+             * Exact override row supplying an effective attribute.
+             */
+            name: {
+                /**
+                 * Created at
+                 *
+                 * Immutable database creation timestamp.
+                 */
+                createdAt: string;
+                /**
+                 * Override row ID
+                 *
+                 * Display configuration row ID; never a task statusId.
+                 */
+                overrideId: string;
+                /**
+                 * Owner ID
+                 *
+                 * Identifier of the owning workspace or container.
+                 */
+                ownerId: string;
+                /**
+                 * Owner type
+                 *
+                 * Workspace or a live hierarchy container.
+                 */
+                ownerType: 'workspace' | 'space' | 'folder' | 'list';
+                /**
+                 * Updated at
+                 *
+                 * Database timestamp of the last changed write.
+                 */
+                updatedAt: string;
+            };
+            /**
+             * Status attribute source
+             *
+             * Exact override row supplying an effective attribute.
+             */
+            position: {
+                /**
+                 * Created at
+                 *
+                 * Immutable database creation timestamp.
+                 */
+                createdAt: string;
+                /**
+                 * Override row ID
+                 *
+                 * Display configuration row ID; never a task statusId.
+                 */
+                overrideId: string;
+                /**
+                 * Owner ID
+                 *
+                 * Identifier of the owning workspace or container.
+                 */
+                ownerId: string;
+                /**
+                 * Owner type
+                 *
+                 * Workspace or a live hierarchy container.
+                 */
+                ownerType: 'workspace' | 'space' | 'folder' | 'list';
+                /**
+                 * Updated at
+                 *
+                 * Database timestamp of the last changed write.
+                 */
+                updatedAt: string;
+            };
+        };
+        /**
+         * Status scope
+         *
+         * One verified scope in an ancestor path.
+         */
+        sourceOwner: {
+            /**
+             * Owner ID
+             *
+             * Identifier of the owning workspace or container.
+             */
+            ownerId: string;
+            /**
+             * Owner type
+             *
+             * Workspace or a live hierarchy container.
+             */
+            ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        };
+        /**
+         * Updated at
+         *
+         * Database timestamp of the last changed write.
+         */
+        updatedAt: string;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the immutable status key and category.
+         */
+        workspaceId: string;
+    }>;
+};
+
+/**
+ * Scoped status response
+ *
+ * Persisted local configuration and committed workspace revision.
+ */
+export type ScopeStatusMutationResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Local status configuration
+     *
+     * Canonical identity and distinct local display row.
+     */
+    data: {
+        /**
+         * Status identity
+         *
+         * Canonical status identity shared by inherited display overrides.
+         */
+        identity: {
+            /**
+             * Status category
+             *
+             * Immutable behavior category of this identity.
+             */
+            category: 'not_started' | 'active' | 'done' | 'closed';
+            /**
+             * Created at
+             *
+             * Immutable database creation timestamp.
+             */
+            createdAt: string;
+            /**
+             * Status ID
+             *
+             * Stable identity referenced by tasks; never an override-row ID.
+             */
+            id: string;
+            /**
+             * Status key
+             *
+             * Immutable workspace-unique key.
+             */
+            key: string;
+            /**
+             * Updated at
+             *
+             * Database timestamp of the last changed write.
+             */
+            updatedAt: string;
+            /**
+             * Workspace ID
+             *
+             * Tenant owning the immutable status key and category.
+             */
+            workspaceId: string;
+        };
+        /**
+         * Status override
+         *
+         * Partial scoped display and visibility configuration for a stable identity.
+         */
+        override: {
+            /**
+             * Display color
+             *
+             * Null inherits; first introduction requires a hexadecimal color.
+             */
+            color: string | null;
+            /**
+             * Created at
+             *
+             * Immutable database creation timestamp.
+             */
+            createdAt: string;
+            /**
+             * Hidden override
+             *
+             * Null inherits; true hides; false explicitly restores visibility.
+             */
+            hidden: boolean | null;
+            /**
+             * Override row ID
+             *
+             * Display configuration row ID; never a task statusId.
+             */
+            id: string;
+            /**
+             * Display name
+             *
+             * Null inherits; first introduction requires a name.
+             */
+            name: string | null;
+            /**
+             * Owner ID
+             *
+             * Identifier of the owning workspace or container.
+             */
+            ownerId: string;
+            /**
+             * Owner type
+             *
+             * Workspace or a live hierarchy container.
+             */
+            ownerType: 'workspace' | 'space' | 'folder' | 'list';
+            /**
+             * Display position
+             *
+             * Null inherits; zero is a valid explicit position.
+             */
+            position: number | null;
+            /**
+             * Status ID
+             *
+             * Stable identity referenced by tasks; never an override-row ID.
+             */
+            statusId: string;
+            /**
+             * Updated at
+             *
+             * Database timestamp of the last changed write.
+             */
+            updatedAt: string;
+            /**
+             * Workspace ID
+             *
+             * Tenant owning the immutable status key and category.
+             */
+            workspaceId: string;
+        };
+    };
+};
+
+/**
+ * Scope status collection
+ *
+ * Complete local configuration and same-snapshot revision.
+ */
+export type ScopeStatusResponseDtoOutput = {
+    /**
+     * Ancestor scopes
+     *
+     * Verified root-to-parent path; excludes the requested owner.
+     */
+    ancestorScopes: Array<{
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+    }>;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Local statuses
+     *
+     * Complete bounded local configuration, ordered by key.
+     */
+    items: Array<{
+        /**
+         * Status identity
+         *
+         * Canonical status identity shared by inherited display overrides.
+         */
+        identity: {
+            /**
+             * Status category
+             *
+             * Immutable behavior category of this identity.
+             */
+            category: 'not_started' | 'active' | 'done' | 'closed';
+            /**
+             * Created at
+             *
+             * Immutable database creation timestamp.
+             */
+            createdAt: string;
+            /**
+             * Status ID
+             *
+             * Stable identity referenced by tasks; never an override-row ID.
+             */
+            id: string;
+            /**
+             * Status key
+             *
+             * Immutable workspace-unique key.
+             */
+            key: string;
+            /**
+             * Updated at
+             *
+             * Database timestamp of the last changed write.
+             */
+            updatedAt: string;
+            /**
+             * Workspace ID
+             *
+             * Tenant owning the immutable status key and category.
+             */
+            workspaceId: string;
+        };
+        /**
+         * Status override
+         *
+         * Partial scoped display and visibility configuration for a stable identity.
+         */
+        override: {
+            /**
+             * Display color
+             *
+             * Null inherits; first introduction requires a hexadecimal color.
+             */
+            color: string | null;
+            /**
+             * Created at
+             *
+             * Immutable database creation timestamp.
+             */
+            createdAt: string;
+            /**
+             * Hidden override
+             *
+             * Null inherits; true hides; false explicitly restores visibility.
+             */
+            hidden: boolean | null;
+            /**
+             * Override row ID
+             *
+             * Display configuration row ID; never a task statusId.
+             */
+            id: string;
+            /**
+             * Display name
+             *
+             * Null inherits; first introduction requires a name.
+             */
+            name: string | null;
+            /**
+             * Owner ID
+             *
+             * Identifier of the owning workspace or container.
+             */
+            ownerId: string;
+            /**
+             * Owner type
+             *
+             * Workspace or a live hierarchy container.
+             */
+            ownerType: 'workspace' | 'space' | 'folder' | 'list';
+            /**
+             * Display position
+             *
+             * Null inherits; zero is a valid explicit position.
+             */
+            position: number | null;
+            /**
+             * Status ID
+             *
+             * Stable identity referenced by tasks; never an override-row ID.
+             */
+            statusId: string;
+            /**
+             * Updated at
+             *
+             * Database timestamp of the last changed write.
+             */
+            updatedAt: string;
+            /**
+             * Workspace ID
+             *
+             * Tenant owning the immutable status key and category.
+             */
+            workspaceId: string;
+        };
+    }>;
 };
 
 /**
@@ -1154,6 +1821,44 @@ export type UpdateNodeDto = {
      * Container visibility policy; private access requires an explicit grant for members.
      */
     visibility?: 'public' | 'private';
+};
+
+/**
+ * Update scoped status request
+ *
+ * Patch an existing local row; null inherits and omission preserves its value.
+ */
+export type UpdateScopeStatusDto = {
+    /**
+     * Display color
+     *
+     * Null inherits; first introduction requires a hexadecimal color.
+     */
+    color?: string | null;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Hidden override
+     *
+     * Null inherits; true hides; false explicitly restores visibility.
+     */
+    hidden?: boolean | null;
+    /**
+     * Display name
+     *
+     * Null inherits; first introduction requires a name.
+     */
+    name?: string | null;
+    /**
+     * Display position
+     *
+     * Null inherits; zero is a valid explicit position.
+     */
+    position?: number | null;
 };
 
 /**
@@ -1721,6 +2426,62 @@ export type AcceptWorkspaceInvitationResponses = {
 
 export type AcceptWorkspaceInvitationResponse = AcceptWorkspaceInvitationResponses[keyof AcceptWorkspaceInvitationResponses];
 
+export type GetListResolvedStatusesData = {
+    body?: never;
+    path: {
+        /**
+         * List ID
+         *
+         * Live list in the active workspace.
+         */
+        listId: string;
+    };
+    query?: never;
+    url: '/v1/lists/{listId}/resolved-statuses';
+};
+
+export type GetListResolvedStatusesErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type GetListResolvedStatusesError = GetListResolvedStatusesErrors[keyof GetListResolvedStatusesErrors];
+
+export type GetListResolvedStatusesResponses = {
+    /**
+     * Visible effective statuses with inheritance provenance.
+     */
+    200: ResolvedStatusResponseDtoOutput;
+};
+
+export type GetListResolvedStatusesResponse = GetListResolvedStatusesResponses[keyof GetListResolvedStatusesResponses];
+
 export type GetCurrentUserData = {
     body?: never;
     path?: never;
@@ -2247,6 +3008,275 @@ export type ReorderNodeResponses = {
 };
 
 export type ReorderNodeResponse = ReorderNodeResponses[keyof ReorderNodeResponses];
+
+export type ListScopeStatusesData = {
+    body?: never;
+    path: {
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+    };
+    query?: never;
+    url: '/v1/scopes/{ownerType}/{ownerId}/statuses';
+};
+
+export type ListScopeStatusesErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ListScopeStatusesError = ListScopeStatusesErrors[keyof ListScopeStatusesErrors];
+
+export type ListScopeStatusesResponses = {
+    /**
+     * Local rows and ancestor scope metadata.
+     */
+    200: ScopeStatusResponseDtoOutput;
+};
+
+export type ListScopeStatusesResponse = ListScopeStatusesResponses[keyof ListScopeStatusesResponses];
+
+export type CreateScopeStatusData = {
+    /**
+     * Definition or inherited override with expected configuration revision.
+     */
+    body: CreateScopeStatusDto;
+    path: {
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+    };
+    query?: never;
+    url: '/v1/scopes/{ownerType}/{ownerId}/statuses';
+};
+
+export type CreateScopeStatusErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type CreateScopeStatusError = CreateScopeStatusErrors[keyof CreateScopeStatusErrors];
+
+export type CreateScopeStatusResponses = {
+    /**
+     * Created local configuration and committed revision.
+     */
+    201: ScopeStatusMutationResponseDtoOutput;
+};
+
+export type CreateScopeStatusResponse = CreateScopeStatusResponses[keyof CreateScopeStatusResponses];
+
+export type RemoveScopeStatusData = {
+    /**
+     * Expected configuration revision for this removal.
+     */
+    body: RemoveScopeStatusDto;
+    path: {
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Status ID
+         *
+         * Stable identity referenced by tasks; never an override-row ID.
+         */
+        statusId: string;
+    };
+    query?: never;
+    url: '/v1/scopes/{ownerType}/{ownerId}/statuses/{statusId}';
+};
+
+export type RemoveScopeStatusErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type RemoveScopeStatusError = RemoveScopeStatusErrors[keyof RemoveScopeStatusErrors];
+
+export type RemoveScopeStatusResponses = {
+    /**
+     * Local row removed and configuration invalidation recorded atomically.
+     */
+    204: void;
+};
+
+export type RemoveScopeStatusResponse = RemoveScopeStatusResponses[keyof RemoveScopeStatusResponses];
+
+export type UpdateScopeStatusData = {
+    /**
+     * Display or visibility changes with expected configuration revision.
+     */
+    body: UpdateScopeStatusDto;
+    path: {
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Status ID
+         *
+         * Stable identity referenced by tasks; never an override-row ID.
+         */
+        statusId: string;
+    };
+    query?: never;
+    url: '/v1/scopes/{ownerType}/{ownerId}/statuses/{statusId}';
+};
+
+export type UpdateScopeStatusErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type UpdateScopeStatusError = UpdateScopeStatusErrors[keyof UpdateScopeStatusErrors];
+
+export type UpdateScopeStatusResponses = {
+    /**
+     * Updated local row and committed revision; no-op preserves both.
+     */
+    200: ScopeStatusMutationResponseDtoOutput;
+};
+
+export type UpdateScopeStatusResponse = UpdateScopeStatusResponses[keyof UpdateScopeStatusResponses];
 
 export type ListVisibleTreeData = {
     body?: never;

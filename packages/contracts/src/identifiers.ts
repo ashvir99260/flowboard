@@ -36,7 +36,7 @@ export const PasswordSchema = textSchema(128, 12);
 
 export const FieldKeySchema = z.string().regex(/^[a-z][a-z0-9_]{0,63}$/);
 
-export const ColorSchema = z.string().regex(/^#[0-9a-f]{6}$/i);
+export const ColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const PositionSchema = z.number().int().min(0).max(2_147_483_647);
 

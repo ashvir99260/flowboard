@@ -29,3 +29,5 @@ export * from './ordering.js';
 export * from './statuses.js';
 
 export * from './status-resolution.js';
+
+export * from './status-configuration.js';

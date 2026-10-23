@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createWorkspaceInvitation, getCurrentUser, getLiveness, getNode, getReadiness, listNodeGrants, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeWorkspaceMember, reorderNode, signUp, switchWorkspace, updateNode, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createScopeStatus, createWorkspaceInvitation, getCurrentUser, getListResolvedStatuses, getLiveness, getNode, getReadiness, listNodeGrants, listScopeStatuses, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeScopeStatus, removeWorkspaceMember, reorderNode, signUp, switchWorkspace, updateNode, updateScopeStatus, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -192,6 +192,26 @@ export const acceptWorkspaceInvitationMutation = (options?: Partial<Options<Acce
     };
     return mutationOptions;
 };
+
+export const getListResolvedStatusesQueryKey = (options: Options<GetListResolvedStatusesData>) => createQueryKey('getListResolvedStatuses', options);
+
+/**
+ * Resolve visible list statuses
+ *
+ * Visible list members read the complete effective status set using the shared root-to-leaf resolver and a consistent configuration revision.
+ */
+export const getListResolvedStatusesOptions = (options: Options<GetListResolvedStatusesData>) => queryOptions<GetListResolvedStatusesResponse, GetListResolvedStatusesError, GetListResolvedStatusesResponse, ReturnType<typeof getListResolvedStatusesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getListResolvedStatuses({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getListResolvedStatusesQueryKey(options)
+});
 
 export const getCurrentUserQueryKey = (options?: Options<GetCurrentUserData>) => createQueryKey('getCurrentUser', options);
 
@@ -418,6 +438,83 @@ export const reorderNodeMutation = (options?: Partial<Options<ReorderNodeData>>)
     const mutationOptions: UseMutationOptions<ReorderNodeResponse, ReorderNodeError, Options<ReorderNodeData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await reorderNode({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listScopeStatusesQueryKey = (options: Options<ListScopeStatusesData>) => createQueryKey('listScopeStatuses', options);
+
+/**
+ * Read local status configuration
+ *
+ * Administrators read the complete bounded local collection and verified ancestor scopes, with its snapshot configuration revision.
+ */
+export const listScopeStatusesOptions = (options: Options<ListScopeStatusesData>) => queryOptions<ListScopeStatusesResponse, ListScopeStatusesError, ListScopeStatusesResponse, ReturnType<typeof listScopeStatusesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listScopeStatuses({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listScopeStatusesQueryKey(options)
+});
+
+/**
+ * Create local status configuration
+ *
+ * Define or override a stable identity after validating the owner, all live descendants and their task references under one workspace lock.
+ */
+export const createScopeStatusMutation = (options?: Partial<Options<CreateScopeStatusData>>): UseMutationOptions<CreateScopeStatusResponse, CreateScopeStatusError, Options<CreateScopeStatusData>> => {
+    const mutationOptions: UseMutationOptions<CreateScopeStatusResponse, CreateScopeStatusError, Options<CreateScopeStatusData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createScopeStatus({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Remove local status configuration
+ *
+ * Remove only the local display row after checking fallback and live descendants. Canonical identity and historical task references are retained.
+ */
+export const removeScopeStatusMutation = (options?: Partial<Options<RemoveScopeStatusData>>): UseMutationOptions<RemoveScopeStatusResponse, RemoveScopeStatusError, Options<RemoveScopeStatusData>> => {
+    const mutationOptions: UseMutationOptions<RemoveScopeStatusResponse, RemoveScopeStatusError, Options<RemoveScopeStatusData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await removeScopeStatus({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update local status configuration
+ *
+ * Patch a local row by canonical status ID. Omitted values are preserved and null inherits; effective descendants and live tasks must remain valid.
+ */
+export const updateScopeStatusMutation = (options?: Partial<Options<UpdateScopeStatusData>>): UseMutationOptions<UpdateScopeStatusResponse, UpdateScopeStatusError, Options<UpdateScopeStatusData>> => {
+    const mutationOptions: UseMutationOptions<UpdateScopeStatusResponse, UpdateScopeStatusError, Options<UpdateScopeStatusData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateScopeStatus({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

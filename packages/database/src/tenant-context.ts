@@ -1,6 +1,6 @@
 import { UuidSchema } from '@flowboard/contracts';
 
-import type { ErrorCode, WorkspaceRole } from '@flowboard/contracts';
+import type { ErrorCode, ValidationIssue, WorkspaceRole } from '@flowboard/contracts';
 
 export interface TenantRequest {
   actorUserId: string;
@@ -15,6 +15,7 @@ export class DatabaseError extends Error {
   constructor(
     readonly code: ErrorCode,
     message: string,
+    readonly details?: ValidationIssue[],
   ) {
     super(message);
     this.name = 'DatabaseError';

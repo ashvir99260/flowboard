@@ -9,6 +9,7 @@ import {
 import { accessRepository } from './access-repository.js';
 import { hierarchyRepository } from './hierarchy-repository.js';
 import { membershipRepository } from './membership-repository.js';
+import { statusRepository } from './status-repository.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
 
 import type { Prisma } from './generated/client.js';
@@ -65,6 +66,7 @@ export interface NodeReader {
   children(query: ChildrenQuery): Promise<NodeRecord[]>;
   countChildren(parentId: string | null): Promise<number>;
   find(id: string): Promise<NodeRecord | null>;
+  path(id: string): Promise<NodeRecord[] | null>;
 }
 
 export interface NodeWriter extends NodeReader {
@@ -81,6 +83,7 @@ export interface GrantRecord extends GrantInput {
 export interface ReadRepositories {
   access: ReturnType<typeof accessRepository>['read'];
   context: Readonly<TenantContext>;
+  statuses: ReturnType<typeof statusRepository>['read'];
   grants: { find(resourceId: string, userId: string): Promise<GrantRecord | null> };
   members: { find(userId: string): Promise<MembershipRecord | null> };
   memberships: ReturnType<typeof membershipRepository>['read'];
@@ -89,6 +92,7 @@ export interface ReadRepositories {
 }
 
 export interface WriteRepositories extends ReadRepositories {
+  statuses: ReturnType<typeof statusRepository>['write'];
   access: ReturnType<typeof accessRepository>['write'];
   memberships: ReturnType<typeof membershipRepository>['write'];
   grants: ReadRepositories['grants'] & {
@@ -110,26 +114,27 @@ export function repositories(
   const nodeWhere = (id: string) => ({ archivedAt: null, id: UuidSchema.parse(id), workspaceId });
   const memberWhere = (userId: string) => ({ userId: UuidSchema.parse(userId), workspaceId });
 
-  async function node(id: string) {
+  async function nodePath(id: string): Promise<NodeRecord[] | null> {
     assertActive();
+    const path: NodeRecord[] = [];
+    const seen = new Set<string>();
+    let currentId: string | null = id.toLowerCase();
+    while (currentId) {
+      if (seen.has(currentId)) return null;
 
-    const record = await tx.node.findFirst({ where: nodeWhere(id) });
-    let parentId = record?.parentId;
-    const seen = new Set([id.toLowerCase()]);
-    while (parentId) {
-      if (seen.has(parentId)) return null;
+      seen.add(currentId);
+      const record: NodeRecord | null = await tx.node.findFirst({ where: nodeWhere(currentId) });
+      if (!record) return null;
 
-      seen.add(parentId);
-      const parent = await tx.node.findFirst({
-        where: nodeWhere(parentId),
-        select: { parentId: true },
-      });
-      if (!parent) return null;
-
-      parentId = parent.parentId;
+      path.unshift(record);
+      currentId = record.parentId;
     }
 
-    return record;
+    return path;
+  }
+
+  async function node(id: string) {
+    return (await nodePath(id))?.at(-1) ?? null;
   }
 
   async function requireNode(id: string) {
@@ -212,6 +217,7 @@ export function repositories(
       });
     },
     find: node,
+    path: nodePath,
     async rename(id: string, name: string) {
       await requireNode(id);
 
@@ -247,6 +253,7 @@ export function repositories(
     read: Object.freeze({
       access: accessRepository(tx, context, assertActive, node).read,
       context: Object.freeze(context),
+      statuses: statusRepository(tx, context, assertActive, nodePath).read,
       grants: Object.freeze({ find: grants.find }),
       members: Object.freeze({ find: member }),
       memberships: membershipRepository(tx, context, assertActive).read,
@@ -255,11 +262,13 @@ export function repositories(
         children: nodes.children,
         countChildren: nodes.countChildren,
         find: node,
+        path: nodePath,
       }),
     }) satisfies ReadRepositories,
     write: Object.freeze({
       access: accessRepository(tx, context, assertActive, node).write,
       context: Object.freeze(context),
+      statuses: statusRepository(tx, context, assertActive, nodePath).write,
       grants,
       members: Object.freeze({ find: member }),
       memberships: membershipRepository(tx, context, assertActive).write,

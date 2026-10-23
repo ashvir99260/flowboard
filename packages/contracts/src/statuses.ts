@@ -104,7 +104,8 @@ export const StatusOverrideSchema = StatusScopeSchema.extend({
     example: 0,
     title: 'Display position',
   }),
-  hidden: z.boolean().nullable().meta({
+  // Inner metadata preserves anyOf through Zod's JSON Schema conversion for OpenAPI 3.0.
+  hidden: z.boolean().meta({ description: 'Explicit visibility override' }).nullable().meta({
     description: 'Null inherits; true hides; false explicitly restores visibility.',
     example: null,
     title: 'Hidden override',

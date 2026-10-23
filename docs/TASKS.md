@@ -624,13 +624,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Known array fixtures for inherited/overridden/added/hidden/restored keys, immutable IDs, tied positions, missing categories and sibling isolation; standard gate.
   - **Commit:** `feat: resolve scoped statuses by stable key`.
 
-- [ ] **P04-02 — Status configuration and list resolution endpoints**
+- [x] **P04-02 — Status configuration and list resolution endpoints**
   - **Goal:** Expose typed status CRUD and the authoritative resolved-list status endpoint.
-  - **Files:** `apps/api/src/modules/statuses/**`, `apps/api/test/integration/statuses.spec.mjs`, generated artifacts.
+  - **Files:** `apps/api/src/modules/statuses/**`, central permission/exception handling, `packages/contracts/src/{statuses,status-configuration}.ts`, `packages/database/src/status-repository.ts`, generated artifacts and documentation.
   - **Dependencies:** P04-01.
   - **Acceptance:** Scoped config endpoints and `GET /v1/lists/:id/resolved-statuses` use the same pure resolver. Admin-only config, readable resolved sets follow list access. Stable identities and local overrides serialize distinctly. Basic in-use/descendant safety ships with these writes; P04-03 expands its regression coverage. Mutations increment configVersion and reads return it from the same snapshot as their items.
   - **Validation:** Two sibling lists under one folder return different expected sets; override retains task statusId; illegal category edits, invalid owner, forbidden scope and invalid sets reject. Endpoint DoD and standard gate.
   - **Commit:** `feat: expose scoped status configuration`.
+  - **Completion evidence:** [P04-02 verification](evidence/P04-02.md): five typed operations, six real-API cases, 442 full-suite tests and all standard/contract gates pass.
 
 - [ ] **P04-03 — Safe status mutation across descendants**
   - **Goal:** Prevent orphaned tasks when ancestor configuration changes.

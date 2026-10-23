@@ -259,6 +259,164 @@
         "title": "Create container request",
         "type": "object"
       },
+      "CreateScopeStatusDto": {
+        "description": "Define a complete local status or override one inherited identity.",
+        "example": {
+          "category": "active",
+          "color": "#334455",
+          "expectedConfigVersion": 1,
+          "key": "review",
+          "kind": "define",
+          "name": "Review",
+          "position": 1
+        },
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "category": {
+                "description": "Immutable behavior category of this identity.",
+                "enum": [
+                  "not_started",
+                  "active",
+                  "done",
+                  "closed"
+                ],
+                "example": "not_started",
+                "title": "Status category",
+                "type": "string"
+              },
+              "color": {
+                "description": "Nearest nonnull hexadecimal color.",
+                "example": "#334455",
+                "pattern": "^#[0-9a-fA-F]{6}$",
+                "title": "Resolved color",
+                "type": "string"
+              },
+              "expectedConfigVersion": {
+                "description": "Workspace configuration revision. Mutations must send the version last read.",
+                "example": 1,
+                "maximum": 2147483647,
+                "minimum": 1,
+                "title": "Configuration version",
+                "type": "integer"
+              },
+              "key": {
+                "description": "Immutable workspace-unique key.",
+                "example": "todo",
+                "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                "title": "Status key",
+                "type": "string"
+              },
+              "kind": {
+                "description": "Introduce a status with complete display values.",
+                "enum": [
+                  "define"
+                ],
+                "example": "define",
+                "title": "Definition command",
+                "type": "string"
+              },
+              "name": {
+                "description": "Nearest nonnull display name.",
+                "example": "To do",
+                "maxLength": 120,
+                "minLength": 1,
+                "title": "Resolved name",
+                "type": "string"
+              },
+              "position": {
+                "description": "Nearest nonnull position; key and ID break ties.",
+                "example": 0,
+                "maximum": 2147483647,
+                "minimum": 0,
+                "title": "Resolved position",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "category",
+              "key",
+              "kind",
+              "name",
+              "color",
+              "position",
+              "expectedConfigVersion"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "description": "Null inherits; first introduction requires a hexadecimal color.",
+                "example": "#334455",
+                "nullable": true,
+                "pattern": "^#[0-9a-fA-F]{6}$",
+                "title": "Display color",
+                "type": "string"
+              },
+              "expectedConfigVersion": {
+                "description": "Workspace configuration revision. Mutations must send the version last read.",
+                "example": 1,
+                "maximum": 2147483647,
+                "minimum": 1,
+                "title": "Configuration version",
+                "type": "integer"
+              },
+              "hidden": {
+                "description": "Null inherits; true hides; false explicitly restores visibility.",
+                "example": null,
+                "nullable": true,
+                "title": "Hidden override",
+                "type": "boolean"
+              },
+              "kind": {
+                "description": "Configure an inherited canonical identity, including hidden identities.",
+                "enum": [
+                  "override"
+                ],
+                "example": "override",
+                "title": "Override command",
+                "type": "string"
+              },
+              "name": {
+                "description": "Null inherits; first introduction requires a name.",
+                "example": "To do",
+                "maxLength": 120,
+                "minLength": 1,
+                "nullable": true,
+                "title": "Display name",
+                "type": "string"
+              },
+              "position": {
+                "description": "Null inherits; zero is a valid explicit position.",
+                "example": 0,
+                "maximum": 2147483647,
+                "minimum": 0,
+                "nullable": true,
+                "title": "Display position",
+                "type": "integer"
+              },
+              "statusId": {
+                "description": "Stable identity referenced by tasks; never an override-row ID.",
+                "example": "20000000-0000-4000-8000-000000000100",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Status ID",
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "statusId",
+              "expectedConfigVersion"
+            ],
+            "type": "object"
+          }
+        ],
+        "title": "Create scoped status request"
+      },
       "CurrentUserResponseDto_Output": {
         "additionalProperties": false,
         "description": "Authenticated session identity without access or refresh credentials.",
@@ -1477,6 +1635,28 @@
         "title": "Readiness response",
         "type": "object"
       },
+      "RemoveScopeStatusDto": {
+        "additionalProperties": false,
+        "description": "Required revision check for workspace mutations.",
+        "example": {
+          "expectedConfigVersion": 1
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedConfigVersion"
+        ],
+        "title": "Configuration precondition",
+        "type": "object"
+      },
       "ReorderNodeDto": {
         "additionalProperties": false,
         "description": "Move within the existing parent using current node and workspace revisions.",
@@ -1588,6 +1768,1210 @@
           "placement"
         ],
         "title": "Reorder container request",
+        "type": "object"
+      },
+      "ResolvedStatusResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Effective list configuration and same-snapshot revision.",
+        "example": {
+          "configVersion": 1,
+          "items": [
+            {
+              "category": "not_started",
+              "color": "#334455",
+              "createdAt": "2026-10-24T00:00:00.000Z",
+              "id": "20000000-0000-4000-8000-000000000100",
+              "isInherited": true,
+              "isLocal": false,
+              "isOverridden": false,
+              "key": "todo",
+              "name": "To do",
+              "position": 0,
+              "provenance": {
+                "color": {
+                  "createdAt": "2026-10-24T00:00:00.000Z",
+                  "overrideId": "20000000-0000-4000-8000-000000000200",
+                  "ownerId": "20000000-0000-4000-8000-000000000001",
+                  "ownerType": "workspace",
+                  "updatedAt": "2026-10-24T00:00:00.000Z"
+                },
+                "hidden": null,
+                "name": {
+                  "createdAt": "2026-10-24T00:00:00.000Z",
+                  "overrideId": "20000000-0000-4000-8000-000000000200",
+                  "ownerId": "20000000-0000-4000-8000-000000000001",
+                  "ownerType": "workspace",
+                  "updatedAt": "2026-10-24T00:00:00.000Z"
+                },
+                "position": {
+                  "createdAt": "2026-10-24T00:00:00.000Z",
+                  "overrideId": "20000000-0000-4000-8000-000000000200",
+                  "ownerId": "20000000-0000-4000-8000-000000000001",
+                  "ownerType": "workspace",
+                  "updatedAt": "2026-10-24T00:00:00.000Z"
+                }
+              },
+              "sourceOwner": {
+                "ownerId": "20000000-0000-4000-8000-000000000001",
+                "ownerType": "workspace"
+              },
+              "updatedAt": "2026-10-24T00:00:00.000Z",
+              "workspaceId": "20000000-0000-4000-8000-000000000001"
+            }
+          ]
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Complete visible statuses ordered by position, key and ID.",
+            "example": [
+              {
+                "category": "not_started",
+                "color": "#334455",
+                "createdAt": "2026-10-24T00:00:00.000Z",
+                "id": "20000000-0000-4000-8000-000000000100",
+                "isInherited": true,
+                "isLocal": false,
+                "isOverridden": false,
+                "key": "todo",
+                "name": "To do",
+                "position": 0,
+                "provenance": {
+                  "color": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "overrideId": "20000000-0000-4000-8000-000000000200",
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "updatedAt": "2026-10-24T00:00:00.000Z"
+                  },
+                  "hidden": null,
+                  "name": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "overrideId": "20000000-0000-4000-8000-000000000200",
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "updatedAt": "2026-10-24T00:00:00.000Z"
+                  },
+                  "position": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "overrideId": "20000000-0000-4000-8000-000000000200",
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "updatedAt": "2026-10-24T00:00:00.000Z"
+                  }
+                },
+                "sourceOwner": {
+                  "ownerId": "20000000-0000-4000-8000-000000000001",
+                  "ownerType": "workspace"
+                },
+                "updatedAt": "2026-10-24T00:00:00.000Z",
+                "workspaceId": "20000000-0000-4000-8000-000000000001"
+              }
+            ],
+            "items": {
+              "additionalProperties": false,
+              "description": "Visible effective status with canonical identity audit timestamps and explicit display provenance.",
+              "example": {
+                "category": "not_started",
+                "color": "#334455",
+                "createdAt": "2026-10-24T00:00:00.000Z",
+                "id": "20000000-0000-4000-8000-000000000100",
+                "isInherited": true,
+                "isLocal": false,
+                "isOverridden": false,
+                "key": "todo",
+                "name": "To do",
+                "position": 0,
+                "provenance": {
+                  "color": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "overrideId": "20000000-0000-4000-8000-000000000200",
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "updatedAt": "2026-10-24T00:00:00.000Z"
+                  },
+                  "hidden": null,
+                  "name": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "overrideId": "20000000-0000-4000-8000-000000000200",
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "updatedAt": "2026-10-24T00:00:00.000Z"
+                  },
+                  "position": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "overrideId": "20000000-0000-4000-8000-000000000200",
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "updatedAt": "2026-10-24T00:00:00.000Z"
+                  }
+                },
+                "sourceOwner": {
+                  "ownerId": "20000000-0000-4000-8000-000000000001",
+                  "ownerType": "workspace"
+                },
+                "updatedAt": "2026-10-24T00:00:00.000Z",
+                "workspaceId": "20000000-0000-4000-8000-000000000001"
+              },
+              "properties": {
+                "category": {
+                  "description": "Immutable behavior category of this identity.",
+                  "enum": [
+                    "not_started",
+                    "active",
+                    "done",
+                    "closed"
+                  ],
+                  "example": "not_started",
+                  "title": "Status category",
+                  "type": "string"
+                },
+                "color": {
+                  "description": "Nearest nonnull hexadecimal color.",
+                  "example": "#334455",
+                  "pattern": "^#[0-9a-fA-F]{6}$",
+                  "title": "Resolved color",
+                  "type": "string"
+                },
+                "createdAt": {
+                  "description": "Immutable database creation timestamp.",
+                  "example": "2026-10-24T00:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Created at",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Stable identity referenced by tasks; never an override-row ID.",
+                  "example": "20000000-0000-4000-8000-000000000100",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Status ID",
+                  "type": "string"
+                },
+                "isInherited": {
+                  "description": "The first introduction in this path is above the target scope.",
+                  "example": true,
+                  "title": "Inherited identity",
+                  "type": "boolean"
+                },
+                "isLocal": {
+                  "description": "The target scope has a row for this identity, including a partial override.",
+                  "example": false,
+                  "title": "Local configuration",
+                  "type": "boolean"
+                },
+                "isOverridden": {
+                  "description": "A later row explicitly supplies an attribute or visibility value.",
+                  "example": false,
+                  "title": "Overridden attributes",
+                  "type": "boolean"
+                },
+                "key": {
+                  "description": "Immutable workspace-unique key.",
+                  "example": "todo",
+                  "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                  "title": "Status key",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Nearest nonnull display name.",
+                  "example": "To do",
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "title": "Resolved name",
+                  "type": "string"
+                },
+                "position": {
+                  "description": "Nearest nonnull position; key and ID break ties.",
+                  "example": 0,
+                  "maximum": 2147483647,
+                  "minimum": 0,
+                  "title": "Resolved position",
+                  "type": "integer"
+                },
+                "provenance": {
+                  "additionalProperties": false,
+                  "description": "Each attribute retains its actual source and audit timestamps.",
+                  "example": {
+                    "color": {
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "overrideId": "20000000-0000-4000-8000-000000000200",
+                      "ownerId": "20000000-0000-4000-8000-000000000001",
+                      "ownerType": "workspace",
+                      "updatedAt": "2026-10-24T00:00:00.000Z"
+                    },
+                    "hidden": null,
+                    "name": {
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "overrideId": "20000000-0000-4000-8000-000000000200",
+                      "ownerId": "20000000-0000-4000-8000-000000000001",
+                      "ownerType": "workspace",
+                      "updatedAt": "2026-10-24T00:00:00.000Z"
+                    },
+                    "position": {
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "overrideId": "20000000-0000-4000-8000-000000000200",
+                      "ownerId": "20000000-0000-4000-8000-000000000001",
+                      "ownerType": "workspace",
+                      "updatedAt": "2026-10-24T00:00:00.000Z"
+                    }
+                  },
+                  "properties": {
+                    "color": {
+                      "additionalProperties": false,
+                      "description": "Exact override row supplying an effective attribute.",
+                      "example": {
+                        "createdAt": "2026-10-24T00:00:00.000Z",
+                        "overrideId": "20000000-0000-4000-8000-000000000200",
+                        "ownerId": "20000000-0000-4000-8000-000000000001",
+                        "ownerType": "workspace",
+                        "updatedAt": "2026-10-24T00:00:00.000Z"
+                      },
+                      "properties": {
+                        "createdAt": {
+                          "description": "Immutable database creation timestamp.",
+                          "example": "2026-10-24T00:00:00.000Z",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                          "title": "Created at",
+                          "type": "string"
+                        },
+                        "overrideId": {
+                          "description": "Display configuration row ID; never a task statusId.",
+                          "example": "20000000-0000-4000-8000-000000000200",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "title": "Override row ID",
+                          "type": "string"
+                        },
+                        "ownerId": {
+                          "description": "Identifier of the owning workspace or container.",
+                          "example": "20000000-0000-4000-8000-000000000001",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "title": "Owner ID",
+                          "type": "string"
+                        },
+                        "ownerType": {
+                          "description": "Workspace or a live hierarchy container.",
+                          "enum": [
+                            "workspace",
+                            "space",
+                            "folder",
+                            "list"
+                          ],
+                          "example": "workspace",
+                          "title": "Owner type",
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "description": "Database timestamp of the last changed write.",
+                          "example": "2026-10-24T00:00:00.000Z",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                          "title": "Updated at",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "ownerType",
+                        "ownerId",
+                        "overrideId",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "title": "Status attribute source",
+                      "type": "object"
+                    },
+                    "hidden": {
+                      "additionalProperties": false,
+                      "description": "Null means implicit initially-visible behavior.",
+                      "example": null,
+                      "nullable": true,
+                      "properties": {
+                        "createdAt": {
+                          "description": "Immutable database creation timestamp.",
+                          "example": "2026-10-24T00:00:00.000Z",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                          "title": "Created at",
+                          "type": "string"
+                        },
+                        "overrideId": {
+                          "description": "Display configuration row ID; never a task statusId.",
+                          "example": "20000000-0000-4000-8000-000000000200",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "title": "Override row ID",
+                          "type": "string"
+                        },
+                        "ownerId": {
+                          "description": "Identifier of the owning workspace or container.",
+                          "example": "20000000-0000-4000-8000-000000000001",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "title": "Owner ID",
+                          "type": "string"
+                        },
+                        "ownerType": {
+                          "description": "Workspace or a live hierarchy container.",
+                          "enum": [
+                            "workspace",
+                            "space",
+                            "folder",
+                            "list"
+                          ],
+                          "example": "workspace",
+                          "title": "Owner type",
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "description": "Database timestamp of the last changed write.",
+                          "example": "2026-10-24T00:00:00.000Z",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                          "title": "Updated at",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "ownerType",
+                        "ownerId",
+                        "overrideId",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "title": "Visibility source",
+                      "type": "object"
+                    },
+                    "name": {
+                      "additionalProperties": false,
+                      "description": "Exact override row supplying an effective attribute.",
+                      "example": {
+                        "createdAt": "2026-10-24T00:00:00.000Z",
+                        "overrideId": "20000000-0000-4000-8000-000000000200",
+                        "ownerId": "20000000-0000-4000-8000-000000000001",
+                        "ownerType": "workspace",
+                        "updatedAt": "2026-10-24T00:00:00.000Z"
+                      },
+                      "properties": {
+                        "createdAt": {
+                          "description": "Immutable database creation timestamp.",
+                          "example": "2026-10-24T00:00:00.000Z",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                          "title": "Created at",
+                          "type": "string"
+                        },
+                        "overrideId": {
+                          "description": "Display configuration row ID; never a task statusId.",
+                          "example": "20000000-0000-4000-8000-000000000200",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "title": "Override row ID",
+                          "type": "string"
+                        },
+                        "ownerId": {
+                          "description": "Identifier of the owning workspace or container.",
+                          "example": "20000000-0000-4000-8000-000000000001",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "title": "Owner ID",
+                          "type": "string"
+                        },
+                        "ownerType": {
+                          "description": "Workspace or a live hierarchy container.",
+                          "enum": [
+                            "workspace",
+                            "space",
+                            "folder",
+                            "list"
+                          ],
+                          "example": "workspace",
+                          "title": "Owner type",
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "description": "Database timestamp of the last changed write.",
+                          "example": "2026-10-24T00:00:00.000Z",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                          "title": "Updated at",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "ownerType",
+                        "ownerId",
+                        "overrideId",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "title": "Status attribute source",
+                      "type": "object"
+                    },
+                    "position": {
+                      "additionalProperties": false,
+                      "description": "Exact override row supplying an effective attribute.",
+                      "example": {
+                        "createdAt": "2026-10-24T00:00:00.000Z",
+                        "overrideId": "20000000-0000-4000-8000-000000000200",
+                        "ownerId": "20000000-0000-4000-8000-000000000001",
+                        "ownerType": "workspace",
+                        "updatedAt": "2026-10-24T00:00:00.000Z"
+                      },
+                      "properties": {
+                        "createdAt": {
+                          "description": "Immutable database creation timestamp.",
+                          "example": "2026-10-24T00:00:00.000Z",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                          "title": "Created at",
+                          "type": "string"
+                        },
+                        "overrideId": {
+                          "description": "Display configuration row ID; never a task statusId.",
+                          "example": "20000000-0000-4000-8000-000000000200",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "title": "Override row ID",
+                          "type": "string"
+                        },
+                        "ownerId": {
+                          "description": "Identifier of the owning workspace or container.",
+                          "example": "20000000-0000-4000-8000-000000000001",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "title": "Owner ID",
+                          "type": "string"
+                        },
+                        "ownerType": {
+                          "description": "Workspace or a live hierarchy container.",
+                          "enum": [
+                            "workspace",
+                            "space",
+                            "folder",
+                            "list"
+                          ],
+                          "example": "workspace",
+                          "title": "Owner type",
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "description": "Database timestamp of the last changed write.",
+                          "example": "2026-10-24T00:00:00.000Z",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                          "title": "Updated at",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "ownerType",
+                        "ownerId",
+                        "overrideId",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "title": "Status attribute source",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "color",
+                    "position",
+                    "hidden"
+                  ],
+                  "title": "Resolved attribute provenance",
+                  "type": "object"
+                },
+                "sourceOwner": {
+                  "additionalProperties": false,
+                  "description": "One verified scope in an ancestor path.",
+                  "example": {
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace"
+                  },
+                  "properties": {
+                    "ownerId": {
+                      "description": "Identifier of the owning workspace or container.",
+                      "example": "20000000-0000-4000-8000-000000000001",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Owner ID",
+                      "type": "string"
+                    },
+                    "ownerType": {
+                      "description": "Workspace or a live hierarchy container.",
+                      "enum": [
+                        "workspace",
+                        "space",
+                        "folder",
+                        "list"
+                      ],
+                      "example": "workspace",
+                      "title": "Owner type",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ownerType",
+                    "ownerId"
+                  ],
+                  "title": "Status scope",
+                  "type": "object"
+                },
+                "updatedAt": {
+                  "description": "Database timestamp of the last changed write.",
+                  "example": "2026-10-24T00:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Updated at",
+                  "type": "string"
+                },
+                "workspaceId": {
+                  "description": "Tenant owning the immutable status key and category.",
+                  "example": "20000000-0000-4000-8000-000000000001",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Workspace ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "workspaceId",
+                "key",
+                "category",
+                "createdAt",
+                "updatedAt",
+                "name",
+                "color",
+                "position",
+                "sourceOwner",
+                "isInherited",
+                "isLocal",
+                "isOverridden",
+                "provenance"
+              ],
+              "title": "Resolved status",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Resolved statuses",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "configVersion"
+        ],
+        "title": "Resolved status collection",
+        "type": "object"
+      },
+      "ScopeStatusMutationResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Persisted local configuration and committed workspace revision.",
+        "example": {
+          "configVersion": 2,
+          "data": {
+            "identity": {
+              "category": "not_started",
+              "createdAt": "2026-10-24T00:00:00.000Z",
+              "id": "20000000-0000-4000-8000-000000000100",
+              "key": "todo",
+              "updatedAt": "2026-10-24T00:00:00.000Z",
+              "workspaceId": "20000000-0000-4000-8000-000000000001"
+            },
+            "override": {
+              "color": "#334455",
+              "createdAt": "2026-10-24T00:00:00.000Z",
+              "hidden": null,
+              "id": "20000000-0000-4000-8000-000000000200",
+              "name": "To do",
+              "ownerId": "20000000-0000-4000-8000-000000000001",
+              "ownerType": "workspace",
+              "position": 0,
+              "statusId": "20000000-0000-4000-8000-000000000100",
+              "updatedAt": "2026-10-24T00:00:00.000Z",
+              "workspaceId": "20000000-0000-4000-8000-000000000001"
+            }
+          }
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "data": {
+            "additionalProperties": false,
+            "description": "Canonical identity and distinct local display row.",
+            "example": {
+              "identity": {
+                "category": "not_started",
+                "createdAt": "2026-10-24T00:00:00.000Z",
+                "id": "20000000-0000-4000-8000-000000000100",
+                "key": "todo",
+                "updatedAt": "2026-10-24T00:00:00.000Z",
+                "workspaceId": "20000000-0000-4000-8000-000000000001"
+              },
+              "override": {
+                "color": "#334455",
+                "createdAt": "2026-10-24T00:00:00.000Z",
+                "hidden": null,
+                "id": "20000000-0000-4000-8000-000000000200",
+                "name": "To do",
+                "ownerId": "20000000-0000-4000-8000-000000000001",
+                "ownerType": "workspace",
+                "position": 0,
+                "statusId": "20000000-0000-4000-8000-000000000100",
+                "updatedAt": "2026-10-24T00:00:00.000Z",
+                "workspaceId": "20000000-0000-4000-8000-000000000001"
+              }
+            },
+            "properties": {
+              "identity": {
+                "additionalProperties": false,
+                "description": "Canonical status identity shared by inherited display overrides.",
+                "example": {
+                  "category": "not_started",
+                  "createdAt": "2026-10-24T00:00:00.000Z",
+                  "id": "20000000-0000-4000-8000-000000000100",
+                  "key": "todo",
+                  "updatedAt": "2026-10-24T00:00:00.000Z",
+                  "workspaceId": "20000000-0000-4000-8000-000000000001"
+                },
+                "properties": {
+                  "category": {
+                    "description": "Immutable behavior category of this identity.",
+                    "enum": [
+                      "not_started",
+                      "active",
+                      "done",
+                      "closed"
+                    ],
+                    "example": "not_started",
+                    "title": "Status category",
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "description": "Immutable database creation timestamp.",
+                    "example": "2026-10-24T00:00:00.000Z",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Created at",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "Stable identity referenced by tasks; never an override-row ID.",
+                    "example": "20000000-0000-4000-8000-000000000100",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Status ID",
+                    "type": "string"
+                  },
+                  "key": {
+                    "description": "Immutable workspace-unique key.",
+                    "example": "todo",
+                    "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                    "title": "Status key",
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "description": "Database timestamp of the last changed write.",
+                    "example": "2026-10-24T00:00:00.000Z",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Updated at",
+                    "type": "string"
+                  },
+                  "workspaceId": {
+                    "description": "Tenant owning the immutable status key and category.",
+                    "example": "20000000-0000-4000-8000-000000000001",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Workspace ID",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "workspaceId",
+                  "key",
+                  "category",
+                  "createdAt",
+                  "updatedAt"
+                ],
+                "title": "Status identity",
+                "type": "object"
+              },
+              "override": {
+                "additionalProperties": false,
+                "description": "Partial scoped display and visibility configuration for a stable identity.",
+                "example": {
+                  "color": "#334455",
+                  "createdAt": "2026-10-24T00:00:00.000Z",
+                  "hidden": null,
+                  "id": "20000000-0000-4000-8000-000000000200",
+                  "name": "To do",
+                  "ownerId": "20000000-0000-4000-8000-000000000001",
+                  "ownerType": "workspace",
+                  "position": 0,
+                  "statusId": "20000000-0000-4000-8000-000000000100",
+                  "updatedAt": "2026-10-24T00:00:00.000Z",
+                  "workspaceId": "20000000-0000-4000-8000-000000000001"
+                },
+                "properties": {
+                  "color": {
+                    "description": "Null inherits; first introduction requires a hexadecimal color.",
+                    "example": "#334455",
+                    "nullable": true,
+                    "pattern": "^#[0-9a-fA-F]{6}$",
+                    "title": "Display color",
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "description": "Immutable database creation timestamp.",
+                    "example": "2026-10-24T00:00:00.000Z",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Created at",
+                    "type": "string"
+                  },
+                  "hidden": {
+                    "description": "Null inherits; true hides; false explicitly restores visibility.",
+                    "example": null,
+                    "nullable": true,
+                    "title": "Hidden override",
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "description": "Display configuration row ID; never a task statusId.",
+                    "example": "20000000-0000-4000-8000-000000000200",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Override row ID",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Null inherits; first introduction requires a name.",
+                    "example": "To do",
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "nullable": true,
+                    "title": "Display name",
+                    "type": "string"
+                  },
+                  "ownerId": {
+                    "description": "Identifier of the owning workspace or container.",
+                    "example": "20000000-0000-4000-8000-000000000001",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Owner ID",
+                    "type": "string"
+                  },
+                  "ownerType": {
+                    "description": "Workspace or a live hierarchy container.",
+                    "enum": [
+                      "workspace",
+                      "space",
+                      "folder",
+                      "list"
+                    ],
+                    "example": "workspace",
+                    "title": "Owner type",
+                    "type": "string"
+                  },
+                  "position": {
+                    "description": "Null inherits; zero is a valid explicit position.",
+                    "example": 0,
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "nullable": true,
+                    "title": "Display position",
+                    "type": "integer"
+                  },
+                  "statusId": {
+                    "description": "Stable identity referenced by tasks; never an override-row ID.",
+                    "example": "20000000-0000-4000-8000-000000000100",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Status ID",
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "description": "Database timestamp of the last changed write.",
+                    "example": "2026-10-24T00:00:00.000Z",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Updated at",
+                    "type": "string"
+                  },
+                  "workspaceId": {
+                    "description": "Tenant owning the immutable status key and category.",
+                    "example": "20000000-0000-4000-8000-000000000001",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Workspace ID",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "ownerType",
+                  "ownerId",
+                  "id",
+                  "workspaceId",
+                  "statusId",
+                  "name",
+                  "color",
+                  "position",
+                  "hidden",
+                  "createdAt",
+                  "updatedAt"
+                ],
+                "title": "Status override",
+                "type": "object"
+              }
+            },
+            "required": [
+              "identity",
+              "override"
+            ],
+            "title": "Local status configuration",
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "configVersion"
+        ],
+        "title": "Scoped status response",
+        "type": "object"
+      },
+      "ScopeStatusResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Complete local configuration and same-snapshot revision.",
+        "example": {
+          "ancestorScopes": [],
+          "configVersion": 1,
+          "items": []
+        },
+        "properties": {
+          "ancestorScopes": {
+            "description": "Verified root-to-parent path; excludes the requested owner.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "One verified scope in an ancestor path.",
+              "example": {
+                "ownerId": "20000000-0000-4000-8000-000000000001",
+                "ownerType": "workspace"
+              },
+              "properties": {
+                "ownerId": {
+                  "description": "Identifier of the owning workspace or container.",
+                  "example": "20000000-0000-4000-8000-000000000001",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Owner ID",
+                  "type": "string"
+                },
+                "ownerType": {
+                  "description": "Workspace or a live hierarchy container.",
+                  "enum": [
+                    "workspace",
+                    "space",
+                    "folder",
+                    "list"
+                  ],
+                  "example": "workspace",
+                  "title": "Owner type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ownerType",
+                "ownerId"
+              ],
+              "title": "Status scope",
+              "type": "object"
+            },
+            "maxItems": 3,
+            "title": "Ancestor scopes",
+            "type": "array"
+          },
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Complete bounded local configuration, ordered by key.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "Canonical identity and distinct local display row.",
+              "example": {
+                "identity": {
+                  "category": "not_started",
+                  "createdAt": "2026-10-24T00:00:00.000Z",
+                  "id": "20000000-0000-4000-8000-000000000100",
+                  "key": "todo",
+                  "updatedAt": "2026-10-24T00:00:00.000Z",
+                  "workspaceId": "20000000-0000-4000-8000-000000000001"
+                },
+                "override": {
+                  "color": "#334455",
+                  "createdAt": "2026-10-24T00:00:00.000Z",
+                  "hidden": null,
+                  "id": "20000000-0000-4000-8000-000000000200",
+                  "name": "To do",
+                  "ownerId": "20000000-0000-4000-8000-000000000001",
+                  "ownerType": "workspace",
+                  "position": 0,
+                  "statusId": "20000000-0000-4000-8000-000000000100",
+                  "updatedAt": "2026-10-24T00:00:00.000Z",
+                  "workspaceId": "20000000-0000-4000-8000-000000000001"
+                }
+              },
+              "properties": {
+                "identity": {
+                  "additionalProperties": false,
+                  "description": "Canonical status identity shared by inherited display overrides.",
+                  "example": {
+                    "category": "not_started",
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "id": "20000000-0000-4000-8000-000000000100",
+                    "key": "todo",
+                    "updatedAt": "2026-10-24T00:00:00.000Z",
+                    "workspaceId": "20000000-0000-4000-8000-000000000001"
+                  },
+                  "properties": {
+                    "category": {
+                      "description": "Immutable behavior category of this identity.",
+                      "enum": [
+                        "not_started",
+                        "active",
+                        "done",
+                        "closed"
+                      ],
+                      "example": "not_started",
+                      "title": "Status category",
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "description": "Immutable database creation timestamp.",
+                      "example": "2026-10-24T00:00:00.000Z",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                      "title": "Created at",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "Stable identity referenced by tasks; never an override-row ID.",
+                      "example": "20000000-0000-4000-8000-000000000100",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Status ID",
+                      "type": "string"
+                    },
+                    "key": {
+                      "description": "Immutable workspace-unique key.",
+                      "example": "todo",
+                      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                      "title": "Status key",
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "description": "Database timestamp of the last changed write.",
+                      "example": "2026-10-24T00:00:00.000Z",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                      "title": "Updated at",
+                      "type": "string"
+                    },
+                    "workspaceId": {
+                      "description": "Tenant owning the immutable status key and category.",
+                      "example": "20000000-0000-4000-8000-000000000001",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Workspace ID",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "workspaceId",
+                    "key",
+                    "category",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "title": "Status identity",
+                  "type": "object"
+                },
+                "override": {
+                  "additionalProperties": false,
+                  "description": "Partial scoped display and visibility configuration for a stable identity.",
+                  "example": {
+                    "color": "#334455",
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "hidden": null,
+                    "id": "20000000-0000-4000-8000-000000000200",
+                    "name": "To do",
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "position": 0,
+                    "statusId": "20000000-0000-4000-8000-000000000100",
+                    "updatedAt": "2026-10-24T00:00:00.000Z",
+                    "workspaceId": "20000000-0000-4000-8000-000000000001"
+                  },
+                  "properties": {
+                    "color": {
+                      "description": "Null inherits; first introduction requires a hexadecimal color.",
+                      "example": "#334455",
+                      "nullable": true,
+                      "pattern": "^#[0-9a-fA-F]{6}$",
+                      "title": "Display color",
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "description": "Immutable database creation timestamp.",
+                      "example": "2026-10-24T00:00:00.000Z",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                      "title": "Created at",
+                      "type": "string"
+                    },
+                    "hidden": {
+                      "description": "Null inherits; true hides; false explicitly restores visibility.",
+                      "example": null,
+                      "nullable": true,
+                      "title": "Hidden override",
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "description": "Display configuration row ID; never a task statusId.",
+                      "example": "20000000-0000-4000-8000-000000000200",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Override row ID",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Null inherits; first introduction requires a name.",
+                      "example": "To do",
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "nullable": true,
+                      "title": "Display name",
+                      "type": "string"
+                    },
+                    "ownerId": {
+                      "description": "Identifier of the owning workspace or container.",
+                      "example": "20000000-0000-4000-8000-000000000001",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Owner ID",
+                      "type": "string"
+                    },
+                    "ownerType": {
+                      "description": "Workspace or a live hierarchy container.",
+                      "enum": [
+                        "workspace",
+                        "space",
+                        "folder",
+                        "list"
+                      ],
+                      "example": "workspace",
+                      "title": "Owner type",
+                      "type": "string"
+                    },
+                    "position": {
+                      "description": "Null inherits; zero is a valid explicit position.",
+                      "example": 0,
+                      "maximum": 2147483647,
+                      "minimum": 0,
+                      "nullable": true,
+                      "title": "Display position",
+                      "type": "integer"
+                    },
+                    "statusId": {
+                      "description": "Stable identity referenced by tasks; never an override-row ID.",
+                      "example": "20000000-0000-4000-8000-000000000100",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Status ID",
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "description": "Database timestamp of the last changed write.",
+                      "example": "2026-10-24T00:00:00.000Z",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                      "title": "Updated at",
+                      "type": "string"
+                    },
+                    "workspaceId": {
+                      "description": "Tenant owning the immutable status key and category.",
+                      "example": "20000000-0000-4000-8000-000000000001",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Workspace ID",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ownerType",
+                    "ownerId",
+                    "id",
+                    "workspaceId",
+                    "statusId",
+                    "name",
+                    "color",
+                    "position",
+                    "hidden",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "title": "Status override",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "identity",
+                "override"
+              ],
+              "title": "Local status configuration",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Local statuses",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "ancestorScopes",
+          "configVersion"
+        ],
+        "title": "Scope status collection",
         "type": "object"
       },
       "SessionResponseDto_Output": {
@@ -2208,6 +3592,62 @@
           "expectedVersion"
         ],
         "title": "Update container request",
+        "type": "object"
+      },
+      "UpdateScopeStatusDto": {
+        "additionalProperties": false,
+        "description": "Patch an existing local row; null inherits and omission preserves its value.",
+        "example": {
+          "expectedConfigVersion": 1,
+          "name": "Reviewing"
+        },
+        "properties": {
+          "color": {
+            "description": "Null inherits; first introduction requires a hexadecimal color.",
+            "example": "#334455",
+            "nullable": true,
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Display color",
+            "type": "string"
+          },
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "hidden": {
+            "description": "Null inherits; true hides; false explicitly restores visibility.",
+            "example": null,
+            "nullable": true,
+            "title": "Hidden override",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Null inherits; first introduction requires a name.",
+            "example": "To do",
+            "maxLength": 120,
+            "minLength": 1,
+            "nullable": true,
+            "title": "Display name",
+            "type": "string"
+          },
+          "position": {
+            "description": "Null inherits; zero is a valid explicit position.",
+            "example": 0,
+            "maximum": 2147483647,
+            "minimum": 0,
+            "nullable": true,
+            "title": "Display position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedConfigVersion"
+        ],
+        "title": "Update scoped status request",
         "type": "object"
       },
       "UpsertGrantDto": {
@@ -4757,6 +6197,298 @@
         ]
       }
     },
+    "/v1/lists/{listId}/resolved-statuses": {
+      "get": {
+        "description": "Visible list members read the complete effective status set using the shared root-to-leaf resolver and a consistent configuration revision.",
+        "operationId": "getListResolvedStatuses",
+        "parameters": [
+          {
+            "description": "Live list in the active workspace.",
+            "in": "path",
+            "name": "listId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000010",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "List ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "items": [
+                    {
+                      "category": "not_started",
+                      "color": "#334455",
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "id": "20000000-0000-4000-8000-000000000100",
+                      "isInherited": true,
+                      "isLocal": false,
+                      "isOverridden": false,
+                      "key": "todo",
+                      "name": "To do",
+                      "position": 0,
+                      "provenance": {
+                        "color": {
+                          "createdAt": "2026-10-24T00:00:00.000Z",
+                          "overrideId": "20000000-0000-4000-8000-000000000200",
+                          "ownerId": "20000000-0000-4000-8000-000000000001",
+                          "ownerType": "workspace",
+                          "updatedAt": "2026-10-24T00:00:00.000Z"
+                        },
+                        "hidden": null,
+                        "name": {
+                          "createdAt": "2026-10-24T00:00:00.000Z",
+                          "overrideId": "20000000-0000-4000-8000-000000000200",
+                          "ownerId": "20000000-0000-4000-8000-000000000001",
+                          "ownerType": "workspace",
+                          "updatedAt": "2026-10-24T00:00:00.000Z"
+                        },
+                        "position": {
+                          "createdAt": "2026-10-24T00:00:00.000Z",
+                          "overrideId": "20000000-0000-4000-8000-000000000200",
+                          "ownerId": "20000000-0000-4000-8000-000000000001",
+                          "ownerType": "workspace",
+                          "updatedAt": "2026-10-24T00:00:00.000Z"
+                        }
+                      },
+                      "sourceOwner": {
+                        "ownerId": "20000000-0000-4000-8000-000000000001",
+                        "ownerType": "workspace"
+                      },
+                      "updatedAt": "2026-10-24T00:00:00.000Z",
+                      "workspaceId": "20000000-0000-4000-8000-000000000001"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedStatusResponseDto_Output"
+                }
+              }
+            },
+            "description": "Visible effective statuses with inheritance provenance."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Resolve visible list statuses",
+        "tags": [
+          "Statuses"
+        ]
+      }
+    },
     "/v1/me": {
       "get": {
         "description": "Verify the access JWT and live session family. Return the current workspace only if its membership still exists; session-only recovery remains available after removal.",
@@ -6908,6 +8640,1190 @@
         ]
       }
     },
+    "/v1/scopes/{ownerType}/{ownerId}/statuses": {
+      "get": {
+        "description": "Administrators read the complete bounded local collection and verified ancestor scopes, with its snapshot configuration revision.",
+        "operationId": "listScopeStatuses",
+        "parameters": [
+          {
+            "description": "Workspace or a live hierarchy container.",
+            "in": "path",
+            "name": "ownerType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "workspace",
+                "space",
+                "folder",
+                "list"
+              ],
+              "example": "workspace",
+              "title": "Owner type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifier of the owning workspace or container.",
+            "in": "path",
+            "name": "ownerId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000001",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Owner ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "ancestorScopes": [],
+                  "configVersion": 1,
+                  "items": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeStatusResponseDto_Output"
+                }
+              }
+            },
+            "description": "Local rows and ancestor scope metadata."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Read local status configuration",
+        "tags": [
+          "Statuses"
+        ]
+      },
+      "post": {
+        "description": "Define or override a stable identity after validating the owner, all live descendants and their task references under one workspace lock.",
+        "operationId": "createScopeStatus",
+        "parameters": [
+          {
+            "description": "Workspace or a live hierarchy container.",
+            "in": "path",
+            "name": "ownerType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "workspace",
+                "space",
+                "folder",
+                "list"
+              ],
+              "example": "workspace",
+              "title": "Owner type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifier of the owning workspace or container.",
+            "in": "path",
+            "name": "ownerId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000001",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Owner ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "define": {
+                  "summary": "Add review status",
+                  "value": {
+                    "category": "active",
+                    "color": "#334455",
+                    "expectedConfigVersion": 1,
+                    "key": "review",
+                    "kind": "define",
+                    "name": "Review",
+                    "position": 1
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateScopeStatusDto"
+              }
+            }
+          },
+          "description": "Definition or inherited override with expected configuration revision.",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 2,
+                  "data": {
+                    "identity": {
+                      "category": "not_started",
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "id": "20000000-0000-4000-8000-000000000100",
+                      "key": "todo",
+                      "updatedAt": "2026-10-24T00:00:00.000Z",
+                      "workspaceId": "20000000-0000-4000-8000-000000000001"
+                    },
+                    "override": {
+                      "color": "#334455",
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "hidden": null,
+                      "id": "20000000-0000-4000-8000-000000000200",
+                      "name": "To do",
+                      "ownerId": "20000000-0000-4000-8000-000000000001",
+                      "ownerType": "workspace",
+                      "position": 0,
+                      "statusId": "20000000-0000-4000-8000-000000000100",
+                      "updatedAt": "2026-10-24T00:00:00.000Z",
+                      "workspaceId": "20000000-0000-4000-8000-000000000001"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeStatusMutationResponseDto_Output"
+                }
+              }
+            },
+            "description": "Created local configuration and committed revision."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create local status configuration",
+        "tags": [
+          "Statuses"
+        ]
+      }
+    },
+    "/v1/scopes/{ownerType}/{ownerId}/statuses/{statusId}": {
+      "delete": {
+        "description": "Remove only the local display row after checking fallback and live descendants. Canonical identity and historical task references are retained.",
+        "operationId": "removeScopeStatus",
+        "parameters": [
+          {
+            "description": "Workspace or a live hierarchy container.",
+            "in": "path",
+            "name": "ownerType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "workspace",
+                "space",
+                "folder",
+                "list"
+              ],
+              "example": "workspace",
+              "title": "Owner type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifier of the owning workspace or container.",
+            "in": "path",
+            "name": "ownerId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000001",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Owner ID",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Stable identity referenced by tasks; never an override-row ID.",
+            "in": "path",
+            "name": "statusId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Status ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "remove": {
+                  "summary": "Remove current local row",
+                  "value": {
+                    "expectedConfigVersion": 1
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RemoveScopeStatusDto"
+              }
+            }
+          },
+          "description": "Expected configuration revision for this removal.",
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Local row removed and configuration invalidation recorded atomically."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Remove local status configuration",
+        "tags": [
+          "Statuses"
+        ]
+      },
+      "patch": {
+        "description": "Patch a local row by canonical status ID. Omitted values are preserved and null inherits; effective descendants and live tasks must remain valid.",
+        "operationId": "updateScopeStatus",
+        "parameters": [
+          {
+            "description": "Workspace or a live hierarchy container.",
+            "in": "path",
+            "name": "ownerType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "workspace",
+                "space",
+                "folder",
+                "list"
+              ],
+              "example": "workspace",
+              "title": "Owner type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifier of the owning workspace or container.",
+            "in": "path",
+            "name": "ownerId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000001",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Owner ID",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Stable identity referenced by tasks; never an override-row ID.",
+            "in": "path",
+            "name": "statusId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Status ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "rename": {
+                  "summary": "Rename local status",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "name": "Reviewing"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScopeStatusDto"
+              }
+            }
+          },
+          "description": "Display or visibility changes with expected configuration revision.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 2,
+                  "data": {
+                    "identity": {
+                      "category": "not_started",
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "id": "20000000-0000-4000-8000-000000000100",
+                      "key": "todo",
+                      "updatedAt": "2026-10-24T00:00:00.000Z",
+                      "workspaceId": "20000000-0000-4000-8000-000000000001"
+                    },
+                    "override": {
+                      "color": "#334455",
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "hidden": null,
+                      "id": "20000000-0000-4000-8000-000000000200",
+                      "name": "To do",
+                      "ownerId": "20000000-0000-4000-8000-000000000001",
+                      "ownerType": "workspace",
+                      "position": 0,
+                      "statusId": "20000000-0000-4000-8000-000000000100",
+                      "updatedAt": "2026-10-24T00:00:00.000Z",
+                      "workspaceId": "20000000-0000-4000-8000-000000000001"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeStatusMutationResponseDto_Output"
+                }
+              }
+            },
+            "description": "Updated local row and committed revision; no-op preserves both."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update local status configuration",
+        "tags": [
+          "Statuses"
+        ]
+      }
+    },
     "/v1/tree": {
       "get": {
         "description": "Return only authorized live nodes in depth/full ancestor path order. Follow the opaque cursor with the same limit; changed workspace revisions require restarting. Parent nodes precede children across pages.",
@@ -8598,6 +11514,10 @@
     {
       "description": "Workspace memberships, invitations and current identity",
       "name": "Workspaces"
+    },
+    {
+      "description": "Scoped status configuration and list inheritance",
+      "name": "Statuses"
     },
     {
       "description": "Workspace spaces, folders and lists",
