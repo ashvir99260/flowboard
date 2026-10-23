@@ -37,9 +37,18 @@ Run `pnpm hooks:install` once to enable the repository-local commit-message chec
 
 ## Run the application shells
 
+For the first local setup, create private configuration files from the examples. `cp -n` preserves any files you already have:
+
 ```sh
-NEXT_TELEMETRY_DISABLED=1 pnpm dev
+cp -n .env.example .env
+cp -n apps/api/.env.example apps/api/.env
+cp -n apps/worker/.env.example apps/worker/.env
+cp -n apps/web/.env.example apps/web/.env.local
+docker compose -f compose.yaml -f compose.local.yaml up -d postgres redis
+pnpm dev
 ```
+
+The root `.env` configures Compose. The API and worker load their own `.env` when launched with their `dev` or `start` scripts; Next.js loads `.env.local`. Existing process environment variables override file values. The Node services also work without a file when their environment is supplied externally. Restart Node development processes after editing their env files. These private files are ignored by Git and excluded from Docker images. Keep database credentials/ports consistent between root and app files if you customize them, and never put server secrets in the web file. The local API example enables migrations, demo seeding and Swagger; hosted deployments use injected secrets and disable local-only settings.
 
 Open [the setup page](http://localhost:3000). Next.js reloads page edits; the API and worker compile with TypeScript and restart after successful changes. Stop all three with Ctrl+C. To run one app, use `pnpm dev --filter=@flowboard/web`, `pnpm dev --filter=@flowboard/api` or `pnpm dev --filter=@flowboard/worker`.
 

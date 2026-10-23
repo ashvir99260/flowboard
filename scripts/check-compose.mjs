@@ -74,6 +74,15 @@ try {
   for (const service of ['api', 'web', 'worker']) {
     const uid = await run('exec', '-T', service, 'node', '-p', 'process.getuid()');
     assert.notEqual(uid, '0', `${service} must run as non-root`);
+    await run(
+      'exec',
+      '-T',
+      service,
+      'node',
+      '--input-type=module',
+      '-e',
+      "import assert from 'node:assert/strict'; import { existsSync } from 'node:fs'; for (const name of ['.env', '.env.local', 'apps/web/.env', 'apps/web/.env.local']) assert.equal(existsSync(name), false, 'Private env files must not enter images');",
+    );
   }
   await run(
     'exec',

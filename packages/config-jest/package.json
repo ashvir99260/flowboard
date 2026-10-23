@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.mjs",
-    "./process": "./src/process.mjs"
+    "./process": "./src/process.mjs",
+    "./local-command": "./src/local-command.mjs"
   },
   "scripts": {
     "build": "node src/build.mjs",

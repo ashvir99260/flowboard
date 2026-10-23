@@ -89,6 +89,8 @@ Shared Node, React and Next lint presets also enforce readable control-flow spac
 
 Host development uses `localhost` for application URLs, default listeners and local datastore connection examples (P02-18/D98). Docker keeps numeric loopback port bindings and internal health probes; containers and hosted processes retain their explicit all-interface host override.
 
+Local API/worker development and start scripts load optional per-app `.env` files through Node's native loader, with process variables taking precedence (P02-19/D99). Compose uses root `.env` and Next.js its `.env.local`; private configuration is ignored and excluded from Docker. Examples supply the required local auth settings, and local API startup migrates/seeds against host-accessible Docker datastores.
+
 ### Module boundaries inside the API
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.

@@ -526,6 +526,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `fix: use localhost for local development`.
   - **Completion evidence:** [P02-18](evidence/P02-18.md): localhost defaults, dev/production smoke checks and 348 tests pass; build/lint/type/format/contract/Docker checks pass.
 
+- [x] **P02-19 — Load ignored local environment files**
+  - **Goal:** Make local development usable with checked-in examples and private per-app environment files.
+  - **Requirements:** R130.
+  - **Files:** API/worker package scripts and startup tests, shared test command helper, API environment example, README, task/decision/matrix/evidence docs; ignored `.env`, `apps/api/.env`, `apps/worker/.env`, `apps/web/.env.local`.
+  - **Dependencies:** P02-18; prioritized by the user's local environment request.
+  - **Acceptance:** API and worker dev/start commands load optional local .env files using Node's native loader; inherited variables take precedence. Next uses .env.local and Compose uses root .env. Populate local-only credentials/settings without overwriting existing values. Local files remain ignored by Git and excluded from Docker; no secrets enter generated output or browser variables. Document datastore startup and server commands.
+  - **Validation:** Real startup-command red/green tests for local values, missing files and environment precedence; root build/lint/type/test/format/OpenAPI checks, Docker exclusion/config checks and local API readiness/login verification against PostgreSQL/Redis. G01–G07/G11 as applicable.
+  - **Commit:** `fix: load local environment files for development`.
+  - **Completion evidence:** [P02-19](evidence/P02-19.md): 12 startup-command cases and all 360 tests pass; local API readiness/login and private-file exclusions verified; root build/lint/type/format/contract/Docker checks pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.
