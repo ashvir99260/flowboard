@@ -1,5 +1,7 @@
 # Continuous integration and deployment
 
+**Later clarification:** This page describes the existing production-only implementation. It does not yet provide strict build-once promotion through four environments: the Vercel Git path rebuilds source. [PROMOTION.md](PROMOTION.md) defines the new future contract; keep provider CD disabled until the chosen path satisfies it.
+
 Implementation for P00-08, 23 October 2026. This extends the existing release workflow; it does not create provider accounts or database resources.
 
 ```mermaid

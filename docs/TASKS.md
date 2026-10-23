@@ -104,6 +104,34 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `ci: deploy released apps to selected hosts`.
   - **Completion evidence:** [P00-08 verification](evidence/P00-08.md): 117 tests, actionlint, standard gates and five-service Docker acceptance pass. Live activation remains P00-09.
 
+- [x] **P00-10 — Define immutable promotion and runtime configuration**
+  - **Goal:** Record the user's local-Docker and future trunk-based build-once requirements without provisioning environments or claiming the existing source deploy path complies.
+  - **Requirements:** R99; clarifies R95 and R98.
+  - **Files:** `docs/PROMOTION.md`, `docs/PLAN.md`, `docs/DECISIONS.md`, `docs/CI_CD.md`, `docs/DELIVERY.md`, `ARCHITECTURE.md`, `README.md`, task/matrix/evidence records.
+  - **Dependencies:** P00-08 as current-state input; no live-host credentials required for this documentation task.
+  - **Acceptance:** Distinguish local Docker from hosted packaging; specify unchanged artifact promotion, four target environments, runtime/public/secret configuration, Node environment naming, and current Vercel/pipeline gaps. Do not change hosts or build four environments under the user's conditional future request.
+  - **Validation:** Documentation consistency, source-backed technical constraints, local links, formatting and independent review. No application behavior claimed.
+  - **Commit:** `docs: define build-once environment promotion`.
+  - **Completion evidence:** [P00-10 verification](evidence/P00-10.md): promotion/runtime contract, current implementation gaps and future tasks documented; no four-environment implementation claimed.
+
+- [ ] **P00-11 — Implement environment-neutral artifacts and runtime config**
+  - **Goal:** Build each application candidate once and keep all target-specific settings out of its bytes.
+  - **Requirements:** R99.
+  - **Files:** App packaging/build scripts, runtime-config schemas and web bootstrap, deployment artifact tooling and tests; exact files selected with the hosting decision.
+  - **Dependencies:** P00-10 and explicit request to implement the future promotion path.
+  - **Acceptance:** One immutable digest per app candidate; no target-specific build inputs; validated server settings and a safe dynamic public bootstrap. Two runtime configurations use identical bytes. The selected host supports the artifact without rebuilding it.
+  - **Validation:** Missing/invalid config, browser secret exclusion, runtime changes, cache isolation, artifact hash equality and build-toolchain-disabled deployment; standard gates.
+  - **Commit:** `feat: build environment-neutral app artifacts`.
+
+- [ ] **P00-12 — Promote selected artifacts across deployment environments**
+  - **Goal:** Add trunk-based `dev → qa → stage → prod` deployment without environment branches or rebuilds.
+  - **Requirements:** R99.
+  - **Files:** Promotion workflow/tooling, environment configuration documentation and tests.
+  - **Dependencies:** P00-11; selected hosts and environment approval policy.
+  - **Acceptance:** Every promotion names an existing artifact digest and verifies the previous environment's acceptance for it; serialize per environment, preserve version identity, record configuration revision and support safe retry/rollback. No source-based build occurs during promotion.
+  - **Validation:** Same-digest progression, approval/ordering violations, concurrent or stale candidates, failed retry and rollback; standard and workflow gates. Live verification needs connected targets.
+  - **Commit:** `ci: promote immutable artifacts across environments`.
+
 - [ ] **P00-09 — Connect and verify production deployment**
   - **Goal:** Enable and verify live deployment after provider accounts and targets are connected.
   - **Requirements:** R98.

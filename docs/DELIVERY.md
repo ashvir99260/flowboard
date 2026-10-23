@@ -1,5 +1,7 @@
 # Independent releases and deployment
 
+**Future promotion direction:** Docker is for local development/test. The user may adopt trunk-based `dev → qa → stage → prod` delivery with one unchanged artifact and runtime configuration. Current Vercel source deployment does not meet that build-once contract; see [PROMOTION.md](PROMOTION.md) before enabling hosted CD for that purpose.
+
 Status: Docker and release automation implemented by P00-04 through P00-06, 23 October 2026. The first real main-branch publication is tracked by P00-07. This document does not claim a hosted deployment exists.
 
 ## Release contract
