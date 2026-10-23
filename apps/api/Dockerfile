@@ -29,7 +29,6 @@ ENV NODE_ENV=production HOST=0.0.0.0 PORT=3001
 COPY --from=build --chown=node:node /prod/api/ .
 USER node
 EXPOSE 3001
-# TODO(P01-02): Switch to the typed dependency-aware readiness endpoint.
-HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=6 \
-    CMD node -e "const s=require('node:net').connect({host:'127.0.0.1',port:Number(process.env.PORT)});s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));s.setTimeout(2000,()=>process.exit(1))"
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=6 \
+    CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/health/ready',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "dist/main.js"]

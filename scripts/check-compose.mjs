@@ -81,6 +81,11 @@ try {
     signal: AbortSignal.timeout(10_000),
   });
   assert.equal(assetResponse.status, 200);
+  const ready = await fetch(`http://${apiAddress}/health/ready`);
+  assert.equal(ready.status, 200);
+  assert.deepEqual(await ready.json(), { status: 'ready' });
+  const docs = await fetch(`http://${apiAddress}/docs/`);
+  assert.equal(docs.status, 200);
   const api = await fetch(`http://${apiAddress}/v1/tasks`, {
     signal: AbortSignal.timeout(10_000),
   });

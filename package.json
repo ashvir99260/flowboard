@@ -2,7 +2,7 @@
   "name": "flowboard",
   "private": true,
   "engines": {
-    "node": ">=22.13.0 <23",
+    "node": ">=22.18.0 <23",
     "pnpm": "12.15.0"
   },
   "packageManager": "pnpm@12.15.0",
@@ -23,7 +23,9 @@
     "release:publish": "turbo run release:publish",
     "deploy:preview": "turbo run deploy:preview",
     "db:migrate": "turbo run db:migrate",
-    "db:seed": "turbo run db:seed"
+    "db:seed": "turbo run db:seed",
+    "gen:api": "turbo run api:generate",
+    "openapi:check": "turbo run openapi:check"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",

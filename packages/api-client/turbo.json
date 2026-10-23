@@ -1,0 +1,6 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "api:generate": { "cache": false, "dependsOn": ["^api:generate"] }
+  }
+}

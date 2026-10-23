@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 
 import { initializeDatabase } from '@flowboard/database';
-import { NestFactory } from '@nestjs/core';
 
-import { AppModule } from './app.module.js';
+import { createApplication } from './application.js';
+import { runtimeProbe } from './platform/dependency-probe.js';
 
 async function bootstrap(): Promise<void> {
   const port = Number(process.env.PORT ?? 3001);
@@ -11,7 +11,13 @@ async function bootstrap(): Promise<void> {
     throw new Error('PORT must be an integer between 0 and 65535');
   }
   const databaseUrl = process.env.DATABASE_URL;
-  if (databaseUrl) {
+  const redisUrl = process.env.REDIS_URL;
+  if (!databaseUrl) throw new Error('DATABASE_URL is required');
+  if (!redisUrl) throw new Error('REDIS_URL is required');
+  if (process.env.API_DOCS && !['true', 'false'].includes(process.env.API_DOCS)) {
+    throw new Error('API_DOCS must be true or false');
+  }
+  {
     if (process.env.DEMO_SEED && !['true', 'false'].includes(process.env.DEMO_SEED)) {
       throw new Error('DEMO_SEED must be true or false');
     }
@@ -22,14 +28,19 @@ async function bootstrap(): Promise<void> {
         ? { directDatabaseUrl: process.env.DATABASE_URL_UNPOOLED }
         : {}),
     });
-  } else if (process.env.NODE_ENV === 'production') {
-    throw new Error('DATABASE_URL is required');
   }
-  // TODO(P01-02): The real HTTP platform requires dependencies in every mode;
-  // the empty development shell remains available for its bootstrap test.
-  const app = await NestFactory.create(AppModule);
+  const { app } = await createApplication(runtimeProbe(databaseUrl, redisUrl), {
+    exposeDocs:
+      process.env.API_DOCS === 'true' ||
+      (process.env.API_DOCS === undefined && process.env.NODE_ENV !== 'production'),
+  });
   app.enableShutdownHooks(['SIGINT', 'SIGTERM']);
-  await app.listen(port, process.env.HOST ?? '127.0.0.1');
+  try {
+    await app.listen(port, process.env.HOST ?? '127.0.0.1');
+  } catch (error) {
+    await app.close();
+    throw error;
+  }
   console.info(`[api] Listening at ${await app.getUrl()}`);
 }
 

@@ -7,15 +7,19 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./document": "./openapi.json"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/export.mjs --check && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint --fix . --max-warnings=0",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . --ignore-path ../../.prettierignore"
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
+    "api:generate": "node scripts/export.mjs --write",
+    "openapi:check": "node scripts/export.mjs --check && spectral lint openapi.json --fail-severity=warn",
+    "test": "node --test test/*.test.mjs"
   },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",
@@ -23,7 +27,9 @@
     "@types/node": "22.20.5",
     "eslint": "9.39.5",
     "prettier": "3.9.10",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "@flowboard/api": "workspace:*",
+    "@stoplight/spectral-cli": "6.17.0"
   },
   "prettier": "@flowboard/config-prettier"
 }

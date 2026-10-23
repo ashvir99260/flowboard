@@ -11,7 +11,7 @@ export type { ReadRepositories, WriteRepositories } from './repositories.js';
 
 /** Readiness probe without exposing an unrestricted database client. */
 export async function verifyDatabaseConnection(connectionString: string): Promise<void> {
-  const client = createClient(connectionString);
+  const client = createClient(connectionString, 3000);
   try {
     await client.$queryRaw`SELECT 1`;
   } finally {

@@ -31,7 +31,7 @@ export async function seedDemoData(databaseUrl: string): Promise<boolean> {
         }
         await mainWorkspace(tx);
         await otherWorkspace(tx);
-        await tx.seedState.create({ data: { completedAt: new Date(), version } });
+        await tx.seedState.create({ data: { version } });
         return true;
       },
       { maxWait: 10_000, timeout: 30_000 },

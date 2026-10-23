@@ -41,13 +41,13 @@ NEXT_TELEMETRY_DISABLED=1 pnpm dev
 
 Open [the setup page](http://localhost:3000). Next.js reloads page edits; the API and worker compile with TypeScript and restart after successful changes. Stop all three with Ctrl+C. To run one app, use `pnpm dev --filter=@flowboard/web`, `pnpm dev --filter=@flowboard/api` or `pnpm dev --filter=@flowboard/worker`.
 
-| Process | Default address         | Current behavior                                                           |
-| ------- | ----------------------- | -------------------------------------------------------------------------- |
-| Web     | `http://127.0.0.1:3000` | Static setup page; no login or task data yet.                              |
-| API     | `http://127.0.0.1:3001` | Nest boots; all routes return 404 until the typed HTTP platform in P01-02. |
-| Worker  | TCP `127.0.0.1:3002`    | Process liveness only; queue processing arrives in P11-02.                 |
+| Process | Default address         | Current behavior                                                |
+| ------- | ----------------------- | --------------------------------------------------------------- |
+| Web     | `http://127.0.0.1:3000` | Static setup page; no login or task data yet.                   |
+| API     | `http://127.0.0.1:3001` | Typed liveness/readiness; Swagger UI at `/docs` in development. |
+| Worker  | TCP `127.0.0.1:3002`    | Process liveness only; queue processing arrives in P11-02.      |
 
-The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; set `HOSTNAME=127.0.0.1` to restrict it locally. When `DATABASE_URL` is supplied, the API migrates before listening; production mode requires it. The empty development API shell can still boot without infrastructure until P01-02 introduces dependency-aware HTTP readiness.
+The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; set `HOSTNAME=127.0.0.1` to restrict it locally. The API requires `DATABASE_URL` and `REDIS_URL`, migrates before listening and serves `/health/live` and dependency-aware `/health/ready`. `API_DOCS=true` enables `/docs`; it defaults on in development and off in hosted production. Local Compose explicitly enables it.
 
 The shared ESLint presets are exported as `@flowboard/config-eslint/node` and `/next`; compiler presets as `@flowboard/config-typescript/{node,nest,next,library}.json`. Workspace boundary violations fail lint. App manifests export their metadata only; apps are not reusable libraries.
 
@@ -61,7 +61,7 @@ docker compose up --build
 
 This builds separate web, API and worker images and starts PostgreSQL and Redis. Open [Flowboard](http://localhost:3000); the API listens on port 3001. Application containers run as non-root. PostgreSQL, Redis and the worker are private to the Compose network. The local database defaults in `.env.example` require no file copy and are for development only.
 
-The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API/worker health currently means process liveness; dependency-aware HTTP readiness arrives in P01-02, and queue processing in P11-02. No successful domain response is provided yet.
+The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API health checks PostgreSQL and Redis with bounded timeouts; worker health remains process liveness until queue processing in P11-02. No successful domain response is provided yet.
 
 Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `carol@example.com` (members), plus `dan@example.com` in a second tenant. Their development-only password is `FlowboardDemo123!`, stored as individually salted Argon2id hashes. Alice is also a member of the second tenant. The main tenant contains 24 tasks across three lists, four field definitions across all four scopes, inherited/overridden statuses, one private list and one list denying Bob. The second tenant has three tasks. Login endpoints are the next authentication task.
 
@@ -109,3 +109,5 @@ Local development uses Docker PostgreSQL. The selected hosted setup is Vercel (U
 Preview CD is wired after successful publication: Vercel builds the exact web commit as a preview and Northflank deploys API/worker image digests to preview services. No production promotion runs. It stays disabled until provider credentials and IDs are connected. See [CI/CD activation and recovery](docs/CI_CD.md).
 
 Future `dev → qa → stage → prod` promotion will reuse one build and inject configuration at runtime. Docker remains the local development/test setup. See the [build-once contract and current limitations](docs/PROMOTION.md).
+
+Generate contracts with `pnpm gen:api`. The isolated Nest bootstrap exports real DTO/controller metadata without database, Redis or secrets. `pnpm openapi:check` validates the committed document and Spectral conventions; normal builds also reject stale OpenAPI/client output. The generated Hey API SDK and TanStack Query options are committed and never hand-edited. Response serialization rejects invalid server output with a sanitized 500. Public errors use the shared envelope, including malformed/oversized requests.

@@ -14,6 +14,7 @@ node_modules/
 pnpm-lock.yaml
 **/*.gen.ts
 packages/api-client/src/generated/
+packages/openapi/openapi.json
 packages/database/src/generated/
 **/*.prisma
 docs/REQUIREMENTS.md

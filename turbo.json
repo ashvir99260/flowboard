@@ -1,6 +1,10 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "tasks": {
+    "api:generate": {
+      "cache": false,
+      "outputs": []
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
@@ -62,6 +66,10 @@
     "lint:fix": {
       "cache": false,
       "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "openapi:check": {
+      "cache": false,
       "outputs": []
     },
     "release:plan": {

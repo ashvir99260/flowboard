@@ -2,7 +2,16 @@
   "extends": ["//"],
   "tasks": {
     "dev": {
-      "env": ["HOST", "PORT", "DATABASE_URL", "DATABASE_URL_UNPOOLED", "DEMO_SEED", "NODE_ENV"]
+      "env": [
+        "HOST",
+        "PORT",
+        "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
+        "DEMO_SEED",
+        "NODE_ENV",
+        "REDIS_URL",
+        "API_DOCS"
+      ]
     }
   }
 }

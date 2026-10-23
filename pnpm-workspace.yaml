@@ -6,6 +6,7 @@ strictPeerDependencies: true
 autoInstallPeers: false
 
 allowBuilds:
+  '@scarf/scarf': false
   '@prisma/engines': true
   prisma: true
   '@parcel/watcher': false

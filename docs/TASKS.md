@@ -347,13 +347,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: initialize database with repeatable demo data`.
   - **Completion evidence:** [P01-05](evidence/P01-05.md): seed/rollback/concurrency checks, 240 root tests and Docker startup/restart checks pass.
 
-- [ ] **P01-02 — HTTP platform and early contract generation**
+- [x] **P01-02 — HTTP platform and early contract generation**
   - **Goal:** Establish real health endpoints, global error/validation/response handling and the minimum export/client pipeline required by every following endpoint.
   - **Files:** `apps/api/src/platform/**`, `apps/api/src/spec-bootstrap.ts`, `packages/contracts/src/health.ts`, `packages/openapi/{scripts/export.ts,openapi.json,.spectral.yaml}`, `packages/api-client/{openapi-ts.config.ts,src/generated/**}`, affected package manifests/Turbo config.
   - **Dependencies:** P01-05 (DB-first execution per D75).
   - **Acceptance:** `/health/live`, `/health/ready` and development `/docs` have typed schemas. Runtime readiness checks actual dependencies; spec bootstrap imports the real controller/DTO registry without sockets/DB/Redis. `pnpm gen:api` works, explicit operationIds and error schemas appear (follow API_CATALOG), and generated client compiles. Infrastructure URL exceptions are explicit. Follow BACKEND_CONTRACTS for createZodDto request/response classes, ZodResponse metadata, global serializer and safe500 output validation; generated response consumer compiles.
   - **Validation:** Supertest error-envelope/response tests; export/generation with runtime dependencies unavailable; malformed response fails safely; standard gate.
   - **Commit:** `feat: establish typed api platform and generation`.
+  - **Completion evidence:** [P01-02](evidence/P01-02.md): 251 tests, build/lint/typecheck, generated contract drift checks and five-service Docker restart pass.
 
 ## Phase 2 — Authentication and membership
 

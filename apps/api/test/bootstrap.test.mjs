@@ -5,15 +5,12 @@ import { startProcess } from '@flowboard/config-jest/process';
 
 const cwd = new URL('../', import.meta.url);
 
-test('Nest starts without infrastructure, has no domain endpoints, and stops cleanly', async (t) => {
+test('Nest refuses to start the HTTP platform without database configuration', async (t) => {
   const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: '127.0.0.1', PORT: '0' } });
-  // Nest re-emits SIGTERM after its shutdown hooks complete.
-  t.after(() => runtime.stop('SIGTERM'));
-  const [, url] = await runtime.waitFor(/\[api\] Listening at (http:\/\/\S+)/);
-  const response = await fetch(url, { signal: AbortSignal.timeout(5_000) });
-  assert.equal(response.status, 404);
-  const domainResponse = await fetch(`${url}/v1/tasks`, { signal: AbortSignal.timeout(5_000) });
-  assert.equal(domainResponse.status, 404);
+  t.after(() => runtime.stop(null, 1));
+  const { code } = await runtime.exited;
+  assert.equal(code, 1);
+  assert.match(runtime.output(), /DATABASE_URL is required/);
 });
 
 for (const port of ['not-a-port', '65536']) {
@@ -34,6 +31,7 @@ test('migration failure prevents listening and does not print credentials', asyn
       DATABASE_URL_UNPOOLED: 'postgresql://test:never-print-this@127.0.0.1:1/unavailable',
       HOST: '127.0.0.1',
       PORT: '0',
+      REDIS_URL: 'redis://127.0.0.1:1',
     },
   });
   t.after(() => runtime.stop(null, 1));

@@ -1,0 +1,58 @@
+extends: [spectral:oas]
+rules:
+  info-contact: off
+  operation-description: off
+  oas3-api-servers: off
+  flowboard-versioned-paths:
+    description: Domain paths use /v1; health is the explicit operational exception.
+    severity: error
+    given: $.paths
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          propertyNames:
+            pattern: '^(/v1(/|$)|/health/(live|ready)$)'
+  flowboard-cursor-only:
+    description: Public pagination accepts cursor and limit, never offset aliases.
+    severity: error
+    given: $.paths.*.*.parameters[*].name
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: '^(page|pageNumber|offset|skip|take|pageSize)$'
+  flowboard-error-envelope:
+    description: Every documented error response uses the shared typed envelope.
+    severity: error
+    resolved: false
+    given: '$.paths.*.*.responses[?(@property.match(/^[45][0-9]{2}$/))]'
+    then:
+      - field: content.application/json.schema.$ref
+        function: truthy
+      - field: content.application/json.schema.$ref
+        function: pattern
+        functionOptions:
+          match: 'ErrorResponseDto'
+  operation-operationId: error
+  flowboard-list-cursor:
+    description: List operations expose a cursor query parameter.
+    severity: error
+    given: $.paths.*.*
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          if:
+            type: object
+            required: [operationId]
+            properties:
+              operationId: { pattern: '^list', not: { enum: [listScopeStatuses, listScopeFields] } }
+          then:
+            required: [parameters]
+            properties:
+              parameters:
+                contains:
+                  required: [name, in]
+                  properties:
+                    name: { const: cursor }
+                    in: { const: query }
