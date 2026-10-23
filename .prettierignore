@@ -10,6 +10,7 @@ node_modules/
 .superpowers/
 **/graphify-out/**
 **/.graphify_*
+**/.ai-local/**
 pnpm-lock.yaml
 **/*.gen.ts
 packages/api-client/src/generated/

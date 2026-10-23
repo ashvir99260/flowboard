@@ -156,3 +156,7 @@ vite.config.ts.timestamp-*
 # Local Graphify outputs, caches, memory and intermediate extraction files
 graphify-out/
 .graphify_*
+
+# Local AI navigation state and redacted tool reports
+.serena/
+.ai-local/

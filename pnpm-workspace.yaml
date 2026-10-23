@@ -6,4 +6,5 @@ strictPeerDependencies: true
 autoInstallPeers: false
 
 allowBuilds:
+  '@ast-grep/cli': true
   unrs-resolver: true

@@ -144,6 +144,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: add local graphify navigation`.
   - **Completion evidence:** [P00-16 verification](evidence/P00-16.md): local graph/query/cache and ignore checks pass; 124 tests and five-service Docker acceptance pass. Generated data remains untracked.
 
+- [x] **P00-17 — Focused local tools for AI-assisted coding**
+  - **Goal:** Add syntax-aware search and local secret checks, and make existing Serena navigation easy to use alongside Graphify.
+  - **Requirements:** R101; preserves R100.
+  - **Files:** root `package.json`, `pnpm-lock.yaml`, targeted pnpm install policy if required, `.gitleaks.toml`, local-data ignores, `AGENTS.md`, `README.md`, `docs/{AI_TOOLS,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, workspace tests and task evidence.
+  - **Dependencies:** P00-16.
+  - **Acceptance:** Pinned ast-grep performs structural searches without editing source; existing Gitleaks scans locally with built-in rules and redacted reports; a synthetic secret is detected. Serena guidance uses the existing connector without global changes. Local reports/state stay ignored and no runtime dependency, paid service or automatic hook is introduced.
+  - **Validation:** Behavioral syntax-search fixture, synthetic secret/redaction and clean-repo scans, ignored-report regression, Serena symbol lookup, standard gates and relevant packaging checks.
+  - **Commit:** `chore: add focused local coding tools`.
+  - **Completion evidence:** [P00-17 verification](evidence/P00-17.md): structural-search/secret-scan checks, 126 tests and Docker pass; fresh Serena indexing works, existing connector needs reconnect. Local state remains untracked.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.
