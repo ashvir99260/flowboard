@@ -137,7 +137,7 @@ test('React accessibility and JSX usage work with unused-import detection', asyn
   assert.ok(!hasRule(used, 'unused-imports/no-unused-imports'));
 });
 
-test('JSON keys sort while conditional export and array precedence stay intact', async () => {
+test('JSON keys sort while package manifests preserve all key and array order', async () => {
   const sorted = await inspect(
     '{"zebra":1,"alpha":2}',
     'packages/contracts/settings.json',
@@ -149,9 +149,10 @@ test('JSON keys sort while conditional export and array precedence stay intact',
     '{"name":"fixture","exports":{".":{"types":"a.d.ts","import":"a.js","default":"b.js"}},"scripts":{"zebra":"z","alpha":"a"},"files":["z","a"]}';
   const result = await inspect(manifest, 'packages/contracts/package.json', node, true);
   const parsed = JSON.parse(result.output ?? manifest);
-  assert.deepEqual(Object.keys(parsed.scripts), ['alpha', 'zebra']);
+  assert.deepEqual(Object.keys(parsed.scripts), ['zebra', 'alpha']);
   assert.deepEqual(Object.keys(parsed.exports['.']), ['types', 'import', 'default']);
   assert.deepEqual(parsed.files, ['z', 'a']);
+  assert.equal(result.output, undefined);
 });
 
 test('root configuration lints bootstrap TypeScript JSON without JavaScript rules', async () => {

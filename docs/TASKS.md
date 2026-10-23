@@ -194,6 +194,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: strengthen shared eslint quality rules`.
   - **Completion evidence:** [P00-21 verification](evidence/P00-21.md): 12 rule/safety fixtures, 155 repository tests, standard gates and Docker acceptance pass; reviewed sorting and naming limits documented.
 
+- [x] **P00-22 — Preserve package manifests and enforce exact dependency versions**
+  - **Goal:** Keep `package.json` key order unchanged while rejecting unpinned dependency specifications through shared ESLint.
+  - **Requirements:** R106; preserves R105 JSON syntax checks and the workspace dependency convention.
+  - **Files:** `packages/config-eslint/src/{json,exact-dependency-versions}.mjs`, config-eslint tests/manifest, lockfile if needed, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, task evidence.
+  - **Dependencies:** P00-21 and the user's manifest-policy correction.
+  - **Acceptance:** No sorting diagnostics or sorting fixes anywhere in `package.json`; other JSON still sorts and strict JSON syntax/duplicate-key checks remain active. Runtime/dev/optional/peer dependency declarations accept exact semantic versions and `workspace:*`; reject ranges, tags and unpinned sources without guessing replacement versions. Engine compatibility ranges remain allowed.
+  - **Validation:** Actual ESLint manifest fixtures for preserved order, exact/prerelease/build versions, rejected ranges/tags/sources and non-dependency fields; root/workspace integration, build/lint/test/type/format and frozen install if dependencies change.
+  - **Commit:** `chore: enforce pinned manifest dependencies`.
+  - **Completion evidence:** [P00-22 verification](evidence/P00-22.md): seven manifest regression tests, 162 repository tests and standard gates pass; package sorting disabled and exact versions enforced without autofix.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.
