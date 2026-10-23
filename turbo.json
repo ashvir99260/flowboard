@@ -44,7 +44,19 @@
       "env": ["HOST", "PORT", "NEXT_TELEMETRY_DISABLED", "LOG_LEVEL"],
       "persistent": true
     },
+    "dev:docker": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "env": ["HOST", "PORT", "NODE_ENV", "NEXT_TELEMETRY_DISABLED", "LOG_LEVEL", "TSC_WATCHFILE"],
+      "interruptible": true,
+      "persistent": true
+    },
     "docker:check": {
+      "cache": false,
+      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
+      "outputs": []
+    },
+    "docker:dev:check": {
       "cache": false,
       "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
       "outputs": []

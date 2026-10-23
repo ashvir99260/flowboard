@@ -24,6 +24,9 @@ test('all workspace checks run as independent free-runner jobs before publicatio
   assert.ok(verify.steps.some((step) => step.run === 'pnpm ${{ matrix.command }}'));
   assert.equal(jobs.containers.needs, undefined);
   assert.equal(jobs.containers.if, 'github.event.repository.private == false');
+  assert.equal(jobs.containers.strategy['fail-fast'], false);
+  assert.deepEqual(jobs.containers.strategy.matrix.command, ['docker:check', 'docker:dev:check']);
+  assert.ok(jobs.containers.steps.some((step) => step.run === 'pnpm ${{ matrix.command }}'));
   assert.deepEqual(jobs.release.needs, ['verify', 'containers']);
   assert.equal(jobs.release['continue-on-error'], undefined);
   assert.equal(jobs.deploy.needs, 'release');

@@ -546,6 +546,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: explain local Docker startup and operation`.
   - **Completion evidence:** [P02-20](evidence/P02-20.md): Compose defaults/local configuration, CLI compatibility, README links and formatting verified; runtime unchanged.
 
+- [x] **P02-21 — Reload local source changes inside Docker**
+  - **Goal:** Show saved local code changes in running Docker development apps without manual rebuilds for each edit.
+  - **Requirements:** R131.
+  - **Files:** App Dockerfiles/package scripts, container-specific Turbo task configuration, `compose.dev.yaml`, Docker context exclusions/development verification script, parallel CI container matrix/regression, README, plan/decision/matrix/evidence docs.
+  - **Dependencies:** P02-20; prioritized by the user's live-update request.
+  - **Acceptance:** An opt-in development command runs web/API/worker with source mounts and dependency-aware watchers; app and shared-package edits become observable. Linux dependencies, build output and secrets remain isolated; runtime users stay non-root. Invalid code recovers after correction. Normal release images remain unchanged in behavior. Document rebuild boundaries and retain datastore contents across reloads.
+  - **Validation:** Observe a live-edit regression before implementation, then verify web/API/worker and shared-package updates in an isolated copied fixture. Check mounts, private-file exclusion, data retention and error recovery. Run root build/lint/type/test/format/OpenAPI, existing Docker acceptance and new development Docker acceptance. G01–G07/G11 as applicable.
+  - **Commit:** `feat: reload source changes in Docker development`.
+  - **Completion evidence:** [P02-21](evidence/P02-21.md): real app/shared-package live edits, compile-error recovery, stable health and restart counts, source/output isolation and data preservation verified; 360 tests and both Docker suites pass; parallel CI checks added.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

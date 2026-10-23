@@ -97,6 +97,29 @@ The web currently shows the application shell; use Swagger to try the implemente
 
 Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files are only needed for host development and are excluded from images. Without a root `.env`, Compose uses the development defaults in `compose.yaml`. To use different published ports, set `WEB_PORT` and `API_PORT` in the root file. If you change the web port, also update `AUTH_ALLOWED_ORIGINS` to match its complete origin, such as `http://localhost:3100`. Keep these development credentials local.
 
+### Live code updates while developing
+
+Use the development override when you want saved local source edits to appear automatically:
+
+```sh
+mkdir -p packages/database/src/generated
+docker compose -f compose.yaml -f compose.dev.yaml up --build
+```
+
+Open the same [web URL](http://localhost:3000) or [Swagger UI](http://localhost:3001/docs). Next.js updates the page as you save; the API and worker recompile and restart. Shared source changes rebuild the affected packages and update their consumers. Compilation errors appear in the logs; correct the source to resume. Database contents survive these reloads.
+
+Development containers restart after watcher failures, including filesystem-watch errors while generated files are replaced. A restart can briefly interrupt the page or API; logs show the failure and recovery.
+
+This mode mounts the web's `app/`, the API/worker `src/` and their shared source directories read-only. The one-time `mkdir` creates an ignored mount point; generated Prisma files stay in container memory, with Linux dependencies and compiled output also kept inside containers. Private app env files are not mounted. Production-style startup without this override continues to use built images. The override works with Compose 2.20; it does not require Compose Watch.
+
+After changing dependencies, the lockfile, Dockerfiles, TypeScript/Next configuration or generated OpenAPI artifacts, rebuild explicitly:
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml up --build -d --wait
+```
+
+Root `.env` changes require the same command to recreate affected services. Use the same two `-f` options with `logs`, `ps` and `down`; for example, `docker compose -f compose.yaml -f compose.dev.yaml logs -f api worker`. Stop host `pnpm dev` before switching to Docker development, since both use the same ports.
+
 ### Logs, restart and shutdown
 
 | Action                                        | Command                                 |
@@ -108,7 +131,7 @@ Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files 
 | Rebuild after source or dependency changes    | `docker compose up --build -d --wait`   |
 | Stop and remove containers, keeping data      | `docker compose down`                   |
 
-PostgreSQL and Redis use named volumes, so your data survives normal stop, rebuild and shutdown commands. Avoid `docker compose down -v` unless you intend to erase the local data. Container apps do not hot-reload source edits; rebuild them with the command above.
+PostgreSQL and Redis use named volumes, so your data survives normal stop, rebuild and shutdown commands. Avoid `docker compose down -v` unless you intend to erase the local data. Production-style containers need a rebuild for source edits; use the development override above for automatic source updates.
 
 Use `localhost` in local browser URLs and host-side connection settings. Compose keeps numeric loopback addresses for host port publishing, and container health probes use IPv4 to match their listeners. These settings keep services local while avoiding differences in IPv4/IPv6 hostname resolution. Container listeners retain `0.0.0.0` so the Compose network can reach them.
 
@@ -123,6 +146,8 @@ Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `caro
 To run the apps with `pnpm dev` while keeping only PostgreSQL and Redis in Docker, follow [Run the application shells](#run-the-application-shells). That workflow uses `compose.local.yaml` to expose datastore ports to host tools. Full Docker startup uses `compose.yaml` alone. Do not run container apps and host development apps on the same ports.
 
 Run `pnpm docker:check` for an isolated image/build/start/restart check. It uses random published ports, verifies non-root users and datastore persistence, removes its own containers, and leaves its uniquely named test volumes intact. It never targets the development project's volumes.
+
+Run `pnpm docker:dev:check` to verify live app/shared-package edits and compile-error recovery against a temporary source copy. It uses separate images and random ports, preserves your source and running stack, and retains only its isolated data volumes after cleanup.
 
 ## Releases and hosted environments
 

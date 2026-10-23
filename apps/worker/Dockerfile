@@ -22,6 +22,16 @@ RUN pnpm exec turbo run build --filter=@flowboard/worker
 RUN --mount=type=cache,id=flowboard-pnpm,target=/pnpm/store \
     pnpm --filter @flowboard/worker deploy --prod --store-dir /pnpm/store /prod/worker
 
+FROM build AS development
+ENV CI=false NODE_ENV=development HOST=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
+COPY .gitignore .gitignore
+RUN find /repo -name node_modules -prune -o -exec chown node:node {} +
+USER node
+EXPOSE 3002
+HEALTHCHECK --interval=5s --timeout=3s --start-period=60s --retries=24 \
+    CMD node --input-type=module -e "import net from 'node:net';const s=net.connect({host:'127.0.0.1',port:Number(process.env.PORT)});s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));s.setTimeout(2000,()=>process.exit(1))"
+CMD ["pnpm", "exec", "turbo", "watch", "dev:docker", "--filter=@flowboard/worker", "--ui=stream"]
+
 FROM runtime AS runner
 WORKDIR /app
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3002

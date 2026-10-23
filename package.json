@@ -26,7 +26,8 @@
     "db:migrate": "turbo run db:migrate",
     "db:seed": "turbo run db:seed",
     "gen:api": "turbo run api:generate",
-    "openapi:check": "turbo run openapi:check"
+    "openapi:check": "turbo run openapi:check",
+    "docker:dev:check": "turbo run docker:dev:check"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",

@@ -23,7 +23,9 @@
     "test": "node --test --test-timeout=60000 test/bootstrap/*.test.mjs && node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
-    "docker:check": "node ../../scripts/check-compose.mjs"
+    "docker:check": "node ../../scripts/check-compose.mjs",
+    "dev:docker": "pnpm run dev",
+    "docker:dev:check": "node ../../scripts/check-compose-dev.mjs"
   },
   "dependencies": {
     "@flowboard/contracts": "workspace:*",

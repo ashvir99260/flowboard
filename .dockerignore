@@ -23,6 +23,7 @@
 docs
 .github
 scripts/check-compose.mjs
+scripts/check-compose-dev.mjs
 README.md
 ARCHITECTURE.md
 AGENTS.md

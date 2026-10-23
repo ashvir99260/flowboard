@@ -8,6 +8,9 @@
     "dev": {
       "env": ["NEXT_TELEMETRY_DISABLED", "PORT"]
     },
+    "dev:docker": {
+      "interruptible": false
+    },
     "test": {
       "env": ["NEXT_TELEMETRY_DISABLED"]
     }

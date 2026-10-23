@@ -15,7 +15,8 @@
     "lint:fix": "eslint --fix . --max-warnings=0",
     "test": "node --test --test-timeout=60000 test/*.test.mjs",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . --ignore-path ../../.prettierignore"
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
+    "dev:docker": "next dev --hostname 0.0.0.0"
   },
   "dependencies": {
     "@flowboard/api-client": "workspace:*",

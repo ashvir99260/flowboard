@@ -16,6 +16,23 @@
         "AUTH_ALLOW_INSECURE_HTTP",
         "LOG_LEVEL"
       ]
+    },
+    "dev:docker": {
+      "env": [
+        "HOST",
+        "PORT",
+        "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
+        "DEMO_SEED",
+        "NODE_ENV",
+        "REDIS_URL",
+        "API_DOCS",
+        "AUTH_SECRET",
+        "AUTH_ALLOWED_ORIGINS",
+        "AUTH_ALLOW_INSECURE_HTTP",
+        "LOG_LEVEL",
+        "TSC_WATCHFILE"
+      ]
     }
   }
 }

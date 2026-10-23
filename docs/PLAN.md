@@ -91,6 +91,8 @@ Host development uses `localhost` for application URLs, default listeners and lo
 
 Local API/worker development and start scripts load optional per-app `.env` files through Node's native loader, with process variables taking precedence (P02-19/D99). Compose uses root `.env` and Next.js its `.env.local`; private configuration is ignored and excluded from Docker. Examples supply the required local auth settings, and local API startup migrates/seeds against host-accessible Docker datastores.
 
+P02-21 adds an opt-in `compose.dev.yaml` for live code updates in Docker (D100). Development targets retain installed Linux dependencies and writable build output inside each container, mounting only authored source directories read-only. Next.js refreshes the web UI; dependency-aware Turbo watch rebuilds shared packages and restarts API/worker consumers. Release images and normal Compose remain immutable. Manifest, build-config and Dockerfile edits require an explicit rebuild; this works with the installed Compose 2.20 without a host tool upgrade.
+
 ### Module boundaries inside the API
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.
