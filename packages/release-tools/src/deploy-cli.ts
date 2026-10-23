@@ -9,7 +9,7 @@ const {
   GITHUB_REF: ref,
 } = process.env;
 if (process.env.CD_ENABLED !== 'true' || ref !== 'refs/heads/main')
-  throw new Error('Production deployment is not enabled for this context');
+  throw new Error('Preview deployment is not enabled for this context');
 if (
   !repository ||
   !token ||
@@ -39,12 +39,18 @@ await deployReleasedApps({
   sha,
   manifests,
   config,
-  providers,
+  providers: {
+    ...providers,
+    async vercel(manifest) {
+      const url = await providers.vercel(manifest);
+      process.stdout.write(`Web preview ready: ${url} (${manifest.tag})\n`);
+    },
+  },
   assertCurrent,
   assertReachable: (source) => github.assertReachable(source, sha),
 });
 process.stdout.write(
   manifests.length
-    ? `Deployed released applications: ${manifests.map((manifest) => manifest.tag).join(', ')}\n`
+    ? `Deployed released applications to preview: ${manifests.map((manifest) => manifest.tag).join(', ')}\n`
     : 'No published applications; deployment skipped.\n',
 );

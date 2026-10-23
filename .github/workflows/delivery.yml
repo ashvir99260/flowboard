@@ -88,14 +88,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
-    name: Deploy released applications
+    name: Deploy released applications to preview
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.CD_ENABLED == 'true'
     needs: release
     runs-on: ubuntu-24.04
     timeout-minutes: 50
-    environment: production
+    environment: preview
     concurrency:
-      group: flowboard-production-deployment
+      group: flowboard-preview-deployment
       cancel-in-progress: false
     permissions:
       contents: read
@@ -108,7 +108,7 @@ jobs:
           node-version: '22.23.2'
       - run: npm install --global pnpm@12.15.0
       - run: pnpm install --frozen-lockfile
-      - run: pnpm deploy:production
+      - run: pnpm deploy:preview
         env:
           CD_ENABLED: ${{ vars.CD_ENABLED }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,66 +1,72 @@
-# Continuous integration and deployment
+# Continuous integration and preview deployment
 
-**Later clarification:** This page describes the existing production-only implementation. It does not yet provide strict build-once promotion through four environments: the Vercel Git path rebuilds source. [PROMOTION.md](PROMOTION.md) defines the new future contract; keep provider CD disabled until the chosen path satisfies it.
-
-Implementation for P00-08, 23 October 2026. This extends the existing release workflow; it does not create provider accounts or database resources.
+The initial hosted environment is a **shared preview** on Vercel (web), Northflank (API, worker and Redis) and Neon (PostgreSQL), as requested on 23 October 2026. P00-13 replaces the earlier production-only CD target. The future build-once `dev → qa → stage → prod` flow remains separate in [PROMOTION.md](PROMOTION.md); it does not block this preview.
 
 ```mermaid
 flowchart LR
   PR[Pull request] --> Checks[Build / lint / types / tests / format]
-  Checks --> Docker[Compose health and persistence]
   Main[Merge to main] --> Checks
+  Checks --> Docker[Compose health and persistence]
   Docker --> Publish[Publish affected app images and releases]
-  Publish --> Gate[Production environment / CD_ENABLED]
-  Gate --> Web[Vercel: released web commit]
-  Gate --> API[Northflank: released API digest]
-  Gate --> Worker[Northflank: released worker digest]
+  Publish --> Gate[GitHub preview environment / CD_ENABLED]
+  Gate --> Web[Vercel preview: released web commit]
+  Gate --> API[Northflank preview API: released digest]
+  Gate --> Worker[Northflank preview worker: released digest]
+  API --> Neon[Neon preview PostgreSQL]
+  API --> Redis[Private Redis]
+  Worker --> Neon
+  Worker --> Redis
 ```
+
+Database/queue connections in this diagram describe the target topology. Current app shells do not yet use them; see the limits below.
 
 ## Deployment contract
 
-- CI runs on pull requests and main; pull requests cannot publish or deploy.
-- The existing serialized publisher stays authoritative for versions and immutable images.
-- A separate production deployment job runs only after successful release publication on main, and only when repository variable `CD_ENABLED=true`. Until credentials and target IDs are connected, it remains visibly skipped.
-- Reconcile the latest published release of each application whose source is verified as an ancestor of current main. Already-deployed versions are read-only skips. This recovers missed/failed deployments even when a later merge changes a different app; it never republishes an image.
-- Northflank receives the exact API/worker image digest. Vercel receives the exact released Git commit. No deployment uses the newest branch head or a mutable image tag.
-- Validate all needed settings before the first provider write. Missing credentials, API errors, failed rollouts and timeouts fail the job. No simulated deployment success.
-- Serialize production deployments. Refuse a stale workflow before provider writes so an older run cannot roll production back accidentally. Rollback remains an explicit provider operation to a known release.
-- Poll provider state until ready, with a bounded timeout. Reuse a matching ready/in-progress deployment on retry where the provider exposes its identity. Provider calls and clocks are tested at controlled boundaries.
-- PostgreSQL/Redis secrets stay on the hosts. CD requires deployment permissions, not database credentials. Automatic migrations remain P01-05 and are not faked here.
+- CI runs on pull requests and main; pull requests cannot publish or deploy this shared preview.
+- The serialized publisher remains authoritative for independent versions and immutable images.
+- A deployment job follows successful main publication only when repository variable `CD_ENABLED=true`. It uses the GitHub `preview` environment and `pnpm deploy:preview`. Absent configuration leaves it visibly skipped.
+- Reconcile each app's latest published release whose source is a verified ancestor of current main. This recovers missed deployments after a later merge changes another app. Matching ready deployments are reused without a new rollout.
+- Northflank receives the exact API/worker image digest. Vercel builds the exact released Git commit as a **preview**, without assigning production traffic. This is intentionally a source build, not four-environment artifact promotion.
+- Validate all required settings before any provider writes. Missing credentials, invalid identities, provider errors, failed rollouts and timeouts fail the job.
+- Serialize preview deployments and refuse stale main workflows before mutations and during readiness polling. A stale Vercel build can finish at its unique preview URL, but it cannot acquire a production alias through this workflow.
+- PostgreSQL/Redis secrets stay on the hosts. CD needs deployment permissions, not database credentials. Automatic migrations remain P01-05.
 
-## Connection boundary
+## Connect the shared preview
 
-The repository has no Vercel or Northflank deployment credentials configured as of this task's start. Code, tests and workflow wiring can be completed now; a live rollout requires the user to connect provider IDs/tokens and enable CD. P00-09 records that live acceptance separately. P00-07 remains the first main-release verification and does not block writing the CD integration on the open PR.
+1. Create the Vercel project and **preview-only** Northflank services using [DELIVERY.md](DELIVERY.md). Use a dedicated `flowboard-preview` Vercel project, linked to this repository with root `apps/web`. Vercel forces the first deployment to production even for preview requests. CI checks unfiltered project history and refuses an empty project before writing; complete the explicitly reviewed bootstrap in the hosting guide first. The committed `vercel.json` disables automatic Git deployments, so CI controls which released SHA builds. Keep Northflank automatic image/tag updates disabled.
+2. Create a GitHub environment named `preview`, restricted to `main`. Add the two tokens below as environment secrets. Add the resource IDs as repository variables. Use least-privilege tokens for the selected preview project/services.
+3. Configure the preview services' runtime secrets, including the region-matched Neon database and private Redis. Do not reuse production data or credentials. Northflank currently requires a payment method even for Sandbox resources; complete that step in the provider UI, with the free allocation selected.
+4. Merge the release workflow to main when ready. Set repository variable `CD_ENABLED=true` only after the targets and secrets exist. The next passing main run deploys the published releases; the workflow can also be dispatched manually on current main. Deployment retries do not mint new versions.
 
-## Enable production CD
+| Name                           | Kind                         | Purpose                                                   |
+| ------------------------------ | ---------------------------- | --------------------------------------------------------- |
+| `VERCEL_TOKEN`                 | Preview environment secret   | Read project/deployments and create previews              |
+| `NORTHFLANK_API_TOKEN`         | Preview environment secret   | Read/update the selected preview services                 |
+| `VERCEL_PROJECT_ID`            | Repository variable          | Preview web project ID                                    |
+| `VERCEL_TEAM_ID`               | Optional repository variable | Owning team; omit for a personal account                  |
+| `NORTHFLANK_PROJECT_ID`        | Repository variable          | Preview project ID                                        |
+| `NORTHFLANK_API_SERVICE_ID`    | Repository variable          | Preview external-image API service                        |
+| `NORTHFLANK_WORKER_SERVICE_ID` | Repository variable          | Preview external-image worker service, different from API |
+| `CD_ENABLED`                   | Repository variable          | Exactly `true` enables the shared preview job             |
 
-1. Create the existing Vercel project and Northflank API/worker services as described in [DELIVERY.md](DELIVERY.md). Keep the Vercel project linked to this GitHub repository and its root at `apps/web`; this lets the REST API build an exact commit. `apps/web/vercel.json` disables competing automatic Git deployments. Disable Vercel rolling releases and Northflank automatic image/tag updates for these services.
-2. Create a GitHub environment named `production`, restricted to `main`. Add the two tokens as environment secrets. Add the target IDs as repository variables (the optional Vercel team ID is omitted for personal resources).
-3. Set repository variable `CD_ENABLED` to `true` only after all three targets and their runtime secrets are ready. It is disabled when the variable is absent. The next successful main run reconciles the latest published releases. You can also run the existing workflow manually on current main; reruns never allocate a new app version just for deployment.
+GitHub supplies its token, repository ID and workflow SHA. Never paste provider tokens into a PR, issue, file or chat. Database URLs, Redis credentials and later auth keys belong in provider runtime secrets. Vercel receives only settings it needs; no database or Redis secret belongs in the browser.
 
-| Name                           | Kind                          | Purpose                                                                     |
-| ------------------------------ | ----------------------------- | --------------------------------------------------------------------------- |
-| `VERCEL_TOKEN`                 | Production environment secret | Read/create deployments and promote the selected project                    |
-| `NORTHFLANK_API_TOKEN`         | Production environment secret | Read/update the selected services; Services General Read/Update permissions |
-| `VERCEL_PROJECT_ID`            | Repository variable           | Existing web project ID                                                     |
-| `VERCEL_TEAM_ID`               | Optional repository variable  | Team owning the Vercel project; omit for personal account                   |
-| `NORTHFLANK_PROJECT_ID`        | Repository variable           | Existing Northflank project                                                 |
-| `NORTHFLANK_API_SERVICE_ID`    | Repository variable           | Existing external-image API service                                         |
-| `NORTHFLANK_WORKER_SERVICE_ID` | Repository variable           | Existing external-image worker service, different from API                  |
-| `CD_ENABLED`                   | Repository variable           | Exactly `true` enables the production job                                   |
+## Readiness and recovery
 
-GitHub supplies the read-only GitHub token, repository ID and current workflow SHA automatically. Never paste provider tokens into an issue, PR, file or chat. Database URLs, Redis credentials and future auth secrets remain in the provider's runtime secret settings, not in this deployment job.
+Northflank updates only the external image, preserving replica count, registry credentials, ports and runtime variables. Readiness requires the requested digest, deployment state `COMPLETED` and a deployed image URL containing that digest. Missing digest evidence times out.
 
-## Verification and recovery
+After the explicit initial project bootstrap, Vercel creates a preview by omitting `target` from the deployment request and disabling automatic custom-domain assignment. Retry lookup filters previews by released SHA and metadata, including providers that represent previews as a null target. Polling verifies preview identity, the release metadata, `READY` and a generated `*.vercel.app` URL before printing it. No production promotion endpoint is called. Failed, cancelled or blocked builds fail the job; an in-progress matching preview is polled on retry. Project protection may require Vercel sign-in to open the URL; readiness does not imply anonymous access.
 
-Northflank updates only the external deployment image and preserves replica count and saved registry credentials. It does not overwrite runtime variables or ports. Readiness requires the requested image plus `COMPLETED` and a deployed `imageUrl` containing the expected digest. If that field is absent or cannot prove the digest, the job times out rather than claiming success.
+Each provider wait is bounded to 15 minutes. If main changes mid-run, rerun on current main. A failed Northflank rollout may need a provider-side correction or restart. There is no automatic destructive rollback, database migration or production promotion.
 
-Vercel creates a production build with per-deployment domain assignment disabled. After `READY`, it rechecks current main and promotes that exact deployment. The job requires matching production alias completion; it accepts a skipped repeat promotion only when the exact deployment is already current. Failed/blocked/cancelled builds, failed promotions and timeouts fail the job. Rolling releases are rejected because deferred promotion would weaken the stale-run check.
+## Current limits and live acceptance
 
-Each provider wait is bounded to 15 minutes. Existing matching releases/deployments are reused; a later current-main workflow also recovers pending versions from earlier commits. If a new main commit arrives mid-run, the old run stops before further mutations. A failed Northflank rollout may need a provider-side fix or restart; inspect and resolve its status, then rerun current main. An in-progress matching rollout is resumed by polling. Failed Vercel builds remain staged and receive no production traffic. There is no automatic database migration or destructive rollback.
+The deployed web is a foundation page. The API has TCP liveness and returns 404 for HTTP routes; the worker exposes private TCP liveness and does not consume jobs. Auth, board, migrations, seed data and queue processing are still planned. A hosted shell is not a completed product preview.
+
+P00-14 records actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
 
 ## References checked 23 October 2026
 
-- [Northflank update semantics](https://northflank.com/docs/v1/api/use-the-api#update-resources-safely), [service update](https://northflank.com/docs/v1/api/project/services/patch-deployment-service), [service status](https://northflank.com/docs/v1/api/project/services/get-service)
-- [Vercel deployment creation](https://vercel.com/docs/rest-api/deployments/create-a-new-deployment), [deployment listing](https://vercel.com/docs/rest-api/deployments/list-deployments), [production promotion](https://vercel.com/docs/rest-api/projects/point-production-traffic-to-a-given-deployment)
-- [Vercel staged deployment option](https://github.com/vercel/vercel/blob/main/packages/cli/src/commands/deploy/index.ts), [promotion status](https://github.com/vercel/vercel/blob/main/packages/cli/src/commands/promote/status.ts), [Git deployment configuration](https://vercel.com/docs/project-configuration/git-configuration)
+- [Vercel first-deployment behavior](https://vercel.com/docs/deployments/environments#first-deployment), [Vercel preview creation](https://vercel.com/docs/rest-api/deployments/create-a-new-deployment), [deployment listing](https://vercel.com/docs/rest-api/deployments/list-deployments), [generated URLs](https://vercel.com/docs/deployments/generated-urls), [deployment protection](https://vercel.com/docs/deployment-protection)
+- [Northflank update semantics](https://northflank.com/docs/v1/api/use-the-api#update-resources-safely), [service update](https://northflank.com/docs/v1/api/project/services/patch-deployment-service), [service status](https://northflank.com/docs/v1/api/project/services/get-service), [Sandbox limits and account requirements](https://northflank.com/docs/v1/application/billing/pricing-on-northflank)
+- [Neon regions](https://neon.com/docs/introduction/regions)

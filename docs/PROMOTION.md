@@ -2,6 +2,10 @@
 
 Status: agreed direction from the user's 23 October 2026 clarification; future four-environment execution is planned, not implemented. This document supersedes the assumption that deploying the same Git commit is sufficient artifact promotion.
 
+## Initial preview comes first
+
+The user subsequently clarified that an initial hosted preview should run now on Vercel, Northflank and Neon. [CI_CD.md](CI_CD.md) defines that shared preview: Vercel builds a released commit as a preview, and Northflank runs released API/worker digests. This initial source-build exception is intentional and does not claim build-once promotion. P00-13/P00-14 implement and verify it without waiting for P00-11/P00-12. No production deployment is enabled by this preview workflow.
+
 ## What stays separate
 
 Docker Compose is the local development/test environment for web, API, worker, PostgreSQL and Redis. It does not require every hosted environment to use Docker. The portable Dockerfiles remain useful, but the production artifact format and host must support the same immutable bytes across environments.
@@ -35,7 +39,7 @@ flowchart LR
 | Concern               | Contract                                                                                                                                                             |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Node execution mode   | `NODE_ENV=production` for every hosted target; do not set it to `qa` or `stage`                                                                                      |
-| Environment identity  | Separate `APP_ENV=dev                                                                                                                                                | qa  | stage | prod`; local tooling may use `local` |
+| Environment identity  | Use `APP_ENV` with `dev`, `qa`, `stage` or `prod`; the initial preview may use `preview`, and local tooling may use `local`                                          |
 | Server settings       | Load and validate database/Redis URLs, auth settings and service origins when the process starts; inject through the host's runtime configuration/secrets            |
 | Browser settings      | Serve only a typed, explicitly allowed public configuration from dynamic Next.js server rendering/bootstrap; initialize the generated client from that configuration |
 | Browser secrets       | Never expose database URLs, Redis credentials, signing keys or provider tokens                                                                                       |
@@ -50,16 +54,16 @@ Each environment needs isolated database data and Redis/queue namespaces or inst
 
 ## Current implementation versus this target
 
-| Current component                                        | Compatibility                                                                             |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Local Compose and per-app Dockerfiles                    | Keep for local use and optional portable packaging                                        |
-| Independent release tags and digest manifests            | Reuse as the foundation                                                                   |
-| Northflank API/worker deployment by digest               | Preserves image identity for a given release                                              |
-| Vercel deployment from `gitSource`                       | Builds the source again; **does not satisfy build-once promotion**                        |
-| Production-only CD job and latest-release reconciliation | Does not implement ordered four-environment promotion of an explicitly selected candidate |
-| Public runtime bootstrap                                 | Not implemented; introduce before environment-specific browser configuration is needed    |
+| Current component                                       | Compatibility                                                                             |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Local Compose and per-app Dockerfiles                   | Keep for local use and optional portable packaging                                        |
+| Independent release tags and digest manifests           | Reuse as the foundation                                                                   |
+| Northflank API/worker deployment by digest              | Preserves image identity for a given release                                              |
+| Vercel deployment from `gitSource`                      | Builds the source again; **does not satisfy build-once promotion**                        |
+| Shared-preview CD job and latest-release reconciliation | Does not implement ordered four-environment promotion of an explicitly selected candidate |
+| Public runtime bootstrap                                | Not implemented; introduce before environment-specific browser configuration is needed    |
 
-The existing provider CD remains disabled unless `CD_ENABLED=true`. Do not enable it expecting the four-environment contract above. P00-08 is historical evidence of the earlier production-only design, not proof of this new requirement.
+The shared preview can be enabled with `CD_ENABLED=true` once its own targets and credentials are ready. It does not provide the four-environment contract above. P00-08 is historical evidence of the earlier production-only design; P00-13 supersedes its target without claiming future promotion is implemented.
 
 ## Hosting decision before implementation
 
