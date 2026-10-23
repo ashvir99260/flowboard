@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { setTimeout } from 'node:timers/promises';
 
-import { afterAll, beforeAll, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, expect, jest, test } from '@jest/globals';
 
 import { createIdentityRepository } from '../dist/index.js';
 
@@ -42,6 +41,58 @@ afterAll(async () => {
   await postgres?.client.end();
   postgres?.stop();
 });
+
+test.each([60_000, -60_000])(
+  'refresh creation and rotation use database time with host skew %i ms',
+  async (skew) => {
+    const {
+      rows: [before],
+    } = await postgres.client.query('SELECT clock_timestamp()::timestamptz(3) AS now');
+    jest.useFakeTimers({
+      now: Date.now() + skew,
+      doNotFake: [
+        'hrtime',
+        'nextTick',
+        'performance',
+        'queueMicrotask',
+        'setImmediate',
+        'clearImmediate',
+        'setInterval',
+        'clearInterval',
+        'setTimeout',
+        'clearTimeout',
+      ],
+    });
+    try {
+      const initial = await fresh();
+      const replacement = digest();
+      const {
+        rows: [created],
+      } = await postgres.client.query(
+        'SELECT created_at, updated_at, clock_timestamp()::timestamptz(3) AS now FROM refresh_sessions WHERE token_digest=$1',
+        [initial.credential.tokenDigest],
+      );
+      expect(created.created_at.getTime()).toBeGreaterThanOrEqual(before.now.getTime());
+      expect(created.created_at.getTime()).toBeLessThanOrEqual(created.now.getTime());
+      expect(created.updated_at).toEqual(created.created_at);
+      expect((await identities.rotate(initial.credential.tokenDigest, replacement)).status).toBe(
+        'rotated',
+      );
+      expect(await identities.rotate(initial.credential.tokenDigest, digest())).toEqual({
+        status: 'reused',
+      });
+      const {
+        rows: [active],
+      } = await postgres.client.query(
+        'SELECT count(*)::int AS count FROM refresh_sessions WHERE family_id=$1 AND revoked_at IS NULL',
+        [initial.credential.familyId],
+      );
+      expect(active.count).toBe(0);
+    } finally {
+      jest.useRealTimers();
+    }
+  },
+);
 
 test('rotation persists lineage and preserves family expiry; old access identity remains valid', async () => {
   const initial = await fresh();
@@ -149,7 +200,10 @@ test('expiry and revocation cannot be extended; missing logout remains idempoten
       [expired.credential.tokenDigest],
     )
   ).rows[0].deadline;
-  await setTimeout(Math.max(1, deadline.getTime() - Date.now() + 50));
+  await postgres.client.query(
+    'SELECT pg_sleep(GREATEST(0, EXTRACT(EPOCH FROM ($1::timestamptz - clock_timestamp()))) + 0.05)',
+    [deadline],
+  );
   expect(await identities.rotate(expired.credential.tokenDigest, digest())).toEqual({
     status: 'invalid',
   });

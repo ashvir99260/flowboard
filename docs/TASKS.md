@@ -476,14 +476,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: organize api modules and shared code`.
   - **Completion evidence:** [P02-13](evidence/P02-13.md): layout/semantic checks, 324 tests and build/lint/type/contract/Docker gates pass; independent refresh clock finding is tracked in P02-14.
 
-- [ ] **P02-14 — Use database time for refresh-session creation**
+- [x] **P02-14 — Use database time for refresh-session creation**
   - **Goal:** Keep session lifecycle timestamps consistent when host and database clocks differ.
   - **Requirements:** R125; preserves refresh rotation/replay safety.
-  - **Files:** `packages/database/prisma/schema.prisma`, refresh integration tests, decisions and evidence.
+  - **Files:** `packages/database/prisma/schema.prisma`, the session-default migration, refresh integration tests, decisions and evidence.
   - **Dependencies:** P02-13; discovered by its full-suite verification.
-  - **Acceptance:** Session audit defaults use database time instead of Prisma's host-generated now(). A deterministic host-clock-skew test proves create/rotate/replay obey lifecycle constraints. Keep fixed expiry, row locking, replay revocation and all DB constraints. Existing SQL defaults already match; verify whether a migration is necessary.
+  - **Acceptance:** Session audit defaults use database time instead of Prisma's host-generated now(). A deterministic host-clock-skew test proves create/rotate/replay obey lifecycle constraints. Keep fixed expiry, row locking, replay revocation and all DB constraints. Check in Prisma's two default reassertions without rewriting existing rows.
   - **Validation:** Observe clock-skew regression fail before the change; run real PostgreSQL refresh tests, Prisma schema validation, root build/lint/typecheck/test/format/OpenAPI/Docker checks.
   - **Commit:** `fix: use database time for refresh sessions`.
+  - **Completion evidence:** [P02-14](evidence/P02-14.md): deterministic clock-skew red/green, preserved migration data, 326 tests and all build/lint/type/contract/format/Docker checks pass.
 
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
