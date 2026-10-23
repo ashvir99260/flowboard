@@ -616,9 +616,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 4 — Scoped statuses
 
-- [ ] **P04-01 — Pure status resolution with stable identity**
+- [x] **P04-01 — Pure status resolution with stable identity**
   - **Goal:** Define one algorithm for API decisions and UI previews.
-  - **Files:** `packages/contracts/src/{statuses,status-resolution}.ts`, `packages/contracts/test/status-resolution.test.ts`.
+  - **Files:** `packages/contracts/src/{statuses,status-resolution}.ts`, `packages/contracts/test/status-resolution.test.mjs`.
   - **Dependencies:** P03-03.
   - **Acceptance:** `resolveStatuses` merges root-to-leaf by key; display overrides preserve identity/category; hidden/unhidden provenance and deterministic ordering are explicit. Invalid required-category sets return typed validation issues.
   - **Validation:** Known array fixtures for inherited/overridden/added/hidden/restored keys, immutable IDs, tied positions, missing categories and sibling isolation; standard gate.

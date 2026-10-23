@@ -155,7 +155,7 @@ Permission evaluation walks workspace membership, then space → folder → list
 
 ### Status resolution
 
-`resolveStatuses({ scopes, identities, overrides }): ResolvedStatus[]` is a pure contracts export. Scopes are supplied root-to-leaf: workspace, space, folder, list.
+`resolveStatuses({ scopes, identities, overrides }): {success:true,items:ResolvedStatus[]} | {success:false,issues:ValidationIssue[]}` is a pure contracts export. Scopes are supplied root-to-leaf: workspace, space, folder, list.
 
 1. Start with an empty map keyed by immutable status key.
 2. Apply each scope's records. Root/new definitions establish a stable identity and all display properties. Overrides patch only supplied name/color/position; category and identity never change.
