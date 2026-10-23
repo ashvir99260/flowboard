@@ -1,5 +1,6 @@
 import { ErrorEnvelopeSchema } from '@flowboard/contracts';
 import { afterAll, beforeAll, expect, jest, test } from '@jest/globals';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import request from 'supertest';
 
 import { createApplication } from '../../../dist/application.js';
@@ -12,6 +13,11 @@ beforeAll(async () => {
 });
 afterAll(async () => {
   await app?.close();
+});
+
+test('the HTTP application uses the Express adapter', () => {
+  expect(app.getHttpAdapter()).toBeInstanceOf(ExpressAdapter);
+  expect(app.getHttpAdapter().getType()).toBe('express');
 });
 
 test('invalid server output fails with a sanitized 500', async () => {

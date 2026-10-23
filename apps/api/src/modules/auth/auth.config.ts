@@ -1,4 +1,4 @@
-import { readBooleanSetting } from '../../utils/read-boolean-setting.js';
+import { readBooleanSetting } from '../../core/utils/read-boolean-setting.js';
 
 export interface AuthSettings {
   allowedOrigins: string[];

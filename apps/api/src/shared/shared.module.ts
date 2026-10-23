@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
-import { HttpExceptionFilter } from '../common/filters/http-exception.filter.js';
+import { HttpExceptionFilter } from '../core/common/filters/http-exception.filter.js';
 
 import { LoggingModule } from './logging/logging.module.js';
 

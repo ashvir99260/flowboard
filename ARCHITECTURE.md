@@ -77,15 +77,15 @@ Authored workspaces and root tooling use native ESM (D95). Module manifests and 
 
 The planned build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
 
-Features live under `apps/api/src/modules/` (D93). Auth and platform remain flat (D89): grouped DTOs and auth configuration sit beside controllers/services/modules, with colocated unit/integration tests (D90/D92). `src/config/` holds reusable settings, `src/utils/` pure helpers, and `src/shared/` SharedModule and logging. SharedModule registers common HTTP filters/validation/serialization once; `src/common/` retains their implementations plus decorators, DTO helpers and Swagger support. Shared test helpers and process tests keep their existing grouping.
+Features live under `apps/api/src/modules/` (D93). Auth and platform remain flat (D89): grouped DTOs and auth configuration sit beside controllers/services/modules, with colocated unit/integration tests (D90/D92). D96 groups foundations in `src/core/`: `config` holds reusable settings, `utils` pure helpers, and `common` HTTP helpers and injection tokens. `src/shared/` owns SharedModule and logging; it registers core HTTP filters/validation/serialization once. Core cannot import shared/features, and shared cannot import features; shared ESLint checks these directions. The common runtime/spec factory explicitly uses Express. Prisma stays in `packages/database`. Shared test helpers and process tests keep their existing grouping. See the [adapted feature-first guide](docs/BACKEND_GUIDELINES.md).
 
 ## Module responsibility and data ownership
 
 | Owner                                                          | What belongs here                                                                             |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| API `config` / `utils`                                         | Reusable application/Redis settings / pure helpers                                            |
+| API `core/config` / `core/utils`                               | Reusable application/Redis settings / pure helpers                                            |
 | API `shared`                                                   | SharedModule validation/serialization/filter wiring and shared logging providers              |
-| API `common`                                                   | HTTP decorators, DTO helpers, sanitized errors/filters and Swagger support                    |
+| API `core/common`                                              | HTTP decorators, tokens, DTO helpers, sanitized errors/filters and Swagger support            |
 | API `modules/platform`                                         | Liveness/readiness and dependency probes                                                      |
 | API `modules/auth`                                             | Credentials, session rotation, JWT verification; narrow global identity repository            |
 | API `modules/workspaces`                                       | Membership, invitations, verified workspace switching, last-admin protection                  |

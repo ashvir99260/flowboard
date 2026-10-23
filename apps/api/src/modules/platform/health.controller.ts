@@ -3,10 +3,10 @@ import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { PublicRoute } from '../../common/decorators/public.decorator.js';
-import { EmptyQueryDto } from '../../common/dto/empty-query.dto.js';
-import { ApiException } from '../../common/errors/api-exception.js';
-import { documentedError, RequestIdHeaders } from '../../common/swagger/api-documentation.js';
+import { PublicRoute } from '../../core/common/decorators/public.decorator.js';
+import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
+import { ApiException } from '../../core/common/errors/api-exception.js';
+import { documentedError, RequestIdHeaders } from '../../core/common/swagger/api-documentation.js';
 
 import { DependencyProbeKey } from './dependency-probe.js';
 import { LivenessResponseDto, ReadinessResponseDto } from './health.response.dto.js';

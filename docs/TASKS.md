@@ -496,6 +496,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: enforce esm across the workspace`.
   - **Completion evidence:** [P02-15](evidence/P02-15.md): native ESM output audit, compiler/lint red-green fixtures, 329 tests and all build/type/format/contract/Docker checks pass.
 
+- [x] **P02-16 — Adopt feature-first core layers with Express**
+  - **Goal:** Apply the requested Medium architecture to existing foundations while keeping Express and Flowboard's package boundaries.
+  - **Requirements:** R127; preserve R120–R124 and R126.
+  - **Files:** `apps/api/src/{core,modules,shared}/**`, `application.ts`, `main.ts`, affected API test imports, `packages/config-eslint/src/boundaries.mjs`, boundary fixtures, architecture/rule/plan/decision/matrix docs and task evidence.
+  - **Dependencies:** P02-15; prioritized by the user's architecture request before P02-03.
+  - **Acceptance:** Foundation helpers/configuration live in `core/{common,config,utils}`; feature modules stay flat where requested; shared providers retain one registration/lifecycle. Core cannot depend on shared/features and shared cannot depend on features. Use an explicit ExpressAdapter for the common runtime/spec application factory. Keep Prisma in `packages/database`, preserve routes/contracts and avoid empty aggregator modules or compatibility shims.
+  - **Validation:** Failing/passing import-boundary fixtures, Express HTTP regression, clean build and unchanged generated contracts; root build/lint/typecheck/test/format/OpenAPI checks and isolated Docker startup/restart checks (G01–G07, G11 as applicable).
+  - **Commit:** `refactor: adopt feature-first core layers`.
+  - **Completion evidence:** [P02-16](evidence/P02-16.md): guarded layer directions, explicit Express, preserved contracts and flat features; 340 tests and all build/lint/type/format/contract/Docker gates pass.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/modules/workspaces/**`, `apps/api/src/modules/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

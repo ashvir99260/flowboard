@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 
-import { readApplicationConfig } from '../../../dist/config/application.config.js';
+import { readApplicationConfig } from '../../../dist/core/config/application.config.js';
 
 const environment = {
   DATABASE_URL: 'postgresql://example.test/flowboard',

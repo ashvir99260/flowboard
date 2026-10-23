@@ -124,6 +124,21 @@ export default {
               workspaceName,
             ),
           );
+      if (resolved && owner.group === 'apps' && owner.name === 'api' && target?.name === 'api') {
+        const sourceRoot = path.join(owner.directory, 'src');
+        const fromLayer = path.relative(sourceRoot, filename).split(path.sep)[0];
+        const toLayer = path.relative(sourceRoot, resolved).split(path.sep)[0];
+        if (
+          (fromLayer === 'core' && ['shared', 'modules'].includes(toLayer)) ||
+          (fromLayer === 'shared' && toLayer === 'modules')
+        ) {
+          report(
+            node,
+            `API ${fromLayer} cannot import ${toLayer}; dependencies point toward core.`,
+          );
+          return;
+        }
+      }
       if (!target || target.name === owner.name) return;
       if (resolved) {
         report(

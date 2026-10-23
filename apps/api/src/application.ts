@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { SilentLogger } from '@flowboard/logger';
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
@@ -22,6 +23,7 @@ export async function createApplication(
   const logger = options.logger ?? SilentLogger;
   const app = await NestFactory.create<NestExpressApplication>(
     AppModule.forProbe(probe, options.auth, logger),
+    new ExpressAdapter(),
     {
       bodyParser: false,
       logger: options.logger ? new NestLogger(logger) : false,

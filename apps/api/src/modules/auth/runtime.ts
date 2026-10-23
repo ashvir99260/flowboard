@@ -4,8 +4,8 @@ import { createIdentityRepository } from '@flowboard/database';
 import { SilentLogger } from '@flowboard/logger';
 import { Redis } from 'ioredis';
 
-import { ApiException } from '../../common/errors/api-exception.js';
-import { RedisConnectionOptions } from '../../config/redis.config.js';
+import { ApiException } from '../../core/common/errors/api-exception.js';
+import { RedisConnectionOptions } from '../../core/config/redis.config.js';
 
 import type { AuthSettings } from './auth.config.js';
 import type { Logger } from '@flowboard/logger';
