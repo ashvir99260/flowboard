@@ -3,6 +3,8 @@ import 'reflect-metadata';
 import { initializeDatabase } from '@flowboard/database';
 
 import { createApplication } from './application.js';
+import { createAuthRuntime } from './auth/runtime.js';
+import { readAuthSettings } from './auth/settings.js';
 import { runtimeProbe } from './platform/dependency-probe.js';
 
 async function bootstrap(): Promise<void> {
@@ -17,6 +19,7 @@ async function bootstrap(): Promise<void> {
   if (process.env.API_DOCS && !['true', 'false'].includes(process.env.API_DOCS)) {
     throw new Error('API_DOCS must be true or false');
   }
+  const authSettings = readAuthSettings(process.env);
   {
     if (process.env.DEMO_SEED && !['true', 'false'].includes(process.env.DEMO_SEED)) {
       throw new Error('DEMO_SEED must be true or false');
@@ -30,6 +33,7 @@ async function bootstrap(): Promise<void> {
     });
   }
   const { app } = await createApplication(runtimeProbe(databaseUrl, redisUrl), {
+    auth: createAuthRuntime(databaseUrl, redisUrl, authSettings),
     exposeDocs:
       process.env.API_DOCS === 'true' ||
       (process.env.API_DOCS === undefined && process.env.NODE_ENV !== 'production'),

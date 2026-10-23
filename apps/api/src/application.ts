@@ -8,23 +8,37 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { AppModule } from './app.module.js';
 
+import type { AuthRuntime } from './auth/runtime.js';
 import type { DependencyProbe } from './platform/dependency-probe.js';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export async function createApplication(
   probe: DependencyProbe,
-  options: { exposeDocs?: boolean } = {},
+  options: { auth?: AuthRuntime; exposeDocs?: boolean } = {},
 ) {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.forProbe(probe), {
-    bodyParser: false,
-    logger: false,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule.forProbe(probe, options.auth),
+    {
+      bodyParser: false,
+      logger: false,
+    },
+  );
   try {
     app.use((_request: IncomingMessage, response: ServerResponse, next: () => void) => {
       response.setHeader('X-Request-Id', randomUUID());
       next();
     });
+    app.use('/v1/auth', (_request: IncomingMessage, response: ServerResponse, next: () => void) => {
+      response.setHeader('Cache-Control', 'no-store');
+      next();
+    });
+    if (options.auth)
+      app.enableCors({
+        origin: options.auth.settings.allowedOrigins,
+        credentials: true,
+        exposedHeaders: ['X-Request-Id'],
+      });
     app.useBodyParser('json', { limit: '256kb' });
     app.setGlobalPrefix('v1', { exclude: ['health/live', 'health/ready'] });
     const document = cleanupOpenApiDoc(
@@ -35,6 +49,7 @@ export async function createApplication(
           .setDescription('Workspace-scoped project management API')
           .setVersion('1.0.0')
           .addTag('Health', 'Service liveness and readiness')
+          .addTag('Authentication', 'Account and session lifecycle')
           .addBearerAuth(undefined, 'access-token')
           .addCookieAuth('flowboard_refresh', undefined, 'refresh-cookie')
           .build(),

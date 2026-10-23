@@ -29,13 +29,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
     if (exception instanceof DatabaseError) {
       status =
-        exception.code === 'INTERNAL_ERROR'
-          ? 500
-          : exception.code === 'NOT_FOUND'
-            ? 404
-            : exception.code === 'MEMBERSHIP_REQUIRED'
-              ? 403
-              : 400;
+        exception.code === 'EMAIL_IN_USE'
+          ? 409
+          : exception.code === 'UNAUTHENTICATED'
+            ? 401
+            : exception.code === 'SERVICE_UNAVAILABLE'
+              ? 503
+              : exception.code === 'INTERNAL_ERROR'
+                ? 500
+                : exception.code === 'NOT_FOUND'
+                  ? 404
+                  : exception.code === 'MEMBERSHIP_REQUIRED'
+                    ? 403
+                    : 400;
     }
     let error = failures[status] ?? failures[500]!;
     let details: ValidationIssue[] | undefined;
@@ -53,9 +59,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
           path: issue.path.map((part) => (typeof part === 'symbol' ? String(part) : part)),
         }));
     }
-    const response = host
-      .switchToHttp()
-      .getResponse<{ status(code: number): { json(body: unknown): void } }>();
+    const response = host.switchToHttp().getResponse<{
+      setHeader(name: string, value: string): void;
+      status(code: number): { json(body: unknown): void };
+    }>();
+    if (status === 429 && exception instanceof ApiException && exception.retryAfterSeconds)
+      response.setHeader('Retry-After', String(exception.retryAfterSeconds));
     response.status(status).json({ error: { ...error, ...(details ? { details } : {}) } });
   }
 }

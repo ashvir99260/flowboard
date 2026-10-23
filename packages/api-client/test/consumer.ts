@@ -12,3 +12,12 @@ export function consumeHealth(live: GetLivenessResponse, ready: GetReadinessResp
     readyStatus,
   };
 }
+
+export function consumeAuth(
+  input: import('../src/index.js').LogInData['body'],
+  response: import('../src/index.js').LogInResponse,
+) {
+  const password: string = input.password;
+  const role: 'admin' | 'member' | undefined = response.data.activeWorkspace?.role;
+  return { password, role };
+}

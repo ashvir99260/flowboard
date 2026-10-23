@@ -41,11 +41,11 @@ NEXT_TELEMETRY_DISABLED=1 pnpm dev
 
 Open [the setup page](http://localhost:3000). Next.js reloads page edits; the API and worker compile with TypeScript and restart after successful changes. Stop all three with Ctrl+C. To run one app, use `pnpm dev --filter=@flowboard/web`, `pnpm dev --filter=@flowboard/api` or `pnpm dev --filter=@flowboard/worker`.
 
-| Process | Default address         | Current behavior                                                |
-| ------- | ----------------------- | --------------------------------------------------------------- |
-| Web     | `http://127.0.0.1:3000` | Static setup page; no login or task data yet.                   |
-| API     | `http://127.0.0.1:3001` | Typed liveness/readiness; Swagger UI at `/docs` in development. |
-| Worker  | TCP `127.0.0.1:3002`    | Process liveness only; queue processing arrives in P11-02.      |
+| Process | Default address         | Current behavior                                                    |
+| ------- | ----------------------- | ------------------------------------------------------------------- |
+| Web     | `http://127.0.0.1:3000` | Static setup page; no login or task data yet.                       |
+| API     | `http://127.0.0.1:3001` | Signup/login, JWT guard, health and development Swagger at `/docs`. |
+| Worker  | TCP `127.0.0.1:3002`    | Process liveness only; queue processing arrives in P11-02.          |
 
 The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; set `HOSTNAME=127.0.0.1` to restrict it locally. The API requires `DATABASE_URL` and `REDIS_URL`, migrates before listening and serves `/health/live` and dependency-aware `/health/ready`. `API_DOCS=true` enables `/docs`; it defaults on in development and off in hosted production. Local Compose explicitly enables it.
 
@@ -63,7 +63,7 @@ This builds separate web, API and worker images and starts PostgreSQL and Redis.
 
 The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API health checks PostgreSQL and Redis with bounded timeouts; worker health remains process liveness until queue processing in P11-02. No successful domain response is provided yet.
 
-Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `carol@example.com` (members), plus `dan@example.com` in a second tenant. Their development-only password is `FlowboardDemo123!`, stored as individually salted Argon2id hashes. Alice is also a member of the second tenant. The main tenant contains 24 tasks across three lists, four field definitions across all four scopes, inherited/overridden statuses, one private list and one list denying Bob. The second tenant has three tasks. Login endpoints are the next authentication task.
+Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `carol@example.com` (members), plus `dan@example.com` in a second tenant. Their development-only password is `FlowboardDemo123!`, stored as individually salted Argon2id hashes. Alice is also a member of the second tenant. The main tenant contains 24 tasks across three lists, four field definitions across all four scopes, inherited/overridden statuses, one private list and one list denying Bob. The second tenant has three tasks. Use `POST /v1/auth/login` with `{ "email": "alice@example.com", "password": "FlowboardDemo123!" }` and an allowed `Origin` header (for example `http://localhost:3000`). `POST /v1/auth/signup` also accepts `name` and `workspaceName`; it creates a separate workspace/admin/default statuses. Both return a 15-minute access token and set an httpOnly refresh cookie. Rotation/logout are the next authentication task.
 
 `DEMO_SEED` defaults to `true` only in local Compose. Leave it `false` on hosted environments. A completed seed marker is committed atomically with the data; later or concurrent boots preserve your edits. Migrations use `DATABASE_URL_UNPOOLED` when supplied (Neon's direct connection), while runtime queries use `DATABASE_URL` (which may be pooled). For explicit local maintenance, export those URLs and run `pnpm db:migrate`, or `DEMO_SEED=true pnpm db:seed` after migration. Neither command resets data.
 
@@ -111,3 +111,7 @@ Preview CD is wired after successful publication: Vercel builds the exact web co
 Future `dev → qa → stage → prod` promotion will reuse one build and inject configuration at runtime. Docker remains the local development/test setup. See the [build-once contract and current limitations](docs/PROMOTION.md).
 
 Generate contracts with `pnpm gen:api`. The isolated Nest bootstrap exports real DTO/controller metadata without database, Redis or secrets. `pnpm openapi:check` validates the committed document and Spectral conventions; normal builds also reject stale OpenAPI/client output. The generated Hey API SDK and TanStack Query options are committed and never hand-edited. Response serialization rejects invalid server output with a sanitized 500. Public errors use the shared envelope, including malformed/oversized requests.
+
+Auth runtime requires `AUTH_SECRET` (32+ bytes) and comma-separated `AUTH_ALLOWED_ORIGINS`. Hosted environments use a newly generated secret, exact HTTPS UI origins, `AUTH_ALLOW_INSECURE_HTTP=false`, and `DEMO_SEED=false`. The local Compose credentials and secret are deliberately public development defaults. The API refuses the known local secret when secure mode is selected. Browser access tokens belong in memory; refresh credentials never appear in JSON and only SHA-256 digests are stored. Signup/login enforce Origin and return `Cache-Control: no-store`; credential failures are generic401. Login limits are100 per socket IP and10 per IP/email per15 minutes; signup is10 per IP/hour.429 includes `Retry-After`. Forwarded IP headers are untrusted; configure an authenticated proxy policy in P07-04 before hosted proxy auth, rather than accepting arbitrary client headers.
+
+OIDC can replace password verification and map the provider's stable subject to User while retaining workspace membership, the permission layer and local session boundary. Provider tokens must be verified server-side; a claimed external role never replaces the DB role. Membership management and session-only recovery are implemented in P02-03.

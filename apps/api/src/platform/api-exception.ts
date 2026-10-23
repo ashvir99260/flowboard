@@ -8,6 +8,7 @@ export class ApiException extends HttpException {
     readonly code: ErrorCode,
     message: string,
     readonly details?: ValidationIssue[],
+    readonly retryAfterSeconds?: number,
   ) {
     super(message, status);
   }

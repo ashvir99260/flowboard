@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses } from './types.gen.js';
+import type { GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, LogInData, LogInErrors, LogInResponses, SignUpData, SignUpErrors, SignUpResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -27,3 +27,27 @@ export const getLiveness = <ThrowOnError extends boolean = false>(options?: Opti
  * Check database and Redis readiness
  */
 export const getReadiness = <ThrowOnError extends boolean = false>(options?: Options<GetReadinessData, ThrowOnError>): RequestResult<GetReadinessResponses, GetReadinessErrors, ThrowOnError> => (options?.client ?? client).get<GetReadinessResponses, GetReadinessErrors, ThrowOnError>({ url: '/health/ready', ...options });
+
+/**
+ * Sign in with email and password
+ */
+export const logIn = <ThrowOnError extends boolean = false>(options: Options<LogInData, ThrowOnError>): RequestResult<LogInResponses, LogInErrors, ThrowOnError> => (options.client ?? client).post<LogInResponses, LogInErrors, ThrowOnError>({
+    url: '/v1/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create an account and workspace
+ */
+export const signUp = <ThrowOnError extends boolean = false>(options: Options<SignUpData, ThrowOnError>): RequestResult<SignUpResponses, SignUpErrors, ThrowOnError> => (options.client ?? client).post<SignUpResponses, SignUpErrors, ThrowOnError>({
+    url: '/v1/auth/signup',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});

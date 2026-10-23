@@ -70,7 +70,12 @@ test('invalid server output fails with a sanitized 500', async () => {
 
 test('the spec-only bootstrap exposes real typed controller metadata without configuration', async () => {
   const document = await exportOpenApi();
-  expect(Object.keys(document.paths).sort()).toEqual(['/health/live', '/health/ready']);
+  expect(Object.keys(document.paths).sort()).toEqual([
+    '/health/live',
+    '/health/ready',
+    '/v1/auth/login',
+    '/v1/auth/signup',
+  ]);
   expect(document.paths['/health/live'].get.operationId).toBe('getLiveness');
   expect(document.paths['/health/ready'].get.operationId).toBe('getReadiness');
   expect(

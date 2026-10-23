@@ -20,8 +20,51 @@ export type LivenessResponseDtoOutput = {
     status: 'ok';
 };
 
+export type LogInDto = {
+    email: string;
+};
+
 export type ReadinessResponseDtoOutput = {
     status: 'ready';
+};
+
+export type SessionResponseDtoOutput = {
+    data: {
+        accessToken: string;
+        activeWorkspace: {
+            createdAt: string;
+            id: string;
+            name: string;
+            role: 'admin' | 'member';
+            updatedAt: string;
+        } | null;
+        expiresAt: string;
+        user: {
+            createdAt: string;
+            email: string;
+            id: string;
+            name: string;
+            updatedAt: string;
+        };
+    };
+};
+
+export type SignUpDto = {
+    email: string;
+    name: string;
+    workspaceName: string;
+};
+
+export type LogInDtoWritable = {
+    email: string;
+    password: string;
+};
+
+export type SignUpDtoWritable = {
+    email: string;
+    name: string;
+    password: string;
+    workspaceName: string;
 };
 
 export type GetLivenessData = {
@@ -64,3 +107,51 @@ export type GetReadinessResponses = {
 };
 
 export type GetReadinessResponse = GetReadinessResponses[keyof GetReadinessResponses];
+
+export type LogInData = {
+    body: LogInDtoWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/login';
+};
+
+export type LogInErrors = {
+    400: ErrorResponseDtoOutput;
+    401: ErrorResponseDtoOutput;
+    403: ErrorResponseDtoOutput;
+    429: ErrorResponseDtoOutput;
+    500: ErrorResponseDtoOutput;
+    503: ErrorResponseDtoOutput;
+};
+
+export type LogInError = LogInErrors[keyof LogInErrors];
+
+export type LogInResponses = {
+    200: SessionResponseDtoOutput;
+};
+
+export type LogInResponse = LogInResponses[keyof LogInResponses];
+
+export type SignUpData = {
+    body: SignUpDtoWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/signup';
+};
+
+export type SignUpErrors = {
+    400: ErrorResponseDtoOutput;
+    403: ErrorResponseDtoOutput;
+    409: ErrorResponseDtoOutput;
+    429: ErrorResponseDtoOutput;
+    500: ErrorResponseDtoOutput;
+    503: ErrorResponseDtoOutput;
+};
+
+export type SignUpError = SignUpErrors[keyof SignUpErrors];
+
+export type SignUpResponses = {
+    201: SessionResponseDtoOutput;
+};
+
+export type SignUpResponse = SignUpResponses[keyof SignUpResponses];

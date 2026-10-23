@@ -18,3 +18,7 @@ export async function verifyDatabaseConnection(connectionString: string): Promis
     await client.$disconnect();
   }
 }
+
+export { createIdentityRepository } from './identity.js';
+export type { IdentityRepository } from './identity.js';
+export type { IdentitySession, SessionCredential } from './identity.entity.js';

@@ -13,7 +13,15 @@ test('spec export needs no runtime dependencies and rejects stale artifacts', as
     const target = join(directory, 'openapi.json');
     await writeFile(target, JSON.stringify(source));
     const env = { ...process.env };
-    for (const name of ['DATABASE_URL', 'DATABASE_URL_UNPOOLED', 'REDIS_URL', 'JWT_SECRET'])
+    for (const name of [
+      'DATABASE_URL',
+      'DATABASE_URL_UNPOOLED',
+      'REDIS_URL',
+      'JWT_SECRET',
+      'AUTH_SECRET',
+      'AUTH_ALLOWED_ORIGINS',
+      'AUTH_ALLOW_INSECURE_HTTP',
+    ])
       delete env[name];
     const valid = spawnSync(process.execPath, ['scripts/export.mjs', '--check'], {
       encoding: 'utf8',

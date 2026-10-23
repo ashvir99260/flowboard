@@ -15,6 +15,9 @@ const env = {
   POSTGRES_USER: 'flowboard',
   POSTGRES_PASSWORD: 'flowboard-check-only',
   DEMO_SEED: 'true',
+  AUTH_SECRET: 'flowboard-docker-check-secret-abcdefghijklmnopqrstuvwxyz',
+  AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
+  AUTH_ALLOW_INSECURE_HTTP: 'true',
 };
 const prefix = ['compose', '--project-name', project, '--file', 'compose.yaml'];
 
@@ -90,6 +93,17 @@ try {
     signal: AbortSignal.timeout(10_000),
   });
   assert.equal(api.status, 404, 'The shell must not claim a domain API exists');
+  const login = await fetch(`http://${apiAddress}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:3000' },
+    body: JSON.stringify({ email: 'alice@example.com', password: 'FlowboardDemo123!' }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  assert.equal(login.status, 200);
+  const session = await login.json();
+  assert.equal(session.data.activeWorkspace.role, 'admin');
+  assert.equal(session.data.user.email, 'alice@example.com');
+  assert.ok(login.headers.get('set-cookie').includes('HttpOnly'));
 
   console.info(`[${project}] Verify persistent PostgreSQL and Redis data across restart`);
   const psql = ['exec', '-T', 'postgres', 'psql', '-U', 'flowboard', '-d', 'flowboard', '-tAc'];

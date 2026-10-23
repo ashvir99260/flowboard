@@ -10,7 +10,10 @@
         "DEMO_SEED",
         "NODE_ENV",
         "REDIS_URL",
-        "API_DOCS"
+        "API_DOCS",
+        "AUTH_SECRET",
+        "AUTH_ALLOWED_ORIGINS",
+        "AUTH_ALLOW_INSECURE_HTTP"
       ]
     }
   }

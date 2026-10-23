@@ -358,13 +358,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 2 — Authentication and membership
 
-- [ ] **P02-01 — Signup, login and default-deny authentication**
+- [x] **P02-01 — Signup, login and default-deny authentication**
   - **Goal:** Establish password identity, atomic workspace creation and verified tenant context.
   - **Files:** `packages/contracts/src/auth.ts`, `apps/api/src/auth/{auth.module,auth.controller,auth.service,auth.guard,auth.dto,public.decorator}.ts`, `apps/api/test/auth.e2e-spec.ts`, generated artifacts.
   - **Dependencies:** P01-02.
   - **Acceptance:** Signup creates workspace/admin/default statuses atomically; login verifies Argon2id and normalizes email. JWT claims/audience/issuer/expiry checked, membership role read from DB. Guard is default-on with named public exceptions. Credential rate limiting and redacted logs exist.
   - **Validation:** Correct login; duplicate normalized email; wrong password; expired/forged token; unauthenticated domain route 401; body cannot set acting role/workspace; failed signup rolls back. Endpoint DoD and standard gate.
   - **Commit:** `feat: add workspace aware authentication`.
+  - **Completion evidence:** [P02-01](evidence/P02-01.md): 269 tests, generated contract checks, all quality gates and Docker seeded login/restart pass.
 
 - [ ] **P02-02 — Rotating refresh sessions and logout**
   - **Goal:** Provide cookie refresh without token reuse or unsafe replay.

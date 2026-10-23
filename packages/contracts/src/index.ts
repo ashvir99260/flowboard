@@ -5,3 +5,5 @@ export * from './errors.js';
 export * from './health.js';
 export * from './identifiers.js';
 export * from './pagination.js';
+
+export * from './auth.js';

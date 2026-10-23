@@ -27,6 +27,9 @@ test('migration failure prevents listening and does not print credentials', asyn
   const runtime = startProcess(['dist/main.js'], {
     cwd,
     env: {
+      AUTH_ALLOW_INSECURE_HTTP: 'true',
+      AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
+      AUTH_SECRET: 'test-only-abcdefghijklmnopqrstuvwxyz123456',
       DATABASE_URL: 'postgresql://test:never-print-this@127.0.0.1:1/unavailable',
       DATABASE_URL_UNPOOLED: 'postgresql://test:never-print-this@127.0.0.1:1/unavailable',
       HOST: '127.0.0.1',
