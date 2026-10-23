@@ -5,6 +5,7 @@ export interface AuthSettings {
   insecureHttp: boolean;
   secret: Uint8Array;
 }
+
 export function readAuthSettings(environment: NodeJS.ProcessEnv): AuthSettings {
   const value = environment.AUTH_SECRET ?? '';
   if (Buffer.byteLength(value) < 32) throw new Error('AUTH_SECRET must contain at least 32 bytes');

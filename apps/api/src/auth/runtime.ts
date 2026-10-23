@@ -9,6 +9,7 @@ import { ApiException } from '../common/errors/api-exception.js';
 import type { AuthSettings } from './config/auth.config.js';
 
 export const AuthRuntimeKey = Symbol('AuthRuntime');
+
 const counter =
   "local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('PEXPIRE',KEYS[1],ARGV[1]); end; return {n,redis.call('PTTL',KEYS[1])}";
 export function createAuthRuntime(databaseUrl: string, redisUrl: string, settings: AuthSettings) {
@@ -57,4 +58,5 @@ export function createAuthRuntime(databaseUrl: string, redisUrl: string, setting
     },
   };
 }
+
 export type AuthRuntime = ReturnType<typeof createAuthRuntime>;

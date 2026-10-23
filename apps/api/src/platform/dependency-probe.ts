@@ -4,6 +4,7 @@ import { Redis } from 'ioredis';
 import { RedisConnectionOptions } from '../common/config/redis.config.js';
 
 export const DependencyProbeKey = Symbol('DependencyProbe');
+
 export interface DependencyProbe {
   check(): Promise<void>;
   close(): Promise<void>;

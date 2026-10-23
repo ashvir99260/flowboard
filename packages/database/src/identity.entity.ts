@@ -7,6 +7,7 @@ export interface IdentityUser {
   name: string;
   updatedAt: Date;
 }
+
 export interface IdentityWorkspace {
   createdAt: Date;
   id: string;
@@ -14,12 +15,14 @@ export interface IdentityWorkspace {
   role: WorkspaceRole;
   updatedAt: Date;
 }
+
 export interface IdentitySession {
   activeWorkspace: IdentityWorkspace | null;
   expiresAt: Date;
   familyId: string;
   user: IdentityUser;
 }
+
 export interface SessionCredential {
   expiresAt: Date;
   familyId: string;

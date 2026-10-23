@@ -34,6 +34,7 @@ export const AuthExamples = {
     },
   },
 };
+
 const email = EmailSchema.meta({
   title: 'Email address',
   description: 'Account email, trimmed and normalized to lowercase.',
@@ -79,12 +80,14 @@ export const SignUpSchema = z
       'Create an account and its first workspace. Acting role and workspace identifiers cannot be supplied.',
     example: AuthExamples.signUp,
   });
+
 export const LogInSchema = z.strictObject({ email, password }).meta({
   title: 'Log in request',
   description:
     'Authenticate an existing account with email and password. Example credentials are illustrative only.',
   example: AuthExamples.logIn,
 });
+
 export const UserSelfSchema = z
   .strictObject({
     createdAt,
@@ -107,6 +110,7 @@ export const UserSelfSchema = z
       'Safe account projection. Password hashes and refresh credentials are never included.',
     example: AuthExamples.session.data.user,
   });
+
 export const ActiveWorkspaceSchema = z
   .strictObject({
     createdAt,
@@ -133,6 +137,7 @@ export const ActiveWorkspaceSchema = z
     description: 'Selected workspace and the user’s current membership role.',
     example: AuthExamples.session.data.activeWorkspace,
   });
+
 export const SessionEnvelopeSchema = z
   .strictObject({
     data: z
@@ -170,8 +175,11 @@ export const SessionEnvelopeSchema = z
       'Successful authentication or refresh response. The separate httpOnly cookie carries the opaque refresh credential.',
     example: AuthExamples.session,
   });
+
 export type SignUp = z.infer<typeof SignUpSchema>;
+
 export type LogIn = z.infer<typeof LogInSchema>;
+
 export type SessionEnvelope = z.infer<typeof SessionEnvelopeSchema>;
 
 export const EmptyAuthBodySchema = z.strictObject({}).default({}).meta({

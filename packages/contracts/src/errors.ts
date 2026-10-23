@@ -56,6 +56,7 @@ export const ErrorCodeSchema = z
     example: 'VALIDATION_FAILED',
     title: 'Error code',
   });
+
 export const ValidationIssueSchema = z
   .strictObject({
     code: textSchema(64, 1).meta({
@@ -80,6 +81,7 @@ export const ValidationIssueSchema = z
     description: 'One field-level validation failure.',
     example: { code: 'invalid_format', message: 'Invalid email address', path: ['email'] },
   });
+
 export const ErrorEnvelopeSchema = z
   .strictObject({
     error: z
@@ -109,5 +111,7 @@ export const ErrorEnvelopeSchema = z
     description: 'Consistent error envelope for unsuccessful API responses.',
     example: ErrorExamples[400],
   });
+
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
+
 export type ValidationIssue = z.infer<typeof ValidationIssueSchema>;

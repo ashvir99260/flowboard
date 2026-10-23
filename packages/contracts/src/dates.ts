@@ -7,7 +7,9 @@ export const CalendarDateSchema = z
     const parsed = new Date(`${value}T00:00:00.000Z`);
     return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
   }, 'Must be a real calendar date');
+
 export const TimestampSchema = z.iso.datetime({ precision: 3 });
+
 export const AuditTimestampsSchema = z.strictObject({
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
 export const HealthExamples = { liveness: { status: 'ok' }, readiness: { status: 'ready' } };
+
 export const HealthQuerySchema = z.strictObject({}).meta({
   title: 'Empty health query',
   description: 'Health probes accept no query parameters.',
   example: {},
 });
+
 export const LivenessSchema = z
   .strictObject({
     status: z.literal('ok').meta({
@@ -19,6 +21,7 @@ export const LivenessSchema = z
     description: 'Public API process liveness result.',
     example: HealthExamples.liveness,
   });
+
 export const ReadinessSchema = z
   .strictObject({
     status: z.literal('ready').meta({
@@ -32,5 +35,7 @@ export const ReadinessSchema = z
     description: 'Public readiness result after successful dependency checks.',
     example: HealthExamples.readiness,
   });
+
 export type Liveness = z.infer<typeof LivenessSchema>;
+
 export type Readiness = z.infer<typeof ReadinessSchema>;

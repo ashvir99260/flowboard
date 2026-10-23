@@ -7,4 +7,5 @@ export const CustomFieldOptionSchema = z.strictObject({
   id: UuidSchema,
   label: NameSchema,
 });
+
 export type CustomFieldOption = z.infer<typeof CustomFieldOptionSchema>;

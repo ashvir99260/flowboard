@@ -6,6 +6,7 @@ import prettier from 'eslint-config-prettier/flat';
 import { commonRules, ignoredFiles } from './common.mjs';
 import json from './json.mjs';
 import quality, { codeFiles, jsxQuality } from './quality.mjs';
+import spacing from './spacing.mjs';
 
 export default defineConfig([
   { ignores: ignoredFiles },
@@ -15,4 +16,5 @@ export default defineConfig([
   },
   ...json,
   prettier,
+  spacing,
 ]);

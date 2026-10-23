@@ -10,6 +10,7 @@ export interface DeploymentConfig {
   vercelToken?: string;
   workerServiceId?: string;
 }
+
 export interface DeploymentProviders {
   vercel(manifest: ReleaseManifest): Promise<void>;
   northflank(manifest: ReleaseManifest, serviceId: string): Promise<void>;

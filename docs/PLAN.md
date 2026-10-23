@@ -22,6 +22,8 @@ The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our com
 
 P02-04 completed Swagger operation summaries/descriptions and schema/header/request/response examples through shared Zod metadata and Nest documentation decorators. The next user follow-up prioritizes P02-05: [feature-based backend rules](BACKEND_GUIDELINES.md) based on the supplied NestJS structure article. P02-06 aligns auth/platform modules, extracts common config/utilities/infrastructure and separates tests before P02-03 membership work. D86 records the follow-up common-folder choice.
 
+P02-07 applies the user's blank-line convention after exported declarations, including NestJS module classes, through shared lint presets. It precedes further feature work and preserves runtime code and generated contracts (D87).
+
 ## 1. Scope and success
 
 Deliver all requested hierarchy, authentication, tenancy, permissions, tasks, inherited configuration, board/list/drawer views, realtime, activity, generated contracts, seed data, and tests. The release runs with `docker compose up --build` and needs no host Node installation. Docker itself is a prerequisite.

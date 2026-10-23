@@ -406,6 +406,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: organize api modules and tests`.
   - **Completion evidence:** [P02-06](evidence/P02-06.md): feature/common modules, shared config/utilities and isolated split test suites pass 296 tests, full quality/contract gates and five-service Docker startup/restart checks.
 
+- [x] **P02-07 — Enforce spacing after exports and modules**
+  - **Goal:** Automatically keep one blank line after exports, including exported NestJS module classes, whenever another statement follows.
+  - **Requirements:** R118.
+  - **Files:** shared ESLint spacing configuration/presets and regression tests, affected authored source whitespace, backend/code-quality/agent rules, decisions and evidence.
+  - **Dependencies:** P02-06; prioritized by the user's formatting request.
+  - **Acceptance:** Node/React/Next presets report and autofix missing spacing after exports, including decorated module classes, types and re-exports. Preserve comments/decorator attachment and runtime tokens; no extra blank line at EOF, no generated-file or JSON rewrites. Prettier and lint agree.
+  - **Validation:** Red/green lint fixtures, all preset coverage and Prettier round-trip; full root build/lint/test/typecheck/format and contract drift checks.
+  - **Commit:** `style: separate exports with blank lines`.
+  - **Completion evidence:** [P02-07](evidence/P02-07.md): five spacing regressions, all 301 tests and quality/contract gates pass; 26 existing source/test files changed only by inserted blank lines.
+
 - [ ] **P02-03 — Membership, invitations and workspace switching**
   - **Goal:** Support real multi-workspace identity and admin-managed access.
   - **Files:** `packages/contracts/src/workspaces.ts`, `apps/api/src/workspaces/**`, `apps/api/src/permissions/{permission.guard,permission.service}.ts`, `apps/api/test/integration/workspaces.spec.mjs`, generated artifacts.

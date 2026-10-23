@@ -117,6 +117,8 @@ The existing [auth controller](../apps/api/src/auth/auth.controller.ts), [contra
 
 ## Coding and tests
 
+Separate each export statement/declaration from the next statement with one blank line. This includes exported constants, types, interfaces, functions, classes, re-exports and NestJS module classes. Put the blank line before the following declaration's decorators, keeping each decorator attached to its class. No extra blank line is needed after the final declaration at EOF. Shared ESLint presets enforce spacing after the Prettier compatibility layer; generated code and JSON are excluded (D87/P02-07).
+
 Keep backend filenames in kebab-case with role suffixes (`*.module.ts`, `*.controller.ts`, `*.service.ts`, `*.dto.ts`, `*.entity.ts`); classes/types use PascalCase and functions/variables use camelCase. Match the existing ESM setup: explicit `.js` extensions for relative runtime imports, public workspace exports and type-only imports where appropriate. Follow the committed compiler target and supported Node version; do not switch module systems or enable untested language/runtime features for style.
 
 Prefer `const`, destructuring and explicit typed data. Use `let` for actual reassignment. Typed lookup tables suit closed value-to-handler mappings; ordinary conditionals suit validation, authorization and branching that is clearer when read in order. Avoid forced dispatch tables, needless abstraction, swallowed errors and unrelated formatting changes. Validate configuration once at startup, inject the result, and keep credentials/task content out of logs.

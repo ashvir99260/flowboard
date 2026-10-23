@@ -10,6 +10,7 @@ const id = (value: number) => `f1000000-0000-4000-8000-${String(value).padStart(
 const version = 'demo-v1';
 // Intentionally public local-demo credentials; hosted deployments leave DEMO_SEED off.
 export const DemoPassword = 'FlowboardDemo123!';
+
 export const DemoAccounts = Object.freeze([
   { email: 'alice@example.com', id: id(101), name: 'Alice' },
   { email: 'bob@example.com', id: id(102), name: 'Bob' },

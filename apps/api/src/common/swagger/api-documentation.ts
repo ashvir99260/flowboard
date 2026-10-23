@@ -17,6 +17,7 @@ export const RequestIdHeaders = {
     },
   },
 };
+
 export const AuthResponseHeaders = {
   ...RequestIdHeaders,
   'Cache-Control': {
@@ -25,6 +26,7 @@ export const AuthResponseHeaders = {
     schema: { description: 'Disable response storage.', title: 'Cache policy', type: 'string' },
   },
 };
+
 export const SessionResponseHeaders = {
   ...AuthResponseHeaders,
   'Set-Cookie': {
@@ -39,6 +41,7 @@ export const SessionResponseHeaders = {
     },
   },
 };
+
 export const ClearedSessionHeaders = {
   ...AuthResponseHeaders,
   'Set-Cookie': {
@@ -53,6 +56,7 @@ export const ClearedSessionHeaders = {
     },
   },
 };
+
 export const OriginDocumentation = {
   description:
     'Exact allowlisted web origin. Browsers supply Origin automatically; command-line clients must set it. Swagger Try it out requires its own origin to be allowlisted.',
@@ -66,6 +70,7 @@ export const OriginDocumentation = {
     type: 'string',
   },
 };
+
 const descriptions = {
   400: 'The body or query failed validation. Details identify invalid fields or unexpected keys.',
   401: 'Email or password is incorrect. The same response is used for unknown accounts.',

@@ -6,4 +6,5 @@ import type { Options } from '@node-rs/argon2';
 const options = { algorithm: 2, memoryCost: 19_456, parallelism: 1, timeCost: 2 } satisfies Options;
 
 export const hashPassword = (password: string) => hash(password, options);
+
 export const verifyPassword = (encoded: string, password: string) => verify(encoded, password);

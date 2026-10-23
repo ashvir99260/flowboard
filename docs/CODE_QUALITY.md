@@ -70,3 +70,9 @@ The safety fixtures test these cases with the real ESLint engine. New order-depe
 Reference: [commitlint local setup](https://commitlint.js.org/guides/local-setup), [configuration](https://commitlint.js.org/reference/configuration.html).
 
 Rule references: [Perfectionist](https://perfectionist.dev/rules.html), [SonarJS](https://github.com/SonarSource/SonarJS), [unused-imports](https://github.com/sweepline/eslint-plugin-unused-imports), [JSON key ordering](https://ota-meshi.github.io/eslint-plugin-jsonc/rules/sort-keys.html), [TypeScript naming](https://typescript-eslint.io/rules/naming-convention/).
+
+## Export and module spacing
+
+Leave one blank line after each export statement or declaration before the next statement, including exported NestJS module classes. This covers constants, functions, classes, types, interfaces and re-exports. Keep decorators attached to their declaration; at EOF keep only the normal final newline. The shared Node, React and Next presets enable `padding-line-between-statements` after their Prettier compatibility config, so `pnpm lint` reports violations and `pnpm lint:fix` repairs them. Generated files and JSON keep their existing handling.
+
+This uses the installed ESLint9 rule without adding a dependency. D87 records its scope and the migration needed when the toolchain moves to ESLint11. TypeScript namespaces are outside this ES-module spacing policy.

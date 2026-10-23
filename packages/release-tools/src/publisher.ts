@@ -4,6 +4,7 @@ export interface RemoteRelease {
   draft: boolean;
   id: number;
 }
+
 export interface ReleaseManifest {
   app: string;
   digest: string;
@@ -13,6 +14,7 @@ export interface ReleaseManifest {
   tag: string;
   version: string;
 }
+
 export interface PublicationPort {
   readRelease(tag: string): Promise<RemoteRelease | null>;
   readTag(tag: string): Promise<string | null>;

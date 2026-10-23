@@ -5,6 +5,7 @@ export class ProtectedController {
     return { userId: req.identity.user.id, role: req.identity.activeWorkspace?.role };
   }
 }
+
 Controller('protected')(ProtectedController);
 Get()(
   ProtectedController.prototype,

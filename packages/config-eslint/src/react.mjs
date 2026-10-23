@@ -5,6 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 
 import node from './node.mjs';
 import { jsxQuality } from './quality.mjs';
+import spacing from './spacing.mjs';
 
 export default [
   ...node,
@@ -23,4 +24,5 @@ export default [
   },
   jsxQuality,
   prettier,
+  spacing,
 ];

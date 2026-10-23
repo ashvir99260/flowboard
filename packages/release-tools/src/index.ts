@@ -4,7 +4,9 @@ import { createHash } from 'node:crypto';
 import { parseAllDocuments } from 'yaml';
 
 export const applications = ['api', 'web', 'worker'] as const;
+
 export type Application = (typeof applications)[number];
+
 export interface Release {
   app: Application;
   mode: 'new' | 'resume';
@@ -13,6 +15,7 @@ export interface Release {
   tag: string;
   version: string;
 }
+
 interface Manifest {
   [key: string]: unknown;
   dependencies?: Record<string, string>;

@@ -245,4 +245,5 @@ export function createIdentityRepository(databaseUrl: string) {
     },
   };
 }
+
 export type IdentityRepository = ReturnType<typeof createIdentityRepository>;
