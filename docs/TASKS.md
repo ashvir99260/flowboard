@@ -204,6 +204,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `chore: enforce pinned manifest dependencies`.
   - **Completion evidence:** [P00-22 verification](evidence/P00-22.md): seven manifest regression tests, 162 repository tests and standard gates pass; package sorting disabled and exact versions enforced without autofix.
 
+- [x] **P00-23 — Organize package manifests for maintainers**
+  - **Goal:** Replace the earlier alphabetical layout with consistent semantic grouping across the root and all workspace manifests.
+  - **Requirements:** R107; preserves R106 exact versions and disabled manifest sorting.
+  - **Files:** root `package.json`, `apps/*/package.json`, `packages/*/package.json`, `docs/{CODE_QUALITY,DECISIONS,TASKS,REQUIREMENTS_MATRIX}.md`, task evidence.
+  - **Dependencies:** P00-22 and the user's manifest-layout request.
+  - **Acceptance:** Identity and module/toolchain metadata come first, then exports/files, lifecycle and verification scripts, dependencies and formatter settings. Group scripts by purpose. Preserve every existing field/value, dependency order, export condition order and arrays. Do not add an automatic ordering rule or change versions, commands or publishing behavior.
+  - **Validation:** Check all 14 manifests against their pre-change data and ordered export trees; existing workspace/build/lint/test/type/format gates and frozen install. No new style-only unit test.
+  - **Commit:** `chore: organize package manifests by purpose`.
+  - **Completion evidence:** [P00-23 verification](evidence/P00-23.md): all 14 manifests retain identical data and nested order; 162 tests and standard gates pass.
+
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
   - **Goal:** Put the current foundation online on the selected preview hosts.
   - **Requirements:** R96–R98.

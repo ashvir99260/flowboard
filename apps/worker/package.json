@@ -1,4 +1,25 @@
 {
+  "name": "@flowboard/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsc-watch -p tsconfig.json --onSuccess \"node dist/main.js\"",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint --fix . --max-warnings=0",
+    "test": "node --test --test-timeout=60000 test/*.test.mjs",
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore"
+  },
   "dependencies": {
     "@flowboard/contracts": "workspace:*",
     "@flowboard/database": "workspace:*"
@@ -13,26 +34,5 @@
     "tsc-watch": "7.2.1",
     "typescript": "6.0.3"
   },
-  "exports": {
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "dist"
-  ],
-  "name": "@flowboard/worker",
-  "prettier": "@flowboard/config-prettier",
-  "private": true,
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc-watch -p tsconfig.json --onSuccess \"node dist/main.js\"",
-    "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
-    "lint": "eslint . --max-warnings=0",
-    "lint:fix": "eslint --fix . --max-warnings=0",
-    "start": "node dist/main.js",
-    "test": "node --test --test-timeout=60000 test/*.test.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "type": "module",
-  "version": "0.0.0"
+  "prettier": "@flowboard/config-prettier"
 }

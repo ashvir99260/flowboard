@@ -1,4 +1,19 @@
 {
+  "name": "@flowboard/config-prettier",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "build": "node src/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint --fix . --max-warnings=0",
+    "format": "prettier --write . \"../../*.{json,yaml,mjs,md}\" \"../../scripts/**/*.mjs\" \"../../docs/**/*.md\" \"../../.github/**/*.{md,yaml,yml}\" --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . \"../../*.{json,yaml,mjs,md}\" \"../../scripts/**/*.mjs\" \"../../docs/**/*.md\" \"../../.github/**/*.{md,yaml,yml}\" --ignore-path ../../.prettierignore"
+  },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",
     "@flowboard/config-typescript": "workspace:*",
@@ -7,20 +22,5 @@
     "prettier": "3.9.10",
     "typescript": "6.0.3"
   },
-  "exports": {
-    ".": "./src/index.mjs"
-  },
-  "name": "@flowboard/config-prettier",
-  "prettier": "@flowboard/config-prettier",
-  "private": true,
-  "scripts": {
-    "build": "node src/build.mjs",
-    "format": "prettier --write . \"../../*.{json,yaml,mjs,md}\" \"../../scripts/**/*.mjs\" \"../../docs/**/*.md\" \"../../.github/**/*.{md,yaml,yml}\" --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . \"../../*.{json,yaml,mjs,md}\" \"../../scripts/**/*.mjs\" \"../../docs/**/*.md\" \"../../.github/**/*.{md,yaml,yml}\" --ignore-path ../../.prettierignore",
-    "lint": "eslint . --max-warnings=0",
-    "lint:fix": "eslint --fix . --max-warnings=0",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "type": "module",
-  "version": "0.0.0"
+  "prettier": "@flowboard/config-prettier"
 }

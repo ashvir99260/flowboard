@@ -59,6 +59,12 @@ Root, app and package manifests all require exact semantic versions in `dependen
 
 Ranges (`^`, `~`, comparisons, wildcards and partial versions), tags such as `latest`, noncanonical prefixes/whitespace, Git/URL/file/link sources and npm aliases fail lint. Invalid values and malformed dependency sections also fail. The rule has no autofix: choosing a new version requires a deliberate dependency update and lockfile validation. Node engine compatibility ranges are not dependency versions and stay allowed. `.npmrc` already uses `save-exact=true`; ESLint catches manual edits too. See [D60](DECISIONS.md) and [P00-22](TASKS.md).
 
+### Manifest layout
+
+Keep manifests easy to scan: package identity (`name`, `version`, `private`, `type`), relevant toolchain metadata, public exports/files, scripts, dependencies and formatter settings. Omit fields a package does not need. This is a readability convention, not an automatic sort rule or an npm requirement.
+
+Group scripts by purpose: development/build/start, type/lint/test checks, formatting, then commit hooks and delivery commands. Preserve command values and leave dependency entries and conditional export maps in their existing order. In particular, do not move a `default` export condition ahead of more specific conditions. The layout cleanup in [P00-23](TASKS.md) changes no versions, package relationships or runtime behavior.
+
 The safety fixtures test these cases with the real ESLint engine. New order-dependent structures need a regression before relaxing the configuration. See [P00-21 verification](evidence/P00-21.md) for completion evidence.
 
 Reference: [commitlint local setup](https://commitlint.js.org/guides/local-setup), [configuration](https://commitlint.js.org/reference/configuration.html).

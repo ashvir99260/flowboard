@@ -1,4 +1,28 @@
 {
+  "name": "@flowboard/config-eslint",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/node.mjs",
+    "./node": "./src/node.mjs",
+    "./next": "./src/next.mjs",
+    "./commitlint": "./src/commitlint.mjs",
+    "./react": "./src/react.mjs",
+    "./json": "./src/json.mjs"
+  },
+  "scripts": {
+    "build": "node src/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings=0 && cd ../.. && eslint eslint.config.mjs commitlint.config.mjs scripts \"*.json\" \"packages/config-typescript/**/*.json\" --max-warnings=0",
+    "lint:fix": "eslint --fix . --max-warnings=0 && cd ../.. && eslint --fix eslint.config.mjs commitlint.config.mjs scripts \"*.json\" \"packages/config-typescript/**/*.json\" --max-warnings=0",
+    "test": "node --test test/*.test.mjs",
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
+    "commitlint": "node scripts/commitlint.mjs",
+    "commitlint:ci": "node scripts/commitlint.mjs --ci",
+    "hooks:install": "node scripts/install-hooks.mjs"
+  },
   "dependencies": {
     "@commitlint/config-conventional": "21.2.4",
     "@eslint/js": "9.39.5",
@@ -27,29 +51,5 @@
     "react-dom": "19.3.1",
     "typescript": "6.0.3"
   },
-  "exports": {
-    ".": "./src/node.mjs",
-    "./node": "./src/node.mjs",
-    "./next": "./src/next.mjs",
-    "./commitlint": "./src/commitlint.mjs",
-    "./react": "./src/react.mjs",
-    "./json": "./src/json.mjs"
-  },
-  "name": "@flowboard/config-eslint",
-  "prettier": "@flowboard/config-prettier",
-  "private": true,
-  "scripts": {
-    "build": "node src/build.mjs",
-    "commitlint": "node scripts/commitlint.mjs",
-    "commitlint:ci": "node scripts/commitlint.mjs --ci",
-    "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
-    "hooks:install": "node scripts/install-hooks.mjs",
-    "lint": "eslint . --max-warnings=0 && cd ../.. && eslint eslint.config.mjs commitlint.config.mjs scripts \"*.json\" \"packages/config-typescript/**/*.json\" --max-warnings=0",
-    "lint:fix": "eslint --fix . --max-warnings=0 && cd ../.. && eslint --fix eslint.config.mjs commitlint.config.mjs scripts \"*.json\" \"packages/config-typescript/**/*.json\" --max-warnings=0",
-    "test": "node --test test/*.test.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "type": "module",
-  "version": "0.0.0"
+  "prettier": "@flowboard/config-prettier"
 }
