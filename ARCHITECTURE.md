@@ -54,22 +54,22 @@ For hosted browsers, the planned web-origin `/api/v1` proxy preserves first-part
 
 These are intended workspace dependencies; external runtime libraries and shared compiler/lint/test configuration are additional dependencies appropriate to each package. Imports use public package exports and `workspace:*`, never another package's source path.
 
-| Workspace                    | Responsibility                                                                 | Allowed workspace dependencies / boundary                                  |
-| ---------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `apps/api`                   | HTTP controllers, auth, authorization, orchestration, sockets, outbox dispatch | `contracts`, `database`, `logger`; no other app or generated client        |
-| `apps/worker`                | Validate queued events, persist activity, publish invalidations                | `contracts`, `database`, `logger`; no app imports                          |
-| `apps/web`                   | Routes, session state, generated queries, feature composition                  | `contracts`, `api-client`, `ui`; no backend internals                      |
-| `packages/contracts`         | Zod schemas, inferred types, enums, event contracts, pure resolvers            | Own files and Zod only; no other workspace, framework, environment or I/O  |
-| `packages/database`          | Prisma schema/client, migrations, seed, scoped repositories, transactions      | `contracts`, `logger`; sole owner of raw Prisma construction and SQL       |
-| `packages/logger`            | Pino-backed JSON logs, async request context, safe metadata projection         | Pino and Node built-ins; no framework, database or other workspace imports |
-| `packages/openapi`           | Spec export, normalization, lint and drift checks                              | API's explicit spec-bootstrap export, **build tooling only**               |
-| `packages/api-client`        | Generated SDK, types and TanStack options; handwritten transport setup         | Consumes OpenAPI as generation input; no API runtime import                |
-| `packages/ui`                | MUI theme/provider, controlled presentational components                       | `contracts` and UI libraries; no fetching, session or database code        |
-| `packages/config-typescript` | Base, Node/Nest, Next and library compiler settings                            | Configuration subpath exports                                              |
-| `packages/config-eslint`     | Shared lint rules, import ordering and boundaries                              | Configuration subpath exports                                              |
-| `packages/config-prettier`   | Shared formatting object and root/workspace format checks                      | Build tooling only                                                         |
-| `packages/release-tools`     | Independent app release planning and GitHub/GHCR publication                   | CI tooling only; reads committed Git snapshots, no runtime app imports     |
-| `packages/config-jest`       | Shared test presets and environment conventions                                | Configuration subpath exports                                              |
+| Workspace                    | Responsibility                                                                 | Allowed workspace dependencies / boundary                                           |
+| ---------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `apps/api`                   | HTTP controllers, auth, authorization, orchestration, sockets, outbox dispatch | `contracts`, `database`, `logger`; no other app or generated client                 |
+| `apps/worker`                | Validate queued events, persist activity, publish invalidations                | `contracts`, `database`, `logger`; no app imports                                   |
+| `apps/web`                   | Routes, session state, generated queries, feature composition                  | `contracts`, `api-client`, `ui`; no backend internals                               |
+| `packages/contracts`         | Zod schemas, inferred types, enums, event contracts, pure resolvers            | Own files and Zod only; no other workspace, framework, environment or I/O           |
+| `packages/database`          | Prisma schema/client, migrations, seed, scoped repositories, transactions      | `contracts`, `logger`; sole owner of raw Prisma construction and SQL                |
+| `packages/logger`            | Pino-backed JSON logs, async request context, safe metadata projection         | Pino and Node built-ins; no framework, database or other workspace imports          |
+| `packages/openapi`           | Spec export, normalization, lint and drift checks                              | API's explicit spec-bootstrap export, **build tooling only**                        |
+| `packages/api-client`        | Generated SDK, types and TanStack options; handwritten transport setup         | `contracts` for session validation; OpenAPI generation input; no API runtime import |
+| `packages/ui`                | MUI theme/provider, controlled presentational components                       | `contracts` and UI libraries; no fetching, session or database code                 |
+| `packages/config-typescript` | Base, Node/Nest, Next and library compiler settings                            | Configuration subpath exports                                                       |
+| `packages/config-eslint`     | Shared lint rules, import ordering and boundaries                              | Configuration subpath exports                                                       |
+| `packages/config-prettier`   | Shared formatting object and root/workspace format checks                      | Build tooling only                                                                  |
+| `packages/release-tools`     | Independent app release planning and GitHub/GHCR publication                   | CI tooling only; reads committed Git snapshots, no runtime app imports              |
+| `packages/config-jest`       | Shared test presets and environment conventions                                | Configuration subpath exports                                                       |
 
 Applications cannot import one another. The OpenAPI tooling exception (D19) is narrow: it loads real controllers/DTOs with inert providers, no listening socket and no database/Redis connection. It is not a production API dependency or a fake runtime service.
 

@@ -358,6 +358,9 @@ importers:
 
   packages/api-client:
     dependencies:
+      '@flowboard/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@tanstack/react-query':
         specifier: 5.104.5
         version: 5.104.5(@types/react@19.3.0)(react@19.3.1)

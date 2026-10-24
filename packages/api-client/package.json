@@ -19,6 +19,10 @@
     "./tanstack-query": {
       "types": "./dist/generated/@tanstack/react-query.gen.d.ts",
       "import": "./dist/generated/@tanstack/react-query.gen.js"
+    },
+    "./session": {
+      "types": "./dist/setup-client.d.ts",
+      "import": "./dist/setup-client.js"
     }
   },
   "files": [
@@ -49,7 +53,8 @@
   },
   "prettier": "@flowboard/config-prettier",
   "dependencies": {
-    "@tanstack/react-query": "5.104.5"
+    "@tanstack/react-query": "5.104.5",
+    "@flowboard/contracts": "workspace:*"
   },
   "peerDependencies": {
     "react": "19.3.1"

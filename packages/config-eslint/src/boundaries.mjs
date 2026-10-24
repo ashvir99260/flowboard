@@ -7,7 +7,7 @@ import ts from 'typescript';
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const runtimeDependencies = {
   api: ['contracts', 'database', 'logger'],
-  'api-client': [],
+  'api-client': ['contracts'],
   contracts: [],
   database: ['contracts', 'logger'],
   logger: [],
