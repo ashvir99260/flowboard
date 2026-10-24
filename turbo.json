@@ -2,6 +2,12 @@
   "$schema": "https://turborepo.dev/schema.json",
   "globalPassThroughEnv": ["PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN"],
   "tasks": {
+    "@flowboard/ui#test": {
+      "cache": false,
+      "dependsOn": ["build", "storybook:build"],
+      "env": ["PLAYWRIGHT_BROWSERS_PATH"],
+      "outputs": []
+    },
     "api:generate": {
       "cache": false,
       "outputs": []
@@ -103,6 +109,21 @@
       "cache": false,
       "dependsOn": ["build"],
       "env": ["GITHUB_TOKEN", "GITHUB_REPOSITORY", "GITHUB_SHA", "GITHUB_REF"],
+      "outputs": []
+    },
+    "storybook": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "persistent": true
+    },
+    "storybook:build": {
+      "dependsOn": ["^build"],
+      "outputs": ["storybook-static/**"]
+    },
+    "storybook:test": {
+      "cache": false,
+      "dependsOn": ["storybook:build"],
+      "env": ["PLAYWRIGHT_BROWSERS_PATH"],
       "outputs": []
     },
     "test": {

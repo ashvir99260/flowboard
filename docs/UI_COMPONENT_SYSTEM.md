@@ -79,6 +79,8 @@ The later [P14 form system](FORM_SYSTEM.md) puts reusable React Hook Form bindin
 
 ## Action and live notifications
 
+The standalone [Storybook](STORYBOOK.md) demonstrates UI controls, domain presentation, shared overlays and notifications using local props and the shared theme. Its browser checks complement the application playground and end-to-end journeys.
+
 `ToastHost` wraps the application with one React Toastify renderer. Web passes a plain message and dismissal callback; UI owns themed styling and registers the innermost drawer/dialog as the toast's accessible region. Arrival never moves focus. Alt+T focuses the notification; its Dismiss button or Escape closes it. Escape from a focused toast leaves the underlying dialog open. Errors remain until dismissed; success/info use six seconds with hover/window-focus pause and reduced-motion styling.
 
 Web's notification store accepts one result per captured action, keeps at most five messages, and invalidates captured reporters on session changes. Existing form errors and conflict/retry controls remain visible. HTTP success alone does not produce a toast: task/config response validation must finish first. Ordinary reads, session refreshes and reconnect resync remain quiet.

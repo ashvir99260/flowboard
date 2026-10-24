@@ -29,7 +29,10 @@
     "openapi:check": "turbo run openapi:check",
     "docker:dev:check": "turbo run docker:dev:check",
     "client:check": "turbo run client:check",
-    "release:check": "turbo run release:check"
+    "release:check": "turbo run release:check",
+    "storybook": "turbo run storybook --filter=@flowboard/ui",
+    "storybook:build": "turbo run storybook:build --filter=@flowboard/ui",
+    "storybook:test": "turbo run storybook:test --filter=@flowboard/ui"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",

@@ -565,3 +565,11 @@ Date: 2026-10-25. Source: user request to split and improve AI skill/guidance do
 Keep root AGENTS as the task/security entry point. App/package AGENTS files describe their own boundary and route readers to canonical guides. Add an agent guide index, a frontend guide and a naming reference; reuse existing backend, forms, UI, style, quality and delivery guides. These are repository instructions, with no global agent settings or installed skills changed.
 
 Document actual conventions and identify their enforcement level. PascalCase applies to types/classes and component conventions, not every variable or external field. Kebab-case filenames and role suffixes are review conventions. Type-only/Node ESM paths follow compiler/runtime constraints; package.json order is preserved. Historical design research stays labeled and cannot override current implementation, explicit user requests or executable contracts.
+
+## D143 — Standalone UI Storybook with browser tests
+
+Date: 2026-10-25. Source: user request to add Storybook to the component library.
+
+Use Storybook's React/Vite framework in `packages/ui`, with pinned development dependencies, typed CSF stories, documentation, accessibility inspection and Vitest browser interactions. Its preview uses the shared theme through MUI's browser provider; the application provider retains its Next SSR cache integration. Local fixtures and controlled state demonstrate presentation only, without API calls, RHF adapters or app imports. Keep the existing web playground and real application tests.
+
+Expose localhost development, cached static build and browser test commands through Turbo. Keep stories/configuration outside `src`, type-check them separately and exclude generated output from Git/format/lint/image contexts. Story-only files and tooling do not change application release fingerprints; production source/compiler/build changes still do. No external Storybook hosting or paid service is part of this task.

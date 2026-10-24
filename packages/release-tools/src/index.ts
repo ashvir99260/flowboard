@@ -39,11 +39,20 @@ const canonical = (value: unknown): string =>
       : item,
   );
 const digest = (value: unknown) => createHash('sha256').update(canonical(value)).digest('hex');
-const productionFile = (path: string) =>
-  path.startsWith('public/') ||
-  !/(^|\/)(test|tests|__tests__|docs)(\/|$)|\.(test|spec)\.|\.md$|(^|\/)(eslint|prettier)|(^|\/)\.env(?:\.|$)|(^|\/)package\.json$/.test(
-    path,
+const productionFile = (path: string, workspace: string) => {
+  if (
+    workspace === 'packages/ui' &&
+    (/^(\.storybook|stories)\//.test(path) || path === 'tsconfig.storybook.json')
+  )
+    return false;
+
+  return (
+    path.startsWith('public/') ||
+    !/(^|\/)(test|tests|__tests__|docs)(\/|$)|\.(test|spec)\.|\.md$|(^|\/)(eslint|prettier)|(^|\/)\.env(?:\.|$)|(^|\/)package\.json$/.test(
+      path,
+    )
   );
+};
 const buildDependency = (name: string) => name === 'typescript' || name.startsWith('@types/');
 
 /** Reads committed snapshots only: local working changes cannot accidentally be released. */
@@ -161,7 +170,7 @@ export function planReleases({
         start: manifest.scripts?.start,
       };
       for (const [file, blob] of files)
-        if (file.startsWith(`${path}/`) && productionFile(file.slice(path.length + 1)))
+        if (file.startsWith(`${path}/`) && productionFile(file.slice(path.length + 1), path))
           inputs[file] = blob;
       const importer = lock.importers[path];
       if (!importer) throw new Error(`Missing importer ${path}`);
@@ -296,7 +305,8 @@ export function planReleases({
                 paths.some(
                   (path) =>
                     file.startsWith(`${path}/`) &&
-                    (file.endsWith('/package.json') || productionFile(file.slice(path.length + 1))),
+                    (file.endsWith('/package.json') ||
+                      productionFile(file.slice(path.length + 1), path)),
                 ),
               )
             )

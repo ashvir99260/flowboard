@@ -21,6 +21,8 @@ Use this map after the [root instructions](../../AGENTS.md). Read the guide for 
 
 ## Authority and maintenance
 
+For component examples and interactive checks, follow the [Storybook guide](../STORYBOOK.md).
+
 Schemas define contracts; executed passing tests provide evidence of runtime behavior. Test files alone do not prove behavior. Lint/compiler configuration determines automated enforcement. Guides explain ownership and conventions; they do not prove an implementation passes. Check [task evidence](../evidence/README.md) before making completion claims.
 
 Keep each rule in one detailed guide. Scoped AGENTS files provide the short boundary and links. When changing a code pattern, update its owning guide and concrete example links in the same task. Label future work and historical research explicitly instead of letting it read like current implementation.

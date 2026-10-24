@@ -1023,6 +1023,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: organize repository ai guidance`.
   - **Evidence:** [P17-01](evidence/P17-01.md).
 
+## Phase 18 — Component Storybook
+
+- [x] **P18-01 — Add an isolated Storybook for the UI library**
+  - **Goal:** Browse and exercise shared components without running the application or its services.
+  - **Requirements:** R23, R134, R139.
+  - **Files:** UI Storybook config/stories/tests/scripts, root Turbo/scripts, lockfile, dev-output ignores, release fingerprint regression, component/agent/README documentation and evidence.
+  - **Dependencies:** P17-01.
+  - **Acceptance:** Typed CSF stories cover controls, metadata, fields, board/navigation, domain views and overlays/notifications using local props. Light/dark themes reuse actual tokens; controls, accessibility inspection and target viewport presets work. Browser interaction checks run in the root test pipeline and static Storybook builds. No API/DB, global settings, hosted publishing or forms-to-UI dependency cycle. Stories stay out of library output and story-only edits do not release apps.
+  - **Validation:** Release regression red/green, Storybook browser interaction/accessibility tests, dev/static preview checks, root build/lint/typecheck/test/format and package boundary checks; G01–05/G10. No application image changes; Docker images remain outside this dev-tooling task.
+  - **Commit:** `feat: add ui component storybook`.
+  - **Evidence:** [P18-01](evidence/P18-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**
