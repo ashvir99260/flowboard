@@ -11,7 +11,7 @@ The implementation-ready [database and ER specification](docs/DATABASE_DESIGN.md
 
 The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for API usage and future changes.
 
-The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
+The [composable UI system](docs/UI_COMPONENT_SYSTEM.md) defines the P13 styled-component and package-ownership refinement. The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
 [Workspace RBAC and DTO/entity design](docs/BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 

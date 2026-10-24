@@ -39,7 +39,7 @@ test(
     await page.getByRole('heading', { exact: true, name: 'Choose a workspace' }).waitFor();
     assert.equal(
       await page.locator('body').evaluate((body) => getComputedStyle(body).backgroundColor),
-      'rgb(247, 248, 250)',
+      'rgb(250, 250, 250)',
     );
     assert.deepEqual(errors, []);
     assert.equal((await page.goto(`${origin}/playground`)).status(), 404);

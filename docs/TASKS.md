@@ -1,6 +1,6 @@
 # Flowboard Task Backlog
 
-Status: Local MVP implementation and release verification are complete through P12-03. External activation and future environment-promotion tasks remain unchecked. Execute top to bottom, one task at a time. Dependencies name the technical prerequisites; they do not authorize skipping ahead. Paths below are planned deliverables; check their current implementation and evidence. Small supporting edits are allowed only within the task's stated goal and must be recorded in its completion note.
+Status: Local MVP implementation and release verification are complete through P12-03. The user-requested P13 UI refinement is in progress. External activation and future environment-promotion tasks remain unchecked. Execute top to bottom, one task at a time. Dependencies name the technical prerequisites; they do not authorize skipping ahead. Paths below are planned deliverables; check their current implementation and evidence. Small supporting edits are allowed only within the task's stated goal and must be recorded in its completion note.
 
 Canonical behavior is in [PLAN.md](PLAN.md), the brief in [REQUIREMENTS.md](REQUIREMENTS.md), and defaults in [DECISIONS.md](DECISIONS.md). Read [AGENTS.md](../AGENTS.md) before execution.
 
@@ -932,6 +932,36 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Clean disposable checkout + volumes, all five healthy, full required suites, reproducible artifacts and final diff/security/accessibility review. Update completion evidence; do not reset user data.
   - **Commit:** `chore: verify clean checkout release workflow`.
   - **Completion evidence:** [P12-03](evidence/P12-03.md): clean frozen install, all workspace/contract gates, 964 tests and both Docker modes pass; requirement matrix reconciled, external activation remains open.
+
+## Phase 13 — Composable MUI presentation (user refinement)
+
+- [x] **P13-01 — Shared styled foundations and composition parts**
+  - **Goal:** Neutral, accessible MUI controls and reusable composition parts are owned by UI and adopted by authentication/workspace selection.
+  - **Requirements:** R23, R68, R69, R70, R134.
+  - **Files:** `packages/ui/src/{theme,primitives,composition,index}.ts*`, shared UI tests, auth/workspace-picker adapters, UI design/harness documentation.
+  - **Dependencies:** P12-03.
+  - **Acceptance:** MUI/Emotion SSR preserved; light/dark neutral tokens retain contrast; standard refs/attributes and disabled behavior work; Surface/Toolbar parts accept arbitrary children; auth forms keep RHF validation and session behavior. No new styling/widget dependency.
+  - **Validation:** Public UI render/interaction tests, built-app SSR/hydration, root build/lint/types/test, formatting; G01–05/G10.
+  - **Commit:** `feat: add composable styled ui foundations`.
+  - **Evidence:** [P13-01](evidence/P13-01.md).
+
+- [ ] **P13-02 — Shared controlled workspace and domain presentation**
+  - **Goal:** Reusable shell, board, table, drawer, timeline and configuration presentation lives in UI with plain props and composable slots.
+  - **Requirements:** R23, R62–R71, R134.
+  - **Files:** `packages/ui/src/components/*`, public exports/tests; web workspace, board, list, task and configuration adapters.
+  - **Dependencies:** P13-01.
+  - **Acceptance:** Web retains queries/session/permissions/RHF/DnD orchestration; UI has no API/router imports. DnD refs and dynamic styles survive; overlays retain labels/focus return; tables and configuration retain data and actions. Reusable styles use styled slots/tokens, not duplicated screen CSS.
+  - **Validation:** UI behavior and existing web interaction/regression tests; root build/lint/types/test and formatting; G01–05/G10.
+  - **Commit:** `refactor: compose web from shared ui views`.
+
+- [ ] **P13-03 — Enforce and verify the component system**
+  - **Goal:** Future web components consume the shared UI system, with visible examples and browser evidence.
+  - **Requirements:** R23, R69, R70, R134.
+  - **Files:** Shared ESLint boundary rules/tests, remaining web primitive imports, playground/examples, browser tests and docs/evidence.
+  - **Dependencies:** P13-02.
+  - **Acceptance:** Lint rejects direct Material control imports in web and UI imports of app/data concerns. Playground demonstrates compound parts, shared controls and domain views. Both themes, four widths, focus, contrast, reduced motion and actual task editing pass. Record implemented rules and limitations precisely.
+  - **Validation:** Positive/negative lint fixtures, real browser/playground checks, root build/lint/types/test/format; G01–05/G10/G12.
+  - **Commit:** `test: enforce the shared component system`.
 
 ## Explicitly deferred work
 

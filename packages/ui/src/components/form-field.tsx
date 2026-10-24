@@ -1,7 +1,8 @@
 'use client';
 
-import TextField from '@mui/material/TextField';
 import { useId } from 'react';
+
+import { TextField } from '../primitives.js';
 
 import type { TextFieldProps } from '@mui/material/TextField';
 

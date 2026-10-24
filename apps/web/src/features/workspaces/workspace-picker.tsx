@@ -2,12 +2,16 @@
 
 import { listWorkspacesInfiniteOptions } from '@flowboard/api-client/tanstack-query';
 import { WorkspacePageSchema } from '@flowboard/contracts';
-import { EmptyState, ErrorState } from '@flowboard/ui';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import {
+  Box,
+  Button,
+  EmptyState,
+  ErrorState,
+  Stack,
+  Surface,
+  Toolbar,
+  Typography,
+} from '@flowboard/ui';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -55,10 +59,7 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
 
   return (
     <Box component="main" sx={{ maxWidth: 760, mx: 'auto', p: { xs: 4, md: 8 } }}>
-      <Stack
-        direction="row"
-        sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 3, mb: 6 }}
-      >
+      <Toolbar.Root style={{ marginBottom: 24 }}>
         <Typography component="h1" variant="h1">
           Choose a workspace
         </Typography>
@@ -69,7 +70,7 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
         >
           Sign out
         </Button>
-      </Stack>
+      </Toolbar.Root>
       {error && <ErrorState title="Workspace unavailable" description={error} />}
       {query.isPending || (query.hasNextPage && !query.isError && !invalid) ? (
         <SessionLoading />
@@ -91,7 +92,7 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
       ) : (
         <Stack spacing={3}>
           {items.map((workspace) => (
-            <Paper key={workspace.id} variant="outlined">
+            <Surface.Root key={workspace.id}>
               <Button
                 disabled={changing}
                 fullWidth
@@ -112,7 +113,7 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
               >
                 {workspace.name} · {workspace.role}
               </Button>
-            </Paper>
+            </Surface.Root>
           ))}
         </Stack>
       )}

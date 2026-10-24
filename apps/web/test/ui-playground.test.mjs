@@ -59,11 +59,13 @@ test(
       const control = page.getByRole('button', {
         name: `${mode === 'light' ? 'Light' : 'Dark'} theme`,
       });
+      // Establish keyboard modality before focusing a specific control.
+      await page.keyboard.press('Tab');
       await control.focus();
       await page.keyboard.press('Enter');
       await page.waitForFunction(
         (expected) => getComputedStyle(document.body).backgroundColor === expected,
-        mode === 'light' ? 'rgb(247, 248, 250)' : 'rgb(16, 21, 29)',
+        mode === 'light' ? 'rgb(250, 250, 250)' : 'rgb(9, 9, 11)',
       );
       assert.equal(await control.getAttribute('aria-pressed'), 'true');
       assert.equal(

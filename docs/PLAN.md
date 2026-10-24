@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** The local MVP is implemented and verified through P12-03, including a clean checkout and both Docker modes. Updated 24 October 2026. Hosted preview activation, first publication and future environment promotion remain separately tracked.
+**Status:** The local MVP is implemented and verified through P12-03, including a clean checkout and both Docker modes. Updated 24 October 2026. The requested P13 composable-UI refinement is in progress. Hosted preview activation, first publication and future environment promotion remain separately tracked.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
@@ -16,7 +16,7 @@ The implementation-ready [database and ER specification](DATABASE_DESIGN.md) def
 
 The [REST API catalog](API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
 
-The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
+The [composable component system](UI_COMPONENT_SYSTEM.md) defines the user-requested Phase 13 presentation refinement. The [Linear-inspired MUI guide](UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
 [Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
