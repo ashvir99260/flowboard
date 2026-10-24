@@ -19,6 +19,9 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
+import { FormExamples } from './form-examples';
+import { InteractionExamples } from './interaction-examples';
+
 import type { ComponentProps, ReactNode } from 'react';
 
 const options = [
@@ -192,6 +195,8 @@ export function Playground() {
             )}
           </Stack>
         </Section>
+        <FormExamples />
+        <InteractionExamples />
       </Box>
     </Box>
   );

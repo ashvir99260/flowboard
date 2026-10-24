@@ -7,11 +7,18 @@ import { chromium } from '@playwright/test';
 
 import { startUpstream, startWeb } from './common/proxy-fixture.mjs';
 
-function luminance(color) {
+function luminance(color, background = 'rgb(255, 255, 255)') {
+  const backdrop = background
+    .match(/[\d.]+/g)
+    .slice(0, 3)
+    .map(Number);
+  const values = color.match(/[\d.]+/g).map(Number);
+  const opacity = values[3] ?? 1;
   const channels = color
     .match(/[\d.]+/g)
     .slice(0, 3)
     .map(Number)
+    .map((channel, index) => opacity * channel + (1 - opacity) * backdrop[index])
     .map((channel) => {
       const value = channel / 255;
 
@@ -79,11 +86,29 @@ test(
 
         return [style.color, style.backgroundColor];
       });
-      const levels = colors.map(luminance).sort((a, b) => b - a);
+      const levels = colors.map((color) => luminance(color)).sort((a, b) => b - a);
       assert.ok(
         (levels[0] + 0.05) / (levels[1] + 0.05) >= 4.5,
         `${mode} overflow avatar text must meet AA contrast`,
       );
+      const form = page.getByRole('form', { name: 'Task field example' });
+      const outlines = await form.getByLabel('Effort', { exact: true }).evaluate((element) => ({
+        background: getComputedStyle(element.closest('section')).backgroundColor,
+        color: getComputedStyle(element.parentElement.querySelector('fieldset')).borderTopColor,
+      }));
+      const underline = await form
+        .getByRole('combobox', { name: /^Team\b/ })
+        .evaluate((element) => ({
+          background: getComputedStyle(element.closest('section')).backgroundColor,
+          color: getComputedStyle(element.parentElement, '::before').borderBottomColor,
+        }));
+      for (const { color, background } of [outlines, underline]) {
+        const levels = [luminance(color, background), luminance(background)].sort((a, b) => b - a);
+        assert.ok(
+          (levels[0] + 0.05) / (levels[1] + 0.05) >= 3,
+          `${mode} input boundary must meet 3:1 contrast`,
+        );
+      }
       for (const width of [320, 768, 1024, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
         await page.screenshot({

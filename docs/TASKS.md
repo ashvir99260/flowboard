@@ -766,13 +766,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: build shared mui display components`.
   - **Completion evidence:** [P08-01](evidence/P08-01.md).
 
-- [ ] **P08-02 — Typed forms and interaction primitives**
+- [x] **P08-02 — Typed forms and interaction primitives**
   - **Goal:** Build dynamic fields, confirmation, tree and card/column presentation used by views.
-  - **Files:** `packages/ui/src/components/{custom-field-input,form-field,confirm-dialog,tree-item,kanban-column,kanban-card}.tsx`, `packages/ui/test/inputs.test.tsx`, playground stories.
+  - **Requirements:** R12, R23, R68, R70.
+  - **Files:** `packages/ui/src/components/{custom-field-input,form-field,confirm-dialog,tree-item,kanban-column,kanban-card}.tsx`, `packages/ui/test/inputs.test.mjs`, semantic input-border theme styles, web typed form adapters/playground/browser tests, pinned form dependencies and task evidence.
   - **Dependencies:** P08-01.
   - **Acceptance:** All six custom-field inputs, explicit null/blank mapping, accessible labels/errors, focus trap/return and composable controlled props. React Hook Form adapters use shared schemas without copying types. Components contain no fetching.
   - **Validation:** Zero/false, empty date/number, select ID, dynamic option removal, keyboard tree/confirm and stable field-array identity; standard gate.
   - **Commit:** `feat: add shared form and board primitives`.
+  - **Completion evidence:** [P08-02](evidence/P08-02.md).
 
 - [ ] **P08-03 — Auth pages, providers and visible sidebar**
   - **Goal:** Connect generated transport to an authenticated app shell.
