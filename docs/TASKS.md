@@ -913,13 +913,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `test: verify flowboard user journeys end to end`.
   - **Completion evidence:** [P12-01](evidence/P12-01.md): 955 tests pass, including all four real-service Playwright journeys, axe/keyboard/responsive checks, seed validation and corrected browser-first cleanup.
 
-- [ ] **P12-02 — Operational docs and second-channel cookbook**
+- [x] **P12-02 — Operational docs and second-channel cookbook**
   - **Goal:** Make the app understandable and usable without its web UI.
-  - **Files:** `README.md`, `scripts/curl-cookbook.md`, `docs/api-events.md`, `docs/DECISIONS.md`, `docs/system-design.docx` refreshed only for design changes.
+  - **Requirements:** R41, R51, R77, R78, R85, R86, R87, R88, R89.
+  - **Files:** `README.md`, `ARCHITECTURE.md`, `docs/API_CATALOG.md`, `scripts/curl-cookbook.md`, `docs/api-events.md`, decisions/matrix/evidence records; `docs/system-design.docx` refreshed only for design changes.
   - **Dependencies:** P12-01, P11-05.
   - **Acceptance:** README covers every requested section: run/ports/users, Mermaid architecture plus load-board/drag flow, model, exact resolution rules, archive policy, auth/OIDC, permission/team evolution, scalability/indexes, splits/tradeoffs and tests in Docker. Cookbook logs in with cookie jar, refreshes, loads/edits/moves a task and handles errors. Event examples are schema-valid and clearly not a deployed webhook service.
   - **Validation:** Execute cookbook against demo services, schema-check event examples, verify links/commands/credentials and no real tokens committed; standard gate.
   - **Commit:** `docs: explain operations and shared api contracts`.
+  - **Completion evidence:** [P12-02](evidence/P12-02.md): executable real-service cookbook, schema-valid event examples, architecture/operations review and document gates pass.
 
 - [ ] **P12-03 — Clean-checkout release gate and polish**
   - **Goal:** Prove a new developer can build/run/test without undocumented setup.

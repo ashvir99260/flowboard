@@ -2,11 +2,11 @@
 
 A self-hosted project management app for learning sound architecture at hobby scale.
 
-**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Shared MUI display/input components, light/dark themes, typed form examples, tree items, cards and confirmation dialogs are available in the development playground. The web supports signup/login, session restoration, workspace switching and a paginated permission-aware sidebar. Selected lists offer a Kanban board with accessible card moves, a sortable table with resolved custom-field columns, and a validated create/edit/archive task drawer. The BullMQ worker stores status-change activity, and the task drawer shows its paginated feed without resetting unsaved edits. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while realtime delivery remains in the backlog.
+**Current state:** The modular API, tenant permissions, inherited statuses/custom fields, task board/table/drawer, configuration editors, activity worker and authenticated realtime collaboration are implemented. Shared contracts generate the OpenAPI client. Local Docker and host-development workflows are available; hosted preview activation remains a separate external setup. See task evidence for tested behavior and outstanding release gates.
 
 Boards display only a consistent set of status, field and task revisions. A concurrent configuration or task change restarts loading, with a visible retry after repeated changes. Refreshing the board, returning to the tab or reconnecting starts again at the first page of every column. Use each column's **Load more** button to load additional cards; column counts describe loaded cards. Wider boards scroll inside their own region on small screens.
 
-Use a card's **Drag** handle to change status or order. Keyboard users can pick up with Space or Enter, move with arrow keys, drop with Space or Enter, and cancel with Escape. Dropping outside the columns cancels. The **Move** button provides the same operations plus another visible destination list, placement controls and required custom-field corrections. Fields unavailable in the destination are explicitly listed before clearing. Saving disables repeat actions for that task; rejected moves roll back their own preview and show the error without discarding the form. Every completed save refreshes affected open boards. Moving to the end of a partially loaded column may put the card on a later page.
+Use a card's **Drag** handle to change status or order. Keyboard users can pick up with Space, move with arrow keys, drop with Space, and cancel with Escape. Dropping outside the columns cancels. The **Move** button provides the same operations plus another visible destination list, placement controls and required custom-field corrections. Fields unavailable in the destination are explicitly listed before clearing. Saving disables repeat actions for that task; rejected moves roll back their own preview and show the error without discarding the form. Every completed save refreshes affected open boards. Moving to the end of a partially loaded column may put the card on a later page.
 
 Choose **List** to see built-in fields and the list's actual resolved custom fields, labeled **Inherited** or **Local**. Sort by due date, priority or board order; empty due dates stay last. Apply one typed custom-field filter, or clear it to see all tasks. Multi-select filters match one selected option. View, sort and filter stay in the URL for sharing and browser history; cursors remain internal. **Load more tasks** adds the next server page. Changing lists or filters, refreshing, returning to the tab and completed moves start a new consistent page chain. On narrow screens, focus the table region and scroll horizontally to reach every column.
 
@@ -14,13 +14,15 @@ Open a card's task title or a table title to edit its built-in fields and resolv
 
 Administrators can open **Status settings** in the sidebar and select a workspace, space, folder or list. The effective preview uses the same resolver as the API. Add a status or edit one at a time; blank display fields inherit an ancestor's value, and visibility can inherit, show or hide. **Remove local override** restores ancestor configuration. The API rejects changes that invalidate descendant tasks or remove in-use statuses. Dirty drafts survive navigation inside the current workspace and require explicit reload after a conflict; leaving that workspace ends the retained editor. Members continue to see effective statuses on lists without configuration controls.
 
+Visibility grants let members work on visible tasks; they do not grant configuration administration. Status/field changes remain admin-only because a single ancestor edit can affect many descendant lists and tasks. This keeps the hobby permission model explicit until separate edit/configuration capabilities are designed.
+
 **Field settings** supports all six field types at the same scopes. An inherited field can be copied into a complete local definition; removing the local override restores the ancestor when existing task values allow it. Option identities survive renames and reordering. Type changes, option removal and required-field promotion are rejected if they invalidate live tasks, with the draft retained. The effective preview accepts sample values without saving them to tasks.
 
 The [system design](docs/SYSTEM_DESIGN.md) covers the UI, backend, database ERD and request/event flows. [ClickUp/Asana/Linear research](docs/REFERENCE_ARCHITECTURES.md) explains the public patterns behind it, with sources and explicit limits on what is known.
 
 The implementation-ready [database and ER specification](docs/DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
-The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for API usage and future changes.
 
 The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
@@ -29,6 +31,63 @@ The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to ou
 [Backend coding guide](docs/BACKEND_GUIDELINES.md) defines the feature-based NestJS layout, module boundaries, DTO/entity rules and Swagger workflow used for backend changes.
 
 [Field validation reference](docs/FIELD_REFERENCE.md) defines every stored/embedded field and its enforcement layer; paginated APIs use cursor/limit only.
+
+## Architecture and request flow
+
+`apps/web` owns routes, session state and generated queries. `packages/ui` contains presentational MUI components. Nest feature modules own policy/orchestration; `packages/database` owns Prisma, tenant-scoped repositories and transactions. Shared Zod contracts supply DTOs, validation, OpenAPI and pure resolution algorithms.
+
+```mermaid
+flowchart LR
+  Browser[Browser: Next.js and MUI] --> Client[Generated Hey API client / TanStack Query]
+  Curl[curl / other clients] --> REST[REST /v1]
+  Client --> Proxy[Next same-origin proxy]
+  Proxy --> REST
+  subgraph Boundary[API authentication and authorization boundary]
+    REST --> Guards[JWT + DB membership + PermissionGuard]
+    Guards --> Features[Workspace / hierarchy / status / field / task modules]
+    Features --> Resolve[Shared status and field resolvers]
+    Features --> Repos[Tenant repositories and transaction locks]
+    Socket[Socket.IO gateway + Redis adapter] --> Guards
+    Outbox[Outbox dispatcher]
+  end
+  Repos --> DB[(PostgreSQL)]
+  DB --> Outbox
+  Outbox --> Redis[(Redis / BullMQ)]
+  Redis --> Worker[Activity worker]
+  Worker --> DB
+  Worker --> Redis
+  Redis --> Socket
+  Socket --> Browser
+```
+
+```mermaid
+sequenceDiagram
+  participant UI as Board / generated client
+  participant API as API guards and services
+  participant DB as Tenant repositories / PostgreSQL
+  participant Worker as Redis / worker / gateway
+  UI->>API: GET resolved statuses, fields and task pages
+  API->>DB: Verify membership and ancestor permissions; consistent reads
+  DB-->>API: Data and configuration revisions
+  API-->>UI: Typed responses
+  Note over UI: Render only matching revisions, including empty columns
+  UI->>UI: Optimistic move with rollback snapshot
+  UI->>API: POST task move with expected versions and placement
+  API->>DB: Lock workspace, recheck access, resolve destination and validate
+  alt Invalid, forbidden or stale
+    API-->>UI: Typed 400 / 403 / 404 / 409
+    UI->>UI: Roll back and refetch current state
+  else Valid
+    API->>DB: Commit task + versions + outbox atomically
+    API-->>UI: Authoritative task response
+    DB->>Worker: Durable outbox dispatch
+    Worker->>DB: Idempotent activity for status changes
+    Worker-->>UI: Minimal authorized socket invalidation
+    UI->>API: Refetch through generated operations
+  end
+```
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for module boundaries and [the ER model](docs/DATABASE_DESIGN.md) for every field, type and relationship. All tenant-owned records carry `workspaceId`; all 15 persisted models carry `createdAt` and `updatedAt`. Composite tenant foreign keys and a fail-closed repository boundary prevent cross-tenant links. Tasks have one primary list, stable status identities, explicit revisions and JSONB custom values. Containers/tasks archive through `archivedAt`; ordinary reads hide them, while historical records remain.
 
 ## Local tooling
 
@@ -44,9 +103,15 @@ pnpm test
 pnpm format:check
 ```
 
-`pnpm format` applies the shared Prettier rules to every workspace plus root configuration and documentation. The original requirements are preserved verbatim. Tests cover package boundaries, application start/stop, shared domain rules, and real PostgreSQL/Redis integration for the implemented backend. Browser user-flow suites cover authentication, workspace/list navigation, session expiry, task editing and responsive keyboard controls. The root test command also runs the Playwright journey in `apps/web/e2e/task-edit.spec.ts` against local API/web processes and fresh PostgreSQL/Redis test containers: login, list columns, field save/reload, Bob’s restricted tree and concurrent-edit recovery. It requires Docker and installed Chromium; no external hosted services are contacted. Runtime libraries expose compiled outputs; tool configurations are directly consumable so first-time builds need no generated files.
+`pnpm format` applies the shared Prettier rules to every workspace plus root configuration and documentation. The original requirements are preserved verbatim. Tests cover package boundaries, application start/stop, shared domain rules, and real PostgreSQL/Redis integration for the implemented backend. Browser user-flow suites cover authentication, workspace/list navigation, session expiry, task editing and responsive keyboard controls. The root test command discovers every `apps/web/e2e/*.spec.ts` journey and gives each fresh API/web/worker processes and PostgreSQL/Redis containers. These cover login, exact sibling columns, field save/reload, same-browser role changes, socket updates, stale-write rollback and axe/keyboard/responsive checks. It requires Docker and installed Chromium; no external hosted services are contacted. Runtime libraries expose compiled outputs; tool configurations are directly consumable so first-time builds need no generated files.
 
 On resource-constrained laptops, `pnpm test --concurrency=2` runs the same complete suite with fewer simultaneous Turbo tasks. Run Docker checks afterward. CI keeps its parallel build, lint, type and test jobs.
+
+### Tests using Docker
+
+Start Docker Engine/Desktop, install the pinned Node/pnpm toolchain and Chromium as above, then run `pnpm test`. Tests automatically create uniquely named PostgreSQL/Redis containers; Node, the API, worker and Chromium run on the host. No manually created test database or running development stack is required. Fixtures clean up only their own containers and use separate data, never the development database. Docker unavailability fails the suites rather than silently skipping them.
+
+`pnpm docker:check` separately builds and boots all five application services, checks readiness and verifies restart persistence. It uses an isolated Compose project; it does not replace the behavioral suite. Production app images intentionally omit test files and dev dependencies, so `docker compose exec api pnpm test` is not a supported test command. CI runs the same workspace and Compose checks in parallel jobs on public-repository runners.
 
 Run `pnpm hooks:install` once to enable the repository-local commit-message check. [Code-quality conventions](docs/CODE_QUALITY.md) explain the commit policy, manual checks and CI validation.
 
@@ -165,7 +230,7 @@ Use `localhost` in local browser URLs and host-side connection settings. Compose
 
 ### Initialization and demo accounts
 
-The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API and worker readiness check PostgreSQL and Redis with bounded timeouts. Task boards, editing, configuration and the activity feed are available; socket collaboration remains the next feature.
+The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API and worker readiness check PostgreSQL and Redis with bounded timeouts. Task boards, editing, configuration and the activity feed are available; authenticated socket collaboration updates other authorized clients.
 
 Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `carol@example.com` (members), plus `dan@example.com` in a second tenant. Their development-only password is `FlowboardDemo123!`, stored as individually salted Argon2id hashes. Alice is also a member of the second tenant. The main tenant contains 24 tasks across three lists, four field definitions across all four scopes, inherited/overridden statuses, one private list and one list denying Bob. The second tenant has three tasks. Use `POST /v1/auth/login` with `{ "email": "alice@example.com", "password": "FlowboardDemo123!" }` and an allowed `Origin` header (for example `http://localhost:3000`). `POST /v1/auth/signup` also accepts `name` and `workspaceName`; it creates a separate workspace/admin/default statuses. Both return a 15-minute access token and set an httpOnly refresh cookie. Use `POST /v1/auth/refresh` with the refresh cookie and allowed Origin to rotate it; use `POST /v1/auth/logout` to revoke the family and expire the cookie. Both accept an empty body. A reused refresh cookie revokes the whole family, so the client session transport coordinates concurrent refresh requests.
 
@@ -198,13 +263,19 @@ Run `pnpm docker:dev:check` to verify live app/shared-package edits and compile-
 | [Evidence directory](docs/evidence/README.md)           | Inspect what has actually been checked.                                   |
 | [System Design companion](docs/system-design.docx)      | Read the template-based Word overview; Markdown remains canonical.        |
 
-Future README sections for one-command startup, ports, demo users, API examples, operations and Docker tests are tracked in P12-02, with runnable setup added as the relevant foundation tasks land. Documentation is not a claim those capabilities already work.
+The [curl walkthrough](scripts/curl-cookbook.md) exercises the same API without the UI. [Event contracts](docs/api-events.md) explain internal events, public socket signals and future webhook boundaries.
 
 ## Local code navigation
 
 Optional [Graphify navigation](docs/GRAPHIFY.md) builds a local code graph with `graphify update .`. Graphs, reports and caches stay Git-ignored; Codex uses focused queries to find relevant source.
 
 The [AI coding tool guide](docs/AI_TOOLS.md) adds Serena symbol navigation, pinned ast-grep searches and local Gitleaks checks. Optional [Reverse Engineer Anything](docs/REA.md) inspects built JavaScript artifacts through an isolated local CLI. Tool installations, reports and local agent state stay out of Git.
+
+## Realtime runtime configuration
+
+Set `REALTIME_PUBLIC_URL` on the web server to the browser-reachable API origin, for example `http://localhost:3001`. It is read at request time, separately from server-only `API_INTERNAL_URL`. Compose supplies the local default; hosted preview uses its public HTTPS API URL. Add the exact web origin to the API's `AUTH_ALLOWED_ORIGINS` and the web's `WEB_ALLOWED_ORIGINS`. An empty realtime URL deliberately disables sockets.
+
+Sockets use WebSocket transport with an in-memory JWT in the handshake, never the URL. The API checks current session/membership and list permissions, expires connections with the JWT, and rechecks access before delivery. Signals contain no task content or hidden destination. The browser refetches authorized state, deduplicates repeated events and catches up after reconnect; dirty editors preserve input and require explicit conflict resolution. Redis loss affects readiness and sockets, while committed task changes remain in PostgreSQL's retryable outbox.
 
 ## Independent releases and hosting
 
@@ -220,17 +291,17 @@ Generate contracts with `pnpm gen:api`. The isolated Nest bootstrap exports real
 
 The public `@flowboard/api-client/session` export provides `setupClient({ onSessionChange })` in browsers, defaulting to the current web origin plus `/api`. Server callers supply explicit `baseUrl` and `origin`. Pass its `client` to generated SDK functions or TanStack options; use its `login`, `signup`, `refresh`, `switchWorkspace` and `logout` helpers for coordinated cookie operations. Sessions stay in memory. Concurrent401s share one refresh and replay once;403s and network errors do not refresh. Cancelled requests and responses belonging to an old login/workspace are discarded. `getSession` returns a copy; `dispose` closes an instance permanently.
 
-In browsers, Web Locks serialize cookie changes and localStorage stores only an opaque revision to invalidate other tabs. Login/logout/workspace changes require other tabs to reauthenticate; tokens are never shared. Missing or failing browser coordination fails closed. Connect `onSessionChange` to query-cache/socket cleanup in the forthcoming UI integration. For SSR, create one client per incoming request; a custom request-scoped cookie adapter is required for refresh because Node fetch has no browser cookie jar. Browser REST requests use the same-origin proxy described below.
+In browsers, Web Locks serialize cookie changes and localStorage stores only an opaque revision to invalidate other tabs. Login/logout/workspace changes require other tabs to reauthenticate; tokens are never shared. Missing or failing browser coordination fails closed. The app provider connects `onSessionChange` to query-cache/socket cleanup. For SSR, create one client per incoming request; a custom request-scoped cookie adapter is required for refresh because Node fetch has no browser cookie jar. Browser REST requests use the same-origin proxy described below.
 
 Browser requests to `/api/v1/*` pass through a server-only Next route to API `/v1/*`. Set `API_INTERNAL_URL` to the API HTTP(S) origin and `WEB_ALLOWED_ORIGINS` to exact, comma-separated web origins in the **web server runtime**. For local host development use `http://localhost:3001` and `http://localhost:3000`; Compose sets the internal API origin to `http://api:3001`. For a Vercel preview, configure its exact HTTPS URL here and in the API's `AUTH_ALLOWED_ORIGINS`, and use the hosted API HTTPS origin. These settings are read per request, so a built image can be promoted without baking environment URLs into browser assets.
 
-The proxy forwards only approved headers and the host-only `flowboard_refresh` cookie, preserves separate Set-Cookie values, validates mutation Origins, caps bodies at 256 KiB, disables caching and rejects redirects/ambiguous paths. Swagger and CLI clients keep calling the API directly. Forwarded client-IP headers are discarded: hobby previews conservatively share the proxy's socket-IP rate-limit bucket until a provider-authenticated IP policy is added. The browser transport tests use a controlled upstream to verify cookie ownership/rotation; the complete product UI E2E path remains in later tasks.
+The proxy forwards only approved headers and the host-only `flowboard_refresh` cookie, preserves separate Set-Cookie values, validates mutation Origins, caps bodies at 256 KiB, disables caching and rejects redirects/ambiguous paths. Swagger and CLI clients keep calling the API directly. Forwarded client-IP headers are discarded: hobby previews conservatively share the proxy's socket-IP rate-limit bucket until a provider-authenticated IP policy is added. The browser transport tests use a controlled upstream to verify cookie ownership/rotation; the real-service product journeys also verify saved fields, permissions, live updates and stale-write rollback.
 
-Auth runtime requires `AUTH_SECRET` (32+ bytes) and comma-separated `AUTH_ALLOWED_ORIGINS`. Hosted environments use a newly generated secret, exact HTTPS UI origins, `AUTH_ALLOW_INSECURE_HTTP=false`, and `DEMO_SEED=false`. The local Compose credentials and secret are deliberately public development defaults. The API refuses the known local secret when secure mode is selected. Browser access tokens belong in memory; refresh credentials never appear in JSON and only SHA-256 digests are stored. Signup/login enforce Origin and return `Cache-Control: no-store`; credential failures are generic401. Login limits are 100 per socket IP and 10 per IP/email per 15 minutes; signup is 10 per IP/hour. Refresh and logout each allow 120 per IP/minute. 429 includes `Retry-After`. Forwarded IP headers are untrusted; configure an authenticated proxy policy in P07-04 before hosted proxy auth, rather than accepting arbitrary client headers.
+Auth runtime requires `AUTH_SECRET` (32+ bytes) and comma-separated `AUTH_ALLOWED_ORIGINS`. Hosted environments use a newly generated secret, exact HTTPS UI origins, `AUTH_ALLOW_INSECURE_HTTP=false`, and `DEMO_SEED=false`. The local Compose credentials and secret are deliberately public development defaults. The API refuses the known local secret when secure mode is selected. Browser access tokens belong in memory; refresh credentials never appear in JSON and only SHA-256 digests are stored. Signup/login enforce Origin and return `Cache-Control: no-store`; credential failures are generic401. Login limits are 100 per socket IP and 10 per IP/email per 15 minutes; signup is 10 per IP/hour. Refresh and logout each allow 120 per IP/minute. 429 includes `Retry-After`. Forwarded IP headers are untrusted; a future provider-specific client-IP policy must authenticate those headers before trusting them.
 
 Workspace administration is available through Swagger and the generated client: `GET /v1/me`, cursor-paginated `GET /v1/workspaces`, and `GET/POST/PATCH/DELETE /v1/workspaces/{workspaceId}/members` (PATCH/DELETE include `{userId}`). Administrators manage memberships; ordinary members can list names and roles but see only their own email. Mutations require the `expectedConfigVersion` returned by the member page. The last administrator cannot be removed or demoted. Removing a member clears their grants/assignments and records task changes atomically while retaining historical activity.
 
-Create a 48-hour invitation with `POST /v1/workspaces/{workspaceId}/invitations` using `{email,role,expectedConfigVersion}`. Privately share the returned token; it is shown once and only its digest is stored. The recipient signs in, then sends `{token}` to `POST /v1/invitations/accept`. Acceptance requires the same email, rejects expired/reused tokens and never upgrades an existing member. It does not select the new workspace or send email; an invitation form is a later UI task.
+Create a 48-hour invitation with `POST /v1/workspaces/{workspaceId}/invitations` using `{email,role,expectedConfigVersion}`. Privately share the returned token; it is shown once and only its digest is stored. The recipient signs in, then sends `{token}` to `POST /v1/invitations/accept`. Acceptance requires the same email, rejects expired/reused tokens and never upgrades an existing member. It does not select the new workspace or send email; invitation management is currently an API operation.
 
 Select a joined workspace with `POST /v1/auth/switch-workspace` and `{workspaceId}`, sending both the current bearer token and refresh cookie with an allowed Origin. Switching rotates that cookie within the same login family and preserves its expiry; tokens for the previous selected workspace stop working. Other browser/login families are unchanged. If the selected membership is removed, a still-valid token can use `/v1/me`, list workspaces, accept an invite and switch to another membership. Normal workspace access and refresh remain forbidden until recovery or a fresh login. Member-page cursors bind the current configuration revision; discard and restart after `CURSOR_STALE`. Cursors expire after 15 minutes and cannot be reused with another caller, resource or page limit.
 
@@ -252,7 +323,7 @@ Administrators manage explicit grants using `GET/PUT /v1/nodes/{nodeId}/grants` 
 
 The API tentatively applies the new parent inside its transaction, validates every resulting live scope and descendant task, and rolls everything back if any status, field value or retained assignee becomes invalid. It validates empty scopes too. Grants and task data stay attached to their existing resources; visibility follows the new ancestor chain. A successful move updates changed sibling/node versions once and advances both workspace revisions once. Descendant task versions and archived history remain unchanged.
 
-The shared `resolveStatuses` function walks an explicit workspace → space → folder → list path. It merges by immutable key while retaining the canonical status ID/category. A first definition supplies name, color and position; later nonnull values override individual attributes. Null inherits. A hidden status remains in the internal map so a deeper `hidden:false` can restore it; a display-only edit leaves it hidden. Visible results sort by position, key and ID and must include not_started, active and done (closed is optional). The function returns either valid items or typed validation issues. Each item includes the introducing owner and per-attribute override provenance for future configuration previews. The status endpoints validate affected descendant lists and in-use task references under the workspace configuration lock; the administrator settings page previews the same resolution rules.
+The shared `resolveStatuses` function walks an explicit workspace → space → folder → list path. It merges by immutable key while retaining the canonical status ID/category. A first definition supplies name, color and position; later nonnull values override individual attributes. Null inherits. A hidden status remains in the internal map so a deeper `hidden:false` can restore it; a display-only edit leaves it hidden. Visible results sort by position, key and ID and must include not_started, active and done (closed is optional). The function returns either valid items or typed validation issues. Each item includes the introducing owner and per-attribute override provenance used by configuration previews. The status endpoints validate affected descendant lists and in-use task references under the workspace configuration lock; the administrator settings page previews the same resolution rules.
 
 ### Custom-field configuration
 
@@ -272,7 +343,7 @@ Use `GET /v1/workspaces/{workspaceId}/members?assignableToListId={listId}` for e
 
 Writes recheck access and configuration under the workspace lock. Each real mutation advances dataVersion once, leaves configVersion unchanged, and commits its outbox event atomically. Creation emits `task.created`; edits/archives emit `task.updated` with sanitized changes and no raw title, description or field values.
 
-The API dispatches committed task, hierarchy and configuration events to BullMQ. PostgreSQL retains delivery intent: concurrent dispatchers claim bounded batches with expiring database-clock leases and fresh fencing tokens. Jobs carry only `{schemaVersion, eventId, workspaceId}` and use the event UUID as their stable ID. Redis acceptance marks an event `queued`, never `delivered`. Queued events are rechecked every 30 seconds, expired claims recover, and transient failures retry with capped exponential delay. Invalid persisted envelopes are quarantined with a sanitized error code. The dispatcher starts only in the running API, not during OpenAPI export, and stops with the application. The worker validates each job against its persisted event, takes a separate processing lease, and inserts one activity per status-change event. Publication is retried after an interrupted insert/publish handoff; delivery completes only after Redis accepts the invalidation. Other supported events publish invalidations without creating status activity. Socket delivery remains the next feature.
+The API dispatches committed task, hierarchy and configuration events to BullMQ. PostgreSQL retains delivery intent: concurrent dispatchers claim bounded batches with expiring database-clock leases and fresh fencing tokens. Jobs carry only `{schemaVersion, eventId, workspaceId}` and use the event UUID as their stable ID. Redis acceptance marks an event `queued`, never `delivered`. Queued events are rechecked every 30 seconds, expired claims recover, and transient failures retry with capped exponential delay. Invalid persisted envelopes are quarantined with a sanitized error code. The dispatcher starts only in the running API, not during OpenAPI export, and stops with the application. The worker validates each job against its persisted event, takes a separate processing lease, and inserts one activity per status-change event. Publication is retried after an interrupted insert/publish handoff; delivery completes only after Redis accepts the invalidation. Other supported events publish invalidations without creating status activity. Socket delivery invalidates authorized clients, which refetch current state.
 
 `GET /v1/tasks/{taskId}/activity` rechecks the current task and ancestor permissions for each cursor-only page. Its descending creation-time/ID order retains the first page’s upper watermark and a fixed 15-minute cursor expiry. The drawer shows the original actor, action time and status IDs with current labels when available; labels are not a historical snapshot. It refreshes in the foreground and provides controls for older entries and retry. Activity refresh does not replace task-form drafts.
 
@@ -291,3 +362,11 @@ Both affected columns are renumbered densely using all live tasks. Every changed
 Task pages accept `limit` (1–100), `cursor`, `sort=manual|dueDate|priority`, and `direction=asc|desc` (manual supports asc). Manual order follows resolved statuses, then card position/ID. Due dates place nulls last in either direction; ties use ascending IDs. Filters are `statusId`, `assigneeId`, `priority`, or one complete `fieldKey`/`fieldOperator`/`fieldValue` triplet. Field values are JSON-encoded scalars: `3`, `false` or `"Platform"`; `eq` matches a typed scalar, and `contains` matches one multi-select option ID. Invalid field types/options return400 with paths.
 
 Continue with the returned cursor and identical query. Cursors expire after fifteen minutes and are bound to the caller, workspace, list and query. A changed configuration or task-data revision returns409 CURSOR_STALE; restart from the first page. No page numbers, offsets or hidden totals are exposed.
+
+## Scaling, trade-offs and next steps
+
+The API keeps authoritative state in PostgreSQL and shared authentication/rate-limit/queue data in Redis. Additional API instances can serve the same tenant; the Socket.IO Redis adapter connects their local clients. WebSocket-only transport avoids polling affinity; enabling long-polling later requires sticky sessions. Redis Pub/Sub is a notification channel, not a replay log. Reconnect refetch and durable outbox retries cover those distinct failure modes.
+
+Current indexes lead with tenant/resource context: nodes use workspace/parent/archive/position, grants workspace/user/resource, board tasks workspace/list/archive/status/position, table tasks due date or priority, and activity workspace/task/time/ID. Owner/key uniqueness supports status and field resolution. Custom-field JSONB predicates are parameterized but do not have a universal GIN index; profile actual fields and add targeted expression/GIN indexes or a typed value table when volume warrants it. Numeric sibling positions require rewriting affected siblings, and the workspace write lock serializes mutations. These choices simplify invariants at hobby scale. Large trees currently read the workspace graph before permission filtering/pagination.
+
+Keep this modular monolith until workload or ownership justifies a split. The existing worker is the first independent process. Search indexing (explicit `TODO(NEXT-01)`), notifications/webhook delivery, or realtime fanout could later become separate services using versioned events and idempotent consumers. Do not split transactional task/configuration policy from its database boundary without redesigning consistency. OIDC, team grants, restore, attachments and build-once environment promotion remain future work. Hosted preview activation requires the external provider configuration described in [CI/CD](docs/CI_CD.md).
