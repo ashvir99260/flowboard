@@ -19,7 +19,7 @@ import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
 import { useSession } from '../../providers/app-providers';
 import { SessionGate, SessionLoading } from '../auth/session-gate';
-import { Board } from '../board/board';
+import { ListViews } from '../list/list-view';
 import { Sidebar } from '../tree/sidebar';
 
 import type { QueryScope } from '../../lib/query-scope';
@@ -95,7 +95,7 @@ function SelectedList({
           {new Date(list.updatedAt).toLocaleDateString()}
         </Typography>
       </Box>
-      <Board listId={listId} />
+      <ListViews listId={listId} />
     </Stack>
   );
 }

@@ -32,9 +32,11 @@ export function status(id, key, category, position, name = key) {
 }
 
 export function field(key, type, required = false, position = 0) {
+  const id = `40000000-0000-4000-8000-${String(position + 1).padStart(12, '0')}`;
+
   return ResolvedFieldSchema.parse({
     ...ResolvedFieldSchema.meta().example,
-    id: `40000000-0000-4000-8000-${String(position + 1).padStart(12, '0')}`,
+    id,
     workspaceId,
     ownerId: workspaceId,
     key,
@@ -42,7 +44,7 @@ export function field(key, type, required = false, position = 0) {
     type,
     required,
     position,
-    source: { ...ResolvedFieldSchema.meta().example.source, ownerId: workspaceId },
+    source: { ...ResolvedFieldSchema.meta().example.source, fieldId: id, ownerId: workspaceId },
     options: type === 'single_select' ? [{ id: ids.option, label: 'Web', color: '#2563EB' }] : [],
   });
 }
