@@ -1,6 +1,11 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-import { TimestampSchema, TreePositionSchema, UuidSchema } from '@flowboard/contracts';
+import {
+  TaskPositionSchema,
+  TimestampSchema,
+  TreePositionSchema,
+  UuidSchema,
+} from '@flowboard/contracts';
 import { z } from 'zod';
 
 import { ApiException } from './errors/api-exception.js';
@@ -23,6 +28,14 @@ const treePayloadSchema = payloadSchema.extend({
   dataVersion: z.number().int().positive(),
 });
 
+const taskPayloadSchema = payloadSchema.extend({
+  kind: z.literal('tasks'),
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  after: TaskPositionSchema,
+  configVersion: z.number().int().positive(),
+  dataVersion: z.number().int().positive(),
+});
+
 export type CursorBinding = Pick<
   z.infer<typeof payloadSchema>,
   'caller' | 'workspaceId' | 'resource' | 'limit'
@@ -38,6 +51,27 @@ export class CursorCodec {
   }
   decodeTree(value: string | undefined, binding: CursorBinding) {
     return this.decodePayload(value, binding, treePayloadSchema);
+  }
+  decodeTask(value: string | undefined, binding: CursorBinding & { fingerprint: string }) {
+    return this.decodePayload(value, binding, taskPayloadSchema);
+  }
+  encodeTask(
+    binding: CursorBinding & { fingerprint: string },
+    after: z.infer<typeof TaskPositionSchema>,
+    revisions: { configVersion: number; dataVersion: number },
+    previous?: ReturnType<CursorCodec['decodeTask']>,
+  ) {
+    const payload = taskPayloadSchema.parse({
+      ...binding,
+      ...revisions,
+      v: 1,
+      kind: 'tasks',
+      after,
+      expiresAt: previous?.expiresAt ?? Date.now() + 900_000,
+    });
+    const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
+
+    return `${encoded}.${this.signature(encoded).toString('base64url')}`;
   }
   private decodePayload<T extends CursorBinding & { expiresAt: number }>(
     value: string | undefined,

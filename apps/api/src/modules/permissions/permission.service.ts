@@ -26,6 +26,8 @@ export const PermissionActionKey = 'flowboard:permission-action';
 
 export const NodePermissionKey = 'flowboard:node-permission';
 
+export const TaskPermissionKey = 'flowboard:task-permission';
+
 export const ScopePermissionKey = 'flowboard:scope-permission';
 
 function presentGrant(
@@ -59,6 +61,7 @@ export class PermissionService {
       'member.list': ['admin', 'member'],
       'member.manage': ['admin'],
       'container.read': ['admin', 'member'],
+      'task.read': ['admin', 'member'],
       'container.write': ['admin'],
       'grant.manage': ['admin'],
       'configuration.read': ['admin'],
@@ -103,6 +106,17 @@ export class PermissionService {
     );
     if (!visible.some((entry) => entry.node.id === nodeId))
       throw new ApiException(403, 'FORBIDDEN', 'Access denied');
+  }
+  async assertTask(store: ReadRepositories, taskId: string, action: PermissionAction) {
+    const task = await store.tasks.find(taskId);
+    await this.assertNode(store, task.primaryListId, action);
+
+    return task;
+  }
+  async authorizeTask(identity: IdentitySession, taskId: string, action: PermissionAction) {
+    await this.storage().read(this.context(identity), (store) =>
+      this.assertTask(store, taskId, action),
+    );
   }
   async assertScope(store: ReadRepositories, owner: StatusScope, action: PermissionAction) {
     await store.scopes.path(owner);

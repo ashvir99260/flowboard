@@ -12,6 +12,7 @@ import { hierarchyRepository } from './hierarchy-repository.js';
 import { membershipRepository } from './membership-repository.js';
 import { scopeRepository } from './scope-repository.js';
 import { statusRepository } from './status-repository.js';
+import { taskRepository } from './task-repository.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
 
 import type { Prisma } from './generated/client.js';
@@ -83,6 +84,7 @@ export interface GrantRecord extends GrantInput {
 }
 
 export interface ReadRepositories {
+  tasks: ReturnType<typeof taskRepository>;
   access: ReturnType<typeof accessRepository>['read'];
   context: Readonly<TenantContext>;
   scopes: ReturnType<typeof scopeRepository>;
@@ -257,10 +259,12 @@ export function repositories(
   const scopes = scopeRepository(tx, context, assertActive, nodePath);
   const fields = fieldRepository(tx, context, scopes);
   const statuses = statusRepository(tx, context, assertActive, nodePath);
+  const tasks = taskRepository(tx, context, scopes, assertActive, statuses.read, fields.read);
 
   return {
     read: Object.freeze({
       scopes,
+      tasks,
       fields: fields.read,
       access: accessRepository(tx, context, assertActive, node).read,
       context: Object.freeze(context),
@@ -278,6 +282,7 @@ export function repositories(
     }) satisfies ReadRepositories,
     write: Object.freeze({
       scopes,
+      tasks,
       fields: fields.write,
       access: accessRepository(tx, context, assertActive, node).write,
       context: Object.freeze(context),

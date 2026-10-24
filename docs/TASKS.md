@@ -675,13 +675,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 6 — Tasks and atomic moves
 
-- [ ] **P06-01 — Task reads, cursor pagination and filters**
+- [x] **P06-01 — Task reads, cursor pagination and filters**
   - **Goal:** Load board/list/drawer data without leaks or unstable pagination.
-  - **Files:** `packages/contracts/src/tasks.ts`, `apps/api/src/modules/tasks/{tasks.module,tasks.controller,task-query.service}.ts`, `apps/api/src/modules/tasks/dto/*.dto.ts`, `apps/api/test/integration/task-queries.spec.mjs`, generated artifacts.
+  - **Requirements:** R31, R40, R42, R44, R45, R49, R71, R91, R92.
+  - **Files:** `packages/contracts/src/tasks.ts`, `packages/database/src/task-repository.ts`, flat `apps/api/src/modules/tasks/**`, central cursor/permission integration, contract/API/database tests, generated artifacts.
   - **Dependencies:** P05-03.
   - **Acceptance:** List task pages/detail include requested built-ins and customFields, never secrets. Due/priority sorting, stable null ordering and one typed custom-field filter work. Cursor binds resource/filter/sort and limit is bounded. Task pages include configVersion from the same transaction snapshot.
   - **Validation:** No duplicate/skipped ties on stable dataset, malformed/mismatched cursor 400, hidden/foreign task access, null dates and all priorities, option filter types; endpoint DoD and standard gate.
   - **Commit:** `feat: query paginated tasks with typed filters`.
+  - **Completion evidence:** [P06-01 verification](evidence/P06-01.md): two typed read endpoints, stable cursor/filter/access regressions and 556 full-suite tests; all standard/contract gates pass.
 
 - [ ] **P06-02 — Validated task create, edit and archive**
   - **Goal:** Persist complete valid tasks and durable event intent.

@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createScopeField, createScopeStatus, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, listNodeGrants, listScopeFields, listScopeStatuses, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createScopeField, createScopeStatus, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, getTask, listNodeGrants, listScopeFields, listScopeStatuses, listTasks, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, GetTaskData, GetTaskError, GetTaskResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListTasksData, ListTasksError, ListTasksResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -233,6 +233,87 @@ export const getListResolvedStatusesOptions = (options: Options<GetListResolvedS
     queryKey: getListResolvedStatusesQueryKey(options)
 });
 
+export const listTasksQueryKey = (options: Options<ListTasksData>) => createQueryKey('listTasks', options);
+
+/**
+ * Read a page of list tasks
+ *
+ * Read authorized live tasks using typed filters, stable sort and a cursor bound to the query and both workspace revisions.
+ */
+export const listTasksOptions = (options: Options<ListTasksData>) => queryOptions<ListTasksResponse, ListTasksError, ListTasksResponse, ReturnType<typeof listTasksQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listTasks({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listTasksQueryKey(options)
+});
+
+const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
+    const params = { ...queryKey[0] };
+    if (page.body) {
+        params.body = {
+            ...queryKey[0].body as any,
+            ...page.body as any
+        };
+    }
+    if (page.headers) {
+        params.headers = {
+            ...queryKey[0].headers,
+            ...page.headers
+        };
+    }
+    if (page.path) {
+        params.path = {
+            ...queryKey[0].path as any,
+            ...page.path as any
+        };
+    }
+    if (page.query) {
+        params.query = {
+            ...queryKey[0].query as any,
+            ...page.query as any
+        };
+    }
+    return params as unknown as typeof page;
+};
+
+export const listTasksInfiniteQueryKey = (options: Options<ListTasksData>): QueryKey<Options<ListTasksData>> => createQueryKey('listTasks', options, true);
+
+/**
+ * Read a page of list tasks
+ *
+ * Read authorized live tasks using typed filters, stable sort and a cursor bound to the query and both workspace revisions.
+ */
+export const listTasksInfiniteOptions = (options: Options<ListTasksData>) => {
+    const opts = infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, string | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    cursor: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listTasks({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTasksInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
 export const getCurrentUserQueryKey = (options?: Options<GetCurrentUserData>) => createQueryKey('getCurrentUser', options);
 
 /**
@@ -349,35 +430,6 @@ export const listNodeGrantsOptions = (options: Options<ListNodeGrantsData>) => q
     },
     queryKey: listNodeGrantsQueryKey(options)
 });
-
-const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
-    const params = { ...queryKey[0] };
-    if (page.body) {
-        params.body = {
-            ...queryKey[0].body as any,
-            ...page.body as any
-        };
-    }
-    if (page.headers) {
-        params.headers = {
-            ...queryKey[0].headers,
-            ...page.headers
-        };
-    }
-    if (page.path) {
-        params.path = {
-            ...queryKey[0].path as any,
-            ...page.path as any
-        };
-    }
-    if (page.query) {
-        params.query = {
-            ...queryKey[0].query as any,
-            ...page.query as any
-        };
-    }
-    return params as unknown as typeof page;
-};
 
 export const listNodeGrantsInfiniteQueryKey = (options: Options<ListNodeGrantsData>): QueryKey<Options<ListNodeGrantsData>> => createQueryKey('listNodeGrants', options, true);
 
@@ -621,6 +673,26 @@ export const updateScopeStatusMutation = (options?: Partial<Options<UpdateScopeS
     };
     return mutationOptions;
 };
+
+export const getTaskQueryKey = (options: Options<GetTaskData>) => createQueryKey('getTask', options);
+
+/**
+ * Read a task
+ *
+ * Read one live task after checking its current primary list and full ancestor permissions in the same data snapshot.
+ */
+export const getTaskOptions = (options: Options<GetTaskData>) => queryOptions<GetTaskResponse, GetTaskError, GetTaskResponse, ReturnType<typeof getTaskQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getTask({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getTaskQueryKey(options)
+});
 
 export const listVisibleTreeQueryKey = (options?: Options<ListVisibleTreeData>) => createQueryKey('listVisibleTree', options);
 
