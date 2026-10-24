@@ -5,6 +5,7 @@ import {
   CreateNodeSchema,
   NodeUpdatedEventSchema,
   NodeVersionSchema,
+  ReorderNodeSchema,
   TaskUpdatedEventSchema,
   UpdateNodeSchema,
 } from '@flowboard/contracts';
@@ -15,7 +16,7 @@ import { recordWorkspaceChange } from './workspace-events.js';
 import type { Prisma } from './generated/client.js';
 import type { NodeRecord } from './repositories.js';
 import type { TenantContext } from './tenant-context.js';
-import type { CreateNode, NodeVersion, UpdateNode } from '@flowboard/contracts';
+import type { CreateNode, NodeVersion, ReorderNode, UpdateNode } from '@flowboard/contracts';
 
 export interface NodeSnapshot {
   configVersion: number;
@@ -79,6 +80,63 @@ export function hierarchyRepository(
   });
   const write = Object.freeze({
     ...read,
+    async reorder(id: string, input: ReorderNode): Promise<NodeSnapshot> {
+      const data = ReorderNodeSchema.parse(input);
+      const node = await findNode(id);
+      if (!node) throw new DatabaseError('NOT_FOUND', 'Container not found');
+
+      const current = await checkConfig(data.expectedConfigVersion);
+      if (node.version !== data.expectedVersion)
+        throw new DatabaseError('VERSION_CONFLICT', 'Container version changed');
+
+      const { placement } = data;
+      const anchorId =
+        'beforeId' in placement
+          ? placement.beforeId
+          : 'afterId' in placement
+            ? placement.afterId
+            : undefined;
+      if (anchorId) {
+        const anchor = await findNode(anchorId);
+        if (!anchor) throw new DatabaseError('NOT_FOUND', 'Sibling anchor not found');
+
+        if (anchor.id === node.id || anchor.parentId !== node.parentId)
+          throw new DatabaseError('INVALID_ANCHOR', 'Anchor must be a distinct live sibling');
+      }
+
+      const siblings = await tx.node.findMany({
+        where: { workspaceId, parentId: node.parentId, archivedAt: null },
+        orderBy: [{ position: 'asc' }, { id: 'asc' }],
+      });
+      const remaining = siblings.filter((sibling) => sibling.id !== node.id);
+      const index =
+        'edge' in placement
+          ? placement.edge === 'start'
+            ? 0
+            : remaining.length
+          : remaining.findIndex((sibling) => sibling.id === anchorId) +
+            ('afterId' in placement ? 1 : 0);
+      const ordered = [...remaining.slice(0, index), node, ...remaining.slice(index)];
+      let result = node;
+      let changed = false;
+      for (const [position, sibling] of ordered.entries()) {
+        if (sibling.position === position) continue;
+
+        const updated = await tx.node.update({
+          where: { workspaceId_id: { workspaceId, id: sibling.id } },
+          data: { position, version: { increment: 1 } },
+        });
+        await emitNode(updated, 'updated');
+        if (updated.id === node.id) result = updated;
+
+        changed = true;
+      }
+      const revisions = changed
+        ? await recordWorkspaceChange(tx, workspaceId, actorUserId, 'hierarchy', true)
+        : current;
+
+      return { node: result, ...revisions };
+    },
     async archive(id: string, input: NodeVersion): Promise<void> {
       const data = NodeVersionSchema.parse(input);
       const node = await findNode(id);

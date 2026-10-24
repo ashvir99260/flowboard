@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createWorkspaceInvitation, getCurrentUser, getLiveness, getNode, getReadiness, listNodeGrants, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeWorkspaceMember, signUp, switchWorkspace, updateNode, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createWorkspaceInvitation, getCurrentUser, getLiveness, getNode, getReadiness, listNodeGrants, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeWorkspaceMember, reorderNode, signUp, switchWorkspace, updateNode, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -399,6 +399,25 @@ export const removeNodeGrantMutation = (options?: Partial<Options<RemoveNodeGran
     const mutationOptions: UseMutationOptions<RemoveNodeGrantResponse, RemoveNodeGrantError, Options<RemoveNodeGrantData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await removeNodeGrant({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Reorder a container among siblings
+ *
+ * Administrators place a live container at an edge or beside a live sibling. The transaction checks both revisions and renumbers the complete sibling set; changed rows advance once and a no-op preserves revisions.
+ */
+export const reorderNodeMutation = (options?: Partial<Options<ReorderNodeData>>): UseMutationOptions<ReorderNodeResponse, ReorderNodeError, Options<ReorderNodeData>> => {
+    const mutationOptions: UseMutationOptions<ReorderNodeResponse, ReorderNodeError, Options<ReorderNodeData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await reorderNode({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

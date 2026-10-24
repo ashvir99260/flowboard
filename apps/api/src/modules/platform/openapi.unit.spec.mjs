@@ -18,6 +18,7 @@ test('the spec-only bootstrap exposes real typed controller metadata without con
     '/v1/nodes/{nodeId}',
     '/v1/nodes/{nodeId}/grants',
     '/v1/nodes/{nodeId}/grants/{userId}',
+    '/v1/nodes/{nodeId}/reorder',
     '/v1/tree',
     '/v1/workspaces',
     '/v1/workspaces/{workspaceId}/invitations',

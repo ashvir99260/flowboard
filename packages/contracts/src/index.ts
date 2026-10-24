@@ -23,3 +23,5 @@ export * from './nodes.js';
 export * from './tree.js';
 
 export * from './permissions.js';
+
+export * from './ordering.js';

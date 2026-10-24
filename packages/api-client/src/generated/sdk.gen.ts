@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -233,6 +233,21 @@ export const upsertNodeGrant = <ThrowOnError extends boolean = false>(options: O
 export const removeNodeGrant = <ThrowOnError extends boolean = false>(options: Options<RemoveNodeGrantData, ThrowOnError>): RequestResult<RemoveNodeGrantResponses, RemoveNodeGrantErrors, ThrowOnError> => (options.client ?? client).delete<RemoveNodeGrantResponses, RemoveNodeGrantErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/nodes/{nodeId}/grants/{userId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reorder a container among siblings
+ *
+ * Administrators place a live container at an edge or beside a live sibling. The transaction checks both revisions and renumbers the complete sibling set; changed rows advance once and a no-op preserves revisions.
+ */
+export const reorderNode = <ThrowOnError extends boolean = false>(options: Options<ReorderNodeData, ThrowOnError>): RequestResult<ReorderNodeResponses, ReorderNodeErrors, ThrowOnError> => (options.client ?? client).post<ReorderNodeResponses, ReorderNodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/nodes/{nodeId}/reorder',
     ...options,
     headers: {
         'Content-Type': 'application/json',
