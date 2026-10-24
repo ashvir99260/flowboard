@@ -709,9 +709,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Full real-Postgres suite with two tenants; standard gate. Fix actual defects rather than weaken expectations.
   - **Commit:** `fix: preserve field paths in validation errors`.
 
-- [ ] **P06-05 — Validated container reparenting**
+- [x] **P06-05 — Validated container reparenting**
   - **Goal:** Complete container moves now that status and field rules are available.
-  - **Files:** `apps/api/src/modules/hierarchy/node-move.service.ts`, node contracts/controller, `apps/api/test/integration/node-moves.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/ordering.ts`, hierarchy repository/internal status-field validation callbacks, existing hierarchy service/controller/DTO, colocated API node-move tests, database node-move tests and generated artifacts.
   - **Dependencies:** P06-04.
   - **Acceptance:** Admin can move folder/list only to a valid same-tenant parent. Revalidate resulting subtree permissions, status availability and all live task field schemas; reject invalid reparenting rather than silently remap a whole subtree. Update versions/events as needed.
   - **Validation:** Cycle, archived parent, cross-tenant target, required-field/status mismatch, valid move and atomic rollback across descendants; endpoint DoD and standard gate.

@@ -210,5 +210,5 @@ export function fieldRepository(
     },
   });
 
-  return { read, write };
+  return { read, write, validate };
 }

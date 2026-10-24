@@ -247,5 +247,5 @@ export function statusRepository(
     },
   });
 
-  return { read, write };
+  return { read, write, validate };
 }

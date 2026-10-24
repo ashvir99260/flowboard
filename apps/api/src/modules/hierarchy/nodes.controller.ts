@@ -1,4 +1,4 @@
-import { NodeExamples } from '@flowboard/contracts';
+import { MoveNodeSchema, NodeExamples } from '@flowboard/contracts';
 import {
   Body,
   Controller,
@@ -28,6 +28,7 @@ import { ActiveWorkspacePermission, NodePermission } from '../permissions/permis
 
 import {
   CreateNodeDto,
+  MoveNodeDto,
   NodeParamsDto,
   NodeVersionDto,
   ReorderNodeDto,
@@ -194,6 +195,54 @@ export class NodesController {
     @Req() request: { identity: IdentitySession },
   ): Promise<NodeEnvelope> {
     return this.hierarchy.update(request.identity, params.nodeId, input);
+  }
+
+  @Post(':nodeId/move')
+  @HttpCode(200)
+  @NodePermission('container.write')
+  @ApiOperation({
+    description:
+      'Reparent a folder or list and reorder siblings, validating inherited statuses, fields and assignee access for every live descendant before committing.',
+    operationId: 'moveNode',
+    summary: 'Move a hierarchy container',
+  })
+  @ApiBody({
+    type: MoveNodeDto,
+    description: 'Destination parent, sibling placement and expected node/configuration revisions.',
+    examples: {
+      move: {
+        summary: 'Move to the destination parent',
+        value: MoveNodeSchema.meta()?.example,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    type: NodeResponseDto.Output,
+    example: {
+      data: {
+        ...NodeExamples.node,
+        type: 'folder',
+        name: 'Delivery',
+        parentId: '10000000-0000-4000-8000-000000000020',
+        version: 2,
+      },
+      configVersion: 3,
+      dataVersion: 3,
+    },
+  })
+  @ZodResponse({
+    status: 200,
+    type: NodeResponseDto,
+    description: 'Moved container and committed workspace revisions.',
+  })
+  move(
+    @Param() params: NodeParamsDto,
+    @Body() input: MoveNodeDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ): Promise<NodeEnvelope> {
+    return this.hierarchy.move(request.identity, params.nodeId, input);
   }
 
   @Delete(':nodeId')

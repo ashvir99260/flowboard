@@ -21,6 +21,7 @@ test('the spec-only bootstrap exposes real typed controller metadata without con
     '/v1/nodes/{nodeId}',
     '/v1/nodes/{nodeId}/grants',
     '/v1/nodes/{nodeId}/grants/{userId}',
+    '/v1/nodes/{nodeId}/move',
     '/v1/nodes/{nodeId}/reorder',
     '/v1/scopes/{ownerType}/{ownerId}/fields',
     '/v1/scopes/{ownerType}/{ownerId}/fields/{fieldId}',

@@ -14,7 +14,7 @@ const hasExample = (schema) =>
   Object.hasOwn(schema, 'example') || Object.hasOwn(schema, 'examples');
 
 test('every Swagger operation and payload has a description and example', () => {
-  assert.equal(operations.length, 41);
+  assert.equal(operations.length, 42);
   for (const operation of operations) {
     meaningful(operation.summary, `${operation.operationId} summary`);
     meaningful(operation.description, `${operation.operationId} description`);
@@ -117,6 +117,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
     listWorkspaceMembers: 'MemberPageResponseDto_Output',
     listWorkspaces: 'WorkspacePageResponseDto_Output',
     logIn: 'SessionResponseDto_Output',
+    moveNode: 'NodeResponseDto_Output',
     moveTask: 'TaskMutationResponseDto_Output',
     refreshSession: 'SessionResponseDto_Output',
     reorderNode: 'NodeResponseDto_Output',
@@ -195,4 +196,13 @@ test('custom-field patch clearing has typed nullable alternatives', () => {
     ['string', 'number', 'boolean', 'array'],
   );
   assert.ok(values.anyOf.every((schema) => schema.nullable === true));
+});
+
+test('container move example describes a movable folder with a destination parent', () => {
+  const example =
+    document.paths['/v1/nodes/{nodeId}/move'].post.responses['200'].content['application/json']
+      .example;
+  assert.equal(example.data.type, 'folder');
+  assert.equal(example.data.parentId, '10000000-0000-4000-8000-000000000020');
+  assert.equal(example.data.version, 2);
 });

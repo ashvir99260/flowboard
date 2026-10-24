@@ -893,6 +893,59 @@ export type MemberPageResponseDtoOutput = {
 };
 
 /**
+ * Move container request
+ *
+ * Reparent a folder or list and place it among destination siblings; preserve and validate descendant tasks.
+ */
+export type MoveNodeDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Expected node version
+     *
+     * Last observed node revision; a stale revision is a conflict.
+     */
+    expectedVersion: number;
+    /**
+     * Destination parent ID
+     *
+     * Live space for a folder, or live folder for a list. Root spaces cannot be moved.
+     */
+    parentId: string;
+    /**
+     * Sibling placement
+     *
+     * Exactly one edge or one sibling anchor. Numeric positions and multiple anchors are rejected.
+     */
+    placement: {
+        /**
+         * Placement edge
+         *
+         * Place before all siblings or after all siblings.
+         */
+        edge: 'start' | 'end';
+    } | {
+        /**
+         * Sibling anchor ID
+         *
+         * A distinct live sibling in the selected workspace.
+         */
+        beforeId: string;
+    } | {
+        /**
+         * Sibling anchor ID
+         *
+         * A distinct live sibling in the selected workspace.
+         */
+        afterId: string;
+    };
+};
+
+/**
  * Move task request
  *
  * Move to a visible list and valid status, applying explicit field corrections before validation.
@@ -4420,6 +4473,65 @@ export type RemoveNodeGrantResponses = {
 };
 
 export type RemoveNodeGrantResponse = RemoveNodeGrantResponses[keyof RemoveNodeGrantResponses];
+
+export type MoveNodeData = {
+    /**
+     * Destination parent, sibling placement and expected node/configuration revisions.
+     */
+    body: MoveNodeDto;
+    path: {
+        /**
+         * Target node ID
+         *
+         * Container identifier within the selected workspace.
+         */
+        nodeId: string;
+    };
+    query?: never;
+    url: '/v1/nodes/{nodeId}/move';
+};
+
+export type MoveNodeErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token and current membership are required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The member cannot access this container or perform this administrative action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The container or a live ancestor is missing or outside the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * The workspace configuration or node version changed; read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type MoveNodeError = MoveNodeErrors[keyof MoveNodeErrors];
+
+export type MoveNodeResponses = {
+    /**
+     * Moved container and committed workspace revisions.
+     */
+    200: NodeResponseDtoOutput;
+};
+
+export type MoveNodeResponse = MoveNodeResponses[keyof MoveNodeResponses];
 
 export type ReorderNodeData = {
     /**

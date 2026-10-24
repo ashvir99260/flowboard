@@ -8,6 +8,7 @@ import { PermissionService } from '../permissions/permission.service.js';
 
 import type {
   CreateNode,
+  MoveNode,
   NodeEnvelope,
   NodeVersion,
   PermissionAction,
@@ -140,6 +141,23 @@ export class HierarchyService {
         if (anchorId) await this.permissions.assertNode(store, anchorId, 'container.read');
 
         return store.hierarchy.reorder(nodeId, input);
+      }),
+    );
+  }
+  async move(identity: IdentitySession, nodeId: string, input: MoveNode) {
+    return present(
+      await this.write(identity, async (store) => {
+        await this.permissions.assertNode(store, nodeId, 'container.write');
+        await this.permissions.assertNode(store, input.parentId, 'container.write');
+        const anchorId =
+          'beforeId' in input.placement
+            ? input.placement.beforeId
+            : 'afterId' in input.placement
+              ? input.placement.afterId
+              : undefined;
+        if (anchorId) await this.permissions.assertNode(store, anchorId, 'container.read');
+
+        return store.hierarchy.move(nodeId, input);
       }),
     );
   }

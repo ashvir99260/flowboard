@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import {
   ContainerParentType,
   CreateNodeSchema,
+  MoveNodeSchema,
   NodeUpdatedEventSchema,
   NodeVersionSchema,
   ReorderNodeSchema,
@@ -16,7 +17,13 @@ import { recordWorkspaceChange } from './workspace-events.js';
 import type { Prisma } from './generated/client.js';
 import type { NodeRecord } from './repositories.js';
 import type { TenantContext } from './tenant-context.js';
-import type { CreateNode, NodeVersion, ReorderNode, UpdateNode } from '@flowboard/contracts';
+import type {
+  CreateNode,
+  MoveNode,
+  NodeVersion,
+  ReorderNode,
+  UpdateNode,
+} from '@flowboard/contracts';
 
 export interface NodeSnapshot {
   configVersion: number;
@@ -29,6 +36,7 @@ export function hierarchyRepository(
   context: TenantContext,
   assertActive: () => void,
   findNode: (id: string) => Promise<NodeRecord | null>,
+  validateMove: (node: NodeRecord) => Promise<void>,
 ) {
   const { workspaceId, actorUserId } = context;
   async function versions() {
@@ -80,6 +88,92 @@ export function hierarchyRepository(
   });
   const write = Object.freeze({
     ...read,
+    async move(id: string, input: MoveNode): Promise<NodeSnapshot> {
+      const data = MoveNodeSchema.parse(input);
+      const node = await findNode(id);
+      if (!node) throw new DatabaseError('NOT_FOUND', 'Container not found');
+
+      const current = await checkConfig(data.expectedConfigVersion);
+      if (node.version !== data.expectedVersion)
+        throw new DatabaseError('VERSION_CONFLICT', 'Container version changed');
+
+      if (node.type === 'space' || node.id === data.parentId)
+        throw new DatabaseError(
+          'INVALID_PARENT',
+          'Only folders and lists can move to another parent',
+        );
+
+      const parent = await findNode(data.parentId);
+      if (!parent) throw new DatabaseError('NOT_FOUND', 'Parent not found');
+
+      if (parent.type !== ContainerParentType[node.type])
+        throw new DatabaseError('INVALID_PARENT', 'Parent type does not match the container');
+
+      const { placement } = data;
+      const anchorId =
+        'beforeId' in placement
+          ? placement.beforeId
+          : 'afterId' in placement
+            ? placement.afterId
+            : undefined;
+      if (anchorId) {
+        const anchor = await findNode(anchorId);
+        if (!anchor) throw new DatabaseError('NOT_FOUND', 'Anchor not found');
+
+        if (anchor.id === node.id || anchor.parentId !== parent.id)
+          throw new DatabaseError(
+            'INVALID_ANCHOR',
+            'Anchor must be a distinct destination sibling',
+          );
+      }
+
+      const siblings = (parentId: string | null) =>
+        tx.node.findMany({
+          where: { workspaceId, parentId, archivedAt: null },
+          orderBy: [{ position: 'asc' }, { id: 'asc' }],
+        });
+      const source = await siblings(node.parentId);
+      const sameParent = node.parentId === parent.id;
+      const destination = sameParent ? source : await siblings(parent.id);
+      const remaining = destination.filter((row) => row.id !== node.id);
+      const index =
+        'edge' in placement
+          ? placement.edge === 'start'
+            ? 0
+            : remaining.length
+          : remaining.findIndex((row) => row.id === anchorId) + ('afterId' in placement ? 1 : 0);
+      const ordered = [...remaining.slice(0, index), node, ...remaining.slice(index)];
+      const originals = new Map([...source, ...destination].map((row) => [row.id, row]));
+      const positions = new Map<string, number>();
+      if (!sameParent)
+        source
+          .filter((row) => row.id !== node.id)
+          .forEach((row, position) => positions.set(row.id, position));
+
+      ordered.forEach((row, position) => positions.set(row.id, position));
+      const changed: NodeRecord[] = [];
+      let result = node;
+      for (const [nodeId, position] of positions) {
+        const before = originals.get(nodeId)!;
+        const parentId = nodeId === node.id ? parent.id : before.parentId;
+        if (before.position === position && before.parentId === parentId) continue;
+
+        const updated = await tx.node.update({
+          where: { workspaceId_id: { workspaceId, id: nodeId } },
+          data: { parentId, position, version: { increment: 1 } },
+        });
+        changed.push(updated);
+        if (nodeId === node.id) result = updated;
+      }
+      await validateMove(result);
+      for (const updated of changed) await emitNode(updated, 'updated');
+      const revisions = changed.length
+        ? await recordWorkspaceChange(tx, workspaceId, actorUserId, 'hierarchy', true)
+        : current;
+
+      return { node: result, ...revisions };
+    },
+
     async reorder(id: string, input: ReorderNode): Promise<NodeSnapshot> {
       const data = ReorderNodeSchema.parse(input);
       const node = await findNode(id);

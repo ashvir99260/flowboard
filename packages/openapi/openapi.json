@@ -1681,6 +1681,129 @@
         "title": "Member page",
         "type": "object"
       },
+      "MoveNodeDto": {
+        "additionalProperties": false,
+        "description": "Reparent a folder or list and place it among destination siblings; preserve and validate descendant tasks.",
+        "example": {
+          "expectedConfigVersion": 1,
+          "expectedVersion": 1,
+          "parentId": "10000000-0000-4000-8000-000000000020",
+          "placement": {
+            "edge": "start"
+          }
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "expectedVersion": {
+            "description": "Last observed node revision; a stale revision is a conflict.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Expected node version",
+            "type": "integer"
+          },
+          "parentId": {
+            "description": "Live space for a folder, or live folder for a list. Root spaces cannot be moved.",
+            "example": "10000000-0000-4000-8000-000000000020",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "title": "Destination parent ID",
+            "type": "string"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Absolute position in the sibling collection.",
+                "example": {
+                  "edge": "start"
+                },
+                "properties": {
+                  "edge": {
+                    "description": "Place before all siblings or after all siblings.",
+                    "enum": [
+                      "start",
+                      "end"
+                    ],
+                    "example": "start",
+                    "title": "Placement edge",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "edge"
+                ],
+                "title": "Edge placement",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "description": "Place immediately before a sibling.",
+                "example": {
+                  "beforeId": "10000000-0000-4000-8000-000000000010"
+                },
+                "properties": {
+                  "beforeId": {
+                    "description": "A distinct live sibling in the selected workspace.",
+                    "example": "10000000-0000-4000-8000-000000000010",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Sibling anchor ID",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "beforeId"
+                ],
+                "title": "Before placement",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "description": "Place immediately after a sibling.",
+                "example": {
+                  "afterId": "10000000-0000-4000-8000-000000000010"
+                },
+                "properties": {
+                  "afterId": {
+                    "description": "A distinct live sibling in the selected workspace.",
+                    "example": "10000000-0000-4000-8000-000000000010",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Sibling anchor ID",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "afterId"
+                ],
+                "title": "After placement",
+                "type": "object"
+              }
+            ],
+            "description": "Exactly one edge or one sibling anchor. Numeric positions and multiple anchors are rejected.",
+            "example": {
+              "edge": "start"
+            },
+            "title": "Sibling placement"
+          }
+        },
+        "required": [
+          "expectedConfigVersion",
+          "expectedVersion",
+          "placement",
+          "parentId"
+        ],
+        "title": "Move container request",
+        "type": "object"
+      },
       "MoveTaskDto": {
         "additionalProperties": false,
         "description": "Move to a visible list and valid status, applying explicit field corrections before validation.",
@@ -11862,6 +11985,244 @@
         "summary": "Remove a container grant",
         "tags": [
           "Permissions"
+        ]
+      }
+    },
+    "/v1/nodes/{nodeId}/move": {
+      "post": {
+        "description": "Reparent a folder or list and reorder siblings, validating inherited statuses, fields and assignee access for every live descendant before committing.",
+        "operationId": "moveNode",
+        "parameters": [
+          {
+            "description": "Container identifier within the selected workspace.",
+            "in": "path",
+            "name": "nodeId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000010",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Target node ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "move": {
+                  "summary": "Move to the destination parent",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "expectedVersion": 1,
+                    "parentId": "10000000-0000-4000-8000-000000000020",
+                    "placement": {
+                      "edge": "start"
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MoveNodeDto"
+              }
+            }
+          },
+          "description": "Destination parent, sibling placement and expected node/configuration revisions.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 3,
+                  "data": {
+                    "archivedAt": null,
+                    "createdAt": "2026-10-24T10:00:00.000Z",
+                    "id": "10000000-0000-4000-8000-000000000010",
+                    "name": "Delivery",
+                    "parentId": "10000000-0000-4000-8000-000000000020",
+                    "position": 0,
+                    "type": "folder",
+                    "updatedAt": "2026-10-24T10:00:00.000Z",
+                    "version": 2,
+                    "visibility": "public",
+                    "workspaceId": "10000000-0000-4000-8000-000000000002"
+                  },
+                  "dataVersion": 3
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/NodeResponseDto_Output"
+                }
+              }
+            },
+            "description": "Moved container and committed workspace revisions."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token and current membership are required."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The member cannot access this container or perform this administrative action."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Container not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The container or a live ancestor is missing or outside the selected workspace."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The workspace configuration or node version changed; read current state before retrying."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Move a hierarchy container",
+        "tags": [
+          "Hierarchy"
         ]
       }
     },
