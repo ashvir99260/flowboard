@@ -25,6 +25,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
 export function useNotifications() {
   const store = useContext(Context);
+
   if (!store) throw new Error('Notifications require NotificationProvider');
 
   return store;

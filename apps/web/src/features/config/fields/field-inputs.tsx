@@ -23,6 +23,7 @@ export function FieldInputs({
     setFocus,
     formState: { errors },
   } = form;
+
   const type = useWatch({ control, name: 'type' });
   const { fields: rows, append, move, remove } = useFieldArray({ control, name: 'options' });
 

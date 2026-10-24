@@ -45,11 +45,13 @@ function Settings({
   const [editing, setEditing] = useState<Editing>({ busy: false, dirty: false });
   const [activation, setActivation] = useState(0);
   const previouslyActive = useRef(active);
+
   useEffect(() => {
     const returning = active && !previouslyActive.current;
     previouslyActive.current = active;
     if (returning && !editing.dirty && !editing.busy) setActivation((value) => value + 1);
   }, [active, editing.dirty, editing.busy]);
+
   const nodes = tree.state === 'ready' ? tree.nodes : [];
   const changeOwner = (next: StatusScope) => {
     if (editing.busy || next.ownerId === owner.ownerId) return;
@@ -126,6 +128,7 @@ function Settings({
 
 export function ConfigurationSettings(props: SettingsProps) {
   const { runtime, scope, session } = useSession();
+
   if (!runtime || !scope) return <SessionLoading />;
 
   if (session?.data.activeWorkspace?.role !== 'admin')

@@ -39,9 +39,11 @@ export function useTaskWrite(
 ) {
   const notifications = useNotifications();
   const client = useQueryClient();
+
   const create = createTaskMutation({ client: runtime.client });
   const update = updateTaskMutation({ client: runtime.client });
   const archive = archiveTaskMutation({ client: runtime.client });
+
   const mutation = useMutation({
     mutationKey: ['task-write', scope.revision, scope.userId, scope.workspaceId],
     retry: false,

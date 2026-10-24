@@ -45,6 +45,7 @@ export function useMoveDestination(
     ),
     ...policy,
   });
+
   if (statusesQuery.isPending || fieldsQuery.isPending) return { state: 'loading' as const };
 
   const failure = statusesQuery.error ?? fieldsQuery.error;

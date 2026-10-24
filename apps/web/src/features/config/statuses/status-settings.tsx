@@ -32,6 +32,7 @@ function ScopeConfiguration({
   const [editing, setEditing] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const origin = useRef<HTMLElement | null>(null);
+
   const open = (id: string) => {
     origin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setEditing(id);

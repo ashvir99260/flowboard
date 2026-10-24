@@ -37,6 +37,7 @@ export function SelectInput({
   value,
 }: Props) {
   const id = useId();
+
   const selected = Array.isArray(value) ? value : [value];
   const unavailable = selected.filter(
     (item) => !options.some((option) => optionKey(option.value) === optionKey(item)),

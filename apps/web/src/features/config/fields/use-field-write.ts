@@ -26,9 +26,11 @@ class InvalidFieldResponse extends Error {}
 export function useFieldWrite(runtime: ClientRuntime, scope: QueryScope, owner: FieldScope) {
   const notifications = useNotifications();
   const client = useQueryClient();
+
   const create = createScopeFieldMutation({ client: runtime.client });
   const update = updateScopeFieldMutation({ client: runtime.client });
   const remove = removeScopeFieldMutation({ client: runtime.client });
+
   const mutation = useMutation({
     mutationKey: ['configuration-write', scope.revision, scope.userId, scope.workspaceId],
     retry: false,
@@ -63,6 +65,7 @@ export function useFieldWrite(runtime: ClientRuntime, scope: QueryScope, owner: 
       return parsed.response;
     },
   });
+
   const submit = async (command: Command) => {
     const report = notifications.capture();
     if (

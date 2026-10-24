@@ -86,14 +86,19 @@ export function useListQuery({
 }) {
   const instance = useId();
   const client = useQueryClient();
+
   const signature = writeListLocation(query);
+
   const [attempt, setAttempt] = useState({ signature, generation: 0, restarts: 0 });
+
   useRealtime(listId, () =>
     setAttempt((current) => ({ signature, generation: current.generation + 1, restarts: 0 })),
   );
+
   const changed = attempt.signature !== signature;
   const retry = () =>
     setAttempt((current) => ({ signature, generation: current.generation + 1, restarts: 0 }));
+
   useEffect(
     () =>
       subscribeChanges(client, scope, listId, () =>
@@ -101,7 +106,9 @@ export function useListQuery({
       ),
     [client, listId, scope],
   );
+
   const tags = [`list:${instance}:${signature}:${attempt.generation}`];
+
   const statusesQuery = useQuery({
     ...withQueryScope(
       getListResolvedStatusesOptions({ client: runtime.client, path: { listId } }),
@@ -118,6 +125,7 @@ export function useListQuery({
     ),
     ...pagePolicy,
   });
+
   const statuses = readBoardStatuses(statusesQuery.data, scope.workspaceId!);
   const fields = readListFields(fieldsQuery.data, scope.workspaceId!, listId);
   const filter = fields.state === 'ready' ? readListFilter(query, fields.items) : null;
@@ -125,6 +133,7 @@ export function useListQuery({
     statuses.state === 'ready' &&
     fields.state === 'ready' &&
     statuses.configVersion === fields.configVersion;
+
   const tasks = useInfiniteQuery({
     ...withQueryScope(
       listTasksInfiniteOptions({
@@ -146,6 +155,7 @@ export function useListQuery({
         : undefined;
     },
   });
+
   const pages =
     tasks.data?.pages.map((response, index) => {
       const param = tasks.data.pageParams[index];

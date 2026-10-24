@@ -27,16 +27,21 @@ export function useFieldConfiguration(
 ) {
   const id = useId();
   const [attempt, setAttempt] = useState({ generation: 0, restarts: 0 });
+
   const options = (target: FieldScope) => ({
     ...withQueryScope(listScopeFieldsOptions({ client: runtime.client, path: target }), scope, [
       `field-config:${id}:${attempt.generation}`,
     ]),
     ...policy,
   });
+
   const selected = useQuery(options(owner));
+
   const parsed = ScopeFieldCollectionSchema.safeParse(selected.data);
   const ancestors = parsed.success ? parsed.data.ancestorScopes : [];
+
   const queries = useQueries({ queries: ancestors.map(options) });
+
   const result = readFieldConfiguration({
     workspaceId: scope.workspaceId!,
     scope: owner,

@@ -16,6 +16,7 @@ export function SelectInput({
   value,
 }: CustomFieldInputProps) {
   const id = useId();
+
   const multiple = field.type === 'multi_select';
   const selected = Array.isArray(value) ? value : typeof value === 'string' && value ? [value] : [];
   const unavailable = selected.filter(

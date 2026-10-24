@@ -38,7 +38,9 @@ function treeProgress(value: unknown, hasNext: boolean, workspaceId: string) {
 
 export function useTree(runtime: ClientRuntime, scope: QueryScope) {
   const [attempt, setAttempt] = useState(0);
+
   useRealtime(undefined, () => setAttempt((current) => current + 1));
+
   const query = useInfiniteQuery({
     ...withQueryScope(
       listVisibleTreeInfiniteOptions({ client: runtime.client, query: { limit: '50' } }),
@@ -52,12 +54,14 @@ export function useTree(runtime: ClientRuntime, scope: QueryScope) {
       return parsed.success ? (parsed.data.pageInfo.nextCursor ?? undefined) : undefined;
     },
   });
+
   const progress = treeProgress(query.data?.pages, query.hasNextPage, scope.workspaceId!);
   const stale =
     (query.isError && apiError(query.error).code === 'CURSOR_STALE') ||
     (progress.state === 'invalid' && progress.restart);
   const { isFetching, isError, fetchNextPage } = query;
   const fetchMore = progress.state === 'waiting' && query.hasNextPage;
+
   useEffect(() => {
     if (fetchMore && !isFetching && !isError) void fetchNextPage();
   }, [fetchMore, isFetching, isError, fetchNextPage]);

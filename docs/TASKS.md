@@ -1071,12 +1071,12 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: organize shared ui modules`.
   - **Evidence:** [P21-01](evidence/P21-01.md).
 
-- [ ] **P21-02 — Enforce readable React hook sections and spacing**
+- [x] **P21-02 — Enforce readable React hook sections and spacing**
   - **Goal:** Add tested lint rules for hook-block spacing and safe state/effect organization across frontend React code.
   - **Requirements:** R143; preserve R68/R70/R138.
   - **Files:** Shared React ESLint rules/fixtures, affected UI/web/forms files, code-style/naming/agent guidance and evidence.
   - **Dependencies:** P21-01.
-  - **Acceptance:** Hook declarations and effect calls have clear spacing; documented hook/state/derived/effect/render sections are enforced where statically safe. Preserve dependency-sensitive ordering and Rules of Hooks. Never auto-reorder hook calls. Cover TS/TSX, aliases/member calls, callback bodies and safe autofix/idempotence; backend non-React files remain unaffected. Existing return/conditional spacing stays active.
+  - **Acceptance:** Hook statements are visually separated; consecutive value hooks can stay grouped and effects have their own spacing. Document logical state/derived/effect/render grouping without enforcing a universal order. Preserve dependency-sensitive ordering and Rules of Hooks, including shared React `.ts` hooks. Never auto-reorder hook calls. Cover TS/TSX, aliases/member calls, callback bodies, comments and safe autofix/idempotence; backend non-React files remain unaffected. Existing return/conditional spacing stays active.
   - **Validation:** Failing positive/negative ESLint fixtures before rule implementation; root build/lint/typecheck/test/format, React diagnostics and relevant browser interactions.
   - **Commit:** `style: enforce readable react hook sections`.
   - **Evidence:** [P21-02](evidence/P21-02.md).

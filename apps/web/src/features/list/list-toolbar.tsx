@@ -63,12 +63,14 @@ function FieldFilter({
     if (!checked.ok)
       context.addIssue({ code: 'custom', path: [checked.field], message: checked.message });
   });
+
   const { control, handleSubmit, reset, setValue } = useForm<Draft>({
     mode: 'onBlur',
     resolver: zodResolver(schema),
     defaultValues: { fieldKey: query.fieldKey ?? '', value: initialValue(query) },
   });
   const fieldKey = useWatch({ control, name: 'fieldKey' });
+
   const field = fields.find((item) => item.key === fieldKey);
   const inputField = field
     ? {

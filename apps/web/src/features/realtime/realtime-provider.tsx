@@ -27,6 +27,7 @@ export function RealtimeProvider({
 }) {
   const [bus] = useState(createRealtimeBus);
   const notifications = useNotifications();
+
   useEffect(() => {
     if (!runtime || !session?.data.activeWorkspace || !url) return;
 
@@ -119,8 +120,10 @@ export function useRealtime(
 ) {
   const bus = useContext(RealtimeContext);
   const latest = useRef(handler);
+
   useEffect(() => {
     latest.current = handler;
   }, [handler]);
+
   useEffect(() => bus?.listen(listId, (event) => latest.current(event)), [bus, listId]);
 }

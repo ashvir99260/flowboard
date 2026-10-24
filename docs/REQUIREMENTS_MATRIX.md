@@ -326,4 +326,4 @@ R86 documentation follow-up: [P02-20](evidence/P02-20.md) clarifies the Docker r
 
 | R142 | E · User refinement | Separate reusable UI implementations into module-owned files and use camelCase UI filenames. | UI · P21-01 | Structural conventions, compatible public exports, source links, UI/Storybook/SSR and interaction regressions; [P21-01](evidence/P21-01.md). | Verified |
 
-| R143 | E · User refinement | Add frontend ESLint for readable hook/state/effect grouping and spacing around hook/return sections. | React tooling · P21-02 | Positive/negative and autofix fixtures, safe ordering policy and frontend regressions; [P21-02](evidence/P21-02.md). | Planned |
+| R143 | E · User refinement | Add frontend ESLint for readable hook/state/effect grouping and spacing around hook/return sections. | React tooling · P21-02 | Positive/negative and autofix fixtures, safe ordering policy and frontend regressions; [P21-02](evidence/P21-02.md). | Verified |

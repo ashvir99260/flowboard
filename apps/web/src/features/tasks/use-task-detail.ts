@@ -33,9 +33,11 @@ export function useTaskDetail(
 ) {
   const id = useId();
   const [attempt, setAttempt] = useState({ generation: 0, restarts: 0 });
+
   const tags = [`task-detail:${id}:${attempt.generation}`];
   const scoped = <T extends { queryKey: readonly [{ tags?: readonly string[] }] }>(options: T) =>
     withQueryScope(options, scope, tags);
+
   const statuses = useQuery({
     ...scoped(getListResolvedStatusesOptions({ client: runtime.client, path: { listId } })),
     ...policy,
@@ -65,6 +67,7 @@ export function useTaskDetail(
       return parsed.success ? (parsed.data.pageInfo.nextCursor ?? undefined) : undefined;
     },
   });
+
   const result = assembleTaskDetail({
     listId,
     workspaceId: scope.workspaceId!,
@@ -81,6 +84,7 @@ export function useTaskDetail(
       })) ?? [],
   });
   const full = (members.data?.pages.length ?? 0) >= 100 && members.hasNextPage;
+
   useEffect(() => {
     if (
       members.hasNextPage &&
@@ -91,6 +95,7 @@ export function useTaskDetail(
     )
       void members.fetchNextPage();
   }, [members, result.state, full]);
+
   const failed = [statuses, fields, members, ...(taskId ? [task] : [])].find(
     (query) => query.isError,
   );

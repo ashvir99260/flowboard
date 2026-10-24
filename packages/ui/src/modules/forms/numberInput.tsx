@@ -26,6 +26,7 @@ export function NumberInput({
   value,
 }: CustomFieldInputProps) {
   const [draft, setDraft] = useState({ value, raw: String(value ?? '') });
+
   // Keep a focused textual draft; a different controlled value replaces it.
   if (!Object.is(draft.value, value)) setDraft({ value, raw: String(value ?? '') });
 

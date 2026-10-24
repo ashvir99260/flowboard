@@ -45,6 +45,7 @@ export function StatusForm({
   targetId?: string;
 }) {
   const owner = configuration.input.scopes.at(-1)!;
+
   const { submit } = useStatusWrite(runtime, scope, owner);
   const {
     control,
@@ -57,28 +58,35 @@ export function StatusForm({
     defaultValues: statusDefaults(configuration, targetId),
     mode: 'onBlur',
   });
+
   const draft = { ...statusDefaults(configuration, targetId), ...useWatch({ control }) };
   const preview = previewStatusEdit(configuration, draft, targetId);
+
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
   const [confirmation, setConfirmation] = useState<'close' | 'reload' | 'remove' | null>(null);
   const inFlight = useRef(false);
   const focus = useRef<FieldPath<StatusDraft> | null>(null);
+
   const local = configuration.local.some((item) => item.identity.id === targetId);
   const canInherit = configuration.input.overrides.some(
     (row) => row.statusId === targetId && row.ownerId !== owner.ownerId,
   );
+
   useEffect(() => {
     setFocus(targetId ? 'name' : 'key');
   }, [setFocus, targetId]);
+
   useEffect(() => onState({ busy, dirty: isDirty }), [busy, isDirty, onState]);
+
   useEffect(() => {
     if (!busy && focus.current) {
       setFocus(focus.current);
       focus.current = null;
     }
   }, [busy, setFocus]);
+
   useEffect(() => {
     if (!isDirty) return;
 
@@ -90,6 +98,7 @@ export function StatusForm({
 
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
+
   const saveCommand = async (
     command:
       | NonNullable<ReturnType<typeof statusCommand>>

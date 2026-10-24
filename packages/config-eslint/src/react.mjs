@@ -4,7 +4,8 @@ import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 import node from './node.mjs';
-import { jsxQuality } from './quality.mjs';
+import { codeFiles, jsxQuality } from './quality.mjs';
+import reactSpacing from './react-spacing.mjs';
 import spacing from './spacing.mjs';
 
 export default [
@@ -12,7 +13,7 @@ export default [
   {
     files: ['**/*.{jsx,tsx}'],
     languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
-    plugins: { 'jsx-a11y': jsxA11y, react, 'react-hooks': reactHooks },
+    plugins: { 'jsx-a11y': jsxA11y, react },
     settings: { react: { version: 'detect' } },
     rules: {
       ...react.configs.recommended.rules,
@@ -22,7 +23,16 @@ export default [
       'react/prop-types': 'off',
     },
   },
+  {
+    files: codeFiles,
+    plugins: { 'react-hooks': reactHooks },
+    rules: {
+      'react-hooks/exhaustive-deps': 'error',
+      'react-hooks/rules-of-hooks': 'error',
+    },
+  },
   jsxQuality,
   prettier,
   spacing,
+  reactSpacing,
 ];

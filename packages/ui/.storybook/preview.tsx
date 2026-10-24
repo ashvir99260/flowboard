@@ -9,6 +9,7 @@ import type { ReactNode } from 'react';
 
 function Mode({ mode }: { mode: 'light' | 'dark' }) {
   const { setMode } = useColorScheme();
+
   useEffect(() => setMode(mode), [mode, setMode]);
 
   return null;

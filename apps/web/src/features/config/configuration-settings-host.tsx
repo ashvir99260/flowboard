@@ -12,9 +12,12 @@ import type { ReactNode } from 'react';
 // The verified workspace owns the editor, so local navigation never unmounts a dirty form.
 export function ConfigurationSettingsHost({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+
   const statusActive = /^\/w\/[^/]+\/settings\/statuses\/?$/.test(pathname);
   const fieldActive = /^\/w\/[^/]+\/settings\/fields\/?$/.test(pathname);
+
   const [visited, setVisited] = useState({ statuses: statusActive, fields: fieldActive });
+
   if ((statusActive && !visited.statuses) || (fieldActive && !visited.fields))
     setVisited({
       statuses: visited.statuses || statusActive,
