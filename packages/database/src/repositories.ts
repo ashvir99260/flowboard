@@ -6,6 +6,7 @@ import {
   VisibilitySchema,
 } from '@flowboard/contracts';
 
+import { hierarchyRepository } from './hierarchy-repository.js';
 import { membershipRepository } from './membership-repository.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
 
@@ -82,6 +83,7 @@ export interface ReadRepositories {
   members: { find(userId: string): Promise<MembershipRecord | null> };
   memberships: ReturnType<typeof membershipRepository>['read'];
   nodes: NodeReader;
+  hierarchy: ReturnType<typeof hierarchyRepository>['read'];
 }
 
 export interface WriteRepositories extends ReadRepositories {
@@ -91,6 +93,7 @@ export interface WriteRepositories extends ReadRepositories {
     set(input: GrantInput): Promise<GrantRecord>;
   };
   nodes: NodeWriter;
+  hierarchy: ReturnType<typeof hierarchyRepository>['write'];
 }
 
 // All selectors add the transaction's workspace. No Prisma where/data/include
@@ -107,7 +110,23 @@ export function repositories(
   async function node(id: string) {
     assertActive();
 
-    return tx.node.findFirst({ where: nodeWhere(id) });
+    const record = await tx.node.findFirst({ where: nodeWhere(id) });
+    let parentId = record?.parentId;
+    const seen = new Set([id.toLowerCase()]);
+    while (parentId) {
+      if (seen.has(parentId)) return null;
+
+      seen.add(parentId);
+      const parent = await tx.node.findFirst({
+        where: nodeWhere(parentId),
+        select: { parentId: true },
+      });
+      if (!parent) return null;
+
+      parentId = parent.parentId;
+    }
+
+    return record;
   }
 
   async function requireNode(id: string) {
@@ -227,6 +246,7 @@ export function repositories(
       grants: Object.freeze({ find: grants.find }),
       members: Object.freeze({ find: member }),
       memberships: membershipRepository(tx, context, assertActive).read,
+      hierarchy: hierarchyRepository(tx, context, assertActive, node).read,
       nodes: Object.freeze({
         children: nodes.children,
         countChildren: nodes.countChildren,
@@ -239,6 +259,7 @@ export function repositories(
       members: Object.freeze({ find: member }),
       memberships: membershipRepository(tx, context, assertActive).write,
       nodes,
+      hierarchy: hierarchyRepository(tx, context, assertActive, node).write,
     }) satisfies WriteRepositories,
   };
 }

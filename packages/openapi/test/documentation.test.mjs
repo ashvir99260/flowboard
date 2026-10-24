@@ -14,7 +14,7 @@ const hasExample = (schema) =>
   Object.hasOwn(schema, 'example') || Object.hasOwn(schema, 'examples');
 
 test('every Swagger operation and payload has a description and example', () => {
-  assert.equal(operations.length, 15);
+  assert.equal(operations.length, 19);
   for (const operation of operations) {
     meaningful(operation.summary, `${operation.operationId} summary`);
     meaningful(operation.description, `${operation.operationId} description`);
@@ -97,9 +97,11 @@ test('documented success responses retain their concrete DTO schemas', () => {
   const expected = {
     acceptWorkspaceInvitation: 'AcceptedInvitationResponseDto_Output',
     addWorkspaceMember: 'MemberMutationResponseDto_Output',
+    createNode: 'NodeResponseDto_Output',
     createWorkspaceInvitation: 'InvitationResponseDto_Output',
     getCurrentUser: 'CurrentUserResponseDto_Output',
     getLiveness: 'LivenessResponseDto_Output',
+    getNode: 'NodeResponseDto_Output',
     getReadiness: 'ReadinessResponseDto_Output',
     listWorkspaceMembers: 'MemberPageResponseDto_Output',
     listWorkspaces: 'WorkspacePageResponseDto_Output',
@@ -107,14 +109,15 @@ test('documented success responses retain their concrete DTO schemas', () => {
     refreshSession: 'SessionResponseDto_Output',
     signUp: 'SessionResponseDto_Output',
     switchWorkspace: 'SessionResponseDto_Output',
+    updateNode: 'NodeResponseDto_Output',
     updateWorkspaceMember: 'MemberMutationResponseDto_Output',
   };
   for (const operation of operations.filter(
-    (item) => !['logOut', 'removeWorkspaceMember'].includes(item.operationId),
+    (item) => !['logOut', 'removeWorkspaceMember', 'archiveNode'].includes(item.operationId),
   )) {
     const response =
       operation.responses[
-        ['signUp', 'addWorkspaceMember', 'createWorkspaceInvitation'].includes(
+        ['signUp', 'addWorkspaceMember', 'createWorkspaceInvitation', 'createNode'].includes(
           operation.operationId,
         )
           ? '201'

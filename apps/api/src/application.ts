@@ -56,6 +56,7 @@ export async function createApplication(
           .addTag('Health', 'Service liveness and readiness')
           .addTag('Authentication', 'Account and session lifecycle')
           .addTag('Workspaces', 'Workspace memberships, invitations and current identity')
+          .addTag('Hierarchy', 'Workspace spaces, folders and lists')
           .addBearerAuth(
             {
               bearerFormat: 'JWT',

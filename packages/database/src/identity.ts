@@ -4,9 +4,10 @@ import { LogInSchema, SignUpSchema, UuidSchema } from '@flowboard/contracts';
 import { SilentLogger } from '@flowboard/logger';
 
 import { createClient } from './client.js';
-import { recordWorkspaceChange, validateMembershipPage } from './membership-repository.js';
+import { validateMembershipPage } from './membership-repository.js';
 import { hashPassword, verifyPassword } from './password.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
+import { recordWorkspaceChange } from './workspace-events.js';
 
 import type { Prisma, RefreshSession } from './generated/client.js';
 import type {

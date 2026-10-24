@@ -119,6 +119,8 @@ P02-03 returns a token to share privately and accepts it in the request body; it
 | PUT    | `/v1/nodes/{nodeId}/grants`          | upsertNodeGrant | Admin   | userId, mode, C → 200 Grant + configVersion                                                                             | P03-02        |
 | DELETE | `/v1/nodes/{nodeId}/grants/{userId}` | removeNodeGrant | Admin   | C → 204                                                                                                                 | P03-02        |
 
+P03-01 exposes the four create/read/update/archive operations to administrators only. Member-visible reads and the tree/grant endpoints arrive in P03-02.
+
 Root spaces have null parentId; folders require space, lists require folder. Virtual workspace ID is never a substitute for null root parent. `placement` is a strict union: `{edge:"start"}`, `{edge:"end"}`, `{beforeId:UUID}` or `{afterId:UUID}`. An anchor must be a live sibling, distinct from target, and rechecked under lock. No raw numeric position or two simultaneous anchors. Reparenting validates statuses/fields of all affected live tasks; it rejects invalid descendants rather than silently changing them.
 
 Permission traversal is ancestor-aware: any deny blocks the subtree; each private ancestor needs an explicit allow. Admins bypass inside the tenant. Tree paging orders depth, ancestor path position/ID, then node ID, so an accessible child never appears before an accessible ancestor. Visibility changes update configVersion and revoke subscriptions.

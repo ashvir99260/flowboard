@@ -17,3 +17,5 @@ export * from './auth.js';
 export * from './workspaces.js';
 
 export * from './events.js';
+
+export * from './nodes.js';

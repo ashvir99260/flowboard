@@ -588,13 +588,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 3 — Hierarchy and authorization
 
-- [ ] **P03-01 — Strict hierarchy CRUD and archive**
+- [x] **P03-01 — Strict hierarchy CRUD and archive**
   - **Goal:** Implement space/folder/list records with valid parents and soft deletion.
-  - **Files:** `packages/contracts/src/nodes.ts`, `apps/api/src/modules/hierarchy/{hierarchy.module,nodes.controller,hierarchy.service}.ts`, `apps/api/src/modules/hierarchy/dto/*.dto.ts`, `apps/api/test/integration/hierarchy.spec.mjs`, generated artifacts.
+  - **Requirements:** R36/R37; contributes to R32/R42/R91/R92/R114.
+  - **Files:** `packages/contracts/src/{nodes,events}.ts`, database hierarchy repository/shared event helper and integration tests, `apps/api/src/modules/hierarchy/**`, permission metadata and runtime composition, generated artifacts, README and task evidence.
   - **Dependencies:** P02-03.
   - **Acceptance:** Create/read/rename/archive nodes; exact parent types enforced; IDs cannot cross tenants. Archive removes whole subtree/tasks from normal reads atomically. Until P03-02 adds complete member visibility, all new node routes are admin-only through the established PermissionGuard, including reads. Reparenting waits for P06-05.
   - **Validation:** Skip-level/cycle/self-parent attempts, archived ancestors, cross-tenant parent, repeat archive behavior and rollback; endpoint DoD and standard gate.
   - **Commit:** `feat: add validated hierarchy containers`.
+  - **Completion evidence:** [P03-01](evidence/P03-01.md): four typed admin endpoints, tenant/parent/version validation, atomic subtree/task archive with rollback and race coverage; all 395 tests, root gates and Docker acceptance pass.
 
 - [ ] **P03-02 — Central permission policy, grants and visible tree**
   - **Goal:** Make tree/direct access agree on ancestor-aware visibility.

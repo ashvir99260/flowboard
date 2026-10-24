@@ -6,61 +6,15 @@ import {
   UpdateMemberSchema,
   UuidSchema,
   VersionSchema,
-  WorkspaceConfigUpdatedEventSchema,
 } from '@flowboard/contracts';
 
 import { DatabaseError, exactKeys } from './tenant-context.js';
+import { recordWorkspaceChange } from './workspace-events.js';
 
 import type { Prisma } from './generated/client.js';
 import type { MemberProfile, MembershipPageQuery } from './membership.entity.js';
 import type { TenantContext } from './tenant-context.js';
 import type { AddMember, UpdateMember } from '@flowboard/contracts';
-
-export async function recordWorkspaceChange(
-  tx: Prisma.TransactionClient,
-  workspaceId: string,
-  actorId: string,
-  reason: 'membership' | 'invitation',
-  dataChanged = false,
-) {
-  const workspace = await tx.workspace.update({
-    where: { id: workspaceId },
-    data: {
-      configVersion: { increment: 1 },
-      ...(dataChanged ? { dataVersion: { increment: 1 } } : {}),
-    },
-    select: { configVersion: true, dataVersion: true },
-  });
-  const [clock] = await tx.$queryRaw<
-    { now: Date }[]
-  >`SELECT clock_timestamp()::timestamptz(3) AS now`;
-  if (!clock) throw new Error('Database clock unavailable');
-
-  const eventId = randomUUID();
-  const payload = WorkspaceConfigUpdatedEventSchema.parse({
-    eventId,
-    workspaceId,
-    actorId,
-    schemaVersion: 1,
-    occurredAt: clock.now.toISOString(),
-    configVersion: workspace.configVersion,
-    reason,
-  });
-  await tx.outboxEvent.create({
-    data: {
-      id: eventId,
-      workspaceId,
-      actorId,
-      aggregateType: 'workspace_config',
-      aggregateId: workspaceId,
-      aggregateVersion: workspace.configVersion,
-      eventType: 'workspace.config.updated',
-      payload,
-    },
-  });
-
-  return workspace;
-}
 
 export function validateMembershipPage(query: MembershipPageQuery) {
   exactKeys(query, ['after', 'limit']);

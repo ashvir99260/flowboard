@@ -2,6 +2,7 @@ import { SilentLogger } from '@flowboard/logger';
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from './modules/auth/auth.module.js';
+import { HierarchyModule } from './modules/hierarchy/hierarchy.module.js';
 import { PlatformModule } from './modules/platform/platform.module.js';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module.js';
 import { SharedModule } from './shared/shared.module.js';
@@ -27,6 +28,7 @@ export class AppModule {
         PlatformModule.forProbe(probe),
         AuthModule.forRuntime(auth, logger),
         WorkspacesModule.forRuntime(database, auth?.identities, auth?.settings.secret, logger),
+        HierarchyModule.forDatabase(database, logger),
       ],
     };
   }

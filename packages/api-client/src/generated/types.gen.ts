@@ -116,6 +116,44 @@ export type CreateInvitationDto = {
 };
 
 /**
+ * Create container request
+ *
+ * Append a container under a valid live parent; positions and identity are server-owned.
+ */
+export type CreateNodeDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Container name
+     *
+     * Trimmed name containing 1 to 120 Unicode characters.
+     */
+    name: string;
+    /**
+     * Parent ID
+     *
+     * Null for spaces; a space ID for folders; a folder ID for lists.
+     */
+    parentId: string | null;
+    /**
+     * Container type
+     *
+     * A space contains folders; a folder contains lists; lists contain tasks.
+     */
+    type: 'space' | 'folder' | 'list';
+    /**
+     * Visibility
+     *
+     * Container visibility policy; private access requires an explicit grant for members.
+     */
+    visibility?: 'public' | 'private';
+};
+
+/**
  * Current user response
  *
  * Authenticated session identity without access or refresh credentials.
@@ -480,6 +518,119 @@ export type MemberPageResponseDtoOutput = {
 };
 
 /**
+ * Container response
+ *
+ * Container and workspace revisions from one transaction.
+ */
+export type NodeResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Container
+     *
+     * Safe tenant-owned hierarchy container.
+     */
+    data: {
+        /**
+         * Archived at
+         *
+         * Server archive timestamp or null for a live container.
+         */
+        archivedAt: string | null;
+        /**
+         * Created at
+         *
+         * Immutable creation time from the database clock.
+         */
+        createdAt: string;
+        /**
+         * Node ID
+         *
+         * Server-generated container identifier.
+         */
+        id: string;
+        /**
+         * Container name
+         *
+         * Trimmed name containing 1 to 120 Unicode characters.
+         */
+        name: string;
+        /**
+         * Parent ID
+         *
+         * Null for spaces; a space ID for folders; a folder ID for lists.
+         */
+        parentId: string | null;
+        /**
+         * Sibling position
+         *
+         * Server-assigned position among live siblings.
+         */
+        position: number;
+        /**
+         * Container type
+         *
+         * A space contains folders; a folder contains lists; lists contain tasks.
+         */
+        type: 'space' | 'folder' | 'list';
+        /**
+         * Updated at
+         *
+         * Database-maintained time of the last changed command.
+         */
+        updatedAt: string;
+        /**
+         * Node version
+         *
+         * Optimistic revision incremented by each changed command.
+         */
+        version: number;
+        /**
+         * Visibility
+         *
+         * Container visibility policy; private access requires an explicit grant for members.
+         */
+        visibility: 'public' | 'private';
+        /**
+         * Workspace ID
+         *
+         * Tenant owning this container, resolved from the authenticated session.
+         */
+        workspaceId: string;
+    };
+    /**
+     * Data version
+     *
+     * Workspace collection revision from the same database snapshot.
+     */
+    dataVersion: number;
+};
+
+/**
+ * Node mutation preconditions
+ *
+ * Both node and workspace revisions are required.
+ */
+export type NodeVersionDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Expected node version
+     *
+     * Last observed node revision; a stale revision is a conflict.
+     */
+    expectedVersion: number;
+};
+
+/**
  * Readiness response
  *
  * Public readiness result after successful dependency checks.
@@ -652,6 +803,38 @@ export type UpdateMemberDto = {
      * Role in this workspace, read from current membership.
      */
     role: 'admin' | 'member';
+};
+
+/**
+ * Update container request
+ *
+ * Change name or visibility; type, parent and position cannot be changed here.
+ */
+export type UpdateNodeDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Expected node version
+     *
+     * Last observed node revision; a stale revision is a conflict.
+     */
+    expectedVersion: number;
+    /**
+     * Container name
+     *
+     * Trimmed name containing 1 to 120 Unicode characters.
+     */
+    name?: string;
+    /**
+     * Visibility
+     *
+     * Container visibility policy; private access requires an explicit grant for members.
+     */
+    visibility?: 'public' | 'private';
 };
 
 /**
@@ -1241,6 +1424,232 @@ export type GetCurrentUserResponses = {
 };
 
 export type GetCurrentUserResponse = GetCurrentUserResponses[keyof GetCurrentUserResponses];
+
+export type CreateNodeData = {
+    /**
+     * Name, container type, required parent and workspace configuration precondition.
+     */
+    body: CreateNodeDto;
+    path?: never;
+    query?: never;
+    url: '/v1/nodes';
+};
+
+export type CreateNodeErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token and current membership are required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Only workspace administrators may use container endpoints in this phase.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The container or a live ancestor is missing or outside the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * The workspace configuration or node version changed; read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type CreateNodeError = CreateNodeErrors[keyof CreateNodeErrors];
+
+export type CreateNodeResponses = {
+    /**
+     * Created container and updated workspace revisions.
+     */
+    201: NodeResponseDtoOutput;
+};
+
+export type CreateNodeResponse = CreateNodeResponses[keyof CreateNodeResponses];
+
+export type ArchiveNodeData = {
+    /**
+     * Expected node and workspace configuration revisions.
+     */
+    body: NodeVersionDto;
+    path: {
+        /**
+         * Target node ID
+         *
+         * Container identifier within the selected workspace.
+         */
+        nodeId: string;
+    };
+    query?: never;
+    url: '/v1/nodes/{nodeId}';
+};
+
+export type ArchiveNodeErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token and current membership are required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Only workspace administrators may use container endpoints in this phase.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The container or a live ancestor is missing or outside the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * The workspace configuration or node version changed; read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ArchiveNodeError = ArchiveNodeErrors[keyof ArchiveNodeErrors];
+
+export type ArchiveNodeResponses = {
+    /**
+     * Subtree archived and invalidations recorded atomically; no response body.
+     */
+    204: void;
+};
+
+export type ArchiveNodeResponse = ArchiveNodeResponses[keyof ArchiveNodeResponses];
+
+export type GetNodeData = {
+    body?: never;
+    path: {
+        /**
+         * Target node ID
+         *
+         * Container identifier within the selected workspace.
+         */
+        nodeId: string;
+    };
+    query?: never;
+    url: '/v1/nodes/{nodeId}';
+};
+
+export type GetNodeErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token and current membership are required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Only workspace administrators may use container endpoints in this phase.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The container or a live ancestor is missing or outside the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * The workspace configuration or node version changed; read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type GetNodeError = GetNodeErrors[keyof GetNodeErrors];
+
+export type GetNodeResponses = {
+    /**
+     * Container and workspace revisions from the same snapshot.
+     */
+    200: NodeResponseDtoOutput;
+};
+
+export type GetNodeResponse = GetNodeResponses[keyof GetNodeResponses];
+
+export type UpdateNodeData = {
+    /**
+     * Changed name or visibility and both required version preconditions.
+     */
+    body: UpdateNodeDto;
+    path: {
+        /**
+         * Target node ID
+         *
+         * Container identifier within the selected workspace.
+         */
+        nodeId: string;
+    };
+    query?: never;
+    url: '/v1/nodes/{nodeId}';
+};
+
+export type UpdateNodeErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token and current membership are required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Only workspace administrators may use container endpoints in this phase.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The container or a live ancestor is missing or outside the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * The workspace configuration or node version changed; read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type UpdateNodeError = UpdateNodeErrors[keyof UpdateNodeErrors];
+
+export type UpdateNodeResponses = {
+    /**
+     * Updated container and workspace revisions.
+     */
+    200: NodeResponseDtoOutput;
+};
+
+export type UpdateNodeResponse = UpdateNodeResponses[keyof UpdateNodeResponses];
 
 export type ListWorkspacesData = {
     body?: never;
