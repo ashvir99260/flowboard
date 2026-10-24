@@ -16,11 +16,11 @@ import { useEffect, useId, useState } from 'react';
 
 import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
+import { taskMutationAffectsList } from '../tasks/task-events';
 
 import { assembleBoard, readBoardStatuses } from './board-data';
 
 import type { BoardPageRequest, BoardResult } from './board-data';
-import type { TaskPlacement } from './task-placement';
 import type { QueryScope } from '../../lib/query-scope';
 import type { ClientRuntime } from '../../providers/app-providers';
 
@@ -99,17 +99,14 @@ export function useBoard({
     const unmutate = queryClient.getMutationCache().subscribe((event) => {
       if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
 
-      const key = event.mutation.options.mutationKey;
       if (
-        key?.[0] !== 'task-placement' ||
-        key[1] !== scope.revision ||
-        key[2] !== scope.userId ||
-        key[3] !== scope.workspaceId
+        taskMutationAffectsList(
+          event.mutation.options.mutationKey,
+          event.mutation.state.variables,
+          scope,
+          listId,
+        )
       )
-        return;
-
-      const command = event.mutation.state.variables as TaskPlacement;
-      if (command.sourceListId === listId || command.request.destinationListId === listId)
         refresh();
     });
 
@@ -118,7 +115,7 @@ export function useBoard({
       unfocus();
       unonline();
     };
-  }, [queryClient, listId, scope.revision, scope.userId, scope.workspaceId]);
+  }, [queryClient, listId, scope]);
   const tags = [`board:${instance}:${attempt.generation}`];
   const statusesQuery = useQuery({
     ...withQueryScope(

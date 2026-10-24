@@ -24,6 +24,8 @@ import Button from '@mui/material/Button';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useState } from 'react';
 
+import { useTaskEditor } from '../tasks/task-drawer';
+
 import type { BoardColumn } from './board-data';
 import type { CollisionDetection, DragEndEvent } from '@dnd-kit/core';
 import type { Placement, ResolvedField, Task } from '@flowboard/contracts';
@@ -77,6 +79,7 @@ function Card({
   reduced: boolean;
   task: Task;
 }) {
+  const openTask = useTaskEditor();
   const {
     attributes,
     listeners,
@@ -116,14 +119,23 @@ function Card({
           field ? <CustomFieldChip field={field} value={task.customFields[field.key]} /> : undefined
         }
         actions={
-          <Button
-            data-move-task={task.id}
-            aria-label={`Move task: ${task.title}`}
-            disabled={pending}
-            onClick={open}
-          >
-            Move
-          </Button>
+          <>
+            <Button
+              data-open-task={task.id}
+              aria-label={`Open task: ${task.title}`}
+              onClick={() => openTask(task.id)}
+            >
+              Details
+            </Button>
+            <Button
+              data-move-task={task.id}
+              aria-label={`Move task: ${task.title}`}
+              disabled={pending}
+              onClick={open}
+            >
+              Move
+            </Button>
+          </>
         }
       />
     </Box>

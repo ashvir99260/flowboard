@@ -3,6 +3,7 @@
 import { getCurrentUserOptions, getNodeOptions } from '@flowboard/api-client/tanstack-query';
 import { CurrentUserEnvelopeSchema, NodeEnvelopeSchema } from '@flowboard/contracts';
 import { ErrorState } from '@flowboard/ui';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -20,6 +21,7 @@ import { withQueryScope } from '../../lib/query-scope';
 import { useSession } from '../../providers/app-providers';
 import { SessionGate, SessionLoading } from '../auth/session-gate';
 import { ListViews } from '../list/list-view';
+import { TaskEditorProvider } from '../tasks/task-drawer';
 import { Sidebar } from '../tree/sidebar';
 
 import type { QueryScope } from '../../lib/query-scope';
@@ -127,7 +129,12 @@ function VerifiedWorkspace({
   const query = useQuery(withQueryScope(getCurrentUserOptions({ client: runtime.client }), scope));
   if (query.isPending) return <SessionLoading />;
 
-  if (query.isError)
+  const refreshError = query.isError ? apiError(query.error) : null;
+  const canRetainWorkspace =
+    refreshError &&
+    query.data &&
+    ['INTERNAL_ERROR', 'SERVICE_UNAVAILABLE', 'NETWORK_ERROR'].includes(refreshError.code);
+  if (query.isError && !canRetainWorkspace)
     return (
       <ErrorState
         title="Workspace unavailable"
@@ -165,65 +172,83 @@ function VerifiedWorkspace({
   const { user, activeWorkspace } = parsed.data.data;
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-      <Drawer
-        open={desktop || open}
-        variant={desktop ? 'permanent' : 'temporary'}
-        onClose={() => setOpen(false)}
-        sx={{
-          width: desktop ? 272 : 0,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 272,
-            maxWidth: 'calc(100vw - 32px)',
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        <Box
-          component="nav"
-          aria-label="Workspace navigation"
-          sx={{ p: 3, display: 'flex', flexDirection: 'column', minHeight: '100%' }}
-        >
-          {!desktop && <Button onClick={() => setOpen(false)}>Close navigation</Button>}
-          <Typography variant="h3" component="h2" sx={{ p: 2, overflowWrap: 'anywhere' }}>
-            {activeWorkspace.name}
-          </Typography>
-          <Button component={NextLink} href="/workspaces">
-            Switch workspace
-          </Button>
-          <Divider sx={{ my: 3 }} />
-          <Sidebar
-            runtime={runtime}
-            scope={scope}
-            selectedId={listId}
-            onSelect={() => setOpen(false)}
-          />
-          <Box sx={{ mt: 'auto', pt: 6 }}>
-            <Typography variant="body2" sx={{ px: 2, overflowWrap: 'anywhere' }}>
-              {user.name}
-            </Typography>
+    <TaskEditorProvider listId={listId} runtime={runtime} scope={scope}>
+      {canRetainWorkspace && (
+        <Alert
+          severity="warning"
+          action={
             <Button
               onClick={() => {
-                void logout();
+                void query.refetch();
               }}
             >
-              Sign out
+              Retry workspace refresh
             </Button>
+          }
+        >
+          Workspace details could not refresh. Your draft is kept.
+        </Alert>
+      )}
+      <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+        <Drawer
+          open={desktop || open}
+          variant={desktop ? 'permanent' : 'temporary'}
+          onClose={() => setOpen(false)}
+          sx={{
+            width: desktop ? 272 : 0,
+            flexShrink: 0,
+            '& .MuiDrawer-paper': {
+              width: 272,
+              maxWidth: 'calc(100vw - 32px)',
+              boxSizing: 'border-box',
+            },
+          }}
+        >
+          <Box
+            component="nav"
+            aria-label="Workspace navigation"
+            sx={{ p: 3, display: 'flex', flexDirection: 'column', minHeight: '100%' }}
+          >
+            {!desktop && <Button onClick={() => setOpen(false)}>Close navigation</Button>}
+            <Typography variant="h3" component="h2" sx={{ p: 2, overflowWrap: 'anywhere' }}>
+              {activeWorkspace.name}
+            </Typography>
+            <Button component={NextLink} href="/workspaces">
+              Switch workspace
+            </Button>
+            <Divider sx={{ my: 3 }} />
+            <Sidebar
+              runtime={runtime}
+              scope={scope}
+              selectedId={listId}
+              onSelect={() => setOpen(false)}
+            />
+            <Box sx={{ mt: 'auto', pt: 6 }}>
+              <Typography variant="body2" sx={{ px: 2, overflowWrap: 'anywhere' }}>
+                {user.name}
+              </Typography>
+              <Button
+                onClick={() => {
+                  void logout();
+                }}
+              >
+                Sign out
+              </Button>
+            </Box>
           </Box>
-        </Box>
-      </Drawer>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        {!desktop && (
-          <Box sx={{ p: 3 }}>
-            <Button onClick={() => setOpen(true)}>Open navigation</Button>
+        </Drawer>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {!desktop && (
+            <Box sx={{ p: 3 }}>
+              <Button onClick={() => setOpen(true)}>Open navigation</Button>
+            </Box>
+          )}
+          <Box component="main" sx={{ p: { xs: 4, md: 8 } }}>
+            {children}
           </Box>
-        )}
-        <Box component="main" sx={{ p: { xs: 4, md: 8 } }}>
-          {children}
         </Box>
       </Box>
-    </Box>
+    </TaskEditorProvider>
   );
 }
 
