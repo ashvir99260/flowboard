@@ -319,3 +319,5 @@ P16-01 adds React Toastify action feedback and content-free realtime notificatio
 ### Agent guidance refinement (25 October 2026)
 
 P17-01 organizes repository instructions by app/package ownership and documents the implemented naming and code patterns. The index routes readers to canonical architecture, backend, frontend, forms, style, tooling and verification guides. It changes documentation only; runtime behavior remains evidenced by P16-01.
+
+P18-01 adds a standalone Storybook to the UI package. Reuse the actual theme and presentational components with local fixtures, typed controls and browser interactions. Keep Next App Router SSR validation in the existing web tests. Storybook has its own cached static build and local development command; its browser checks join the root test pipeline. Development-only stories/configuration do not affect app release fingerprints or runtime exports.

@@ -136,6 +136,8 @@ Open [Flowboard](http://localhost:3000). Next.js reloads page edits; the API and
 
 The development-only [component playground](http://localhost:3000/playground) demonstrates shared statuses, priorities, assignees, dates, custom fields and empty/error states in light and dark themes. It uses local sample props and makes no API requests. Production returns 404 for this route.
 
+For the standalone component library, run `pnpm storybook` and open [localhost:6006](http://localhost:6006). It includes light/dark themes, editable props, viewport presets, accessibility inspection and interactive examples without app services. `pnpm storybook:build` creates the static site; `pnpm storybook:test` runs browser checks. See the [Storybook guide](docs/STORYBOOK.md) for setup and story conventions.
+
 | Process | Default address         | Current behavior                                                             |
 | ------- | ----------------------- | ---------------------------------------------------------------------------- |
 | Web     | `http://localhost:3000` | Login/signup, workspace picker, visible tree, board/table and task drawer.   |
@@ -238,7 +240,7 @@ Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `caro
 
 `DEMO_SEED` defaults to `true` only in local Compose. Leave it `false` on hosted environments. A completed seed marker is committed atomically with the data; later or concurrent boots preserve your edits. Migrations use `DATABASE_URL_UNPOOLED` when supplied (Neon's direct connection), while runtime queries use `DATABASE_URL` (which may be pooled). For explicit local maintenance, export those URLs and run `pnpm db:migrate`, or `DEMO_SEED=true pnpm db:seed` after migration. Neither command resets data.
 
-To run the apps with `pnpm dev` while keeping only PostgreSQL and Redis in Docker, follow [Run the application shells](#run-the-application-shells). That workflow uses `compose.local.yaml` to expose datastore ports to host tools. Full Docker startup uses `compose.yaml` alone. Do not run container apps and host development apps on the same ports.
+To run the apps with `pnpm dev` while keeping only PostgreSQL and Redis in Docker, follow [Run locally](#run-locally). That workflow uses `compose.local.yaml` to expose datastore ports to host tools. Full Docker startup uses `compose.yaml` alone. Do not run container apps and host development apps on the same ports.
 
 Run `pnpm docker:check` for an isolated image/build/browser/restart/recovery check. It reserves ports, derives matching browser origins, ignores the root `.env`, and uses unique image tags. A real browser edits a task; REST edits survive restart; readiness reflects a Redis outage and queued activity appears after recovery. It removes its own containers and image tags, leaving its uniquely named data volumes intact. It never targets development volumes.
 

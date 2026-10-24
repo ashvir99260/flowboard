@@ -99,6 +99,7 @@ test('API-only change publishes only the API patch', async (t) => {
 
 for (const [path, expected] of [
   ['apps/web/src/index.ts', ['web']],
+  ['apps/web/stories/runtime.ts', ['web']],
   ['apps/worker/src/index.ts', ['worker']],
   ['packages/database/src/index.ts', ['api', 'worker']],
   ['packages/logger/src/index.ts', ['api', 'worker']],
@@ -141,6 +142,38 @@ test('docs, tests and build-only spec tooling do not release an application', as
     await f.put(path, 'changed');
   f.commit('feat!: tooling changes');
   assert.deepEqual(await f.plan(), []);
+});
+
+test('UI Storybook tooling does not release apps but UI runtime changes still release web', async (t) => {
+  const f = await fixture(t);
+  for (const path of [
+    'packages/ui/.storybook/main.ts',
+    'packages/ui/.storybook/vitest.config.ts',
+    'packages/ui/stories/button.stories.tsx',
+    'packages/ui/tsconfig.storybook.json',
+  ])
+    await f.put(path, 'storybook tooling');
+  await f.put('packages/ui/package.json', {
+    name: '@flowboard/ui',
+    dependencies: {},
+    devDependencies: { storybook: '10.6.3' },
+    scripts: { storybook: 'storybook dev --port 6006' },
+  });
+  f.lock.importers['packages/ui'].devDependencies = { storybook: { version: '10.6.3' } };
+  f.lock.packages['storybook@10.6.3'] = { resolution: { integrity: 'storybook-fixture' } };
+  f.lock.snapshots['storybook@10.6.3'] = {};
+  await f.saveLock();
+  f.commit('feat: add component stories');
+  assert.deepEqual(await f.plan(), []);
+  await f.put('packages/ui/stories/button.stories.tsx', 'edited example');
+  f.commit('feat!: revise stories');
+  assert.deepEqual(await f.plan(), []);
+  await f.put('packages/ui/src/index.ts', 'changed runtime component');
+  f.commit('fix: component behavior');
+  assert.deepEqual(
+    (await f.plan()).map((release) => release.app),
+    ['web'],
+  );
 });
 
 for (const [message, version] of [
