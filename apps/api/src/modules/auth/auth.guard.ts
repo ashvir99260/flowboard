@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { PublicRouteKey } from '../../core/common/decorators/public.decorator.js';
-import { SessionRouteKey } from '../../core/common/decorators/session-route.decorator.js';
-import { ApiException } from '../../core/common/errors/api-exception.js';
+import { PublicRouteKey } from '../../core/common/decorators/public.decorator.ts';
+import { SessionRouteKey } from '../../core/common/decorators/session-route.decorator.ts';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
 
-import { AuthService } from './auth.service.js';
+import { AuthService } from './auth.service.ts';
 
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import type { IncomingMessage } from 'node:http';

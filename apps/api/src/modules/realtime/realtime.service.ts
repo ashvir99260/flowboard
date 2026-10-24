@@ -3,13 +3,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { Redis } from 'ioredis';
 
-import { ApiException } from '../../core/common/errors/api-exception.js';
-import { ApiLoggerKey } from '../../core/common/tokens/logger.token.js';
-import { RedisConnectionOptions } from '../../core/config/redis.config.js';
-import { AuthService } from '../auth/auth.service.js';
-import { PermissionService } from '../permissions/permission.service.js';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
+import { ApiLoggerKey } from '../../core/common/tokens/logger.token.ts';
+import { RedisConnectionOptions } from '../../core/config/redis.config.ts';
+import { AuthService } from '../auth/auth.service.ts';
+import { PermissionService } from '../permissions/permission.service.ts';
 
-import { observedAdapterClient } from './adapter-client.js';
+import { observedAdapterClient } from './adapter-client.ts';
 
 import type { OutboxRecord, RealtimeInvalidation } from '@flowboard/contracts';
 import type { Logger } from '@flowboard/logger';

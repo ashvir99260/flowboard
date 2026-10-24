@@ -1,13 +1,13 @@
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 
-import { PermissionGuard } from './permission.guard.js';
+import { PermissionGuard } from './permission.guard.ts';
 import {
   ActiveWorkspaceKey,
   NodePermissionKey,
   PermissionActionKey,
   ScopePermissionKey,
   TaskPermissionKey,
-} from './permission.service.js';
+} from './permission.service.ts';
 
 import type { PermissionAction } from '@flowboard/contracts';
 

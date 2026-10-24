@@ -25,7 +25,7 @@ The UI package's camelCase filenames supersede its earlier kebab-case convention
 
 ## Imports and modules
 
-All authored packages/apps use native ESM and declared public exports. NodeNext source imports use the output extension, for example `./task-events.js`; web uses its Next/Bundler resolution conventions. Use `import type` for type-only dependencies under the shared `verbatimModuleSyntax` compiler setting. There is no dedicated consistent-type-imports or import-extension lint rule to claim here.
+All authored packages/apps use native ESM and declared public exports. API TypeScript source imports use `.ts`, for example `./task-events.ts`; its compiler rewrites relative paths to `.js` in emitted ESM. Other NodeNext workspaces currently use output extensions such as `.js`; web uses its Next/Bundler resolution conventions. Imports of compiled output in `.mjs` tests and package runtime exports keep `.js`. Use `import type` for type-only dependencies under the shared `verbatimModuleSyntax` compiler setting. There is no dedicated consistent-type-imports or import-extension lint rule to claim here.
 
 Import grouping/order and unused imports are lint checked. Keep explicit side-effect imports intact. Use package exports such as `@flowboard/contracts`, never another package's source paths. Apps do not import each other; packages do not import apps, except the documented OpenAPI build-only spec entry point. See [package rules](../packages/AGENTS.md).
 

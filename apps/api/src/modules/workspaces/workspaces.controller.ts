@@ -21,11 +21,11 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { SessionRoute } from '../../core/common/decorators/session-route.decorator.js';
-import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
-import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.js';
-import { documentedError } from '../../core/common/swagger/api-documentation.js';
-import { WorkspacePermission } from '../permissions/permission.decorator.js';
+import { SessionRoute } from '../../core/common/decorators/session-route.decorator.ts';
+import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.ts';
+import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.ts';
+import { documentedError } from '../../core/common/swagger/api-documentation.ts';
+import { WorkspacePermission } from '../permissions/permission.decorator.ts';
 
 import {
   AcceptInvitationDto,
@@ -37,7 +37,7 @@ import {
   UpdateMemberDto,
   WorkspacePageQueryDto,
   WorkspaceParamsDto,
-} from './workspaces.request.dto.js';
+} from './workspaces.request.dto.ts';
 import {
   AcceptedInvitationResponseDto,
   CurrentUserResponseDto,
@@ -45,8 +45,8 @@ import {
   MemberMutationResponseDto,
   MemberPageResponseDto,
   WorkspacePageResponseDto,
-} from './workspaces.response.dto.js';
-import { WorkspacesService } from './workspaces.service.js';
+} from './workspaces.response.dto.ts';
+import { WorkspacesService } from './workspaces.service.ts';
 
 import type {
   CurrentUserEnvelope,

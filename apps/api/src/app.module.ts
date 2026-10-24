@@ -1,22 +1,22 @@
 import { SilentLogger } from '@flowboard/logger';
 import { Module } from '@nestjs/common';
 
-import { ActivityModule } from './modules/activity/activity.module.js';
-import { AuthModule } from './modules/auth/auth.module.js';
-import { FieldsModule } from './modules/fields/fields.module.js';
-import { HierarchyModule } from './modules/hierarchy/hierarchy.module.js';
-import { OutboxModule } from './modules/outbox/outbox.module.js';
-import { PermissionsModule } from './modules/permissions/permissions.module.js';
-import { PlatformModule } from './modules/platform/platform.module.js';
-import { RealtimeModule } from './modules/realtime/realtime.module.js';
-import { StatusesModule } from './modules/statuses/statuses.module.js';
-import { TasksModule } from './modules/tasks/tasks.module.js';
-import { WorkspacesModule } from './modules/workspaces/workspaces.module.js';
-import { SharedModule } from './shared/shared.module.js';
+import { ActivityModule } from './modules/activity/activity.module.ts';
+import { AuthModule } from './modules/auth/auth.module.ts';
+import { FieldsModule } from './modules/fields/fields.module.ts';
+import { HierarchyModule } from './modules/hierarchy/hierarchy.module.ts';
+import { OutboxModule } from './modules/outbox/outbox.module.ts';
+import { PermissionsModule } from './modules/permissions/permissions.module.ts';
+import { PlatformModule } from './modules/platform/platform.module.ts';
+import { RealtimeModule } from './modules/realtime/realtime.module.ts';
+import { StatusesModule } from './modules/statuses/statuses.module.ts';
+import { TasksModule } from './modules/tasks/tasks.module.ts';
+import { WorkspacesModule } from './modules/workspaces/workspaces.module.ts';
+import { SharedModule } from './shared/shared.module.ts';
 
-import type { AuthRuntime } from './modules/auth/runtime.js';
-import type { OutboxRuntime } from './modules/outbox/outbox.runtime.js';
-import type { DependencyProbe } from './modules/platform/dependency-probe.js';
+import type { AuthRuntime } from './modules/auth/runtime.ts';
+import type { OutboxRuntime } from './modules/outbox/outbox.runtime.ts';
+import type { DependencyProbe } from './modules/platform/dependency-probe.ts';
 import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
 import type { DynamicModule } from '@nestjs/common';

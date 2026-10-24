@@ -3,8 +3,8 @@ import { Catch, HttpException, Inject } from '@nestjs/common';
 import { ZodValidationException } from 'nestjs-zod';
 import { ZodError } from 'zod';
 
-import { ApiException } from '../errors/api-exception.js';
-import { ApiLoggerKey } from '../tokens/logger.token.js';
+import { ApiException } from '../errors/api-exception.ts';
+import { ApiLoggerKey } from '../tokens/logger.token.ts';
 
 import type { ErrorCode, ValidationIssue } from '@flowboard/contracts';
 import type { Logger } from '@flowboard/logger';

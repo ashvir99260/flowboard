@@ -2,11 +2,11 @@ import { createHash } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import { ApiException } from '../../core/common/errors/api-exception.js';
-import { ApiLoggerKey } from '../../core/common/tokens/logger.token.js';
-import { PermissionService } from '../permissions/permission.service.js';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
+import { ApiLoggerKey } from '../../core/common/tokens/logger.token.ts';
+import { PermissionService } from '../permissions/permission.service.ts';
 
-import type { CursorCodec } from '../../core/common/cursor.js';
+import type { CursorCodec } from '../../core/common/cursor.ts';
 import type {
   ArchiveTask,
   CreateTask,

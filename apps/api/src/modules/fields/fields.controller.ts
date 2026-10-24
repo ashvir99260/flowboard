@@ -28,12 +28,12 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
+import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.ts';
 import {
   documentedAccessError,
   documentedError,
-} from '../../core/common/swagger/api-documentation.js';
-import { NodePermission, ScopePermission } from '../permissions/permission.decorator.js';
+} from '../../core/common/swagger/api-documentation.ts';
+import { NodePermission, ScopePermission } from '../permissions/permission.decorator.ts';
 
 import {
   CreateScopeFieldDto,
@@ -42,13 +42,13 @@ import {
   RemoveScopeFieldDto,
   ScopeFieldParamsDto,
   UpdateScopeFieldDto,
-} from './fields.request.dto.js';
+} from './fields.request.dto.ts';
 import {
   ResolvedFieldResponseDto,
   ScopeFieldMutationResponseDto,
   ScopeFieldResponseDto,
-} from './fields.response.dto.js';
-import { FieldsService } from './fields.service.js';
+} from './fields.response.dto.ts';
+import { FieldsService } from './fields.service.ts';
 
 import type { IdentitySession } from '@flowboard/database';
 

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 
-import { CursorCodec } from '../../core/common/cursor.js';
-import { LoggingModule } from '../../shared/logging/logging.module.js';
+import { CursorCodec } from '../../core/common/cursor.ts';
+import { LoggingModule } from '../../shared/logging/logging.module.ts';
 
-import { ListTasksController, TasksController } from './tasks.controller.js';
-import { TasksRuntimeKey, TasksService } from './tasks.service.js';
+import { ListTasksController, TasksController } from './tasks.controller.ts';
+import { TasksRuntimeKey, TasksService } from './tasks.service.ts';
 
 import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';

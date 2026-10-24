@@ -1,7 +1,7 @@
 import { DatabaseError } from '@flowboard/database';
 import { Catch } from '@nestjs/common';
 
-import { ApiException } from '../../core/common/errors/api-exception.js';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
 
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import type { Socket } from 'socket.io';

@@ -4,10 +4,10 @@ import { createIdentityRepository } from '@flowboard/database';
 import { SilentLogger } from '@flowboard/logger';
 import { Redis } from 'ioredis';
 
-import { ApiException } from '../../core/common/errors/api-exception.js';
-import { RedisConnectionOptions } from '../../core/config/redis.config.js';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
+import { RedisConnectionOptions } from '../../core/config/redis.config.ts';
 
-import type { AuthSettings } from './auth.config.js';
+import type { AuthSettings } from './auth.config.ts';
 import type { Logger } from '@flowboard/logger';
 
 export const AuthRuntimeKey = Symbol('AuthRuntime');

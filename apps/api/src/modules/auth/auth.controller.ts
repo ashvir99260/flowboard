@@ -14,22 +14,22 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { PublicRoute } from '../../core/common/decorators/public.decorator.js';
-import { SessionRoute } from '../../core/common/decorators/session-route.decorator.js';
-import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
-import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.js';
-import { ApiException } from '../../core/common/errors/api-exception.js';
+import { PublicRoute } from '../../core/common/decorators/public.decorator.ts';
+import { SessionRoute } from '../../core/common/decorators/session-route.decorator.ts';
+import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.ts';
+import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.ts';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
 import {
   AuthResponseHeaders,
   ClearedSessionHeaders,
   documentedError,
   OriginDocumentation,
   SessionResponseHeaders,
-} from '../../core/common/swagger/api-documentation.js';
+} from '../../core/common/swagger/api-documentation.ts';
 
-import { EmptyAuthBodyDto, LogInDto, SignUpDto, SwitchWorkspaceDto } from './auth.request.dto.js';
-import { SessionResponseDto } from './auth.response.dto.js';
-import { AuthService } from './auth.service.js';
+import { EmptyAuthBodyDto, LogInDto, SignUpDto, SwitchWorkspaceDto } from './auth.request.dto.ts';
+import { SessionResponseDto } from './auth.response.dto.ts';
+import { AuthService } from './auth.service.ts';
 
 import type { SessionEnvelope } from '@flowboard/contracts';
 import type { AuthenticatedIdentity } from '@flowboard/database';

@@ -7,11 +7,11 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 
-import { AuthGuard } from '../auth/auth.guard.js';
-import { PermissionGuard } from '../permissions/permission.guard.js';
+import { AuthGuard } from '../auth/auth.guard.ts';
+import { PermissionGuard } from '../permissions/permission.guard.ts';
 
-import { RealtimeFilter } from './realtime.filter.js';
-import { RealtimeService } from './realtime.service.js';
+import { RealtimeFilter } from './realtime.filter.ts';
+import { RealtimeService } from './realtime.service.ts';
 
 import type { OnGatewayDisconnect, OnGatewayInit } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';

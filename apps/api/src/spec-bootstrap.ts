@@ -1,4 +1,4 @@
-import { createApplication } from './application.js';
+import { createApplication } from './application.ts';
 
 /** Metadata-only bootstrap. No runtime dependency configuration is read here. */
 export async function exportOpenApi() {

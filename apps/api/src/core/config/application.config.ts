@@ -1,4 +1,4 @@
-import { readBooleanSetting } from '../utils/read-boolean-setting.js';
+import { readBooleanSetting } from '../utils/read-boolean-setting.ts';
 
 export function readApplicationConfig(environment: NodeJS.ProcessEnv) {
   const port = Number(environment.PORT ?? 3001);

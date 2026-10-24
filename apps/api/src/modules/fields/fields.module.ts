@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import { LoggingModule } from '../../shared/logging/logging.module.js';
+import { LoggingModule } from '../../shared/logging/logging.module.ts';
 
-import { ListFieldsController, ScopeFieldsController } from './fields.controller.js';
-import { FieldDatabaseKey, FieldsService } from './fields.service.js';
+import { ListFieldsController, ScopeFieldsController } from './fields.controller.ts';
+import { FieldDatabaseKey, FieldsService } from './fields.service.ts';
 
 import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';

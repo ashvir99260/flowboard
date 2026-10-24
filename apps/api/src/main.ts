@@ -3,12 +3,12 @@ import 'reflect-metadata';
 import { createDatabase, initializeDatabase } from '@flowboard/database';
 import { createLogger, readLogLevel } from '@flowboard/logger';
 
-import { createApplication } from './application.js';
-import { readApplicationConfig } from './core/config/application.config.js';
-import { readAuthSettings } from './modules/auth/auth.config.js';
-import { createAuthRuntime } from './modules/auth/runtime.js';
-import { createOutboxRuntime } from './modules/outbox/outbox.runtime.js';
-import { runtimeProbe } from './modules/platform/dependency-probe.js';
+import { createApplication } from './application.ts';
+import { readApplicationConfig } from './core/config/application.config.ts';
+import { readAuthSettings } from './modules/auth/auth.config.ts';
+import { createAuthRuntime } from './modules/auth/runtime.ts';
+import { createOutboxRuntime } from './modules/outbox/outbox.runtime.ts';
+import { runtimeProbe } from './modules/platform/dependency-probe.ts';
 
 import type { Server } from 'node:http';
 

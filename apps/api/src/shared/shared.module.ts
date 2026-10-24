@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
-import { HttpExceptionFilter } from '../core/common/filters/http-exception.filter.js';
+import { HttpExceptionFilter } from '../core/common/filters/http-exception.filter.ts';
 
-import { LoggingModule } from './logging/logging.module.js';
+import { LoggingModule } from './logging/logging.module.ts';
 
 import type { Logger } from '@flowboard/logger';
 import type { DynamicModule } from '@nestjs/common';
