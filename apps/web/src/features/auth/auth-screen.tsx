@@ -1,12 +1,11 @@
 'use client';
 
 import { LogInSchema, SignUpSchema } from '@flowboard/contracts';
-import { Alert, AuthPanel, Box, Button, FormField, Link, Stack } from '@flowboard/ui';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { FormFields, useZodForm } from '@flowboard/forms';
+import { Alert, AuthPanel, Box, Button, Link, Stack } from '@flowboard/ui';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
 
 import { apiError } from '../../lib/api-error';
 import { useSession } from '../../providers/app-providers';
@@ -15,52 +14,46 @@ import { SessionLoading } from './session-gate';
 
 import type { ClientRuntime } from '../../providers/app-providers';
 import type { LogIn, SignUp } from '@flowboard/contracts';
-import type { Control, FieldValues, Path } from 'react-hook-form';
+import type { FormFieldConfig } from '@flowboard/forms';
 
-function AuthField<T extends FieldValues>({
-  control,
-  label,
-  name,
-  type = 'text',
-  autoComplete,
-}: {
-  autoComplete: string;
-  control: Control<T>;
-  label: string;
-  name: Path<T>;
-  type?: string;
-}) {
-  return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <FormField
-          autoComplete={autoComplete}
-          label={label}
-          type={type}
-          name={field.name}
-          value={field.value}
-          onBlur={field.onBlur}
-          onChange={field.onChange}
-          inputRef={field.ref}
-          errorMessage={fieldState.error?.message}
-          required
-        />
-      )}
-    />
-  );
-}
+const loginFields = [
+  { kind: 'email', name: 'email', label: 'Email', autoComplete: 'email', required: true },
+  {
+    kind: 'password',
+    name: 'password',
+    label: 'Password',
+    autoComplete: 'current-password',
+    required: true,
+  },
+] satisfies FormFieldConfig<LogIn>[];
+const signupFields = [
+  { kind: 'text', name: 'name', label: 'Your name', autoComplete: 'name', required: true },
+  loginFields[0]!,
+  {
+    kind: 'password',
+    name: 'password',
+    label: 'Password',
+    autoComplete: 'new-password',
+    required: true,
+  },
+  {
+    kind: 'text',
+    name: 'workspaceName',
+    label: 'Workspace name',
+    autoComplete: 'organization',
+    required: true,
+  },
+] satisfies FormFieldConfig<SignUp>[];
+
 function LoginForm({ runtime }: { runtime: ClientRuntime }) {
   const [error, setError] = useState<string | null>(null);
   const {
     control,
     handleSubmit,
     formState: { isSubmitting },
-  } = useForm<LogIn>({
+  } = useZodForm(LogInSchema, {
     defaultValues: { email: '', password: '' },
     mode: 'onBlur',
-    resolver: zodResolver(LogInSchema),
   });
 
   return (
@@ -79,20 +72,7 @@ function LoginForm({ runtime }: { runtime: ClientRuntime }) {
       >
         <Stack spacing={5}>
           {error && <Alert severity="error">{error}</Alert>}
-          <AuthField
-            control={control}
-            name="email"
-            label="Email"
-            type="email"
-            autoComplete="email"
-          />
-          <AuthField
-            control={control}
-            name="password"
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-          />
+          <FormFields control={control} fields={loginFields} disabled={isSubmitting} />
           <Button type="submit" variant="contained" disabled={isSubmitting}>
             Sign in
           </Button>
@@ -110,10 +90,9 @@ function SignupForm({ runtime }: { runtime: ClientRuntime }) {
     control,
     handleSubmit,
     formState: { isSubmitting },
-  } = useForm<SignUp>({
+  } = useZodForm(SignUpSchema, {
     defaultValues: { email: '', password: '', name: '', workspaceName: '' },
     mode: 'onBlur',
-    resolver: zodResolver(SignUpSchema),
   });
 
   return (
@@ -132,27 +111,7 @@ function SignupForm({ runtime }: { runtime: ClientRuntime }) {
       >
         <Stack spacing={5}>
           {error && <Alert severity="error">{error}</Alert>}
-          <AuthField control={control} name="name" label="Your name" autoComplete="name" />
-          <AuthField
-            control={control}
-            name="email"
-            label="Email"
-            type="email"
-            autoComplete="email"
-          />
-          <AuthField
-            control={control}
-            name="password"
-            label="Password"
-            type="password"
-            autoComplete="new-password"
-          />
-          <AuthField
-            control={control}
-            name="workspaceName"
-            label="Workspace name"
-            autoComplete="organization"
-          />
+          <FormFields control={control} fields={signupFields} disabled={isSubmitting} />
           <Button type="submit" variant="contained" disabled={isSubmitting}>
             Create account
           </Button>

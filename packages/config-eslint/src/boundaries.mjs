@@ -10,10 +10,11 @@ const runtimeDependencies = {
   'api-client': ['contracts'],
   contracts: [],
   database: ['contracts', 'logger'],
+  forms: ['contracts', 'ui'],
   logger: [],
   openapi: ['contracts'],
   ui: ['contracts'],
-  web: ['contracts', 'api-client', 'ui'],
+  web: ['contracts', 'api-client', 'ui', 'forms'],
   worker: ['contracts', 'database', 'logger'],
 };
 
@@ -83,8 +84,7 @@ export default {
       if (typeof specifier !== 'string') return;
 
       if (
-        owner.group === 'apps' &&
-        owner.name === 'web' &&
+        ['web', 'forms'].includes(owner.name) &&
         ['src', 'app'].includes(path.relative(owner.directory, filename).split(path.sep)[0]) &&
         /^@mui(?:\/|$)/.test(specifier)
       ) {
@@ -109,7 +109,7 @@ export default {
 
       if (
         inSource &&
-        ['web', 'ui'].includes(owner.name) &&
+        ['web', 'ui', 'forms'].includes(owner.name) &&
         /^(axios|undici|node:https?)(\/|$)/.test(specifier)
       ) {
         report(node, 'Use generated operations from packages/api-client for HTTP requests.');
@@ -125,6 +125,16 @@ export default {
         )
       ) {
         report(node, 'Shared UI components are presentational; data clients belong in apps/web.');
+
+        return;
+      }
+
+      if (
+        inSource &&
+        owner.name === 'forms' &&
+        /^(socket\.io-client|@tanstack\/|@hey-api\/|next\/)/.test(specifier)
+      ) {
+        report(node, 'Shared forms cannot import data clients or router code.');
 
         return;
       }
@@ -248,7 +258,7 @@ export default {
         if (
           inSource &&
           !isApiProxy &&
-          ['web', 'ui'].includes(owner.name) &&
+          ['web', 'ui', 'forms'].includes(owner.name) &&
           (directFetch || globalFetch)
         ) {
           report(

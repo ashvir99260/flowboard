@@ -29,6 +29,7 @@ type CustomFieldInputProps = Readonly<{
   disabled?: boolean;
   error?: string;
   field: Pick<ResolvedField, 'key' | 'name' | 'type' | 'required' | 'options'>;
+  hint?: string;
   inputRef?: (element: HTMLInputElement | HTMLSelectElement | null) => void;
   onBlur?: () => void;
   onChange: (value: FieldValue | null) => void;
@@ -38,6 +39,7 @@ type CustomFieldInputProps = Readonly<{
 function NumberInput({
   disabled,
   error,
+  hint,
   field,
   inputRef,
   onBlur,
@@ -52,6 +54,7 @@ function NumberInput({
     <FormField
       disabled={disabled}
       errorMessage={error}
+      hint={hint}
       inputRef={inputRef}
       label={field.name}
       name={field.key}
@@ -75,6 +78,7 @@ function NumberInput({
 export function CustomFieldInput({
   disabled,
   error,
+  hint,
   field,
   inputRef,
   onBlur,
@@ -88,6 +92,7 @@ export function CustomFieldInput({
       <NumberInput
         disabled={disabled}
         error={error}
+        hint={hint}
         field={field}
         inputRef={inputRef}
         onBlur={onBlur}
@@ -106,11 +111,15 @@ export function CustomFieldInput({
     const unavailable = selected.filter(
       (item) => !field.options.some((option) => option.id === item),
     );
-    const message =
-      error ?? (unavailable.length ? 'Selected option is no longer available' : undefined);
+    const message = error ?? (unavailable.length ? 'Selected option is no longer available' : hint);
 
     return (
-      <FormControl disabled={disabled} error={Boolean(message)} required={field.required} fullWidth>
+      <FormControl
+        disabled={disabled}
+        error={Boolean(error || unavailable.length)}
+        required={field.required}
+        fullWidth
+      >
         <InputLabel htmlFor={id} shrink>
           {field.name}
         </InputLabel>
@@ -130,7 +139,7 @@ export function CustomFieldInput({
             name: field.key,
             multiple,
             'aria-required': field.required,
-            'aria-invalid': Boolean(message),
+            'aria-invalid': Boolean(error || unavailable.length),
             'aria-describedby': message ? `${id}-error` : undefined,
           }}
         >
@@ -177,7 +186,7 @@ export function CustomFieldInput({
                   },
                   'aria-required': field.required,
                   'aria-invalid': Boolean(error),
-                  'aria-describedby': error ? `${id}-error` : undefined,
+                  'aria-describedby': error || hint || value === null ? `${id}-error` : undefined,
                 },
               }}
             />
@@ -195,8 +204,8 @@ export function CustomFieldInput({
             Clear
           </Button>
         )}
-        {(error || value === null) && (
-          <FormHelperText id={`${id}-error`}>{error ?? 'Not set'}</FormHelperText>
+        {(error || hint || value === null) && (
+          <FormHelperText id={`${id}-error`}>{error ?? hint ?? 'Not set'}</FormHelperText>
         )}
       </FormControl>
     );
@@ -206,6 +215,7 @@ export function CustomFieldInput({
     <FormField
       disabled={disabled}
       errorMessage={error}
+      hint={hint}
       inputRef={inputRef}
       label={field.name}
       name={field.key}

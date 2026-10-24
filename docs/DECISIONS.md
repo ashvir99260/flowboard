@@ -529,3 +529,11 @@ All reusable presentation belongs to `packages/ui`; web adapters retain generate
 ## D138 — Stable shared activity timestamps
 
 Use an explicit UTC display in shared activity presentation while retaining the original `dateTime` value. The earlier drawer used the renderer's default locale/timezone, which becomes ambiguous when the same component renders static server markup. Fixed UTC output avoids hydration differences and gives collaborators the same event clock. Offset inputs normalize to UTC; invalid display values show “Invalid time”. This changes presentation only, not event timestamps or ordering.
+
+## D139 — Shared form behavior above presentational UI
+
+Date: 2026-10-25. Source: user request for React Hook Form controls, Zod validation and JSON-based dynamic forms.
+
+Add `@flowboard/forms` depending on UI, contracts, React Hook Form, its Zod resolver and Zod. UI remains presentational. Web owns domain schemas, complete defaults, submission/reset, server errors, permission and conflict state. Shared controls receive `control`/typed field names and forward blur/change/ref; disabled is a visual state and never unregisters a value.
+
+JSON describes an allowlisted presentation vocabulary and typed option values, not a second validation language. A strict parser rejects unknown widgets/properties, duplicate or unsafe paths and ambiguous options; callers allowlist names when JSON is external. No expressions, URLs, component imports or execution in JSON. Zod schemas remain the authority for values; the resolver preserves distinct schema input/output types. Existing domain custom-field input behavior is reused, including unfinished numeric drafts, nullable values and unavailable options. Conditional sections and field-array lifecycles remain explicit React composition, not an expression engine.

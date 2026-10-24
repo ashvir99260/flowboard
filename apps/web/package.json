@@ -24,6 +24,7 @@
     "@emotion/styled": "11.14.1",
     "@flowboard/api-client": "workspace:*",
     "@flowboard/contracts": "workspace:*",
+    "@flowboard/forms": "workspace:*",
     "@flowboard/ui": "workspace:*",
     "@hookform/resolvers": "5.9.2",
     "@mui/material": "9.5.0",
