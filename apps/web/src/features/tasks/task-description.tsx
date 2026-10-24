@@ -1,12 +1,10 @@
 'use client';
 
-import { FormField } from '@flowboard/ui';
-import Box from '@mui/material/Box';
+import { FormField, MarkdownContent } from '@flowboard/ui';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { useState } from 'react';
 import { useController } from 'react-hook-form';
-import Markdown from 'react-markdown';
 
 import type { TaskDraft } from './task-form-data';
 import type { Control } from 'react-hook-form';
@@ -33,21 +31,7 @@ export function TaskDescription({ control, busy }: { busy: boolean; control: Con
       <Button type="button" onClick={() => setPreview((value) => !value)}>
         {preview ? 'Hide preview' : 'Preview description'}
       </Button>
-      {preview && (
-        <Box
-          component="section"
-          aria-label="Description preview"
-          sx={{
-            overflowWrap: 'anywhere',
-            '& pre': { overflowX: 'auto', bgcolor: 'action.hover', p: 2 },
-            '& a': { color: 'primary.main' },
-            '& img': { maxWidth: '100%' },
-            '& blockquote': { borderLeft: '3px solid', borderColor: 'divider', pl: 2, ml: 0 },
-          }}
-        >
-          <Markdown skipHtml>{input.value}</Markdown>
-        </Box>
-      )}
+      {preview && <MarkdownContent>{input.value}</MarkdownContent>}
     </Stack>
   );
 }

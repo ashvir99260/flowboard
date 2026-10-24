@@ -1,9 +1,9 @@
 'use client';
 
 import ButtonBase from '@mui/material/ButtonBase';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
+
+import { Paper, Stack, Typography } from '../primitives.js';
 
 import { AssigneeAvatarGroup } from './assignee-avatar-group.js';
 import { DueDateLabel } from './due-date-label.js';
@@ -11,6 +11,32 @@ import { PriorityBadge } from './priority-badge.js';
 
 import type { Task } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
+
+const Card = styled(Paper, { name: 'FlowboardKanbanCard', slot: 'Root' })(({ theme }) => ({
+  padding: theme.spacing(3),
+  minWidth: 0,
+})) as typeof Paper;
+const OpenTitle = styled(ButtonBase)(({ theme }) => ({
+  minHeight: 44,
+  width: '100%',
+  justifyContent: 'flex-start',
+  textAlign: 'left',
+  fontWeight: 600,
+  overflowWrap: 'anywhere',
+  borderRadius: theme.shape.borderRadius,
+}));
+const Title = styled(Typography)({
+  minHeight: 44,
+  fontWeight: 600,
+  overflowWrap: 'anywhere',
+}) as typeof Typography;
+const Summary = styled(Stack)(({ theme }) => ({
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  marginBlock: theme.spacing(2),
+}));
+const Metadata = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(2), minWidth: 0 }));
+const Actions = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(2), flexWrap: 'wrap' }));
 
 export function KanbanCard({
   actions,
@@ -26,52 +52,26 @@ export function KanbanCard({
   task: Pick<Task, 'id' | 'title' | 'priority' | 'dueDate' | 'assignees'>;
 }>) {
   return (
-    <Paper
-      component="article"
-      aria-label={task.title}
-      variant="outlined"
-      sx={{ p: 3, minWidth: 0 }}
-    >
+    <Card component="article" aria-label={task.title} variant="outlined">
       {dragHandle}
       {onOpen ? (
-        <ButtonBase
-          onClick={onOpen}
-          sx={{
-            minHeight: 44,
-            width: '100%',
-            justifyContent: 'flex-start',
-            textAlign: 'left',
-            fontWeight: 600,
-            overflowWrap: 'anywhere',
-          }}
-        >
-          {task.title}
-        </ButtonBase>
+        <OpenTitle onClick={onOpen}>{task.title}</OpenTitle>
       ) : (
-        <Typography
-          component="h3"
-          variant="body1"
-          sx={{ minHeight: 44, fontWeight: 600, overflowWrap: 'anywhere' }}
-        >
+        <Title component="h3" variant="body1">
           {task.title}
-        </Typography>
+        </Title>
       )}
-      <Stack
-        direction="row"
-        useFlexGap
-        spacing={2}
-        sx={{ flexWrap: 'wrap', alignItems: 'center', my: 2 }}
-      >
+      <Summary direction="row" useFlexGap spacing={2}>
         <PriorityBadge priority={task.priority} />
         <DueDateLabel date={task.dueDate} />
-      </Stack>
+      </Summary>
       <AssigneeAvatarGroup assignees={task.assignees} />
-      {metadata && <Stack sx={{ mt: 2, minWidth: 0 }}>{metadata}</Stack>}
+      {metadata && <Metadata>{metadata}</Metadata>}
       {actions && (
-        <Stack direction="row" useFlexGap spacing={2} sx={{ mt: 2, flexWrap: 'wrap' }}>
+        <Actions direction="row" spacing={2} useFlexGap>
           {actions}
-        </Stack>
+        </Actions>
       )}
-    </Paper>
+    </Card>
   );
 }

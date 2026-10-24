@@ -1,14 +1,27 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
+
+import { Box, Paper, Stack, Typography } from '../primitives.js';
 
 import { StatusChip } from './status-chip.js';
 
 import type { ResolvedStatus } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
+
+const Column = styled(Paper, { name: 'FlowboardKanbanColumn', slot: 'Root' })(({ theme }) => ({
+  padding: theme.spacing(3),
+  minWidth: 0,
+  width: '100%',
+})) as typeof Paper;
+const Header = styled(Stack)(({ theme }) => ({
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  marginBottom: theme.spacing(3),
+}));
+const Summary = styled(Box)({ minWidth: 0 });
+const Count = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(1) }));
 
 export function KanbanColumn({
   action,
@@ -22,27 +35,17 @@ export function KanbanColumn({
   status: Pick<ResolvedStatus, 'name' | 'category' | 'color'>;
 }>) {
   return (
-    <Paper
-      component="section"
-      aria-label={`${status.name} column`}
-      variant="outlined"
-      sx={{ p: 3, minWidth: 0, width: '100%' }}
-    >
-      <Stack
-        direction="row"
-        useFlexGap
-        spacing={2}
-        sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', mb: 3 }}
-      >
-        <Box sx={{ minWidth: 0 }}>
+    <Column component="section" aria-label={`${status.name} column`} variant="outlined">
+      <Header direction="row" useFlexGap spacing={2}>
+        <Summary>
           <StatusChip status={status} />
-          <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+          <Count color="text.secondary" variant="body2">
             {count} loaded {count === 1 ? 'task' : 'tasks'}
-          </Typography>
-        </Box>
+          </Count>
+        </Summary>
         {action}
-      </Stack>
+      </Header>
       <Stack spacing={3}>{children}</Stack>
-    </Paper>
+    </Column>
   );
 }

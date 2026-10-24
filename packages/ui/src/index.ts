@@ -35,3 +35,21 @@ export * from './primitives.js';
 export { AuthPanel, Surface, Toolbar } from './composition.js';
 
 export { designTokens } from './tokens.js';
+
+export { TaskTable } from './components/task-table.js';
+
+export { DrawerPanel } from './components/drawer-panel.js';
+
+export { ActivityPanel, ActivityTimeline } from './components/activity-panel.js';
+
+export { FieldPreview } from './components/field-preview.js';
+
+export { StatusPreview } from './components/status-preview.js';
+
+export { MarkdownContent } from './components/markdown-content.js';
+
+export { LoadingState } from './components/loading-state.js';
+
+export { WorkspaceLayout } from './components/workspace-layout.js';
+
+export { BoardDropzone, BoardGrid, BoardItem, BoardViewport } from './components/board-layout.js';

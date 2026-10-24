@@ -1,6 +1,6 @@
 'use client';
 
-import Chip from '@mui/material/Chip';
+import { Chip } from '../primitives.js';
 
 import type { Priority } from '@flowboard/contracts';
 

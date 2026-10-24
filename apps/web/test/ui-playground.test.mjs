@@ -102,7 +102,7 @@ test(
         .getByRole('combobox', { name: /^Team\b/ })
         .evaluate((element) => ({
           background: getComputedStyle(element.closest('section')).backgroundColor,
-          color: getComputedStyle(element.parentElement, '::before').borderBottomColor,
+          color: getComputedStyle(element.parentElement).borderTopColor,
         }));
       for (const { color, background } of [outlines, underline]) {
         const levels = [luminance(color, background), luminance(background)].sort((a, b) => b - a);

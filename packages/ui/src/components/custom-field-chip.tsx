@@ -1,8 +1,7 @@
 'use client';
 
-import Chip from '@mui/material/Chip';
-
 import { formatCalendarDate } from '../format-date.js';
+import { Chip } from '../primitives.js';
 
 import type { CustomFieldType, FieldValue, ResolvedField } from '@flowboard/contracts';
 
@@ -34,7 +33,5 @@ export function CustomFieldChip({
   const formatted = empty ? 'Not set' : formatters[field.type](value);
   const label = `${field.name}: ${formatted}`;
 
-  return (
-    <Chip label={label} size="small" title={label} variant="outlined" sx={{ maxWidth: '100%' }} />
-  );
+  return <Chip label={label} size="small" title={label} variant="outlined" />;
 }

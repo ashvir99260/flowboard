@@ -1,9 +1,17 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import { styled } from '@mui/material/styles';
+
+import { Chip } from '../primitives.js';
 
 import type { ResolvedStatus, StatusCategory } from '@flowboard/contracts';
+
+const Dot = styled('span', { name: 'FlowboardStatus', slot: 'Dot' })(({ theme }) => ({
+  border: `1px solid ${(theme.vars ?? theme).palette.text.secondary}`,
+  borderRadius: '50%',
+  height: 8,
+  width: 8,
+}));
 
 const categories: Record<StatusCategory, string> = {
   not_started: 'Not started',
@@ -19,25 +27,11 @@ export function StatusChip({
 
   return (
     <Chip
-      icon={
-        <Box
-          aria-hidden="true"
-          component="span"
-          sx={{
-            bgcolor: status.color,
-            border: '1px solid',
-            borderColor: 'text.secondary',
-            borderRadius: '50%',
-            height: 8,
-            width: 8,
-          }}
-        />
-      }
+      icon={<Dot aria-hidden="true" style={{ backgroundColor: status.color }} />}
       label={label}
       size="small"
       title={label}
       variant="outlined"
-      sx={{ color: 'text.primary', maxWidth: '100%' }}
     />
   );
 }

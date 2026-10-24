@@ -1,9 +1,20 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
+
+import { Typography } from '../primitives.js';
 
 import type { ReactNode } from 'react';
+
+const Root = styled('div', { name: 'FlowboardEmptyState', slot: 'Root' })(({ theme }) => ({
+  padding: theme.spacing(3),
+  backgroundColor: (theme.vars ?? theme).palette.background.paper,
+  border: `1px dashed ${(theme.vars ?? theme).palette.divider}`,
+  borderRadius: theme.shape.borderRadius,
+}));
+const Title = styled(Typography)({ fontWeight: 600 }) as typeof Typography;
+const Description = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(1) }));
+const Action = styled('div')(({ theme }) => ({ marginTop: theme.spacing(2) }));
 
 export function EmptyState({
   action,
@@ -11,24 +22,12 @@ export function EmptyState({
   title,
 }: Readonly<{ action?: ReactNode; description: string; title: string }>) {
   return (
-    <Box
-      role="status"
-      aria-label={title}
-      sx={{
-        p: 3,
-        bgcolor: 'background.paper',
-        border: '1px dashed',
-        borderColor: 'divider',
-        borderRadius: 1,
-      }}
-    >
-      <Typography component="p" sx={{ fontWeight: 600 }}>
-        {title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+    <Root role="status" aria-label={title}>
+      <Title component="p">{title}</Title>
+      <Description color="text.secondary" variant="body2">
         {description}
-      </Typography>
-      {action && <Box sx={{ mt: 2 }}>{action}</Box>}
-    </Box>
+      </Description>
+      {action && <Action>{action}</Action>}
+    </Root>
   );
 }

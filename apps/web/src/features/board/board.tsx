@@ -1,9 +1,7 @@
 'use client';
 
-import { ErrorState } from '@flowboard/ui';
-import Box from '@mui/material/Box';
+import { BoardViewport, ErrorState, LoadingState } from '@flowboard/ui';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useEffect, useRef, useState } from 'react';
@@ -33,13 +31,7 @@ function BoardContent({
   open: (selection: Selection) => void;
   pending: ReadonlySet<string>;
 }) {
-  if (board.state === 'loading')
-    return (
-      <Stack role="status" direction="row" spacing={2} sx={{ alignItems: 'center', p: 4 }}>
-        <CircularProgress aria-hidden="true" size={20} />
-        <Typography>Loading board…</Typography>
-      </Stack>
-    );
+  if (board.state === 'loading') return <LoadingState>Loading board…</LoadingState>;
 
   if (board.state === 'error')
     return (
@@ -58,12 +50,7 @@ function BoardContent({
         </Typography>
         <Button onClick={board.retry}>Refresh board</Button>
       </Stack>
-      <Box
-        role="region"
-        aria-label="Task board"
-        tabIndex={0}
-        sx={{ overflowX: 'auto', maxWidth: '100%', minWidth: 0, pb: 3 }}
-      >
+      <BoardViewport role="region" aria-label="Task board" tabIndex={0}>
         <BoardDnd
           columns={board.columns}
           fields={board.fields}
@@ -89,7 +76,7 @@ function BoardContent({
             ) : undefined
           }
         />
-      </Box>
+      </BoardViewport>
     </Stack>
   );
 }
