@@ -2116,6 +2116,301 @@ export type SwitchWorkspaceDto = {
 };
 
 /**
+ * Task page
+ *
+ * Authorized tasks and same-snapshot revisions.
+ */
+export type TaskPageResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Data version
+     *
+     * Workspace task and tree data revision.
+     */
+    dataVersion: number;
+    /**
+     * Items
+     *
+     * Authorized items in stable order.
+     */
+    items: Array<{
+        /**
+         * Archived at
+         *
+         * Archive timestamp or null for a live task.
+         */
+        archivedAt: string | null;
+        /**
+         * Assignee IDs
+         *
+         * Assigned member identities in ascending UUID order.
+         */
+        assigneeIds: Array<string>;
+        /**
+         * Assignees
+         *
+         * Safe assigned member summaries in UUID order.
+         */
+        assignees: Array<{
+            /**
+             * Assignee ID
+             *
+             * Workspace member assigned to the task.
+             */
+            id: string;
+            /**
+             * Assignee name
+             *
+             * Public display name without email or account details.
+             */
+            name: string;
+        }>;
+        /**
+         * Created at
+         *
+         * Immutable creation time from the database clock.
+         */
+        createdAt: string;
+        /**
+         * Custom fields
+         *
+         * Values keyed by the list resolved field schema.
+         */
+        customFields: {
+            [key: string]: string | number | boolean | Array<string>;
+        };
+        /**
+         * Description
+         *
+         * Markdown content; clients render without raw HTML.
+         */
+        description: string;
+        /**
+         * Due date
+         *
+         * Calendar day or null when no due date is set.
+         */
+        dueDate: string | null;
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        id: string;
+        /**
+         * Position
+         *
+         * Server-controlled order within the current status column.
+         */
+        position: number;
+        /**
+         * Primary list ID
+         *
+         * Live list owning the task.
+         */
+        primaryListId: string;
+        /**
+         * Priority
+         *
+         * Urgent, high, normal, low or none.
+         */
+        priority: 'urgent' | 'high' | 'normal' | 'low' | 'none';
+        /**
+         * Status ID
+         *
+         * Canonical status identity available in the primary list.
+         */
+        statusId: string;
+        /**
+         * Task title
+         *
+         * Task title, at most 500 characters.
+         */
+        title: string;
+        /**
+         * Updated at
+         *
+         * Database-maintained time of the last changed command.
+         */
+        updatedAt: string;
+        /**
+         * Task version
+         *
+         * Optimistic task revision advanced by changed commands.
+         */
+        version: number;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the task.
+         */
+        workspaceId: string;
+    }>;
+    /**
+     * Page information
+     *
+     * Consistent forward-pagination state.
+     */
+    pageInfo: {
+        /**
+         * Has next page
+         *
+         * Whether another page is available.
+         */
+        hasNextPage: boolean;
+        /**
+         * Next cursor
+         *
+         * Continuation token, or null at the end.
+         */
+        nextCursor: string | null;
+    };
+};
+
+/**
+ * Task response
+ *
+ * One authorized task and same-snapshot revisions.
+ */
+export type TaskResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Task
+     *
+     * Safe task projection with built-ins, fields and assignees.
+     */
+    data: {
+        /**
+         * Archived at
+         *
+         * Archive timestamp or null for a live task.
+         */
+        archivedAt: string | null;
+        /**
+         * Assignee IDs
+         *
+         * Assigned member identities in ascending UUID order.
+         */
+        assigneeIds: Array<string>;
+        /**
+         * Assignees
+         *
+         * Safe assigned member summaries in UUID order.
+         */
+        assignees: Array<{
+            /**
+             * Assignee ID
+             *
+             * Workspace member assigned to the task.
+             */
+            id: string;
+            /**
+             * Assignee name
+             *
+             * Public display name without email or account details.
+             */
+            name: string;
+        }>;
+        /**
+         * Created at
+         *
+         * Immutable creation time from the database clock.
+         */
+        createdAt: string;
+        /**
+         * Custom fields
+         *
+         * Values keyed by the list resolved field schema.
+         */
+        customFields: {
+            [key: string]: string | number | boolean | Array<string>;
+        };
+        /**
+         * Description
+         *
+         * Markdown content; clients render without raw HTML.
+         */
+        description: string;
+        /**
+         * Due date
+         *
+         * Calendar day or null when no due date is set.
+         */
+        dueDate: string | null;
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        id: string;
+        /**
+         * Position
+         *
+         * Server-controlled order within the current status column.
+         */
+        position: number;
+        /**
+         * Primary list ID
+         *
+         * Live list owning the task.
+         */
+        primaryListId: string;
+        /**
+         * Priority
+         *
+         * Urgent, high, normal, low or none.
+         */
+        priority: 'urgent' | 'high' | 'normal' | 'low' | 'none';
+        /**
+         * Status ID
+         *
+         * Canonical status identity available in the primary list.
+         */
+        statusId: string;
+        /**
+         * Task title
+         *
+         * Task title, at most 500 characters.
+         */
+        title: string;
+        /**
+         * Updated at
+         *
+         * Database-maintained time of the last changed command.
+         */
+        updatedAt: string;
+        /**
+         * Task version
+         *
+         * Optimistic task revision advanced by changed commands.
+         */
+        version: number;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the task.
+         */
+        workspaceId: string;
+    };
+    /**
+     * Data version
+     *
+     * Workspace task and tree data revision.
+     */
+    dataVersion: number;
+};
+
+/**
  * Visible tree page
  *
  * Authorized live nodes ordered by depth and full sibling path.
@@ -3081,6 +3376,123 @@ export type GetListResolvedStatusesResponses = {
 };
 
 export type GetListResolvedStatusesResponse = GetListResolvedStatusesResponses[keyof GetListResolvedStatusesResponses];
+
+export type ListTasksData = {
+    body?: never;
+    path: {
+        /**
+         * Primary list ID
+         *
+         * Live list owning the task.
+         */
+        listId: string;
+    };
+    query?: {
+        /**
+         * Cursor
+         *
+         * Opaque server-authenticated continuation token; keep the same query.
+         */
+        cursor?: string;
+        /**
+         * Page limit
+         *
+         * Maximum returned items, from 1 to 100.
+         */
+        limit?: string;
+        /**
+         * Task sort
+         *
+         * Manual column order, due date or explicit priority rank.
+         */
+        sort?: 'manual' | 'dueDate' | 'priority';
+        /**
+         * Direction
+         *
+         * Sort direction; manual ordering supports ascending only.
+         */
+        direction?: 'asc' | 'desc';
+        /**
+         * Status filter
+         *
+         * Visible canonical status in this list.
+         */
+        statusId?: string;
+        /**
+         * Assignee filter
+         *
+         * Current workspace member assigned to the task.
+         */
+        assigneeId?: string;
+        /**
+         * Priority filter
+         *
+         * Match one priority.
+         */
+        priority?: 'urgent' | 'high' | 'normal' | 'low' | 'none';
+        /**
+         * Field key
+         *
+         * Resolved field to filter; requires operator and value.
+         */
+        fieldKey?: string;
+        /**
+         * Field operator
+         *
+         * Typed equality, or one-option containment for multi-select.
+         */
+        fieldOperator?: 'eq' | 'contains';
+        /**
+         * Field value
+         *
+         * JSON-encoded scalar validated against the resolved field.
+         */
+        fieldValue?: string;
+    };
+    url: '/v1/lists/{listId}/tasks';
+};
+
+export type ListTasksErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ListTasksError = ListTasksErrors[keyof ListTasksErrors];
+
+export type ListTasksResponses = {
+    /**
+     * Task page and consistent configuration/data revisions.
+     */
+    200: TaskPageResponseDtoOutput;
+};
+
+export type ListTasksResponse = ListTasksResponses[keyof ListTasksResponses];
 
 export type GetCurrentUserData = {
     body?: never;
@@ -4146,6 +4558,58 @@ export type UpdateScopeStatusResponses = {
 };
 
 export type UpdateScopeStatusResponse = UpdateScopeStatusResponses[keyof UpdateScopeStatusResponses];
+
+export type GetTaskData = {
+    body?: never;
+    path: {
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        taskId: string;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}';
+};
+
+export type GetTaskErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type GetTaskError = GetTaskErrors[keyof GetTaskErrors];
+
+export type GetTaskResponses = {
+    /**
+     * Safe task details and same-snapshot revisions.
+     */
+    200: TaskResponseDtoOutput;
+};
+
+export type GetTaskResponse = GetTaskResponses[keyof GetTaskResponses];
 
 export type ListVisibleTreeData = {
     body?: never;

@@ -10,6 +10,7 @@ import {
   PermissionActionKey,
   PermissionService,
   ScopePermissionKey,
+  TaskPermissionKey,
 } from './permission.service.js';
 
 import type { PermissionAction } from '@flowboard/contracts';
@@ -63,6 +64,20 @@ export class PermissionGuard implements CanActivate {
       if (!owner.success) throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid scope');
 
       await this.permissions.authorizeScope(request.identity, owner.data, action);
+
+      return true;
+    }
+
+    if (
+      this.reflector.getAllAndOverride<boolean>(TaskPermissionKey, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    ) {
+      const task = UuidSchema.safeParse(request.params.taskId);
+      if (!task.success) throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid task ID');
+
+      await this.permissions.authorizeTask(request.identity, task.data.toLowerCase(), action);
 
       return true;
     }

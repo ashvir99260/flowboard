@@ -4187,6 +4187,604 @@
         "title": "Switch workspace request",
         "type": "object"
       },
+      "TaskPageResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Authorized tasks and same-snapshot revisions.",
+        "example": {
+          "configVersion": 1,
+          "dataVersion": 1,
+          "items": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "nextCursor": null
+          }
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "dataVersion": {
+            "description": "Workspace task and tree data revision.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Data version",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Authorized items in stable order.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "Safe task projection with built-ins, fields and assignees.",
+              "example": {
+                "archivedAt": null,
+                "assigneeIds": [],
+                "assignees": [],
+                "createdAt": "2026-10-24T10:00:00.000Z",
+                "customFields": {},
+                "description": "Review the latest design.",
+                "dueDate": null,
+                "id": "10000000-0000-4000-8000-000000000100",
+                "position": 0,
+                "primaryListId": "10000000-0000-4000-8000-000000000010",
+                "priority": "normal",
+                "statusId": "10000000-0000-4000-8000-000000000101",
+                "title": "Review dashboard",
+                "updatedAt": "2026-10-24T10:00:00.000Z",
+                "version": 1,
+                "workspaceId": "10000000-0000-4000-8000-000000000002"
+              },
+              "properties": {
+                "archivedAt": {
+                  "description": "Archive timestamp or null for a live task.",
+                  "example": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Archived at",
+                  "type": "string"
+                },
+                "assigneeIds": {
+                  "description": "Assigned member identities in ascending UUID order.",
+                  "example": [],
+                  "items": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  },
+                  "maxItems": 20,
+                  "title": "Assignee IDs",
+                  "type": "array"
+                },
+                "assignees": {
+                  "description": "Safe assigned member summaries in UUID order.",
+                  "example": [],
+                  "items": {
+                    "additionalProperties": false,
+                    "description": "Safe assignee display details.",
+                    "example": {
+                      "id": "10000000-0000-4000-8000-000000000003",
+                      "name": "Alice"
+                    },
+                    "properties": {
+                      "id": {
+                        "description": "Workspace member assigned to the task.",
+                        "example": "10000000-0000-4000-8000-000000000003",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "title": "Assignee ID",
+                        "type": "string"
+                      },
+                      "name": {
+                        "description": "Public display name without email or account details.",
+                        "example": "Alice",
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "title": "Assignee name",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "title": "Task assignee",
+                    "type": "object"
+                  },
+                  "maxItems": 20,
+                  "title": "Assignees",
+                  "type": "array"
+                },
+                "createdAt": {
+                  "description": "Immutable creation time from the database clock.",
+                  "example": "2026-10-24T10:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Created at",
+                  "type": "string"
+                },
+                "customFields": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "maxLength": 2000,
+                        "minLength": 0,
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "items": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string"
+                        },
+                        "maxItems": 100,
+                        "type": "array"
+                      }
+                    ]
+                  },
+                  "description": "Values keyed by the list resolved field schema.",
+                  "example": {},
+                  "title": "Custom fields",
+                  "type": "object"
+                },
+                "description": {
+                  "description": "Markdown content; clients render without raw HTML.",
+                  "example": "Review the latest design.",
+                  "maxLength": 50000,
+                  "minLength": 0,
+                  "title": "Description",
+                  "type": "string"
+                },
+                "dueDate": {
+                  "description": "Calendar day or null when no due date is set.",
+                  "example": null,
+                  "nullable": true,
+                  "pattern": "^(?!0000)\\d{4}-\\d{2}-\\d{2}$",
+                  "title": "Due date",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Stable task identity.",
+                  "example": "10000000-0000-4000-8000-000000000100",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Task ID",
+                  "type": "string"
+                },
+                "position": {
+                  "description": "Server-controlled order within the current status column.",
+                  "example": 0,
+                  "maximum": 2147483647,
+                  "minimum": 0,
+                  "title": "Position",
+                  "type": "integer"
+                },
+                "primaryListId": {
+                  "description": "Live list owning the task.",
+                  "example": "10000000-0000-4000-8000-000000000010",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Primary list ID",
+                  "type": "string"
+                },
+                "priority": {
+                  "description": "Urgent, high, normal, low or none.",
+                  "enum": [
+                    "urgent",
+                    "high",
+                    "normal",
+                    "low",
+                    "none"
+                  ],
+                  "example": "normal",
+                  "title": "Priority",
+                  "type": "string"
+                },
+                "statusId": {
+                  "description": "Canonical status identity available in the primary list.",
+                  "example": "10000000-0000-4000-8000-000000000101",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Status ID",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Task title, at most 500 characters.",
+                  "example": "Review dashboard",
+                  "maxLength": 500,
+                  "minLength": 1,
+                  "title": "Task title",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "Database-maintained time of the last changed command.",
+                  "example": "2026-10-24T10:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Updated at",
+                  "type": "string"
+                },
+                "version": {
+                  "description": "Optimistic task revision advanced by changed commands.",
+                  "example": 1,
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "title": "Task version",
+                  "type": "integer"
+                },
+                "workspaceId": {
+                  "description": "Tenant owning the task.",
+                  "example": "10000000-0000-4000-8000-000000000002",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Workspace ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "workspaceId",
+                "title",
+                "description",
+                "statusId",
+                "priority",
+                "assigneeIds",
+                "assignees",
+                "dueDate",
+                "customFields",
+                "position",
+                "primaryListId",
+                "version",
+                "archivedAt",
+                "createdAt",
+                "updatedAt"
+              ],
+              "title": "Task",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Items",
+            "type": "array"
+          },
+          "pageInfo": {
+            "additionalProperties": false,
+            "description": "Consistent forward-pagination state.",
+            "example": {
+              "hasNextPage": false,
+              "nextCursor": null
+            },
+            "properties": {
+              "hasNextPage": {
+                "description": "Whether another page is available.",
+                "example": false,
+                "title": "Has next page",
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "description": "Continuation token, or null at the end.",
+                "example": null,
+                "maxLength": 2048,
+                "minLength": 1,
+                "nullable": true,
+                "title": "Next cursor",
+                "type": "string"
+              }
+            },
+            "required": [
+              "hasNextPage",
+              "nextCursor"
+            ],
+            "title": "Page information",
+            "type": "object"
+          }
+        },
+        "required": [
+          "items",
+          "pageInfo",
+          "configVersion",
+          "dataVersion"
+        ],
+        "title": "Task page",
+        "type": "object"
+      },
+      "TaskResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "One authorized task and same-snapshot revisions.",
+        "example": {
+          "configVersion": 1,
+          "data": {
+            "archivedAt": null,
+            "assigneeIds": [],
+            "assignees": [],
+            "createdAt": "2026-10-24T10:00:00.000Z",
+            "customFields": {},
+            "description": "Review the latest design.",
+            "dueDate": null,
+            "id": "10000000-0000-4000-8000-000000000100",
+            "position": 0,
+            "primaryListId": "10000000-0000-4000-8000-000000000010",
+            "priority": "normal",
+            "statusId": "10000000-0000-4000-8000-000000000101",
+            "title": "Review dashboard",
+            "updatedAt": "2026-10-24T10:00:00.000Z",
+            "version": 1,
+            "workspaceId": "10000000-0000-4000-8000-000000000002"
+          },
+          "dataVersion": 1
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "data": {
+            "additionalProperties": false,
+            "description": "Safe task projection with built-ins, fields and assignees.",
+            "example": {
+              "archivedAt": null,
+              "assigneeIds": [],
+              "assignees": [],
+              "createdAt": "2026-10-24T10:00:00.000Z",
+              "customFields": {},
+              "description": "Review the latest design.",
+              "dueDate": null,
+              "id": "10000000-0000-4000-8000-000000000100",
+              "position": 0,
+              "primaryListId": "10000000-0000-4000-8000-000000000010",
+              "priority": "normal",
+              "statusId": "10000000-0000-4000-8000-000000000101",
+              "title": "Review dashboard",
+              "updatedAt": "2026-10-24T10:00:00.000Z",
+              "version": 1,
+              "workspaceId": "10000000-0000-4000-8000-000000000002"
+            },
+            "properties": {
+              "archivedAt": {
+                "description": "Archive timestamp or null for a live task.",
+                "example": null,
+                "format": "date-time",
+                "nullable": true,
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Archived at",
+                "type": "string"
+              },
+              "assigneeIds": {
+                "description": "Assigned member identities in ascending UUID order.",
+                "example": [],
+                "items": {
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "title": "Assignee IDs",
+                "type": "array"
+              },
+              "assignees": {
+                "description": "Safe assigned member summaries in UUID order.",
+                "example": [],
+                "items": {
+                  "additionalProperties": false,
+                  "description": "Safe assignee display details.",
+                  "example": {
+                    "id": "10000000-0000-4000-8000-000000000003",
+                    "name": "Alice"
+                  },
+                  "properties": {
+                    "id": {
+                      "description": "Workspace member assigned to the task.",
+                      "example": "10000000-0000-4000-8000-000000000003",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Assignee ID",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Public display name without email or account details.",
+                      "example": "Alice",
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "title": "Assignee name",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "title": "Task assignee",
+                  "type": "object"
+                },
+                "maxItems": 20,
+                "title": "Assignees",
+                "type": "array"
+              },
+              "createdAt": {
+                "description": "Immutable creation time from the database clock.",
+                "example": "2026-10-24T10:00:00.000Z",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Created at",
+                "type": "string"
+              },
+              "customFields": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "maxLength": 2000,
+                      "minLength": 0,
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "items": {
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "type": "string"
+                      },
+                      "maxItems": 100,
+                      "type": "array"
+                    }
+                  ]
+                },
+                "description": "Values keyed by the list resolved field schema.",
+                "example": {},
+                "title": "Custom fields",
+                "type": "object"
+              },
+              "description": {
+                "description": "Markdown content; clients render without raw HTML.",
+                "example": "Review the latest design.",
+                "maxLength": 50000,
+                "minLength": 0,
+                "title": "Description",
+                "type": "string"
+              },
+              "dueDate": {
+                "description": "Calendar day or null when no due date is set.",
+                "example": null,
+                "nullable": true,
+                "pattern": "^(?!0000)\\d{4}-\\d{2}-\\d{2}$",
+                "title": "Due date",
+                "type": "string"
+              },
+              "id": {
+                "description": "Stable task identity.",
+                "example": "10000000-0000-4000-8000-000000000100",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Task ID",
+                "type": "string"
+              },
+              "position": {
+                "description": "Server-controlled order within the current status column.",
+                "example": 0,
+                "maximum": 2147483647,
+                "minimum": 0,
+                "title": "Position",
+                "type": "integer"
+              },
+              "primaryListId": {
+                "description": "Live list owning the task.",
+                "example": "10000000-0000-4000-8000-000000000010",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Primary list ID",
+                "type": "string"
+              },
+              "priority": {
+                "description": "Urgent, high, normal, low or none.",
+                "enum": [
+                  "urgent",
+                  "high",
+                  "normal",
+                  "low",
+                  "none"
+                ],
+                "example": "normal",
+                "title": "Priority",
+                "type": "string"
+              },
+              "statusId": {
+                "description": "Canonical status identity available in the primary list.",
+                "example": "10000000-0000-4000-8000-000000000101",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Status ID",
+                "type": "string"
+              },
+              "title": {
+                "description": "Task title, at most 500 characters.",
+                "example": "Review dashboard",
+                "maxLength": 500,
+                "minLength": 1,
+                "title": "Task title",
+                "type": "string"
+              },
+              "updatedAt": {
+                "description": "Database-maintained time of the last changed command.",
+                "example": "2026-10-24T10:00:00.000Z",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Updated at",
+                "type": "string"
+              },
+              "version": {
+                "description": "Optimistic task revision advanced by changed commands.",
+                "example": 1,
+                "maximum": 2147483647,
+                "minimum": 1,
+                "title": "Task version",
+                "type": "integer"
+              },
+              "workspaceId": {
+                "description": "Tenant owning the task.",
+                "example": "10000000-0000-4000-8000-000000000002",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Workspace ID",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "workspaceId",
+              "title",
+              "description",
+              "statusId",
+              "priority",
+              "assigneeIds",
+              "assignees",
+              "dueDate",
+              "customFields",
+              "position",
+              "primaryListId",
+              "version",
+              "archivedAt",
+              "createdAt",
+              "updatedAt"
+            ],
+            "title": "Task",
+            "type": "object"
+          },
+          "dataVersion": {
+            "description": "Workspace task and tree data revision.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Data version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "configVersion",
+          "dataVersion"
+        ],
+        "title": "Task response",
+        "type": "object"
+      },
       "TreePageResponseDto_Output": {
         "additionalProperties": false,
         "description": "Authorized live nodes ordered by depth and full sibling path.",
@@ -7798,6 +8396,402 @@
         "summary": "Resolve visible list statuses",
         "tags": [
           "Statuses"
+        ]
+      }
+    },
+    "/v1/lists/{listId}/tasks": {
+      "get": {
+        "description": "Read authorized live tasks using typed filters, stable sort and a cursor bound to the query and both workspace revisions.",
+        "operationId": "listTasks",
+        "parameters": [
+          {
+            "description": "Live list owning the task.",
+            "in": "path",
+            "name": "listId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000010",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Primary list ID",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque server-authenticated continuation token; keep the same query.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "example": "opaque.cursor",
+              "maxLength": 2048,
+              "minLength": 1,
+              "title": "Cursor",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum returned items, from 1 to 100.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": "50",
+              "example": "50",
+              "pattern": "^(?:[1-9]\\d?|100)$",
+              "title": "Page limit",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Manual column order, due date or explicit priority rank.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "manual",
+              "enum": [
+                "manual",
+                "dueDate",
+                "priority"
+              ],
+              "example": "manual",
+              "title": "Task sort",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort direction; manual ordering supports ascending only.",
+            "in": "query",
+            "name": "direction",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "example": "asc",
+              "title": "Direction",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Visible canonical status in this list.",
+            "in": "query",
+            "name": "statusId",
+            "required": false,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000101",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Status filter",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Current workspace member assigned to the task.",
+            "in": "query",
+            "name": "assigneeId",
+            "required": false,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000003",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Assignee filter",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Match one priority.",
+            "in": "query",
+            "name": "priority",
+            "required": false,
+            "schema": {
+              "enum": [
+                "urgent",
+                "high",
+                "normal",
+                "low",
+                "none"
+              ],
+              "example": "normal",
+              "title": "Priority filter",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Resolved field to filter; requires operator and value.",
+            "in": "query",
+            "name": "fieldKey",
+            "required": false,
+            "schema": {
+              "example": "effort",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "title": "Field key",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Typed equality, or one-option containment for multi-select.",
+            "in": "query",
+            "name": "fieldOperator",
+            "required": false,
+            "schema": {
+              "enum": [
+                "eq",
+                "contains"
+              ],
+              "example": "eq",
+              "title": "Field operator",
+              "type": "string"
+            }
+          },
+          {
+            "description": "JSON-encoded scalar validated against the resolved field.",
+            "in": "query",
+            "name": "fieldValue",
+            "required": false,
+            "schema": {
+              "example": "3",
+              "maxLength": 24002,
+              "title": "Field value",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "dataVersion": 1,
+                  "items": [],
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "nextCursor": null
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TaskPageResponseDto_Output"
+                }
+              }
+            },
+            "description": "Task page and consistent configuration/data revisions."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Read a page of list tasks",
+        "tags": [
+          "Tasks"
         ]
       }
     },
@@ -12302,6 +13296,245 @@
         ]
       }
     },
+    "/v1/tasks/{taskId}": {
+      "get": {
+        "description": "Read one live task after checking its current primary list and full ancestor permissions in the same data snapshot.",
+        "operationId": "getTask",
+        "parameters": [
+          {
+            "description": "Stable task identity.",
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Task ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "data": {
+                    "archivedAt": null,
+                    "assigneeIds": [],
+                    "assignees": [],
+                    "createdAt": "2026-10-24T10:00:00.000Z",
+                    "customFields": {},
+                    "description": "Review the latest design.",
+                    "dueDate": null,
+                    "id": "10000000-0000-4000-8000-000000000100",
+                    "position": 0,
+                    "primaryListId": "10000000-0000-4000-8000-000000000010",
+                    "priority": "normal",
+                    "statusId": "10000000-0000-4000-8000-000000000101",
+                    "title": "Review dashboard",
+                    "updatedAt": "2026-10-24T10:00:00.000Z",
+                    "version": 1,
+                    "workspaceId": "10000000-0000-4000-8000-000000000002"
+                  },
+                  "dataVersion": 1
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponseDto_Output"
+                }
+              }
+            },
+            "description": "Safe task details and same-snapshot revisions."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Read a task",
+        "tags": [
+          "Tasks"
+        ]
+      }
+    },
     "/v1/tree": {
       "get": {
         "description": "Return only authorized live nodes in depth/full ancestor path order. Follow the opaque cursor with the same limit; changed workspace revisions require restarting. Parent nodes precede children across pages.",
@@ -14000,6 +15233,10 @@
     {
       "description": "Scoped custom-field configuration and list inheritance",
       "name": "Fields"
+    },
+    {
+      "description": "Authorized task reads and cursor pagination",
+      "name": "Tasks"
     },
     {
       "description": "Workspace spaces, folders and lists",

@@ -232,3 +232,11 @@ Administrators manage complete local field definitions at `/v1/scopes/{ownerType
 Resolution walks workspace → space → folder → list. The nearest matching key replaces the **whole definition**, including type, required flag and options; options are never merged. Results sort by position, key, then ID and include source/audit metadata plus `isInherited`. Empty schemas are valid. IDs, keys and owners are immutable; PATCH preserves omitted attributes and rejects nulls. A type change may require replacing options in the same request.
 
 Before committing configuration, the API validates all affected live schemas and task values. In-use removal or incompatible fallback/type/option/required changes return409 with field paths and leave data unchanged. Compatible inherited fallback may succeed. To make a field required, first add it as optional, populate valid values, then enable required. Task value editing is delivered by the upcoming task API; this sequence does not imply that endpoint exists yet.
+
+### Task reads
+
+`GET /v1/lists/{listId}/tasks` returns a cursor page; `GET /v1/tasks/{taskId}` returns task details. Both check the task's live list and ancestors and include `configVersion` and `dataVersion` from the same database snapshot. Assignees contain only ID/name. Task writes are tracked separately in Phase6.
+
+Task pages accept `limit` (1–100), `cursor`, `sort=manual|dueDate|priority`, and `direction=asc|desc` (manual supports asc). Manual order follows resolved statuses, then card position/ID. Due dates place nulls last in either direction; ties use ascending IDs. Filters are `statusId`, `assigneeId`, `priority`, or one complete `fieldKey`/`fieldOperator`/`fieldValue` triplet. Field values are JSON-encoded scalars: `3`, `false` or `"Platform"`; `eq` matches a typed scalar, and `contains` matches one multi-select option ID. Invalid field types/options return400 with paths.
+
+Continue with the returned cursor and identical query. Cursors expire after fifteen minutes and are bound to the caller, workspace, list and query. A changed configuration or task-data revision returns409 CURSOR_STALE; restart from the first page. No page numbers, offsets or hidden totals are exposed.

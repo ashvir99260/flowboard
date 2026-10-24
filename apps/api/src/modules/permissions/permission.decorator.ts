@@ -6,6 +6,7 @@ import {
   NodePermissionKey,
   PermissionActionKey,
   ScopePermissionKey,
+  TaskPermissionKey,
 } from './permission.service.js';
 
 import type { PermissionAction } from '@flowboard/contracts';
@@ -21,3 +22,6 @@ export const NodePermission = (action: PermissionAction, parameter = 'nodeId') =
 
 export const ScopePermission = (action: PermissionAction) =>
   applyDecorators(ActiveWorkspacePermission(action), SetMetadata(ScopePermissionKey, true));
+
+export const TaskPermission = (action: PermissionAction) =>
+  applyDecorators(ActiveWorkspacePermission(action), SetMetadata(TaskPermissionKey, true));
