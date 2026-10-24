@@ -95,6 +95,8 @@ export async function startAppApi(t) {
       const chunks = [];
       for await (const chunk of request) chunks.push(chunk);
       const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString()) : {};
+      if (url.pathname.startsWith('/v1/tasks/')) requests.at(-1).body = body;
+
       const cookie = request.headers.cookie?.match(/flowboard_refresh=([^;]+)/)?.[1];
       const session = access.get(request.headers.authorization?.replace(/^Bearer /, ''));
       if (url.pathname === '/v1/auth/login') {
@@ -165,7 +167,7 @@ export async function startAppApi(t) {
           error: { code: 'UNAUTHENTICATED', message: 'Sign in to continue' },
         });
 
-      if (await board.respond({ url, session, response })) return;
+      if (await board.respond({ url, session, response, body, method: request.method })) return;
 
       if (url.pathname === '/v1/me')
         return send(response, 200, {

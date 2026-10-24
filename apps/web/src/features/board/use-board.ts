@@ -5,7 +5,13 @@ import {
   getListResolvedStatusesOptions,
   listTasksOptions,
 } from '@flowboard/api-client/tanstack-query';
-import { focusManager, onlineManager, useQueries, useQuery } from '@tanstack/react-query';
+import {
+  focusManager,
+  onlineManager,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
 
 import { apiError } from '../../lib/api-error';
@@ -14,6 +20,7 @@ import { withQueryScope } from '../../lib/query-scope';
 import { assembleBoard, readBoardStatuses } from './board-data';
 
 import type { BoardPageRequest, BoardResult } from './board-data';
+import type { TaskPlacement } from './task-placement';
 import type { QueryScope } from '../../lib/query-scope';
 import type { ClientRuntime } from '../../providers/app-providers';
 
@@ -60,7 +67,7 @@ function boardView(
       retry,
     };
 
-  return result.state === 'ready' ? result : { state: 'loading' as const };
+  return result.state === 'ready' ? result : { state: 'loading' as const, retry };
 }
 
 export function useBoard({
@@ -73,6 +80,7 @@ export function useBoard({
   scope: QueryScope;
 }) {
   const instance = useId();
+  const queryClient = useQueryClient();
   const [attempt, setAttempt] = useState<{
     generation: number;
     pages: BoardPageRequest[];
@@ -88,11 +96,29 @@ export function useBoard({
       if (online) refresh();
     });
 
+    const unmutate = queryClient.getMutationCache().subscribe((event) => {
+      if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
+
+      const key = event.mutation.options.mutationKey;
+      if (
+        key?.[0] !== 'task-placement' ||
+        key[1] !== scope.revision ||
+        key[2] !== scope.userId ||
+        key[3] !== scope.workspaceId
+      )
+        return;
+
+      const command = event.mutation.state.variables as TaskPlacement;
+      if (command.sourceListId === listId || command.request.destinationListId === listId)
+        refresh();
+    });
+
     return () => {
+      unmutate();
       unfocus();
       unonline();
     };
-  }, []);
+  }, [queryClient, listId, scope.revision, scope.userId, scope.workspaceId]);
   const tags = [`board:${instance}:${attempt.generation}`];
   const statusesQuery = useQuery({
     ...withQueryScope(
@@ -148,7 +174,7 @@ export function useBoard({
   if (stale && attempt.restarts < 2) {
     setAttempt({ generation: attempt.generation + 1, restarts: attempt.restarts + 1, pages: [] });
 
-    return { state: 'loading' as const };
+    return { state: 'loading' as const, retry };
   }
 
   const view = boardView(result, error, stale, retry);

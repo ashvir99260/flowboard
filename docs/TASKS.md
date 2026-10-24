@@ -797,13 +797,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: render list scoped kanban boards`.
   - **Completion evidence:** [P09-01](evidence/P09-01.md): exact sibling columns, metadata, pagination, strict version/cursor assembly, bounded recovery and responsive browser checks pass; all root gates and both Docker checks pass. Local full tests use two concurrent tasks after resource-related failures; CI remains unchanged.
 
-- [ ] **P09-02 — Optimistic drag and accessible move controls**
+- [x] **P09-02 — Optimistic drag and accessible move controls**
   - **Goal:** Move/reorder cards with rollback and concurrent-state safety.
-  - **Files:** `apps/web/src/features/board/{board-dnd,use-task-mutation,move-menu}.tsx`, `apps/web/src/features/board/task-mutation.test.tsx`.
+  - **Requirements:** R46–R48, R64, R69–R71.
+  - **Files:** `apps/web/src/features/board/{board-dnd,use-task-mutation,move-menu,move-form,use-move-destination,task-placement}.*`, board composition/refresh, shared visible-tree hook, focused pure/browser tests and fixtures, web dependencies/lockfile and task evidence.
   - **Dependencies:** P09-01.
-  - **Acceptance:** dnd-kit pointer/keyboard support plus button alternatives; generated mutations; per-task in-flight serialization; snapshots/rollback and targeted refetch. Cross-list move can collect missing required fields. Errors and stale-version conflicts are visible.
+  - **Acceptance:** dnd-kit pointer/keyboard support plus button alternatives; generated mutations; per-task in-flight serialization; optimistic placement projection/rollback and affected-board generation refresh. Cross-list move can collect missing required fields. Errors and stale-version conflicts are visible.
   - **Validation:** Cross-column and intra-column ordering, rejected move restores, list switch during save, fast repeated moves, 403/409, keyboard announcement/focus, 320px controls; standard gate.
   - **Commit:** `feat: add optimistic accessible card moves`.
+  - **Completion evidence:** [P09-02](evidence/P09-02.md): pointer/keyboard/button moves, cross-list field corrections, duplicate-save safety, concurrent rollback and navigation settlement pass; all 801 tests, root checks and both Docker checks pass.
 
 - [ ] **P09-03 — Sortable list view with custom columns**
   - **Goal:** Offer a second view of the same scoped tasks and filters.
