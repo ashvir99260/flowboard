@@ -315,3 +315,7 @@ Docker remains the local development/test topology. If four-environment trunk-ba
 ### Notification refinement (25 October 2026)
 
 P16-01 adds React Toastify action feedback and content-free realtime notifications. UI owns the themed renderer/overlay placement, web owns lifecycle and queue state, and existing mutation adapters report only final validated results. A recipient-relative flag suppresses own realtime echoes without exposing actor/task content. See D141 and the task acceptance record.
+
+### Agent guidance refinement (25 October 2026)
+
+P17-01 organizes repository instructions by app/package ownership and documents the implemented naming and code patterns. The index routes readers to canonical architecture, backend, frontend, forms, style, tooling and verification guides. It changes documentation only; runtime behavior remains evidenced by P16-01.

@@ -1,6 +1,6 @@
 # Backend structure and coding rules
 
-Status: adopted repository rules, 23 October 2026 (D85/P02-05). P02-16/D96 adapts the requested core/modules/shared structure with Express, superseding P02-13/D93 foundation paths. Auth/platform remain flat (D89), with colocated tests (D90) and grouped DTOs (D92). Future workspace files below illustrate conventions, not implemented endpoints. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
+Status: adopted repository rules, 23 October 2026 (D85/P02-05). P02-16/D96 adapts the requested core/modules/shared structure with Express, superseding P02-13/D93 foundation paths. Auth/platform remain flat (D89), with colocated tests (D90) and grouped DTOs (D92). The modules below are implemented; the abbreviated tree illustrates their current organization. See the task evidence for verification. Product behavior remains defined by [the plan](PLAN.md), [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md) and [field reference](FIELD_REFERENCE.md).
 
 ## Basis and scope
 
@@ -20,7 +20,7 @@ Retain Flowboard's Prisma package, Zod validation, cursor-only pagination, sanit
 
 Use feature names from the domain: `auth`, `workspaces`, `permissions`, `hierarchy`, `statuses`, `fields`, `tasks`, `activity`, `realtime`, `outbox`. Add only folders that have an implemented responsibility. A resource does not need a separate Nest module for every table.
 
-The following is a target layout, with workspace files illustrating upcoming P02-03:
+The following is an abbreviated current layout; use nearby source files when extending a feature:
 
 ```text
 apps/api/
@@ -73,13 +73,12 @@ apps/api/
 │       │   ├── credentials.integration.spec.mjs
 │       │   ├── refresh.integration.spec.mjs
 │       │   └── outage.integration.spec.mjs
-│       └── workspaces/               # future P02-03 example
+│       └── workspaces/               # workspace membership and invitation feature
 │           ├── workspaces.module.ts
 │           ├── workspaces.controller.ts
 │           ├── workspaces.service.ts
-│           └── dto/
-│               ├── workspaces.request.dto.ts
-│               └── workspaces.response.dto.ts
+│           ├── workspaces.request.dto.ts
+│           └── workspaces.response.dto.ts
 └── test/
     ├── bootstrap/                    # Node startup/process tests
     ├── common/                       # per-suite setup and shared fixtures
@@ -92,9 +91,9 @@ packages/
 └── api-client/src/generated/         # generated SDK/types/query options
 ```
 
-Domain modules live in `src/modules/`; AppModule composes AuthModule, PlatformModule and SharedModule. Reusable configuration and pure helpers live in `src/core/config/` and `src/core/utils/`. SharedModule and logging providers live in `src/shared/`; `src/core/common/` retains HTTP helpers and the shared logger injection token. Auth-specific configuration remains in `modules/auth/auth.config.ts`. Auth and platform have no source subfolders (D89/D96). Auth/platform tests live directly beside their source, with `.unit.spec.mjs` and `.integration.spec.mjs` suffixes distinguishing purpose (D90). They still consume the compiled ESM application. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
+Domain modules live in `src/modules/`; AppModule composes SharedModule, infrastructure and the implemented auth, workspace, permission, hierarchy, status, field, task, activity, outbox and realtime modules. Reusable configuration and pure helpers live in `src/core/config/` and `src/core/utils/`. SharedModule and logging providers live in `src/shared/`; `src/core/common/` retains HTTP helpers and the shared logger injection token. Auth-specific configuration remains in `modules/auth/auth.config.ts`. Auth and platform have no source subfolders (D89/D96). Auth/platform tests live directly beside their source, with `.unit.spec.mjs` and `.integration.spec.mjs` suffixes distinguishing purpose (D90). They still consume the compiled ESM application. Do not create empty future features, dummy providers or re-export shims just to resemble the tree.
 
-Keep DTO classes together by feature and request/response role (D92). Auth uses `auth.request.dto.ts` for signup/login/empty-body inputs and `auth.response.dto.ts` for sessions; health uses `health.response.dto.ts` for liveness/readiness outputs. These files sit beside their controllers without subfolders. Other features may use `dto/` for request, path, query and response adapters. Other features may add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
+Keep DTO classes together by feature and request/response role (D92). Auth uses `auth.request.dto.ts` for signup/login/empty-body inputs and `auth.response.dto.ts` for sessions; health uses `health.response.dto.ts` for liveness/readiness outputs. These files sit beside their controllers without subfolders. The existing features also group request/response adapters beside their controllers. Add a focused subfolder only when real complexity justifies it; do not create a default folder per class. Other features may add `mappers/` or `entities/` only when real mapping or an API-internal plain read model needs a separate file. An API `entities/` folder must not contain a Prisma client, ORM decorators or a second copy of persisted models. Reuse the narrow read models exported by the database package where suitable.
 
 ## Modules and dependency injection
 
@@ -159,4 +158,6 @@ For every implementation task, follow red → green → refactor, then the root 
 
 `shared/logging` owns the injectable logging module, Nest adapter and request middleware. Its shared injection token is defined once in `core/common/tokens/logger.token.ts`, so the core error filter never imports the provider implementation. API services receive the same Pino-backed `@flowboard/logger` facade; database functions accept it as an optional dependency. Production entrypoints create it from `LOG_LEVEL`. Spec export and default test fixtures use a silent instance. Controllers rely on the common request/error events instead of logging request payloads.
 
-Keep Pino behind that shared facade so raw request/error serializers cannot bypass safe metadata. Use static semantic names with `logger.observe('feature.operation', async () => ...)` around an operation. Record completion after awaited transaction resolution. Let the global filter record sanitized HTTP errors. Add future permission/resolution/outbox/queue events where those real features are implemented, following the same policy; do not invent successful events for deferred behavior. See [LOGGING.md](LOGGING.md) for fields, correlation and debugging.
+Keep Pino behind that shared facade so raw request/error serializers cannot bypass safe metadata. Use static semantic names with `logger.observe('feature.operation', async () => ...)` around an operation. Record completion after awaited transaction resolution. Let the global filter record sanitized HTTP errors. Permission/domain operations and outbox/worker delivery already use this policy. Extend their static event vocabulary only at real boundaries, and record success after the relevant operation commits or completes. Do not invent successful events for deferred behavior. See [LOGGING.md](LOGGING.md) for fields, correlation and debugging.
+
+See [naming conventions](NAMING_CONVENTIONS.md) for source names and enforcement labels, and [the agent map](agents/README.md) for other package responsibilities.

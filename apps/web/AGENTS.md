@@ -7,3 +7,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+# Flowboard web instructions
+
+Read the [root instructions](../../AGENTS.md), [frontend guide](../../docs/FRONTEND_GUIDELINES.md), [naming conventions](../../docs/NAMING_CONVENTIONS.md) and current task. Preserve the generated Next.js block above.
+
+- Routes/layouts stay in `app`; data-aware code lives in `src/features/<feature>`. Shared presentation belongs in `@flowboard/ui`, generic typed form wiring in `@flowboard/forms`, and shared schemas in contracts.
+- Use generated Hey API SDK/query options. Keep session-scoped query keys, validated responses and correct optimistic rollback. No handwritten domain fetches, backend imports, direct Material control imports or duplicate server-state store.
+- Use shared Zod/RHF controls with complete defaults. Preserve dirty edits, explicit clearing, server issue paths, stable option IDs and focus. Keep shareable view/filter/sort state in the URL.
+- Read the [component](../../docs/UI_COMPONENT_SYSTEM.md), [form](../../docs/FORM_SYSTEM.md) and [token](../../docs/STYLE_TOKENS.md) guides before adding reusable UI. Preserve MUI/Emotion SSR, HSL/rem conventions, native semantics and keyboard alternatives.
+- Action feedback uses the notification provider and shared ToastHost. Capture final results once, clear on session changes, keep background reads quiet, and use shared overlays for accessible placement.
+- Browser fixtures are test-only. Verify meaningful user behavior and failure/recovery paths; real-service E2E remains the acceptance boundary for cross-layer features.
