@@ -49,3 +49,9 @@ export type { NodeSnapshot } from './hierarchy-repository.js';
 export { createOutboxRepository } from './outbox-repository.js';
 
 export type { OutboxClaim, OutboxRepository } from './outbox-repository.js';
+
+export { createEventConsumerRepository } from './event-consumer-repository.js';
+
+export type { EventConsumerRepository, EventPersistence } from './event-consumer-repository.js';
+
+export type { ActivityPosition } from './activity-repository.js';

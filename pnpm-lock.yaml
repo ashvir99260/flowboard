@@ -372,6 +372,12 @@ importers:
       '@flowboard/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      bullmq:
+        specifier: 6.3.16
+        version: 6.3.16(ioredis@6.0.0(supports-color@7.2.0))(pg@8.23.1)
+      ioredis:
+        specifier: 6.0.0
+        version: 6.0.0(supports-color@7.2.0)
     devDependencies:
       '@flowboard/config-eslint':
         specifier: workspace:*

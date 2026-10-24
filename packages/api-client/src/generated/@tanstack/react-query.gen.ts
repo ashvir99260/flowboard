@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, archiveTask, createNode, createScopeField, createScopeStatus, createTask, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, getTask, listNodeGrants, listScopeFields, listScopeStatuses, listTasks, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, moveNode, moveTask, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, reorderTask, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateTask, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, GetTaskData, GetTaskError, GetTaskResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListTasksData, ListTasksError, ListTasksResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, MoveNodeData, MoveNodeError, MoveNodeResponse, MoveTaskData, MoveTaskError, MoveTaskResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, ReorderTaskData, ReorderTaskError, ReorderTaskResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, archiveTask, createNode, createScopeField, createScopeStatus, createTask, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, getTask, listNodeGrants, listScopeFields, listScopeStatuses, listTaskActivity, listTasks, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, moveNode, moveTask, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, reorderTask, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateTask, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, GetTaskData, GetTaskError, GetTaskResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListTaskActivityData, ListTaskActivityError, ListTaskActivityResponse, ListTasksData, ListTasksError, ListTasksResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, MoveNodeData, MoveNodeError, MoveNodeResponse, MoveTaskData, MoveTaskError, MoveTaskResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, ReorderTaskData, ReorderTaskError, ReorderTaskResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -768,6 +768,58 @@ export const updateTaskMutation = (options?: Partial<Options<UpdateTaskData>>): 
         }
     };
     return mutationOptions;
+};
+
+export const listTaskActivityQueryKey = (options: Options<ListTaskActivityData>) => createQueryKey('listTaskActivity', options);
+
+/**
+ * Read a page of task activity
+ *
+ * Recheck current task and ancestor access, then read status changes in descending creation-time/ID order. Cursor pages retain the first-page upper watermark and original expiry.
+ */
+export const listTaskActivityOptions = (options: Options<ListTaskActivityData>) => queryOptions<ListTaskActivityResponse, ListTaskActivityError, ListTaskActivityResponse, ReturnType<typeof listTaskActivityQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listTaskActivity({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listTaskActivityQueryKey(options)
+});
+
+export const listTaskActivityInfiniteQueryKey = (options: Options<ListTaskActivityData>): QueryKey<Options<ListTaskActivityData>> => createQueryKey('listTaskActivity', options, true);
+
+/**
+ * Read a page of task activity
+ *
+ * Recheck current task and ancestor access, then read status changes in descending creation-time/ID order. Cursor pages retain the first-page upper watermark and original expiry.
+ */
+export const listTaskActivityInfiniteOptions = (options: Options<ListTaskActivityData>) => {
+    const opts = infiniteQueryOptions<ListTaskActivityResponse, ListTaskActivityError, InfiniteData<ListTaskActivityResponse>, QueryKey<Options<ListTaskActivityData>>, string | Pick<QueryKey<Options<ListTaskActivityData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListTaskActivityData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    cursor: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listTaskActivity({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTaskActivityInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
 };
 
 /**

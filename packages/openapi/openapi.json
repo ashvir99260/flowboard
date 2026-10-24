@@ -107,6 +107,242 @@
         "title": "Accept invitation request",
         "type": "object"
       },
+      "ActivityPageResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Authorized feed entries below a fixed first-page upper watermark.",
+        "example": {
+          "items": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "nextCursor": null
+          }
+        },
+        "properties": {
+          "items": {
+            "description": "Authorized items in stable order.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "Authorized status-change feed entry with a safe actor summary.",
+              "example": {
+                "actor": {
+                  "id": "81000000-0000-4000-8000-000000000005",
+                  "name": "Alice"
+                },
+                "createdAt": "2026-10-24T10:00:01.000Z",
+                "eventId": "81000000-0000-4000-8000-000000000004",
+                "id": "81000000-0000-4000-8000-000000000001",
+                "payload": {
+                  "afterStatusId": "81000000-0000-4000-8000-000000000007",
+                  "beforeStatusId": "81000000-0000-4000-8000-000000000006",
+                  "occurredAt": "2026-10-24T10:00:00.000Z",
+                  "taskVersion": 2
+                },
+                "taskId": "81000000-0000-4000-8000-000000000003",
+                "type": "task.status_changed",
+                "updatedAt": "2026-10-24T10:00:01.000Z",
+                "workspaceId": "81000000-0000-4000-8000-000000000002"
+              },
+              "properties": {
+                "actor": {
+                  "additionalProperties": false,
+                  "description": "Safe summary of the user who made the change.",
+                  "example": {
+                    "id": "81000000-0000-4000-8000-000000000005",
+                    "name": "Alice"
+                  },
+                  "properties": {
+                    "id": {
+                      "description": "Original user identity, retained after membership removal.",
+                      "example": "81000000-0000-4000-8000-000000000005",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Actor ID",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Current public display name without account credentials or email.",
+                      "example": "Alice",
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "title": "Actor name",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "title": "Activity actor",
+                  "type": "object"
+                },
+                "createdAt": {
+                  "description": "Server-assigned activity insertion time used for feed ordering.",
+                  "example": "2026-10-24T10:00:01.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Created at",
+                  "type": "string"
+                },
+                "eventId": {
+                  "description": "Original committed event; unique across retries.",
+                  "example": "81000000-0000-4000-8000-000000000004",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Event ID",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Stable feed-entry identity.",
+                  "example": "81000000-0000-4000-8000-000000000001",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Activity ID",
+                  "type": "string"
+                },
+                "payload": {
+                  "additionalProperties": false,
+                  "description": "Verified status identities and original event metadata; display labels may change later.",
+                  "example": {
+                    "afterStatusId": "81000000-0000-4000-8000-000000000007",
+                    "beforeStatusId": "81000000-0000-4000-8000-000000000006",
+                    "occurredAt": "2026-10-24T10:00:00.000Z",
+                    "taskVersion": 2
+                  },
+                  "properties": {
+                    "afterStatusId": {
+                      "description": "Canonical status after this event.",
+                      "example": "81000000-0000-4000-8000-000000000007",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Current status ID",
+                      "type": "string"
+                    },
+                    "beforeStatusId": {
+                      "description": "Canonical status before this event.",
+                      "example": "81000000-0000-4000-8000-000000000006",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Previous status ID",
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "description": "Time of the original committed task change.",
+                      "example": "2026-10-24T10:00:00.000Z",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                      "title": "Event time",
+                      "type": "string"
+                    },
+                    "taskVersion": {
+                      "description": "Task revision produced by the original change.",
+                      "example": 2,
+                      "maximum": 2147483647,
+                      "minimum": 1,
+                      "title": "Task version",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "beforeStatusId",
+                    "afterStatusId",
+                    "occurredAt",
+                    "taskVersion"
+                  ],
+                  "title": "Status activity details",
+                  "type": "object"
+                },
+                "taskId": {
+                  "description": "Task whose visible feed contains this entry.",
+                  "example": "81000000-0000-4000-8000-000000000003",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Task ID",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "Supported feed-entry discriminator.",
+                  "enum": [
+                    "task.status_changed"
+                  ],
+                  "example": "task.status_changed",
+                  "title": "Activity type",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "Server-maintained audit timestamp; retrying insertion does not change it.",
+                  "example": "2026-10-24T10:00:01.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Updated at",
+                  "type": "string"
+                },
+                "workspaceId": {
+                  "description": "Tenant owning the activity.",
+                  "example": "81000000-0000-4000-8000-000000000002",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Workspace ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "workspaceId",
+                "taskId",
+                "eventId",
+                "actor",
+                "type",
+                "payload",
+                "createdAt",
+                "updatedAt"
+              ],
+              "title": "Task activity",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Items",
+            "type": "array"
+          },
+          "pageInfo": {
+            "additionalProperties": false,
+            "description": "Consistent forward-pagination state.",
+            "example": {
+              "hasNextPage": false,
+              "nextCursor": null
+            },
+            "properties": {
+              "hasNextPage": {
+                "description": "Whether another page is available.",
+                "example": false,
+                "title": "Has next page",
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "description": "Continuation token, or null at the end.",
+                "example": null,
+                "maxLength": 2048,
+                "minLength": 1,
+                "nullable": true,
+                "title": "Next cursor",
+                "type": "string"
+              }
+            },
+            "required": [
+              "hasNextPage",
+              "nextCursor"
+            ],
+            "title": "Page information",
+            "type": "object"
+          }
+        },
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "title": "Task activity page",
+        "type": "object"
+      },
       "AddMemberDto": {
         "additionalProperties": false,
         "description": "Administrator adds an existing account with a workspace-local role.",
@@ -15623,6 +15859,256 @@
         ]
       }
     },
+    "/v1/tasks/{taskId}/activity": {
+      "get": {
+        "description": "Recheck current task and ancestor access, then read status changes in descending creation-time/ID order. Cursor pages retain the first-page upper watermark and original expiry.",
+        "operationId": "listTaskActivity",
+        "parameters": [
+          {
+            "description": "Stable task identity.",
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Task ID",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque server-authenticated continuation token; keep the same query.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "example": "opaque.cursor",
+              "maxLength": 2048,
+              "minLength": 1,
+              "title": "Cursor",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum returned items, from 1 to 100.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": "50",
+              "example": "50",
+              "pattern": "^(?:[1-9]\\d?|100)$",
+              "title": "Page limit",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "items": [],
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "nextCursor": null
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityPageResponseDto_Output"
+                }
+              }
+            },
+            "description": "Authorized status activity and cursor continuation."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Read a page of task activity",
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
     "/v1/tasks/{taskId}/move": {
       "post": {
         "description": "Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.",
@@ -17921,6 +18407,10 @@
     {
       "description": "Authorized task reads and cursor pagination",
       "name": "Tasks"
+    },
+    {
+      "description": "Authorized asynchronous task status history",
+      "name": "Activity"
     },
     {
       "description": "Workspace spaces, folders and lists",

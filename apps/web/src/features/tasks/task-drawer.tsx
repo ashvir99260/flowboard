@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { createContext, useCallback, useContext, useId, useRef, useState } from 'react';
 
+import { ActivityFeed } from './activity-feed';
 import { TaskForm } from './task-form';
 import { useTaskDetail } from './use-task-detail';
 
@@ -39,6 +40,7 @@ function TaskDrawer({
   const id = useId();
   const [lookupTaskId, setLookupTaskId] = useState(taskId);
   const persistedId = useRef(taskId);
+  const [activityTaskId, setActivityTaskId] = useState(taskId);
   const { result, error, retry } = useTaskDetail(runtime, scope, listId, lookupTaskId);
   const [editing, setEditing] = useState({ dirty: false, busy: false });
   const [confirmation, setConfirmation] = useState<'close' | 'reload' | null>(null);
@@ -89,18 +91,30 @@ function TaskDrawer({
         ) : result.state !== 'ready' ? (
           <Typography role="status">Loading task…</Typography>
         ) : (
-          <TaskForm
-            detail={result}
-            listId={listId}
-            runtime={runtime}
-            scope={scope}
-            onState={setEditing}
-            reload={() => request('reload')}
-            onArchived={close}
-            onPersisted={(id) => {
-              persistedId.current = id;
-            }}
-          />
+          <>
+            <TaskForm
+              detail={result}
+              listId={listId}
+              runtime={runtime}
+              scope={scope}
+              onState={setEditing}
+              reload={() => request('reload')}
+              onArchived={close}
+              onPersisted={(id) => {
+                persistedId.current = id;
+                setActivityTaskId(id);
+              }}
+            />
+            {activityTaskId && (
+              <ActivityFeed
+                key={activityTaskId}
+                taskId={activityTaskId}
+                runtime={runtime}
+                scope={scope}
+                statuses={result.statuses}
+              />
+            )}
+          </>
         )}
       </Stack>
       <ConfirmDialog

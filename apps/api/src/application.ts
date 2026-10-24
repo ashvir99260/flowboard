@@ -66,6 +66,7 @@ export async function createApplication(
           .addTag('Statuses', 'Scoped status configuration and list inheritance')
           .addTag('Fields', 'Scoped custom-field configuration and list inheritance')
           .addTag('Tasks', 'Authorized task reads and cursor pagination')
+          .addTag('Activity', 'Authorized asynchronous task status history')
           .addTag('Hierarchy', 'Workspace spaces, folders and lists')
           .addTag('Permissions', 'Administrator-managed container access grants')
           .addBearerAuth(

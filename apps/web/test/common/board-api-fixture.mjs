@@ -1,5 +1,6 @@
 // Isolated HTTP fixture for generated-client browser tests; runtime authorization lives in the API.
 import {
+  ActivityPageSchema,
   applyTaskFieldPatch,
   ArchiveTaskSchema,
   CreateTaskSchema,
@@ -26,6 +27,9 @@ export function createBoardApi(nodes) {
   const tableCursors = new Map();
   const overrides = new Map();
   const controls = {
+    activityPages: new Map(),
+    activityGate: null,
+    activityError: null,
     driftRounds: 0,
     empty: false,
     error: null,
@@ -293,6 +297,28 @@ export function createBoardApi(nodes) {
     );
   };
   const respond = async ({ url, session, response, body, method }) => {
+    const activity = /^\/v1\/tasks\/([^/]+)\/activity$/.exec(url.pathname);
+    if (activity && method === 'GET') {
+      await controls.activityGate;
+      if (controls.activityError) {
+        const failure =
+          typeof controls.activityError === 'object'
+            ? controls.activityError
+            : { code: 'FORBIDDEN', status: 403 };
+        if (failure.once) controls.activityError = null;
+
+        error(response, failure.code, 'Activity is unavailable', failure.status);
+      } else
+        send(
+          response,
+          200,
+          controls.activityPages.get(url.searchParams.get('cursor') ?? '') ??
+            ActivityPageSchema.meta().example,
+        );
+
+      return true;
+    }
+
     const detail = /^\/v1\/tasks\/([^/]+)$/.exec(url.pathname);
     if (detail && method === 'GET') {
       const task = nodes

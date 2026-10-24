@@ -9,7 +9,7 @@ import { startProcess } from '@flowboard/config-jest/process';
 
 import { startWeb } from './proxy-fixture.mjs';
 
-export async function startRealApp(t) {
+export async function startRealApp(t, { activityWorker = false } = {}) {
   const cleanups = [];
   t.after(async () => {
     const errors = [];
@@ -80,7 +80,30 @@ export async function startRealApp(t) {
     const readiness = await fetch(`${apiOrigin}/health/ready`, {
       signal: AbortSignal.timeout(5000),
     });
-    if (readiness.ok) return { origin: web.origin };
+    if (readiness.ok) {
+      if (activityWorker) {
+        const worker = startProcess(
+          [fileURLToPath(new URL('../../../worker/dist/main.js', import.meta.url))],
+          {
+            cwd: new URL('../../../worker/', import.meta.url),
+            outboundOrigins: [database.port, redis.port].flatMap((port) =>
+              ['localhost', '127.0.0.1', '[::1]'].map((host) => `http://${host}:${port}`),
+            ),
+            env: {
+              HOST: 'localhost',
+              PORT: '0',
+              DATABASE_URL: database.href,
+              REDIS_URL: redis.href,
+              LOG_LEVEL: 'info',
+            },
+          },
+        );
+        cleanups.push(() => worker.stop());
+        await worker.waitFor(/"event":"worker.ready"/, 30000);
+      }
+
+      return { origin: web.origin };
+    }
 
     await setTimeout(100);
   }

@@ -36,6 +36,11 @@ const taskPayloadSchema = payloadSchema.extend({
   dataVersion: z.number().int().positive(),
 });
 
+const activityPayloadSchema = payloadSchema.extend({
+  kind: z.literal('activity'),
+  upper: payloadSchema.shape.after,
+});
+
 export type CursorBinding = Pick<
   z.infer<typeof payloadSchema>,
   'caller' | 'workspaceId' | 'resource' | 'limit'
@@ -54,6 +59,27 @@ export class CursorCodec {
   }
   decodeTask(value: string | undefined, binding: CursorBinding & { fingerprint: string }) {
     return this.decodePayload(value, binding, taskPayloadSchema);
+  }
+  decodeActivity(value: string | undefined, binding: CursorBinding) {
+    return this.decodePayload(value, binding, activityPayloadSchema);
+  }
+  encodeActivity(
+    binding: CursorBinding,
+    after: { createdAt: Date; id: string },
+    upper: { createdAt: Date; id: string },
+    previous?: ReturnType<CursorCodec['decodeActivity']>,
+  ) {
+    const payload = activityPayloadSchema.parse({
+      ...binding,
+      v: 1,
+      kind: 'activity',
+      after: { createdAt: after.createdAt.toISOString(), id: after.id },
+      upper: { createdAt: upper.createdAt.toISOString(), id: upper.id },
+      expiresAt: previous?.expiresAt ?? Date.now() + 900_000,
+    });
+    const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
+
+    return `${encoded}.${this.signature(encoded).toString('base64url')}`;
   }
   encodeTask(
     binding: CursorBinding & { fingerprint: string },

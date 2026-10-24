@@ -7,6 +7,7 @@ import {
 } from '@flowboard/contracts';
 
 import { accessRepository } from './access-repository.js';
+import { activityRepository } from './activity-repository.js';
 import { fieldRepository } from './field-repository.js';
 import { hierarchyRepository } from './hierarchy-repository.js';
 import { membershipRepository } from './membership-repository.js';
@@ -84,6 +85,7 @@ export interface GrantRecord extends GrantInput {
 }
 
 export interface ReadRepositories {
+  activities: ReturnType<typeof activityRepository>;
   tasks: ReturnType<typeof taskRepository>['read'];
   access: ReturnType<typeof accessRepository>['read'];
   context: Readonly<TenantContext>;
@@ -303,6 +305,7 @@ export function repositories(
 
   return {
     read: Object.freeze({
+      activities: activityRepository(tx, context, assertActive),
       scopes,
       tasks: tasks.read,
       fields: fields.read,
@@ -322,6 +325,7 @@ export function repositories(
       }),
     }) satisfies ReadRepositories,
     write: Object.freeze({
+      activities: activityRepository(tx, context, assertActive),
       scopes,
       tasks: tasks.write,
       fields: fields.write,
