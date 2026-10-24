@@ -69,11 +69,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
     } else if (exception instanceof ZodValidationException) {
       const zodError = exception.getZodError();
       if (zodError instanceof ZodError)
-        details = zodError.issues.map((issue) => ({
-          code: issue.code,
-          message: [...issue.message].slice(0, 500).join(''),
-          path: issue.path.map((part) => (typeof part === 'symbol' ? String(part) : part)),
-        }));
+        details = zodError.issues.flatMap((issue) => {
+          const paths =
+            issue.code === 'unrecognized_keys'
+              ? issue.keys.map((key) => [...issue.path, key])
+              : [issue.path];
+
+          return paths.map((path) => ({
+            code: issue.code,
+            message:
+              issue.code === 'unrecognized_keys'
+                ? 'Unexpected request field'
+                : [...issue.message].slice(0, 500).join(''),
+            path: path.map((part) => (typeof part === 'symbol' ? String(part) : part)),
+          }));
+        });
     }
 
     const response = host.switchToHttp().getResponse<{

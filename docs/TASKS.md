@@ -701,13 +701,13 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Same-category mapping success; closed→no closed rejects; required destination field missing rejects/provided succeeds; source-only value needs explicit clear; wrong anchors/tenant reject; concurrent config/move remains valid; failure leaves task unchanged. Endpoint DoD and standard gate.
   - **Commit:** `feat: move and reorder tasks atomically`.
 
-- [ ] **P06-04 — Complete task invariants and contract regression**
+- [x] **P06-04 — Complete task invariants and contract regression**
   - **Goal:** Audit all task entry points against the required negative scenarios.
-  - **Files:** `apps/api/test/integration/{tenant-isolation,task-invariants}.spec.mjs`, `packages/contracts/test/task-patches.test.ts`, necessary task/repository fixes, generated artifacts.
+  - **Files:** `apps/api/src/modules/tasks/task-invariants.integration.spec.mjs`, shared validation-error filter and regression test, existing task/contract suites, necessary fixes, API catalog and evidence.
   - **Dependencies:** P06-03.
   - **Acceptance:** REST tests cover tenant reads/writes/relationships, denied list, parent configuration changes, status deletion and field safety with actual task APIs. No orphaned active cards; all response bodies satisfy contracts. Cursor tampering/expiry/context changes and offset/page/duplicate parameters return400; visible rows determine limit+1/hasNextPage; revision changes return409 and a restart returns each current row once.
   - **Validation:** Full real-Postgres suite with two tenants; standard gate. Fix actual defects rather than weaken expectations.
-  - **Commit:** `test: cover task isolation and mutation invariants`.
+  - **Commit:** `fix: preserve field paths in validation errors`.
 
 - [ ] **P06-05 — Validated container reparenting**
   - **Goal:** Complete container moves now that status and field rules are available.
