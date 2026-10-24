@@ -1,6 +1,7 @@
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { createServer as reserveServer } from 'node:net';
+import { fileURLToPath } from 'node:url';
 
 import { startProcess } from '@flowboard/config-jest/process';
 
@@ -17,7 +18,7 @@ export async function startUpstream(t, handler) {
   return `http://localhost:${server.address().port}`;
 }
 
-export async function startWeb(t, api, hostname = 'localhost') {
+export async function startWeb(t, api, hostname = 'localhost', development = false) {
   const reserve = reserveServer();
   reserve.listen(0, 'localhost');
   await once(reserve, 'listening');
@@ -26,7 +27,17 @@ export async function startWeb(t, api, hostname = 'localhost') {
     reserve.close((error) => (error ? reject(error) : resolve())),
   );
   const origin = `http://${hostname}:${port}`;
-  const runtime = startProcess(['.next/standalone/apps/web/server.js'], {
+  const args = development
+    ? [
+        fileURLToPath(import.meta.resolve('next/dist/bin/next')),
+        'dev',
+        '--hostname',
+        'localhost',
+        '--port',
+        String(port),
+      ]
+    : ['.next/standalone/apps/web/server.js'];
+  const runtime = startProcess(args, {
     cwd: new URL('../../', import.meta.url),
     outboundOrigins: [api],
     env: {
@@ -37,7 +48,7 @@ export async function startWeb(t, api, hostname = 'localhost') {
       PORT: String(port),
     },
   });
-  t.after(() => runtime.stop(null, 143));
+  t.after(() => runtime.stop(null, development ? 0 : 143));
   await runtime.waitFor(/Ready in/);
 
   return { origin, runtime };

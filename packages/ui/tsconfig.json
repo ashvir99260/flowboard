@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "outDir": "dist",
     "rootDir": "src"
   },
   "exclude": ["dist", "node_modules", "test"],
   "extends": "@flowboard/config-typescript/library.json",
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

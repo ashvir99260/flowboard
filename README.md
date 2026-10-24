@@ -2,7 +2,7 @@
 
 A self-hosted project management app for learning sound architecture at hobby scale.
 
-**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Next.js still shows the setup page, and the worker remains idle until its activity-processing task. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while the product UI and realtime delivery remain in the backlog.
+**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Shared MUI display components and light/dark themes are available in the development playground. Next.js still shows the setup page, and the worker remains idle until its activity-processing task. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while the product UI and realtime delivery remain in the backlog.
 
 The [system design](docs/SYSTEM_DESIGN.md) covers the UI, backend, database ERD and request/event flows. [ClickUp/Asana/Linear research](docs/REFERENCE_ARCHITECTURES.md) explains the public patterns behind it, with sources and explicit limits on what is known.
 
@@ -52,6 +52,8 @@ pnpm dev
 The root `.env` configures Compose. The API and worker load their own `.env` when launched with their `dev` or `start` scripts; Next.js loads `.env.local`. Existing process environment variables override file values. The Node services also work without a file when their environment is supplied externally. Restart Node development processes after editing their env files. These private files are ignored by Git and excluded from Docker images. Keep database credentials/ports consistent between root and app files if you customize them, and never put server secrets in the web file. The local API example enables migrations, demo seeding and Swagger; hosted deployments use injected secrets and disable local-only settings.
 
 Open [the setup page](http://localhost:3000). Next.js reloads page edits; the API and worker compile with TypeScript and restart after successful changes. Stop all three with Ctrl+C. To run one app, use `pnpm dev --filter=@flowboard/web`, `pnpm dev --filter=@flowboard/api` or `pnpm dev --filter=@flowboard/worker`.
+
+The development-only [component playground](http://localhost:3000/playground) demonstrates shared statuses, priorities, assignees, dates, custom fields and empty/error states in light and dark themes. It uses local sample props and makes no API requests. Production returns 404 for this route.
 
 | Process | Default address         | Current behavior                                                             |
 | ------- | ----------------------- | ---------------------------------------------------------------------------- |

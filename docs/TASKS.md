@@ -756,13 +756,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 8 — UI package and application shell
 
-- [ ] **P08-01 — MUI theme and presentational display components**
+- [x] **P08-01 — MUI theme and presentational display components**
   - **Goal:** Establish the reusable visual system before feature UI.
-  - **Files:** `packages/ui/src/{theme,theme-provider,index}.tsx`, `packages/ui/src/components/{status-chip,priority-badge,assignee-avatar-group,due-date-label,custom-field-chip,empty-state,error-state}.tsx`, `packages/ui/test/**`, `apps/web/app/playground/page.tsx`.
+  - **Requirements:** R23, R70.
+  - **Files:** `packages/ui/src/{theme,theme-provider,index}.*`, seven display components, UI package/compiler/test configuration, `apps/web/app/{layout.tsx,playground/**}`, generated Next.js local guide, browser tests, disposable Docker UI probe and task evidence.
   - **Dependencies:** P07-03.
   - **Acceptance:** App Router Emotion cache, semantic theme tokens, all status/priority/empty/error examples, light/dark token definitions and local playground. Props only; no API imports.
   - **Validation:** RTL accessible labels/color-independent state, long content, SSR hydration smoke and responsive playground screenshots; standard gate.
   - **Commit:** `feat: build shared mui display components`.
+  - **Completion evidence:** [P08-01](evidence/P08-01.md).
 
 - [ ] **P08-02 — Typed forms and interaction primitives**
   - **Goal:** Build dynamic fields, confirmation, tree and card/column presentation used by views.
