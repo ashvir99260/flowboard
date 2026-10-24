@@ -2,9 +2,11 @@
 
 A self-hosted project management app for learning sound architecture at hobby scale.
 
-**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Shared MUI display/input components, light/dark themes, typed form examples, tree items, cards and confirmation dialogs are available in the development playground. The web supports signup/login, session restoration, workspace switching and a paginated permission-aware sidebar. Selected lists show a read-only Kanban board with their resolved columns, card metadata and per-column pagination. The worker remains idle until its activity-processing task. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while card moves, task editing, configuration screens and realtime delivery remain in the backlog.
+**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Shared MUI display/input components, light/dark themes, typed form examples, tree items, cards and confirmation dialogs are available in the development playground. The web supports signup/login, session restoration, workspace switching and a paginated permission-aware sidebar. Selected lists show a Kanban board with their resolved columns, card metadata, per-column pagination and accessible card moves. The worker remains idle until its activity-processing task. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while task editing, configuration screens and realtime delivery remain in the backlog.
 
 Boards display only a consistent set of status, field and task revisions. A concurrent configuration or task change restarts loading, with a visible retry after repeated changes. Refreshing the board, returning to the tab or reconnecting starts again at the first page of every column. Use each column's **Load more** button to load additional cards; column counts describe loaded cards. Wider boards scroll inside their own region on small screens.
+
+Use a card's **Drag** handle to change status or order. Keyboard users can pick up with Space or Enter, move with arrow keys, drop with Space or Enter, and cancel with Escape. Dropping outside the columns cancels. The **Move** button provides the same operations plus another visible destination list, placement controls and required custom-field corrections. Fields unavailable in the destination are explicitly listed before clearing. Saving disables repeat actions for that task; rejected moves roll back their own preview and show the error without discarding the form. Every completed save refreshes affected open boards. Moving to the end of a partially loaded column may put the card on a later page.
 
 The [system design](docs/SYSTEM_DESIGN.md) covers the UI, backend, database ERD and request/event flows. [ClickUp/Asana/Linear research](docs/REFERENCE_ARCHITECTURES.md) explains the public patterns behind it, with sources and explicit limits on what is known.
 
@@ -35,6 +37,8 @@ pnpm format:check
 ```
 
 `pnpm format` applies the shared Prettier rules to every workspace plus root configuration and documentation. The original requirements are preserved verbatim. Tests cover package boundaries, application start/stop, shared domain rules, and real PostgreSQL/Redis integration for the implemented backend. Browser user-flow suites cover authentication, workspace/list navigation, session expiry and responsive keyboard controls. Runtime libraries expose compiled outputs; tool configurations are directly consumable so first-time builds need no generated files.
+
+On resource-constrained laptops, `pnpm test --concurrency=2` runs the same complete suite with fewer simultaneous Turbo tasks. Run Docker checks afterward. CI keeps its parallel build, lint, type and test jobs.
 
 Run `pnpm hooks:install` once to enable the repository-local commit-message check. [Code-quality conventions](docs/CODE_QUALITY.md) explain the commit policy, manual checks and CI validation.
 

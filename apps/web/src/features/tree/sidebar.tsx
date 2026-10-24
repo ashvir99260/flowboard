@@ -1,19 +1,14 @@
 'use client';
 
-import { listVisibleTreeInfiniteOptions } from '@flowboard/api-client/tanstack-query';
-import { TreePageSchema } from '@flowboard/contracts';
 import { EmptyState, ErrorState, TreeItem } from '@flowboard/ui';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { apiError } from '../../lib/api-error';
-import { withQueryScope } from '../../lib/query-scope';
 import { SessionLoading } from '../auth/session-gate';
 
-import { assembleTree } from './assemble-tree';
+import { useTree } from './use-tree';
 
 import type { TreeBranch } from './assemble-tree';
 import type { QueryScope } from '../../lib/query-scope';
@@ -72,61 +67,19 @@ export function Sidebar({
   selectedId?: string;
 }) {
   const router = useRouter();
-  const [attempt, setAttempt] = useState(0);
-  const query = useInfiniteQuery({
-    ...withQueryScope(
-      listVisibleTreeInfiniteOptions({ client: runtime.client, query: { limit: '50' } }),
-      scope,
-      [`tree-attempt:${attempt}`],
-    ),
-    initialPageParam: { query: {} },
-    getNextPageParam: (page) => {
-      const parsed = TreePageSchema.safeParse(page);
+  const tree = useTree(runtime, scope);
+  if (tree.state === 'loading') return <SessionLoading />;
 
-      return parsed.success ? (parsed.data.pageInfo.nextCursor ?? undefined) : undefined;
-    },
-  });
-  const parsed = TreePageSchema.array().safeParse(query.data?.pages ?? []);
-  const pages = parsed.success ? parsed.data : [];
-  const cursors = pages.flatMap((page) => page.pageInfo.nextCursor ?? []);
-  const repeated = new Set(cursors).size !== cursors.length;
-  const exceeded = query.hasNextPage && (query.data?.pages.length ?? 0) >= 100;
-  const complete =
-    !query.hasNextPage && query.data ? assembleTree(pages, scope.workspaceId!) : null;
-  const stale =
-    (query.isError && apiError(query.error).code === 'CURSOR_STALE') ||
-    Boolean(complete && !complete.ok) ||
-    !parsed.success;
-  const { hasNextPage, isFetching, isError, fetchNextPage } = query;
-  useEffect(() => {
-    if (hasNextPage && !isFetching && !isError && !repeated && !exceeded) void fetchNextPage();
-  }, [exceeded, hasNextPage, isFetching, isError, fetchNextPage, repeated]);
-
-  if (stale && attempt === 0) setAttempt(1);
-
-  if (
-    (stale && attempt === 0) ||
-    query.isPending ||
-    (query.hasNextPage && !query.isError && !repeated && !exceeded)
-  )
-    return <SessionLoading />;
-
-  if (query.isError || repeated || exceeded || !complete?.ok)
+  if (tree.state === 'error')
     return (
       <ErrorState
         title="Unable to load navigation"
-        description={
-          query.isError
-            ? apiError(query.error).message
-            : 'Navigation changed or returned an incomplete response. Try again.'
-        }
-        action={
-          <Button onClick={() => setAttempt((current) => current + 1)}>Retry navigation</Button>
-        }
+        description={tree.message}
+        action={<Button onClick={tree.retry}>Retry navigation</Button>}
       />
     );
 
-  if (!complete.items.length)
+  if (!tree.items.length)
     return (
       <EmptyState
         description="Your workspace has no containers you can access yet."
@@ -136,7 +89,7 @@ export function Sidebar({
 
   return (
     <Branches
-      items={complete.items}
+      items={tree.items}
       selectedId={selectedId}
       select={(id) => {
         router.push(`/w/${scope.workspaceId}/lists/${id}`);
