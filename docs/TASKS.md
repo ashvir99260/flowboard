@@ -787,13 +787,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 9 — Board, list and drawer
 
-- [ ] **P09-01 — Resolved Kanban board**
+- [x] **P09-01 — Resolved Kanban board**
   - **Goal:** Render each list from its authoritative statuses and tasks.
-  - **Files:** `apps/web/src/features/board/{board,board-data,use-board}.tsx`, board tests, board route.
+  - **Requirements:** R16, R53, R63, R69, R70, R71.
+  - **Files:** `apps/web/src/features/board/{board.tsx,board-data.ts,use-board.ts}`, board tests/fixtures, list composition, shared card and evidence/docs.
   - **Dependencies:** P08-03.
   - **Acceptance:** Parallel generated queries load statuses/fields/tasks; render only matching configVersions across schemas/data and matching dataVersions across all task columns/pages; refetch mismatches with bounded retries. Exact columns including empty ones, requested card metadata and pagination. No orphan fallback column. List change isolates cached data and reports schema errors.
   - **Validation:** Sibling lists produce different exact columns; config changes between parallel responses cause safe refetch rather than orphan cards. Cover empty board, long title, deleted/forbidden list, field chip and loading/error state; standard gate.
   - **Commit:** `feat: render list scoped kanban boards`.
+  - **Completion evidence:** [P09-01](evidence/P09-01.md): exact sibling columns, metadata, pagination, strict version/cursor assembly, bounded recovery and responsive browser checks pass; all root gates and both Docker checks pass. Local full tests use two concurrent tasks after resource-related failures; CI remains unchanged.
 
 - [ ] **P09-02 — Optimistic drag and accessible move controls**
   - **Goal:** Move/reorder cards with rollback and concurrent-state safety.

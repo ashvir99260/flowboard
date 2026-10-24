@@ -19,6 +19,7 @@ import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
 import { useSession } from '../../providers/app-providers';
 import { SessionGate, SessionLoading } from '../auth/session-gate';
+import { Board } from '../board/board';
 import { Sidebar } from '../tree/sidebar';
 
 import type { QueryScope } from '../../lib/query-scope';
@@ -76,7 +77,6 @@ function SelectedList({
 
   const list = parsed.data.data;
 
-  // TODO(P09-01): Compose the version-consistent board below the real list heading.
   return (
     <Stack spacing={4}>
       <Typography component="h1" variant="h1" sx={{ overflowWrap: 'anywhere' }}>
@@ -95,6 +95,7 @@ function SelectedList({
           {new Date(list.updatedAt).toLocaleDateString()}
         </Typography>
       </Box>
+      <Board listId={listId} />
     </Stack>
   );
 }

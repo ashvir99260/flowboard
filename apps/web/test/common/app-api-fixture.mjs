@@ -9,6 +9,7 @@ import {
   TreePageSchema,
 } from '@flowboard/contracts';
 
+import { createBoardApi } from './board-api-fixture.mjs';
 import { startUpstream } from './proxy-fixture.mjs';
 
 export async function startAppApi(t) {
@@ -64,6 +65,8 @@ export async function startAppApi(t) {
     researchFolder,
     researchList,
   ];
+  const board = createBoardApi(allNodes);
+  controls.board = board.controls;
   const send = (response, status, value) =>
     response.writeHead(status, { 'Content-Type': 'application/json' }).end(JSON.stringify(value));
   const issue = (response, user, activeWorkspace = workspace, status = 200) => {
@@ -84,7 +87,11 @@ export async function startAppApi(t) {
   const origin = await startUpstream(t, async (request, response) => {
     try {
       const url = new URL(request.url, 'http://localhost');
-      requests.push({ path: url.pathname, method: request.method });
+      requests.push({
+        path: url.pathname,
+        method: request.method,
+        query: Object.fromEntries(url.searchParams),
+      });
       const chunks = [];
       for await (const chunk of request) chunks.push(chunk);
       const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString()) : {};
@@ -157,6 +164,8 @@ export async function startAppApi(t) {
         return send(response, 401, {
           error: { code: 'UNAUTHENTICATED', message: 'Sign in to continue' },
         });
+
+      if (await board.respond({ url, session, response })) return;
 
       if (url.pathname === '/v1/me')
         return send(response, 200, {

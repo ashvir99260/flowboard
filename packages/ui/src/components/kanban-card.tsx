@@ -3,6 +3,7 @@
 import ButtonBase from '@mui/material/ButtonBase';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 import { AssigneeAvatarGroup } from './assignee-avatar-group.js';
 import { DueDateLabel } from './due-date-label.js';
@@ -21,7 +22,7 @@ export function KanbanCard({
   actions?: ReactNode;
   dragHandle?: ReactNode;
   metadata?: ReactNode;
-  onOpen: () => void;
+  onOpen?: () => void;
   task: Pick<Task, 'id' | 'title' | 'priority' | 'dueDate' | 'assignees'>;
 }>) {
   return (
@@ -32,19 +33,29 @@ export function KanbanCard({
       sx={{ p: 3, minWidth: 0 }}
     >
       {dragHandle}
-      <ButtonBase
-        onClick={onOpen}
-        sx={{
-          minHeight: 44,
-          width: '100%',
-          justifyContent: 'flex-start',
-          textAlign: 'left',
-          fontWeight: 600,
-          overflowWrap: 'anywhere',
-        }}
-      >
-        {task.title}
-      </ButtonBase>
+      {onOpen ? (
+        <ButtonBase
+          onClick={onOpen}
+          sx={{
+            minHeight: 44,
+            width: '100%',
+            justifyContent: 'flex-start',
+            textAlign: 'left',
+            fontWeight: 600,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {task.title}
+        </ButtonBase>
+      ) : (
+        <Typography
+          component="h3"
+          variant="body1"
+          sx={{ minHeight: 44, fontWeight: 600, overflowWrap: 'anywhere' }}
+        >
+          {task.title}
+        </Typography>
+      )}
       <Stack
         direction="row"
         useFlexGap
