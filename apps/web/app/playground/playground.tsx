@@ -19,6 +19,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
+import { FieldPreviewExample } from './field-preview-example';
 import { FormExamples } from './form-examples';
 import { InteractionExamples } from './interaction-examples';
 import { StatusPreviewExample } from './status-preview-example';
@@ -109,6 +110,12 @@ export function Playground() {
           gap: 5,
         }}
       >
+        <Section
+          description="Try required number and checkbox controls, including zero and false."
+          title="Field configuration previews"
+        >
+          <FieldPreviewExample />
+        </Section>
         <Section
           title="Status"
           description="Names and categories remain readable with any accent color."
