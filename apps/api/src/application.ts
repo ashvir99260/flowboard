@@ -2,11 +2,11 @@ import 'reflect-metadata';
 
 import { SilentLogger } from '@flowboard/logger';
 import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { AppModule } from './app.module.ts';
+import { GracefulExpressAdapter } from './core/common/graceful-express-adapter.ts';
 import { RealtimeService } from './modules/realtime/realtime.service.ts';
 import { NestLogger } from './shared/logging/nest-logger.ts';
 import { requestLogging } from './shared/logging/request-logging.ts';
@@ -50,7 +50,7 @@ export async function createApplication(
       options.outbox,
       options.realtime,
     ),
-    new ExpressAdapter(),
+    new GracefulExpressAdapter(),
     {
       bodyParser: false,
       logger: options.logger ? new NestLogger(logger) : false,

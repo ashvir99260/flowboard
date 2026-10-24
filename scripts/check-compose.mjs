@@ -360,8 +360,15 @@ try {
     return activity.items.some((entry) => entry.payload.taskVersion === expectedVersion);
   });
   const restartLogs = await run('logs', '--no-color', '--no-log-prefix', 'api', 'worker');
-  assert.ok(restartLogs.includes('"event":"api.stopped"'));
-  assert.ok(restartLogs.includes('"event":"worker.stopped"'));
+  const events = [...restartLogs.matchAll(/"event":"([\w.-]+)"/g)].map((match) => match[1]);
+  assert.ok(
+    events.includes('api.stopped'),
+    `API shutdown event missing; events: ${events.join(', ')}`,
+  );
+  assert.ok(
+    events.includes('worker.stopped'),
+    `Worker shutdown event missing; events: ${events.join(', ')}`,
+  );
   console.info(`[${project}] All Docker acceptance checks passed`);
 } finally {
   // The random project name isolates this run from the user's development stack.

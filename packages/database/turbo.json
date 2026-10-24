@@ -13,6 +13,9 @@
     },
     "test": {
       "env": ["DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_CONFIG"]
+    },
+    "typecheck": {
+      "dependsOn": ["build"]
     }
   }
 }
