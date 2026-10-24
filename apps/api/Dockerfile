@@ -22,7 +22,7 @@ COPY --from=prune /repo/out/full/ .
 RUN pnpm exec turbo run build --filter=@flowboard/api
 
 FROM build AS development
-ENV CI=false NODE_ENV=development HOST=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
+ENV CI=false NODE_ENV=development HOST=0.0.0.0 NEXT_TELEMETRY_DISABLED=1 PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false
 COPY .gitignore .gitignore
 RUN find /repo -name node_modules -prune -o -exec chown node:node {} +
 USER node

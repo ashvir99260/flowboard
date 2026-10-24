@@ -1,5 +1,6 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
+  "globalPassThroughEnv": ["PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN"],
   "tasks": {
     "api:generate": {
       "cache": false,
@@ -86,6 +87,11 @@
     },
     "openapi:check": {
       "cache": false,
+      "outputs": []
+    },
+    "release:check": {
+      "cache": false,
+      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG", "PLAYWRIGHT_BROWSERS_PATH"],
       "outputs": []
     },
     "release:plan": {

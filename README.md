@@ -238,7 +238,7 @@ Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `caro
 
 To run the apps with `pnpm dev` while keeping only PostgreSQL and Redis in Docker, follow [Run the application shells](#run-the-application-shells). That workflow uses `compose.local.yaml` to expose datastore ports to host tools. Full Docker startup uses `compose.yaml` alone. Do not run container apps and host development apps on the same ports.
 
-Run `pnpm docker:check` for an isolated image/build/start/restart check. It uses random published ports, verifies non-root users and datastore persistence, removes its own containers, and leaves its uniquely named test volumes intact. It never targets the development project's volumes.
+Run `pnpm docker:check` for an isolated image/build/browser/restart/recovery check. It reserves ports, derives matching browser origins, ignores the root `.env`, and uses unique image tags. A real browser edits a task; REST edits survive restart; readiness reflects a Redis outage and queued activity appears after recovery. It removes its own containers and image tags, leaving its uniquely named data volumes intact. It never targets development volumes.
 
 Run `pnpm docker:dev:check` to verify live app/shared-package edits and compile-error recovery against a temporary source copy. It uses separate images and random ports, preserves your source and running stack, and retains only its isolated data volumes after cleanup.
 
@@ -276,6 +276,12 @@ The [AI coding tool guide](docs/AI_TOOLS.md) adds Serena symbol navigation, pinn
 Set `REALTIME_PUBLIC_URL` on the web server to the browser-reachable API origin, for example `http://localhost:3001`. It is read at request time, separately from server-only `API_INTERNAL_URL`. Compose supplies the local default; hosted preview uses its public HTTPS API URL. Add the exact web origin to the API's `AUTH_ALLOWED_ORIGINS` and the web's `WEB_ALLOWED_ORIGINS`. An empty realtime URL deliberately disables sockets.
 
 Sockets use WebSocket transport with an in-memory JWT in the handshake, never the URL. The API checks current session/membership and list permissions, expires connections with the JWT, and rechecks access before delivery. Signals contain no task content or hidden destination. The browser refetches authorized state, deduplicates repeated events and catches up after reconnect; dirty editors preserve input and require explicit conflict resolution. Redis loss affects readiness and sockets, while committed task changes remain in PostgreSQL's retryable outbox.
+
+## Verify a committed checkout
+
+With Node 22.23.2, pnpm 12.15.0, Docker and Chromium installed as above, commit changes and run `pnpm release:check`. The gate refuses uncommitted files, clones the exact commit without ignored files, performs a frozen install, then runs build/lint/types/format, OpenAPI/client checks, all tests and both production/development Docker checks. It rejects tracked-file changes during verification, removes its temporary checkout and retains logs under `.ai-local/release/`. It does not merge, publish or deploy.
+
+Behavioral suites run Node/Chromium on the host with isolated Docker datastores; image checks additionally run all five services in Docker. Docker must be running with space for production and development builds. Existing development containers, source files and volumes remain separate.
 
 ## Independent releases and hosting
 

@@ -1,6 +1,6 @@
 # Flowboard Task Backlog
 
-Status: Phase 0 foundation implementation authorized and in progress. Execute top to bottom, one task at a time. Dependencies name the technical prerequisites; they do not authorize skipping ahead. Paths below are planned deliverables; check their current implementation and evidence. Small supporting edits are allowed only within the task's stated goal and must be recorded in its completion note.
+Status: Local MVP implementation and release verification are complete through P12-03. External activation and future environment-promotion tasks remain unchecked. Execute top to bottom, one task at a time. Dependencies name the technical prerequisites; they do not authorize skipping ahead. Paths below are planned deliverables; check their current implementation and evidence. Small supporting edits are allowed only within the task's stated goal and must be recorded in its completion note.
 
 Canonical behavior is in [PLAN.md](PLAN.md), the brief in [REQUIREMENTS.md](REQUIREMENTS.md), and defaults in [DECISIONS.md](DECISIONS.md). Read [AGENTS.md](../AGENTS.md) before execution.
 
@@ -265,11 +265,11 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Completion evidence:** [P00-28 verification](evidence/P00-28.md):135 stored-field rows match the ER/dictionary; typed embedded/request controls, cursor-only policy,43-operation inventory and documentation checks reviewed.
 
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
-  - **Goal:** Put the current foundation online on the selected preview hosts.
+  - **Goal:** Put the implemented local MVP online on the selected preview hosts.
   - **Requirements:** R96–R98.
   - **Files:** `docs/evidence/P00-14.md`, `docs/TASKS.md`, requirement matrix; credentials remain only in provider/GitHub secret settings.
   - **Dependencies:** P00-13, P00-07 for automated released-image deployment, authenticated provider access and free-tier availability.
-  - **Acceptance:** Vercel preview, Northflank API/worker/Redis and region-matched Neon exist; runtime secrets are scoped to preview. A real workflow deploys released versions, retries reuse them, and the web URL serves the foundation page. State explicitly that auth/tasks/queues/migrations are not implemented yet. No paid plan, real production site, production data or production credentials are used. Vercel’s mandatory production-labeled first deployment requires an explicitly reviewed bootstrap in the dedicated preview-only project; CI does not perform it.
+  - **Acceptance:** Vercel preview, Northflank API/worker/Redis and region-matched Neon exist; runtime secrets are scoped to preview. A real workflow deploys released versions and retries reuse them. The preview URL supports login and a tenant-scoped task flow against preview Neon/Redis; API and worker readiness, migrations, activity and realtime are checked using disposable preview data. Record actual hosted limitations separately from implemented local capabilities. No paid plan, real production site, production data or production credentials are used. Vercel’s mandatory production-labeled first deployment requires an explicitly reviewed bootstrap in the dedicated preview-only project; CI does not perform it.
   - **Validation:** Real provider resources, workflow records and external HTTP/liveness checks; do not substitute mock results for live evidence.
   - **Commit:** `docs: record initial hosted preview`.
 
@@ -297,7 +297,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Files:** `docs/evidence/P00-09.md`, `docs/TASKS.md`, requirement matrix; secret values never enter files.
   - **Dependencies:** P00-07, P00-08, the selected build-once hosting path (P00-11; P00-12 when four environments are enabled), and provider credentials/target IDs. The old source-build activation path is deferred under the latest clarification.
   - **Acceptance:** A main run deploys the released app(s), reports real ready provider deployments, and a retry/unchanged app does not trigger an unrelated rollout.
-  - **Validation:** Live workflow/provider deployment records and externally reachable service checks; record honest product-shell limitations.
+  - **Validation:** Live workflow/provider deployment records and externally reachable readiness plus authenticated tenant-scoped task behavior; record actual provider/runtime limitations and unverified capabilities.
   - **Commit:** `docs: record live continuous deployment`.
 
 - [ ] **P00-07 — Verify the first main-branch publication**
@@ -305,7 +305,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Requirements:** R94–R95.
   - **Files:** `docs/evidence/P00-07.md`, `docs/REQUIREMENTS_MATRIX.md`, `docs/TASKS.md`; workflow fixes only if the first run fails.
   - **Dependencies:** P00-06 and merge to main.
-  - **Acceptance:** The main run passes and publishes API, web and worker `0.1.0` releases with matching source SHA/digest manifests. A retry does not allocate new versions. Record run/release links without exposing credentials. Provider deployment is separate and requires connected accounts.
+  - **Acceptance:** The main run passes and publishes the applications and exact versions selected by the release planner, with matching source SHA/digest manifests; an application with no prior published baseline starts at `0.1.0`. A retry reuses those versions. Record run/release links without exposing credentials. Provider deployment is separate and requires connected accounts.
   - **Validation:** Inspect the real workflow run, tags, release manifests and GHCR digests. Apply standard gates if implementation fixes are needed.
   - **Commit:** `docs: record first independent releases`.
 
@@ -923,13 +923,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: explain operations and shared api contracts`.
   - **Completion evidence:** [P12-02](evidence/P12-02.md): executable real-service cookbook, schema-valid event examples, architecture/operations review and document gates pass.
 
-- [ ] **P12-03 — Clean-checkout release gate and polish**
+- [x] **P12-03 — Clean-checkout release gate and polish**
   - **Goal:** Prove a new developer can build/run/test without undocumented setup.
-  - **Files:** `.github/workflows/ci.yml`, `scripts/check-release.mjs`, Compose/Docker files if fixes needed, focused UI/API fixes, README and task evidence.
+  - **Requirements:** R07, R24, R25, R26, R27, R82, R85, R86, R90; final reconciliation of R01–R06, R14, R16, R32, R33 and R91.
+  - **Files:** `.github/workflows/delivery.yml`, `scripts/check-release.mjs`, Compose acceptance scripts and regression tests, development Dockerfiles and worker environment wiring, root/Turbo/release-tool command wiring, README, hosting guides and repository-local harness/task/evidence records.
   - **Dependencies:** P12-02.
   - **Acceptance:** CI pins toolchain; clean frozen install/build/lint/test, OpenAPI/client checks and one-command Compose boot succeed. Restart keeps edits; test volumes isolate data; dependency outage/readiness/recovery visible. No untracked placeholder remains; deferred search is documented.
   - **Validation:** Clean disposable checkout + volumes, all five healthy, full required suites, reproducible artifacts and final diff/security/accessibility review. Update completion evidence; do not reset user data.
   - **Commit:** `chore: verify clean checkout release workflow`.
+  - **Completion evidence:** [P12-03](evidence/P12-03.md): clean frozen install, all workspace/contract gates, 964 tests and both Docker modes pass; requirement matrix reconciled, external activation remains open.
 
 ## Explicitly deferred work
 

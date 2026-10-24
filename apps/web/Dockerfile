@@ -17,7 +17,7 @@ COPY --from=prune /repo/out/full/ .
 RUN pnpm exec turbo run build --filter=@flowboard/web
 
 FROM build AS development
-ENV CI=false NODE_ENV=development HOST=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
+ENV CI=false NODE_ENV=development HOST=0.0.0.0 NEXT_TELEMETRY_DISABLED=1 PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false
 COPY .gitignore .gitignore
 # The web development graph also rebuilds Prisma-backed API contracts.
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \

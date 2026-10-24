@@ -20,17 +20,17 @@ flowchart LR
   Worker --> Redis
 ```
 
-Database/queue connections in this diagram describe the target topology. Current app shells do not yet use them; see the limits below.
+Database and queue connections in this diagram are implemented and verified locally. Provider deployment and its live acceptance remain separate, unchecked work.
 
 ## Parallel checks and free runners
 
 Five independent GitHub jobs run `pnpm build`, `pnpm lint`, `pnpm test`, `pnpm typecheck` and `pnpm format:check`. Each root command uses Turbo across all applicable apps and packages; new workspaces join through the workspace graph. Turbo still builds required dependencies inside a job before a dependent check can use them. No check waits for another check job. Fail-fast is disabled, so one failed lane does not cancel the remaining results. Workflow lint runs within the lint lane.
 
-Compose health/persistence checks start alongside the five lanes. Publication waits for the complete verification matrix and Compose checks to succeed; deployment waits for publication. Runner availability and the account's concurrency limits can still queue jobs.
+Production-image and development live-reload Compose checks start alongside the five lanes. Publication waits for the complete verification matrix and Compose checks to succeed; deployment waits for publication. Runner availability and the account's concurrency limits can still queue jobs.
 
 Every job uses the standard `ubuntu-24.04` GitHub-hosted runner. [GitHub documents these runners as free and unlimited for public repositories](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories). This setup adds no larger runner, paid cache service, organization subscription or billing change. Entry jobs skip if the repository becomes private, preventing their dependent release/deployment jobs from running under potentially billable private-repository rules. This is a CI-runner guarantee, not a promise about unrelated hosting or storage products.
 
-Branch protection should require the five `Workspace / ...` checks and `Compose health and persistence`, replacing the former `Build, lint and test` check if it was configured. Repository settings are not changed by this workflow commit.
+Branch protection should require `Workspace / build`, `Workspace / lint`, `Workspace / test`, `Workspace / typecheck`, `Workspace / format:check`, `Compose / docker:check` and `Compose / docker:dev:check`, replacing obsolete check names if configured. Repository settings are not changed by this workflow commit.
 
 ## Deployment contract
 
@@ -63,7 +63,7 @@ Branch protection should require the five `Workspace / ...` checks and `Compose 
 
 GitHub supplies its token, repository ID and workflow SHA. Never paste provider tokens into a PR, issue, file or chat. Database URLs, Redis credentials and auth keys belong in provider runtime secrets. Vercel receives only settings it needs; no database or Redis secret belongs in the browser.
 
-API runtime settings now include `DATABASE_URL`, optional direct `DATABASE_URL_UNPOOLED`, `REDIS_URL`, a newly generated `AUTH_SECRET` of at least 32 bytes, `AUTH_ALLOWED_ORIGINS` listing exact HTTPS web origins, `AUTH_ALLOW_INSECURE_HTTP=false`, `DEMO_SEED=false`, and `API_DOCS=false` unless Swagger exposure is intentional. Store secrets on Northflank; they are never build inputs. Readiness is `/health/ready`. Configure the documented P07-04 trusted proxy transport before routing browser login through Vercel; do not enable arbitrary forwarded-IP trust.
+API runtime settings now include `DATABASE_URL`, optional direct `DATABASE_URL_UNPOOLED`, `REDIS_URL`, a newly generated `AUTH_SECRET` of at least 32 bytes, `AUTH_ALLOWED_ORIGINS` listing exact HTTPS web origins, `AUTH_ALLOW_INSECURE_HTTP=false`, `DEMO_SEED=false`, and `API_DOCS=false` unless Swagger exposure is intentional. Store secrets on Northflank; they are never build inputs. Readiness is `/health/ready`. Configure web runtime `API_INTERNAL_URL` and `REALTIME_PUBLIC_URL` to the API HTTPS origin, with `WEB_ALLOWED_ORIGINS` listing exact web origins. Browser REST and refresh use the implemented same-origin Next proxy; realtime connects to the API. Forwarded client-IP headers remain untrusted.
 
 ## Readiness and recovery
 
@@ -75,7 +75,7 @@ Each provider wait is bounded to 15 minutes. If main changes mid-run, rerun on c
 
 ## Current limits and live acceptance
 
-The web remains a foundation page. The API now provides dependency-aware HTTP health, optional Swagger, signup/login and initial JWT sessions with startup migrations and opt-in local seed. The worker still exposes private TCP liveness and does not consume jobs. Refresh/logout are implemented; board and queue processing remain upcoming. These local acceptance results do not establish a verified hosted deployment.
+The local MVP includes login/refresh/logout, a permission-filtered tree, board/list/task editing, scoped configuration, realtime updates and durable activity processing. Both API and worker expose HTTP liveness/readiness; API startup runs migrations with opt-in demo seeding. P12-03 verifies the full suite and both Docker modes. These local results do not establish a verified hosted deployment.
 
 P00-14 records actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
 

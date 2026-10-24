@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "env": ["HOST", "PORT", "DATABASE_URL", "REDIS_URL", "NODE_ENV", "LOG_LEVEL"]
+    },
+    "dev:docker": {
+      "env": ["HOST", "PORT", "DATABASE_URL", "REDIS_URL", "NODE_ENV", "LOG_LEVEL", "TSC_WATCHFILE"]
+    }
+  }
+}
