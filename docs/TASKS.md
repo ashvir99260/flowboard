@@ -965,6 +965,27 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `test: enforce the shared component system`.
   - **Evidence:** [P13-03](evidence/P13-03.md).
 
+## Phase 14 — Reusable React Hook Form bindings and JSON fields
+
+- [x] **P14-01 — Typed shared form controls and JSON rendering**
+  - **Goal:** Reuse accessible controlled inputs with React Hook Form and caller-owned Zod validation; sign-in/sign-up demonstrate real integration.
+  - **Requirements:** R23, R69, R134, R135.
+  - **Files:** `packages/forms/**`, auth screen, UI input hint support, web manifest/lockfile, shared lint boundary rules/tests, architecture/plan/form-system docs and evidence.
+  - **Dependencies:** P13-03.
+  - **Acceptance:** Public controls take typed control/name props, forward change/blur/ref and errors, retain disabled values, support nested names and all existing field types. Strict JSON descriptors define presentation only; unsafe/duplicate paths, unknown widgets/properties and invalid options fail closed. Zod owns value validation, including transformed output. No API/router code in forms; no RHF in UI. Authentication keeps existing session/submission behavior.
+  - **Validation:** Red/green public form and boundary tests, auth browser regressions, root build/lint/test/type/format; G01–05/G10.
+  - **Commit:** `feat: add shared schema-driven form controls`.
+  - **Evidence:** [P14-01](evidence/P14-01.md).
+
+- [ ] **P14-02 — Adopt shared controls across product forms**
+  - **Goal:** Remove repeated form wiring from task, move and configuration inputs and expose a JSON-driven playground example.
+  - **Requirements:** R23, R69, R134, R135.
+  - **Files:** Web task/config/move forms, playground, related tests, form docs and evidence.
+  - **Dependencies:** P14-01.
+  - **Acceptance:** Existing schemas, defaults, mutation/dirty/conflict logic stay in web. Preserve numeric drafts, null/false/zero, required validation, unavailable options, server field paths, inherited/local labels, option-array stable IDs and focus after clearing/reorder. Dynamic JSON uses the same shared controls. No new data fetching or business validation in form package.
+  - **Validation:** Existing browser task/config/move/field journeys plus JSON example and regression checks; root build/lint/test/type/format; G01–05/G10.
+  - **Commit:** `refactor: adopt shared controls in product forms`.
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

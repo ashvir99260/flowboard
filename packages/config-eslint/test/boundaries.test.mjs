@@ -19,6 +19,7 @@ const names = [
   'packages/database',
   'packages/logger',
   'packages/ui',
+  'packages/forms',
   'packages/openapi',
   'packages/api-client',
 ];
@@ -215,3 +216,34 @@ for (const entry of [
       1,
     ));
 }
+
+for (const code of [
+  "import { useRouter } from 'next/navigation';",
+  "import { useQuery } from '@tanstack/react-query';",
+  "fetch('/v1/tasks');",
+  "import { client } from '@flowboard/api-client';",
+]) {
+  test(`forms reject app/data coordination: ${code}`, async () =>
+    assert.equal((await check('packages/forms/src/example.ts', code)).length, 1));
+}
+for (const [file, code] of [
+  ['apps/web/src/example.ts', "import { FormFields } from '@flowboard/forms';"],
+  ['packages/forms/src/example.ts', "import { FormField } from '@flowboard/ui';"],
+  ['packages/forms/src/example.ts', "import { useController } from 'react-hook-form';"],
+]) {
+  test(`forms boundary allows ${code}`, async () =>
+    assert.equal((await check(file, code)).length, 0));
+}
+test('UI cannot depend on forms', async () =>
+  assert.equal(
+    (await check('packages/ui/src/example.ts', "import { FormFields } from '@flowboard/forms';"))
+      .length,
+    1,
+  ));
+
+test('forms use UI instead of direct Material controls', async () =>
+  assert.equal(
+    (await check('packages/forms/src/example.ts', "import Button from '@mui/material/Button';"))
+      .length,
+    1,
+  ));

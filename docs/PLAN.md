@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** The local MVP is implemented and verified through P12-03, including a clean checkout and both Docker modes. Updated 25 October 2026. The P13 composable UI refinement is complete and verified. Hosted preview activation, first publication and future environment promotion remain separately tracked.
+**Status:** The local MVP is implemented and verified through P12-03, including a clean checkout and both Docker modes. Updated 25 October 2026. The P13 composable UI refinement is complete and verified. P14 adds reusable RHF bindings and JSON field presentation, first with auth and then product forms. Hosted preview activation, first publication and future environment promotion remain separately tracked.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
@@ -69,12 +69,13 @@ Feature source lives under `apps/api/src/modules/<feature>/` (D93). Auth and pla
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/api`                   | REST, authentication, permissions, orchestration, Socket.IO, outbox dispatch. Imports contracts, database and logger, never web/worker/client.                                        |
 | `apps/worker`                | BullMQ activity processing and explicit search stub. Imports contracts/database/logger, never another app.                                                                            |
-| `apps/web`                   | Routes, auth state, data hooks, board/list/drawer/config composition. Imports contracts/ui/api-client.                                                                                |
+| `apps/web`                   | Routes, auth state, data hooks, board/list/drawer/config composition. Imports contracts/ui/forms/api-client.                                                                          |
 | `packages/contracts`         | Zod schemas, inferred types, enums, errors, pagination, event schemas, pure resolution/validation. Only external runtime dependency is Zod; no framework or other workspace imports.  |
 | `packages/database`          | Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts and logger.                             |
 | `packages/logger`            | Pino-backed structured logs and Node async request context shared by API/database/worker; no framework or other workspace imports.                                                    |
 | `packages/openapi`           | Export, normalization, lint and drift checks for the API spec. Sole build-tool exception: imports API's exported spec bootstrap; never shipped into a browser/runtime API dependency. |
 | `packages/api-client`        | Committed `src/generated/**` from Hey API; separate handwritten `src/setup-client.ts`. Exports SDK, types, query/mutation options.                                                    |
+| `packages/forms`             | Typed React Hook Form controls and strict JSON presentation descriptors; depends on UI/contracts, with caller-owned Zod schemas and submission.                                       |
 | `packages/ui`                | MUI theme/provider and presentational components; only contracts and UI libraries. No network, auth, Prisma, or app imports.                                                          |
 | `packages/config-typescript` | Base, Node/Nest, Next, library compiler settings.                                                                                                                                     |
 | `packages/config-eslint`     | Flat config, import ordering, package boundaries and restricted imports.                                                                                                              |

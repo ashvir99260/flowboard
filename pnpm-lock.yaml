@@ -302,6 +302,9 @@ importers:
       '@flowboard/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@flowboard/forms':
+        specifier: workspace:*
+        version: link:../../packages/forms
       '@flowboard/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -677,6 +680,67 @@ importers:
       prettier:
         specifier: 3.9.10
         version: 3.9.10
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/forms:
+    dependencies:
+      '@flowboard/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@flowboard/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@hookform/resolvers':
+        specifier: 5.9.2
+        version: 5.9.2(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-errors@3.0.0(ajv@8.20.0))(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.20.0)(react-hook-form@7.90.0(@types/react@19.3.0)(react@19.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7)
+      react-hook-form:
+        specifier: 7.90.0
+        version: 7.90.0(@types/react@19.3.0)(react@19.3.1)
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@flowboard/config-eslint':
+        specifier: workspace:*
+        version: link:../config-eslint
+      '@flowboard/config-typescript':
+        specifier: workspace:*
+        version: link:../config-typescript
+      '@testing-library/dom':
+        specifier: 10.4.1
+        version: 10.4.1
+      '@testing-library/react':
+        specifier: 16.3.2
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: 22.20.5
+        version: 22.20.5
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: 9.39.5
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      jsdom:
+        specifier: 27.2.0
+        version: 27.2.0(supports-color@7.2.0)
+      next:
+        specifier: 16.4.2
+        version: 16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.64.1)(@types/node@22.20.5)(babel-plugin-macros@3.1.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      prettier:
+        specifier: 3.9.10
+        version: 3.9.10
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: 19.3.1
+        version: 19.3.1(react@19.3.1)
       typescript:
         specifier: 6.0.3
         version: 6.0.3
