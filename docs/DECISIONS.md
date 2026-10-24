@@ -287,3 +287,11 @@ The create DTO uses the constructor returned by `createZodDto` with a named Swag
 ## D109 — Test fixture cleanup owns anonymous volumes
 
 P04-03 reproduces Docker retaining anonymous database volumes after forced container removal. Test fixtures now explicitly remove volumes with their generated, fixture-owned containers. Cleanup regression tests capture mounts from those exact containers, require a successful volume inventory, and assert their IDs disappear. They never remove named development data or prune a global volume inventory. The user's one-time approval to clear unused build cache resolved the existing full-disk condition without deleting database volumes; it is not a general volume-cleanup policy.
+
+## D110 — Shared custom-field resolution and patch semantics
+
+P05-01 uses typed success/failure results for field resolution, matching status resolution. The nearest owner replaces the entire definition, including its ID, type, required flag, options and audit/source metadata. Empty schemas and empty select-option collections are allowed; option IDs must be unique and nonselect options must be empty. Resolved fields sort by position/key/ID and retain exact source metadata.
+
+`validateTaskFields` validates a complete proposed map without coercing values; `applyTaskFieldPatch` preserves omitted keys, removes explicit nulls, then validates the whole result. A source-only key can be cleared only if it exists as an own property in current values. Unknown newly supplied keys, including unknown null clears, reject. Option UUIDs compare canonically and successful patches store canonical IDs; required zero/false remain valid. Text preserves whitespace but required text cannot be blank. Map limits are 100 keys and 20,000 UTF-8 bytes of its canonical JSON representation.
+
+Keys are checked before record parsing because the parser otherwise discards `__proto__`; malformed keys fail without echoing unsafe content. Nested union errors retain multi-select indexes for form errors. The helpers remain pure and framework-free; database ownership checks and all HTTP/task operations stay in their planned modules.
