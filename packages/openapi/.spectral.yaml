@@ -32,10 +32,10 @@ rules:
       - field: content.application/json.schema.$ref
         function: pattern
         functionOptions:
-          match: 'ErrorResponseDto'
+          match: '^#/components/schemas/ErrorResponseDto_Output$'
   operation-operationId: error
   flowboard-list-cursor:
-    description: List operations expose a cursor query parameter.
+    description: Paginated list operations expose cursor/limit and a typed page envelope.
     severity: error
     given: $.paths.*.*
     then:
@@ -51,8 +51,81 @@ rules:
             required: [parameters]
             properties:
               parameters:
-                contains:
-                  required: [name, in]
-                  properties:
-                    name: { const: cursor }
-                    in: { const: query }
+                allOf:
+                  - contains:
+                      required: [name, in, schema]
+                      properties:
+                        name: { const: cursor }
+                        in: { const: query }
+                        schema:
+                          required: [type]
+                          properties:
+                            type: { const: string }
+                  - contains:
+                      required: [name, in, schema]
+                      properties:
+                        name: { const: limit }
+                        in: { const: query }
+                        schema:
+                          anyOf:
+                            - required: [type, minimum, maximum]
+                              properties:
+                                type: { const: integer }
+                                minimum: { type: number, minimum: 1 }
+                                maximum: { type: number, maximum: 100 }
+                            - required: [type, pattern]
+                              properties:
+                                type: { const: string }
+                                pattern: { const: '^(?:[1-9]\d?|100)$' }
+              responses:
+                required: ['200']
+                properties:
+                  '200':
+                    required: [content]
+                    properties:
+                      content:
+                        required: [application/json]
+                        properties:
+                          application/json:
+                            required: [schema]
+                            properties:
+                              schema:
+                                required: [type, required, properties]
+                                properties:
+                                  type: { const: object }
+                                  required:
+                                    allOf:
+                                      - contains: { const: items }
+                                      - contains: { const: pageInfo }
+                                  properties:
+                                    required: [items, pageInfo]
+                                    properties:
+                                      items:
+                                        required: [type, items]
+                                        properties:
+                                          type: { const: array }
+                                          items:
+                                            required: [type, properties]
+                                            properties:
+                                              type: { const: object }
+                                              properties: { type: object, minProperties: 1 }
+                                      pageInfo:
+                                        required: [type, required, properties]
+                                        properties:
+                                          type: { const: object }
+                                          required:
+                                            allOf:
+                                              - contains: { const: hasNextPage }
+                                              - contains: { const: nextCursor }
+                                          properties:
+                                            required: [hasNextPage, nextCursor]
+                                            properties:
+                                              hasNextPage:
+                                                required: [type]
+                                                properties:
+                                                  type: { const: boolean }
+                                              nextCursor:
+                                                required: [type, nullable]
+                                                properties:
+                                                  type: { const: string }
+                                                  nullable: { const: true }
