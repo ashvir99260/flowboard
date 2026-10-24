@@ -663,13 +663,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: expose scoped custom field schemas`.
   - **Completion evidence:** [P05-02 verification](evidence/P05-02.md): five typed endpoints, six-type/all-scope CRUD and safety/isolation tests; all 500 tests and standard/contract gates pass.
 
-- [ ] **P05-03 — Reject destructive field-schema changes**
+- [x] **P05-03 — Reject destructive field-schema changes**
   - **Goal:** Keep stored task values valid after ancestor/local configuration changes.
-  - **Files:** `apps/api/src/modules/fields/field-safety.service.ts`, field service/repositories, `apps/api/test/integration/field-safety.spec.mjs`.
+  - **Requirements:** R60, R61, R31, R32, R41, R42, R71.
+  - **Files:** `packages/database/test/field-safety.integration.test.mjs`, `apps/api/src/modules/fields/fields.integration.spec.mjs`, existing field service/repository only if tests expose a defect, task/matrix/evidence documentation.
   - **Dependencies:** P05-02.
   - **Acceptance:** Validate every affected live list/task transactionally, including workspace-root changes and the 100-effective-field cap. Shadowed definitions are evaluated from their final resolved schema. Block deletion of in-use effective definition, invalid option removal, incompatible type changes, required promotion with missing values, and invalid fallback exposed by deleting override. Document optional→populate→required workflow.
   - **Validation:** Each rejected mutation returns field paths and preserves definitions/tasks; zero/false do not falsely block required promotion; safe unused deletion succeeds. Endpoint DoD and standard gate.
-  - **Commit:** `fix: preserve task validity during field changes`.
+  - **Commit:** `test: guard destructive field schema changes`.
+  - **Completion evidence:** [P05-03 verification](evidence/P05-03.md): 18 added regression cases, including a real HTTP demotion race; all 518 tests and standard/contract gates pass.
 
 ## Phase 6 — Tasks and atomic moves
 

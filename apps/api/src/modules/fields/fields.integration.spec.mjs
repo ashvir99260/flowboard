@@ -1,4 +1,7 @@
-import { DemoAccounts, DemoPassword, seedDemoData } from '@flowboard/database';
+import { setTimeout } from 'node:timers/promises';
+
+import { createDatabase, DemoAccounts, DemoPassword, seedDemoData } from '@flowboard/database';
+import { createLogger } from '@flowboard/logger';
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import request from 'supertest';
 
@@ -7,10 +10,22 @@ import { AuthTestOrigin } from '../../../test/common/auth-fixtures.mjs';
 
 const id = (n) => `f1000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 let fixture;
+let onFieldWrite;
 const headers = {};
 const api = () => request(fixture.app.getHttpServer());
 beforeAll(async () => {
-  fixture = await startTestApplication({ auth: true });
+  fixture = await startTestApplication({
+    auth: true,
+    logger: createLogger({
+      service: 'api',
+      level: 'debug',
+      write: (line) => {
+        const event = JSON.parse(line);
+        if (event.event === 'operation.started' && event.operation === 'fields.write')
+          onFieldWrite?.();
+      },
+    }),
+  });
   await seedDemoData(fixture.infrastructure.databaseUrl);
   for (const account of DemoAccounts) {
     const response = await api()
@@ -300,4 +315,79 @@ test('compatible fallback and whole-definition shadows allow safe changes', asyn
     .send(definition('effort', after.configVersion, { type: 'checkbox' }));
   expect(badOverride.status).toBe(409);
   expect((await config()).configVersion).toBe(after.configVersion);
+});
+
+test('field writes recheck a demoted administrator inside the locked transaction', async () => {
+  const before = await config();
+  const promoted = await api()
+    .patch(`/v1/workspaces/${id(1)}/members/${id(103)}`)
+    .set(headers.Alice)
+    .send({ role: 'admin', expectedConfigVersion: before.configVersion });
+  expect(promoted.status).toBe(200);
+  const revision = promoted.body.configVersion;
+  const database = createDatabase(fixture.infrastructure.databaseUrl);
+  const context = { actorUserId: id(101), workspaceId: id(1) };
+  let release;
+  let signal;
+  const locked = new Promise((resolve) => {
+    signal = resolve;
+  });
+  const finish = new Promise((resolve) => {
+    release = resolve;
+  });
+  const transaction = database.write(context, async (store) => {
+    await store.memberships.update(id(101), { role: 'member', expectedConfigVersion: revision });
+    signal();
+    await finish;
+  });
+  let pending;
+  const lockTimeout = new AbortController();
+  try {
+    await Promise.race([
+      locked,
+      transaction.then(() => {
+        throw new Error('Lock transaction completed before signaling');
+      }),
+      setTimeout(5000, undefined, { signal: lockTimeout.signal }).then(() => {
+        throw new Error('Lock transaction did not become ready');
+      }),
+    ]);
+    lockTimeout.abort();
+    const began = new Promise((resolve) => {
+      onFieldWrite = resolve;
+    });
+    pending = api()
+      .post(scopeUrl('list', 221))
+      .set(headers.Alice)
+      .send(definition('after_demotion', revision))
+      .timeout({ deadline: 8000, response: 5000 })
+      .then((response) => response);
+    const timeout = new AbortController();
+    try {
+      await Promise.race([
+        began,
+        setTimeout(2000, undefined, { signal: timeout.signal }).then(() => {
+          throw new Error('Field writer did not reach the transaction boundary');
+        }),
+      ]);
+    } finally {
+      timeout.abort();
+    }
+    release();
+    await transaction;
+    const response = await pending;
+    expect(response.status).toBe(403);
+    expect(response.body.error.code).toBe('FORBIDDEN');
+    const local = await database.read({ actorUserId: id(103), workspaceId: id(1) }, (store) =>
+      store.fields.local({ ownerType: 'list', ownerId: id(221) }),
+    );
+    expect(local.items.some((item) => item.key === 'after_demotion')).toBe(false);
+    expect(local.configVersion).toBe(revision + 1);
+  } finally {
+    onFieldWrite = undefined;
+    lockTimeout.abort();
+    release();
+    await Promise.allSettled([transaction, pending].filter(Boolean));
+    await database.close();
+  }
 });
