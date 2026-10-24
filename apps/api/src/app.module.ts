@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { FieldsModule } from './modules/fields/fields.module.js';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module.js';
+import { OutboxModule } from './modules/outbox/outbox.module.js';
 import { PermissionsModule } from './modules/permissions/permissions.module.js';
 import { PlatformModule } from './modules/platform/platform.module.js';
 import { StatusesModule } from './modules/statuses/statuses.module.js';
@@ -12,6 +13,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module.js';
 import { SharedModule } from './shared/shared.module.js';
 
 import type { AuthRuntime } from './modules/auth/runtime.js';
+import type { OutboxRuntime } from './modules/outbox/outbox.runtime.js';
 import type { DependencyProbe } from './modules/platform/dependency-probe.js';
 import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
@@ -24,6 +26,7 @@ export class AppModule {
     auth?: AuthRuntime,
     logger: Logger = SilentLogger,
     database?: Database,
+    outbox?: OutboxRuntime,
   ): DynamicModule {
     const permissions = PermissionsModule.forRuntime(database, auth?.settings.secret, logger);
 
@@ -32,6 +35,7 @@ export class AppModule {
       imports: [
         SharedModule.forLogger(logger),
         PlatformModule.forProbe(probe),
+        OutboxModule.forRuntime(outbox),
         AuthModule.forRuntime(auth, logger),
         WorkspacesModule.forRuntime(
           database,

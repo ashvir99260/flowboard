@@ -142,6 +142,11 @@ test.each([
   ],
   ['negative event attempt', 'UPDATE outbox_events SET attempts = -1'],
   ['unleased processing', "UPDATE outbox_events SET state = 'processing'"],
+  ['unleased dispatching', "UPDATE outbox_events SET state = 'dispatching'"],
+  [
+    'queued with a lease',
+    "UPDATE outbox_events SET state = 'queued', lease_owner = 'dispatcher', lease_until = clock_timestamp() + INTERVAL '1 second'",
+  ],
   ['unpaired lease', "UPDATE outbox_events SET lease_owner = 'worker'"],
   ['incomplete delivery', "UPDATE outbox_events SET state = 'delivered'"],
   ['unexpected completion', 'UPDATE outbox_events SET completed_at = clock_timestamp()'],
