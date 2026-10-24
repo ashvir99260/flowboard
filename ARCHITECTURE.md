@@ -13,6 +13,8 @@ The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permis
 
 The [shared form system](docs/FORM_SYSTEM.md) defines the RHF/Zod bindings and safe JSON presentation boundary.
 
+The [color and size conventions](docs/STYLE_TOKENS.md) define HSL tokens, rem dimensions and the shared MUI spacing scale.
+
 The [composable UI system](docs/UI_COMPONENT_SYSTEM.md) defines the P13 styled-component and package-ownership refinement. The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
 [Workspace RBAC and DTO/entity design](docs/BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.

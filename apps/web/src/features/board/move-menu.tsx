@@ -61,7 +61,7 @@ export function MoveMenu({
     >
       <DialogTitle id={`${id}-title`}>Move task</DialogTitle>
       <DialogContent>
-        <Stack spacing={3} sx={{ pt: 1 }}>
+        <Stack spacing={1.2} sx={{ pt: 0.4 }}>
           <Typography sx={{ overflowWrap: 'anywhere' }}>{task.title}</Typography>
           {tree.state === 'error' && (
             <Alert severity="error" action={<Button onClick={tree.retry}>Retry</Button>}>

@@ -7,14 +7,14 @@ import { Typography } from '../primitives.js';
 import type { ReactNode } from 'react';
 
 const Root = styled('div', { name: 'FlowboardEmptyState', slot: 'Root' })(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(1.2),
   backgroundColor: (theme.vars ?? theme).palette.background.paper,
   border: `1px dashed ${(theme.vars ?? theme).palette.divider}`,
   borderRadius: theme.shape.borderRadius,
 }));
 const Title = styled(Typography)({ fontWeight: 600 }) as typeof Typography;
-const Description = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(1) }));
-const Action = styled('div')(({ theme }) => ({ marginTop: theme.spacing(2) }));
+const Description = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(0.4) }));
+const Action = styled('div')(({ theme }) => ({ marginTop: theme.spacing(0.8) }));
 
 export function EmptyState({
   action,

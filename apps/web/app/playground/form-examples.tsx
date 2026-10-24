@@ -64,11 +64,11 @@ function TaskFieldExample() {
   });
 
   return (
-    <Paper component="section" variant="outlined" sx={{ p: 6, minWidth: 0 }}>
+    <Paper component="section" variant="outlined" sx={{ p: 2.4, minWidth: 0 }}>
       <Typography component="h2" variant="h3">
         Task field form
       </Typography>
-      <Typography color="text.secondary" sx={{ my: 3 }}>
+      <Typography color="text.secondary" sx={{ my: 1.2 }}>
         Try zero, false, blank and invalid values. Preview uses the shared domain rules.
       </Typography>
       <Box
@@ -80,7 +80,7 @@ function TaskFieldExample() {
           if (result.success) setSaved(result.values);
         })}
       >
-        <Stack spacing={5}>
+        <Stack spacing={2}>
           {fields.map((definition) => (
             <ControlledField
               key={definition.key}
@@ -97,7 +97,7 @@ function TaskFieldExample() {
         </Stack>
       </Box>
       {saved && (
-        <Stack component="output" aria-label="Saved field values" spacing={2} sx={{ mt: 4 }}>
+        <Stack component="output" aria-label="Saved field values" spacing={0.8} sx={{ mt: 1.6 }}>
           {fields.map((field) => (
             <CustomFieldChip key={field.key} field={field} value={saved[field.key]} />
           ))}
@@ -124,11 +124,11 @@ function OptionEditorExample() {
   const { fields: rows, append, move, remove } = useFieldArray({ control, name: 'options' });
 
   return (
-    <Paper component="section" variant="outlined" sx={{ p: 6, minWidth: 0 }}>
+    <Paper component="section" variant="outlined" sx={{ p: 2.4, minWidth: 0 }}>
       <Typography component="h2" variant="h3">
         Option editor
       </Typography>
-      <Typography color="text.secondary" sx={{ my: 3 }}>
+      <Typography color="text.secondary" sx={{ my: 1.2 }}>
         Labels can change and rows can move. Each option keeps its original identity.
       </Typography>
       <Box
@@ -137,20 +137,20 @@ function OptionEditorExample() {
         noValidate
         onSubmit={handleSubmit(setSaved)}
       >
-        <Stack spacing={5}>
+        <Stack spacing={2}>
           {rows.map((row, index) => {
             return (
               <Box
                 key={row.id}
                 component="fieldset"
-                sx={{ m: 0, p: 3, border: '1px solid', borderColor: 'divider', minWidth: 0 }}
+                sx={{ m: 0, p: 1.2, border: '1px solid', borderColor: 'divider', minWidth: 0 }}
               >
                 <Typography component="legend">Option {index + 1}</Typography>
                 <ControlledField
                   control={control}
                   config={{ kind: 'text', name: `options.${index}.label`, label: 'Option label' }}
                 />
-                <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: 'wrap', mt: 2 }}>
+                <Stack direction="row" useFlexGap spacing={0.8} sx={{ flexWrap: 'wrap', mt: 0.8 }}>
                   <Button
                     type="button"
                     disabled={index === 0}
@@ -190,7 +190,7 @@ function OptionEditorExample() {
         </Stack>
       </Box>
       {saved && (
-        <Stack component="output" aria-label="Saved options" spacing={2} sx={{ mt: 4 }}>
+        <Stack component="output" aria-label="Saved options" spacing={0.8} sx={{ mt: 1.6 }}>
           {saved.options.map((option) => (
             <Box key={option.id}>
               <Typography>{option.label}</Typography>
@@ -218,7 +218,7 @@ function JsonFormExample() {
   const { control, handleSubmit } = useZodForm(JsonSchema, { defaultValues: { label: '' } });
 
   return (
-    <Paper component="section" variant="outlined" sx={{ p: 6, minWidth: 0 }}>
+    <Paper component="section" variant="outlined" sx={{ p: 2.4, minWidth: 0 }}>
       <Typography component="h2" variant="h3">
         JSON-driven form
       </Typography>
@@ -226,8 +226,8 @@ function JsonFormExample() {
         component="form"
         aria-label="JSON form example"
         noValidate
-        spacing={3}
-        sx={{ mt: 3 }}
+        spacing={1.2}
+        sx={{ mt: 1.2 }}
         onSubmit={handleSubmit((value) => setSaved(value.label))}
       >
         <FormFields control={control} fields={jsonFields} />

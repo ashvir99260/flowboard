@@ -132,7 +132,7 @@ Keep `packages/ui` free of network/session knowledge. It receives plain values, 
 
 Use official [MUI App Router integration](https://mui.com/material-ui/integrations/nextjs/) to collect streaming styles correctly. Pin compatible MUI/Next/Emotion versions during P08 and choose the documented matching cache-provider entry point; this document does not prescribe an unverified import version. ThemeProvider is the single public wrapper. Keep layout/server components on the server when possible; interactive session/query/form/drag areas are client boundaries.
 
-Proposed starting tokens (validate on rendered screens before finalizing):
+Historical P08 starting proposal (superseded by the implemented [component system](UI_COMPONENT_SYSTEM.md) and [HSL/rem conventions](STYLE_TOKENS.md); use those guides for new code):
 
 | Token group | Flowboard proposal                                                                                                       |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------ |

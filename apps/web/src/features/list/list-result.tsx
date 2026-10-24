@@ -44,8 +44,8 @@ export function ListResult({ view }: { view: ListView }) {
   const { result } = view;
   if (result.state !== 'ready')
     return (
-      <Stack direction="row" role="status" spacing={2}>
-        <CircularProgress aria-hidden="true" size={20} />
+      <Stack direction="row" role="status" spacing={0.8}>
+        <CircularProgress aria-hidden="true" size={'2rem'} />
         <Typography>Loading tasks…</Typography>
       </Stack>
     );

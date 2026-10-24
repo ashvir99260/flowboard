@@ -14,21 +14,21 @@ const Row = styled('div')(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
   '&[data-selected="true"]': { backgroundColor: (theme.vars ?? theme).palette.action.selected },
 }));
-const Toggle = styled(ButtonBase)({ minWidth: 44, minHeight: 44 });
+const Toggle = styled(ButtonBase)({ minWidth: '4.4rem', minHeight: '4.4rem' });
 const Select = styled(ButtonBase)(({ theme }) => ({
-  minHeight: 44,
-  padding: theme.spacing(2),
+  minHeight: '4.4rem',
+  padding: theme.spacing(0.8),
   textAlign: 'left',
   justifyContent: 'flex-start',
   flex: 1,
   minWidth: 0,
-  gap: theme.spacing(2),
+  gap: theme.spacing(0.8),
 }));
 const Icon = styled('span')(({ theme }) => ({
   color: (theme.vars ?? theme).palette.text.secondary,
 }));
 const Label = styled('span')({ overflowWrap: 'anywhere' });
-const Children = styled('ul')(({ theme }) => ({ paddingLeft: theme.spacing(4), margin: 0 }));
+const Children = styled('ul')(({ theme }) => ({ paddingLeft: theme.spacing(1.6), margin: 0 }));
 
 export function TreeItem({
   children,

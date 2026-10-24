@@ -12,8 +12,8 @@ const Panel = styled(Drawer, { name: 'FlowboardDrawer', slot: 'Root' })(({ theme
   '& .MuiDrawer-paper': {
     width: '100%',
     maxWidth: '100%',
-    padding: theme.spacing(3),
-    [theme.breakpoints.up('sm')]: { width: 560 },
+    padding: theme.spacing(1.2),
+    [theme.breakpoints.up('sm')]: { width: '56rem' },
   },
 }));
 
@@ -47,7 +47,7 @@ export function DrawerPanel({
         transition: { onEntered: () => close.current?.focus() },
       }}
     >
-      <Stack spacing={3}>
+      <Stack spacing={1.2}>
         <Toolbar.Root>
           <Typography component="h2" variant="h2" id={id}>
             {title}

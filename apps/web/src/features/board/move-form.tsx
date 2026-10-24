@@ -153,7 +153,7 @@ export function MoveForm({
       id={formId}
       noValidate
       onSubmit={(event) => void handleSubmit(save)(event)}
-      spacing={3}
+      spacing={1.2}
     >
       {message && <Alert severity="error">{message}</Alert>}
       <FormFields

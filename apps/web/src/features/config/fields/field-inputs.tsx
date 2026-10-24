@@ -27,7 +27,7 @@ export function FieldInputs({
   const { fields: rows, append, move, remove } = useFieldArray({ control, name: 'options' });
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={1.2}>
       <FormFields
         control={control}
         disabled={busy}
@@ -70,7 +70,7 @@ export function FieldInputs({
         existing task values.
       </Typography>
       {['single_select', 'multi_select'].includes(type) && (
-        <Stack component="section" aria-label="Field options" spacing={3}>
+        <Stack component="section" aria-label="Field options" spacing={1.2}>
           <Typography component="h3" variant="h3">
             Options
           </Typography>
@@ -79,10 +79,10 @@ export function FieldInputs({
               <Box
                 component="fieldset"
                 key={row.id}
-                sx={{ m: 0, p: 3, minWidth: 0, border: '1px solid', borderColor: 'divider' }}
+                sx={{ m: 0, p: 1.2, minWidth: 0, border: '1px solid', borderColor: 'divider' }}
               >
                 <Typography component="legend">Option {index + 1}</Typography>
-                <Stack spacing={2}>
+                <Stack spacing={0.8}>
                   <FormFields
                     control={control}
                     disabled={busy}
@@ -107,7 +107,7 @@ export function FieldInputs({
                       {errors.options[index]?.id?.message}
                     </Typography>
                   )}
-                  <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: 'wrap' }}>
+                  <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
                     <Button
                       type="button"
                       disabled={busy || index === 0}

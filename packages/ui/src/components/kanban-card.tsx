@@ -13,11 +13,11 @@ import type { Task } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
 const Card = styled(Paper, { name: 'FlowboardKanbanCard', slot: 'Root' })(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(1.2),
   minWidth: 0,
 })) as typeof Paper;
 const OpenTitle = styled(ButtonBase)(({ theme }) => ({
-  minHeight: 44,
+  minHeight: '4.4rem',
   width: '100%',
   justifyContent: 'flex-start',
   textAlign: 'left',
@@ -26,17 +26,17 @@ const OpenTitle = styled(ButtonBase)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
 }));
 const Title = styled(Typography)({
-  minHeight: 44,
+  minHeight: '4.4rem',
   fontWeight: 600,
   overflowWrap: 'anywhere',
 }) as typeof Typography;
 const Summary = styled(Stack)(({ theme }) => ({
   flexWrap: 'wrap',
   alignItems: 'center',
-  marginBlock: theme.spacing(2),
+  marginBlock: theme.spacing(0.8),
 }));
-const Metadata = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(2), minWidth: 0 }));
-const Actions = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(2), flexWrap: 'wrap' }));
+const Metadata = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(0.8), minWidth: 0 }));
+const Actions = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(0.8), flexWrap: 'wrap' }));
 
 export function KanbanCard({
   actions,
@@ -61,14 +61,14 @@ export function KanbanCard({
           {task.title}
         </Title>
       )}
-      <Summary direction="row" useFlexGap spacing={2}>
+      <Summary direction="row" useFlexGap spacing={0.8}>
         <PriorityBadge priority={task.priority} />
         <DueDateLabel date={task.dueDate} />
       </Summary>
       <AssigneeAvatarGroup assignees={task.assignees} />
       {metadata && <Metadata>{metadata}</Metadata>}
       {actions && (
-        <Actions direction="row" spacing={2} useFlexGap>
+        <Actions direction="row" spacing={0.8} useFlexGap>
           {actions}
         </Actions>
       )}

@@ -20,7 +20,7 @@ export function FieldPreview({
   values: Readonly<Record<string, FieldValue | null>>;
 }) {
   return (
-    <Stack component="section" aria-label={label} spacing={3}>
+    <Stack component="section" aria-label={label} spacing={1.2}>
       <Typography component="h2" variant="h3">
         {label}
       </Typography>

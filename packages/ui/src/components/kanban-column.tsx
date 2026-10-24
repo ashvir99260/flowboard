@@ -10,7 +10,7 @@ import type { ResolvedStatus } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
 const Column = styled(Paper, { name: 'FlowboardKanbanColumn', slot: 'Root' })(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(1.2),
   minWidth: 0,
   width: '100%',
 })) as typeof Paper;
@@ -18,10 +18,10 @@ const Header = styled(Stack)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   flexWrap: 'wrap',
-  marginBottom: theme.spacing(3),
+  marginBottom: theme.spacing(1.2),
 }));
 const Summary = styled(Box)({ minWidth: 0 });
-const Count = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(1) }));
+const Count = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(0.4) }));
 
 export function KanbanColumn({
   action,
@@ -36,7 +36,7 @@ export function KanbanColumn({
 }>) {
   return (
     <Column component="section" aria-label={`${status.name} column`} variant="outlined">
-      <Header direction="row" useFlexGap spacing={2}>
+      <Header direction="row" useFlexGap spacing={0.8}>
         <Summary>
           <StatusChip status={status} />
           <Count color="text.secondary" variant="body2">
@@ -45,7 +45,7 @@ export function KanbanColumn({
         </Summary>
         {action}
       </Header>
-      <Stack spacing={3}>{children}</Stack>
+      <Stack spacing={1.2}>{children}</Stack>
     </Column>
   );
 }

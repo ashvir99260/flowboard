@@ -11,14 +11,14 @@ export function InteractionExamples() {
   const [notice, setNotice] = useState('');
 
   return (
-    <Paper component="section" variant="outlined" sx={{ p: 6, minWidth: 0 }}>
+    <Paper component="section" variant="outlined" sx={{ p: 2.4, minWidth: 0 }}>
       <Typography component="h2" variant="h3">
         Tree, card and confirmation
       </Typography>
-      <Typography color="text.secondary" sx={{ my: 3 }}>
+      <Typography color="text.secondary" sx={{ my: 1.2 }}>
         Keyboard controls change this local preview only.
       </Typography>
-      <Stack spacing={5}>
+      <Stack spacing={2}>
         <Box component="ul" aria-label="Example navigation" sx={{ p: 0, m: 0 }}>
           <TreeItem
             name="Example space"

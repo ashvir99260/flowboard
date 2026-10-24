@@ -84,7 +84,7 @@ function FieldFilter({
       noValidate
       onSubmit={handleSubmit((draft) => onChange(filterQuery(query, draft, fields)))}
       direction={{ xs: 'column', md: 'row' }}
-      spacing={2}
+      spacing={0.8}
       sx={{ alignItems: { md: 'flex-start' } }}
     >
       <Controller
@@ -176,8 +176,8 @@ export function ListToolbar({
   query: TaskTableQuery;
 }) {
   return (
-    <Stack aria-busy={pending} spacing={3}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+    <Stack aria-busy={pending} spacing={1.2}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={0.8}>
         <FormField
           label="Sort by"
           value={query.sort}

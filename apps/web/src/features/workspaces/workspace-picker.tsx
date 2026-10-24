@@ -58,8 +58,8 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
   }, [hasNextPage, isFetching, isError, invalid, fetchNextPage]);
 
   return (
-    <Box component="main" sx={{ maxWidth: 760, mx: 'auto', p: { xs: 4, md: 8 } }}>
-      <Toolbar.Root style={{ marginBottom: 24 }}>
+    <Box component="main" sx={{ maxWidth: '76rem', mx: 'auto', p: { xs: 1.6, md: 3.2 } }}>
+      <Toolbar.Root style={{ marginBottom: '2.4rem' }}>
         <Typography component="h1" variant="h1">
           Choose a workspace
         </Typography>
@@ -90,13 +90,13 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
           title="No workspace memberships"
         />
       ) : (
-        <Stack spacing={3}>
+        <Stack spacing={1.2}>
           {items.map((workspace) => (
             <Surface.Root key={workspace.id}>
               <Button
                 disabled={changing}
                 fullWidth
-                sx={{ justifyContent: 'space-between', p: 5 }}
+                sx={{ justifyContent: 'space-between', p: 2 }}
                 onClick={async () => {
                   setChanging(true);
                   setError(null);

@@ -53,3 +53,5 @@ export { LoadingState } from './components/loading-state.js';
 export { WorkspaceLayout } from './components/workspace-layout.js';
 
 export { BoardDropzone, BoardGrid, BoardItem, BoardViewport } from './components/board-layout.js';
+
+export { toHslColor } from './color.js';

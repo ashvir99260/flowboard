@@ -8,13 +8,13 @@ const Content = styled('section', { name: 'FlowboardMarkdown', slot: 'Root' })((
   '& pre': {
     overflowX: 'auto',
     backgroundColor: (theme.vars ?? theme).palette.action.hover,
-    padding: theme.spacing(2),
+    padding: theme.spacing(0.8),
   },
   '& a': { color: (theme.vars ?? theme).palette.primary.main },
   '& img': { maxWidth: '100%' },
   '& blockquote': {
     borderLeft: `3px solid ${(theme.vars ?? theme).palette.divider}`,
-    paddingLeft: theme.spacing(2),
+    paddingLeft: theme.spacing(0.8),
     marginLeft: 0,
   },
 }));

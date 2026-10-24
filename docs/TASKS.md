@@ -987,6 +987,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: adopt shared controls in product forms`.
   - **Evidence:** [P14-02](evidence/P14-02.md).
 
+## Phase 15 — HSL and rem design scale
+
+- [x] **P15-01 — Adopt HSL colors and a ten-pixel rem scale**
+  - **Goal:** Make authored presentation use HSL and rem, with MUI spacing(1) = 1rem (10px at normal browser defaults), preserving current appearance and user font preferences.
+  - **Requirements:** R23, R69, R70, R134, R136.
+  - **Files:** UI tokens/theme/components, forms/web layout spacing, theme/browser tests, style guide/agent rules and evidence.
+  - **Dependencies:** P14-02.
+  - **Acceptance:** Root62.5% and MUI htmlFontSize10 agree; 16px =1.6rem; spacing supports fractions, negative values and auto. Existing geometry/colors remain equivalent. Borders/radii stay px; other authored lengths use rem. Runtime contract colors convert at display only. Browser font20 scales body/controls and responsive breakpoints. No API/DB color-format changes.
+  - **Validation:** Red/green theme and browser geometry/font tests, existing contrast/responsiveness/interaction checks, root build/lint/test/type/format; G01–05/G09/G10.
+  - **Commit:** `refactor: adopt hsl and rem design tokens`.
+  - **Evidence:** [P15-01](evidence/P15-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

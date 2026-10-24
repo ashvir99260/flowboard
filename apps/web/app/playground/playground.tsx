@@ -55,11 +55,11 @@ function Section({
   title,
 }: Readonly<{ children: ReactNode; description: string; title: string }>) {
   return (
-    <Paper component="section" variant="outlined" sx={{ p: 6, minWidth: 0, borderRadius: 2 }}>
+    <Paper component="section" variant="outlined" sx={{ p: 2.4, minWidth: 0, borderRadius: 2 }}>
       <Typography component="h2" variant="h3">
         {title}
       </Typography>
-      <Typography color="text.secondary" variant="body2" sx={{ mt: 1, mb: 5 }}>
+      <Typography color="text.secondary" variant="body2" sx={{ mt: 0.4, mb: 2 }}>
         {description}
       </Typography>
       {children}
@@ -72,21 +72,21 @@ export function Playground() {
   const [notice, setNotice] = useState('');
 
   return (
-    <Box component="main" sx={{ maxWidth: 1120, mx: 'auto', p: { xs: 4, md: 8 } }}>
+    <Box component="main" sx={{ maxWidth: '112rem', mx: 'auto', p: { xs: 1.6, md: 3.2 } }}>
       <Stack
         direction="row"
         useFlexGap
-        spacing={4}
-        sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', mb: 8 }}
+        spacing={1.6}
+        sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', mb: 3.2 }}
       >
         <Box>
-          <Typography variant="body2" color="primary" sx={{ fontWeight: 650, mb: 2 }}>
+          <Typography variant="body2" color="primary" sx={{ fontWeight: 650, mb: 0.8 }}>
             FLOWBOARD / UI LIBRARY
           </Typography>
           <Typography component="h1" variant="h1">
             Component playground
           </Typography>
-          <Typography color="text.secondary" sx={{ mt: 2 }}>
+          <Typography color="text.secondary" sx={{ mt: 0.8 }}>
             Development only. Sample props, no API data.
           </Typography>
         </Box>
@@ -98,10 +98,10 @@ export function Playground() {
             if (value) setMode(value);
           }}
         >
-          <ToggleButton value="light" aria-label="Light theme" sx={{ minHeight: 44 }}>
+          <ToggleButton value="light" aria-label="Light theme" sx={{ minHeight: '4.4rem' }}>
             Light
           </ToggleButton>
-          <ToggleButton value="dark" aria-label="Dark theme" sx={{ minHeight: 44 }}>
+          <ToggleButton value="dark" aria-label="Dark theme" sx={{ minHeight: '4.4rem' }}>
             Dark
           </ToggleButton>
         </ToggleButtonGroup>
@@ -110,7 +110,7 @@ export function Playground() {
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))' },
-          gap: 5,
+          gap: 2,
         }}
       >
         <Section
@@ -123,7 +123,7 @@ export function Playground() {
           title="Status"
           description="Names and categories remain readable with any accent color."
         >
-          <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: 'wrap' }}>
+          <Stack direction="row" useFlexGap spacing={0.8} sx={{ flexWrap: 'wrap' }}>
             <StatusChip status={{ name: 'Backlog', category: 'not_started', color: '#FFFFFF' }} />
             <StatusChip status={{ name: 'In progress', category: 'active', color: '#245CC5' }} />
             <StatusChip status={{ name: 'Complete', category: 'done', color: '#146C43' }} />
@@ -147,7 +147,7 @@ export function Playground() {
           title="Priority"
           description="All five levels have a text label as well as a color cue."
         >
-          <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: 'wrap' }}>
+          <Stack direction="row" useFlexGap spacing={0.8} sx={{ flexWrap: 'wrap' }}>
             {(['urgent', 'high', 'normal', 'low', 'none'] as const).map((priority) => (
               <PriorityBadge key={priority} priority={priority} />
             ))}
@@ -157,13 +157,13 @@ export function Playground() {
           title="Assignees"
           description="The full team remains accessible when avatars overflow."
         >
-          <Stack spacing={4} sx={{ alignItems: 'flex-start' }}>
+          <Stack spacing={1.6} sx={{ alignItems: 'flex-start' }}>
             <AssigneeAvatarGroup assignees={assignees} />
             <AssigneeAvatarGroup assignees={[]} />
           </Stack>
         </Section>
         <Section description="Calendar days stay stable across time zones." title="Due dates">
-          <Stack spacing={3}>
+          <Stack spacing={1.2}>
             <DueDateLabel date="2026-01-01" />
             <DueDateLabel date="2024-02-29" overdue />
             <DueDateLabel date={null} />
@@ -173,7 +173,7 @@ export function Playground() {
           title="Custom fields"
           description="Six field types, including meaningful zero and false values."
         >
-          <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: 'wrap' }}>
+          <Stack direction="row" useFlexGap spacing={0.8} sx={{ flexWrap: 'wrap' }}>
             {fields.map((props) => (
               <CustomFieldChip key={props.field.name} {...props} />
             ))}
@@ -183,7 +183,7 @@ export function Playground() {
           title="Empty and error states"
           description="A clear explanation and an accessible next action."
         >
-          <Stack spacing={4}>
+          <Stack spacing={1.6}>
             <EmptyState
               title="No tasks yet"
               description="Your next idea can start here."

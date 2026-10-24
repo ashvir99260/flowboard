@@ -46,7 +46,7 @@ export function StatusFields({
   ];
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={1.2}>
       {defining ? (
         <FormFields
           control={control}

@@ -74,7 +74,7 @@ function SelectedList({
   const list = parsed.data.data;
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={1.6}>
       <Typography component="h1" variant="h1" sx={{ overflowWrap: 'anywhere' }}>
         {list.name}
       </Typography>
@@ -83,7 +83,7 @@ function SelectedList({
       </Typography>
       <Box component="dl" sx={{ m: 0 }}>
         <Typography component="dt">Created</Typography>
-        <Typography component="dd" sx={{ m: 0, mb: 3 }}>
+        <Typography component="dd" sx={{ m: 0, mb: 1.2 }}>
           {new Date(list.createdAt).toLocaleDateString()}
         </Typography>
         <Typography component="dt">Last updated</Typography>
@@ -188,7 +188,7 @@ function VerifiedWorkspace({
         onClose={() => setOpen(false)}
         navigation={
           <>
-            <Typography variant="h3" component="h2" sx={{ p: 2, overflowWrap: 'anywhere' }}>
+            <Typography variant="h3" component="h2" sx={{ p: 0.8, overflowWrap: 'anywhere' }}>
               {activeWorkspace.name}
             </Typography>
             <Button component={NextLink} href="/workspaces">
@@ -212,15 +212,15 @@ function VerifiedWorkspace({
                 </Button>
               </>
             )}
-            <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: 1.2 }} />
             <Sidebar
               runtime={runtime}
               scope={scope}
               selectedId={listId}
               onSelect={() => setOpen(false)}
             />
-            <Box sx={{ mt: 'auto', pt: 6 }}>
-              <Typography variant="body2" sx={{ px: 2, overflowWrap: 'anywhere' }}>
+            <Box sx={{ mt: 'auto', pt: 2.4 }}>
+              <Typography variant="body2" sx={{ px: 0.8, overflowWrap: 'anywhere' }}>
                 {user.name}
               </Typography>
               <Button
@@ -270,7 +270,7 @@ export function WorkspaceShell({
 
   if (error)
     return (
-      <Box component="main" sx={{ p: 6 }}>
+      <Box component="main" sx={{ p: 2.4 }}>
         <ErrorState
           title="Workspace unavailable"
           description={error}

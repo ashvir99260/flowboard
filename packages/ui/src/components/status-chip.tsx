@@ -2,15 +2,16 @@
 
 import { styled } from '@mui/material/styles';
 
+import { toHslColor } from '../color.js';
 import { Chip } from '../primitives.js';
 
 import type { ResolvedStatus, StatusCategory } from '@flowboard/contracts';
 
 const Dot = styled('span', { name: 'FlowboardStatus', slot: 'Dot' })(({ theme }) => ({
   border: `1px solid ${(theme.vars ?? theme).palette.text.secondary}`,
-  borderRadius: '50%',
-  height: 8,
-  width: 8,
+  borderRadius: '999px',
+  height: '0.8rem',
+  width: '0.8rem',
 }));
 
 const categories: Record<StatusCategory, string> = {
@@ -27,7 +28,7 @@ export function StatusChip({
 
   return (
     <Chip
-      icon={<Dot aria-hidden="true" style={{ backgroundColor: status.color }} />}
+      icon={<Dot aria-hidden="true" style={{ backgroundColor: toHslColor(status.color) }} />}
       label={label}
       size="small"
       title={label}

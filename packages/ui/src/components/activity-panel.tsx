@@ -12,8 +12,8 @@ import type { ReactNode } from 'react';
 
 const Entries = styled('ol')(({ theme }) => ({
   margin: 0,
-  paddingLeft: theme.spacing(2.5),
-  '& li + li': { marginTop: theme.spacing(2) },
+  paddingLeft: theme.spacing(1),
+  '& li + li': { marginTop: theme.spacing(0.8) },
 }));
 const Entry = styled('li')({ overflowWrap: 'anywhere' });
 
@@ -24,7 +24,7 @@ export function ActivityPanel({
   const id = useId();
 
   return (
-    <Stack component="section" aria-labelledby={id} spacing={2}>
+    <Stack component="section" aria-labelledby={id} spacing={0.8}>
       <Toolbar.Root>
         <Typography component="h3" variant="h3" id={id}>
           Activity

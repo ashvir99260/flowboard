@@ -70,7 +70,7 @@ function LoginForm({ runtime }: { runtime: ClientRuntime }) {
           }
         })}
       >
-        <Stack spacing={5}>
+        <Stack spacing={2}>
           {error && <Alert severity="error">{error}</Alert>}
           <FormFields control={control} fields={loginFields} disabled={isSubmitting} />
           <Button type="submit" variant="contained" disabled={isSubmitting}>
@@ -109,7 +109,7 @@ function SignupForm({ runtime }: { runtime: ClientRuntime }) {
           }
         })}
       >
-        <Stack spacing={5}>
+        <Stack spacing={2}>
           {error && <Alert severity="error">{error}</Alert>}
           <FormFields control={control} fields={signupFields} disabled={isSubmitting} />
           <Button type="submit" variant="contained" disabled={isSubmitting}>
