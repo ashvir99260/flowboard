@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { chromium, expect } from '@playwright/test';
@@ -40,6 +39,17 @@ test(
     await expect(feed.getByRole('listitem')).toHaveCount(2, { timeout: 15000 });
     await expect(drawer.getByLabel(/^Title/)).toHaveValue('Preserved activity draft');
     await page.setViewportSize({ height: 900, width: 320 });
-    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    const bounds = () =>
+      page.evaluate(() => ({ width: document.documentElement.scrollWidth, viewport: innerWidth }));
+    const initial = await bounds();
+    // The shell switches its MUI media-query layout after the browser resize event.
+    await expect
+      .poll(async () => {
+        const { width, viewport } = await bounds();
+
+        return width <= viewport;
+      })
+      .toBe(true);
+    t.diagnostic(`Responsive layout: ${JSON.stringify({ initial, settled: await bounds() })}`);
   },
 );

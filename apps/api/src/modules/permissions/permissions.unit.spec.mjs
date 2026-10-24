@@ -1,8 +1,30 @@
 import { SilentLogger } from '@flowboard/logger';
-import { expect, test } from '@jest/globals';
+import { expect, jest, test } from '@jest/globals';
+import { Reflector } from '@nestjs/core';
 
 import { CursorCodec } from '../../../dist/core/common/cursor.js';
+import { PermissionGuard } from '../../../dist/modules/permissions/permission.guard.js';
 import { PermissionService } from '../../../dist/modules/permissions/permission.service.js';
+
+test.each(['before', 'during'])(
+  'socket permission checks stop when disconnected %s their read',
+  async (phase) => {
+    const socket = { connected: phase !== 'before', identity: { user: { id: 'fixture' } } };
+    const authorizeList = jest.fn(async () => {
+      socket.connected = false;
+    });
+    const guard = new PermissionGuard(new Reflector(), { authorizeList });
+    const context = {
+      getType: () => 'ws',
+      switchToWs: () => ({
+        getClient: () => socket,
+        getData: () => ({ listId: 'f1000000-0000-4000-8000-000000000221' }),
+      }),
+    };
+    await expect(guard.canActivate(context)).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
+    expect(authorizeList).toHaveBeenCalledTimes(phase === 'before' ? 0 : 1);
+  },
+);
 
 test('tree continuation rejects a data-only revision change even when configuration is unchanged', async () => {
   const id = (n) => `10000000-0000-4000-8000-${String(n).padStart(12, '0')}`;

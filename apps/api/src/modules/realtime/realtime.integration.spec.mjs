@@ -1,5 +1,5 @@
 import { once } from 'node:events';
-import { setTimeout } from 'node:timers/promises';
+import { setImmediate, setTimeout } from 'node:timers/promises';
 import { TextEncoder } from 'node:util';
 
 import { EventChannelName } from '@flowboard/contracts';
@@ -11,7 +11,7 @@ import {
   initializeDatabase,
   seedDemoData,
 } from '@flowboard/database';
-import { afterAll, beforeAll, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, expect, jest, test } from '@jest/globals';
 import { Redis } from 'ioredis';
 import { SignJWT } from 'jose';
 import { io } from 'socket.io-client';
@@ -19,8 +19,12 @@ import request from 'supertest';
 
 import { createApplication } from '../../../dist/application.js';
 import { readAuthSettings } from '../../../dist/modules/auth/auth.config.js';
+import { AuthService } from '../../../dist/modules/auth/auth.service.js';
 import { createAuthRuntime } from '../../../dist/modules/auth/runtime.js';
+import { PermissionService } from '../../../dist/modules/permissions/permission.service.js';
 import { runtimeProbe } from '../../../dist/modules/platform/dependency-probe.js';
+import { RealtimeService } from '../../../dist/modules/realtime/realtime.service.js';
+import { WorkspacesRuntimeKey } from '../../../dist/modules/workspaces/workspaces.runtime.js';
 import {
   AuthTestOrigin,
   AuthTestSecret,
@@ -429,3 +433,68 @@ test('concurrent subscription packets cannot exceed the per-socket limit', async
   expect(rejected).toBe(1);
   socket.disconnect();
 });
+
+test('shutdown drains a pending recheck before closing its database and starts no late permission read', async () => {
+  const socket = await connect('Alice');
+  expect(await subscribe(socket, id(221))).toEqual({ ok: true });
+  const { app } = apps.shift();
+  const service = app.get(RealtimeService);
+  const auth = app.get(AuthService);
+  const permissions = app.get(PermissionService);
+  const runtime = app.get(WorkspacesRuntimeKey);
+  const originalDatabase = runtime.database;
+  const closeDatabase = jest.fn(() => originalDatabase.close());
+  runtime.database = { ...originalDatabase, close: closeDatabase };
+  const authenticate = auth.authenticateAccess.bind(auth);
+  const authorize = permissions.authorizeList.bind(permissions);
+  let release;
+  let entered;
+  let stopping = false;
+  let lateReads = 0;
+  let closed = false;
+  let closing;
+  const gate = new Promise((resolve) => (release = resolve));
+  const ready = new Promise((resolve) => (entered = resolve));
+  const authentication = jest
+    .spyOn(auth, 'authenticateAccess')
+    .mockImplementation(async (token) => {
+      const result = await authenticate(token);
+      entered();
+      await gate;
+
+      return result;
+    });
+  const authorization = jest
+    .spyOn(permissions, 'authorizeList')
+    .mockImplementation(async (...args) => {
+      if (stopping) {
+        lateReads++;
+
+        return;
+      }
+
+      return authorize(...args);
+    });
+  try {
+    await ready;
+    stopping = true;
+    closing = app.close().then(() => {
+      closed = true;
+    });
+    await until(() => !service.isReady());
+    await setImmediate();
+    expect(closeDatabase).not.toHaveBeenCalled();
+    expect(closed).toBe(false);
+    release();
+    await closing;
+    expect(closeDatabase).toHaveBeenCalledTimes(1);
+    expect(lateReads).toBe(0);
+  } finally {
+    release();
+    await (closing ?? app.close());
+    await until(() => !service.checking);
+    authentication.mockRestore();
+    authorization.mockRestore();
+    socket.disconnect();
+  }
+}, 15000);
