@@ -45,6 +45,14 @@ export const theme = createTheme({
   spacing: 4,
   shape: { borderRadius: 6 },
   components: {
+    MuiOutlinedInput: {
+      styleOverrides: { notchedOutline: { borderColor: 'var(--mui-palette-text-secondary)' } },
+    },
+    MuiInput: {
+      styleOverrides: {
+        root: { '&::before': { borderBottomColor: 'var(--mui-palette-text-secondary)' } },
+      },
+    },
     MuiButtonBase: {
       defaultProps: { disableRipple: true },
       styleOverrides: {
