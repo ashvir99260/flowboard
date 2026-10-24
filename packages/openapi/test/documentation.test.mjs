@@ -14,7 +14,7 @@ const hasExample = (schema) =>
   Object.hasOwn(schema, 'example') || Object.hasOwn(schema, 'examples');
 
 test('every Swagger operation and payload has a description and example', () => {
-  assert.equal(operations.length, 24);
+  assert.equal(operations.length, 29);
   for (const operation of operations) {
     meaningful(operation.summary, `${operation.operationId} summary`);
     meaningful(operation.description, `${operation.operationId} description`);
@@ -98,12 +98,15 @@ test('documented success responses retain their concrete DTO schemas', () => {
     acceptWorkspaceInvitation: 'AcceptedInvitationResponseDto_Output',
     addWorkspaceMember: 'MemberMutationResponseDto_Output',
     createNode: 'NodeResponseDto_Output',
+    createScopeStatus: 'ScopeStatusMutationResponseDto_Output',
     createWorkspaceInvitation: 'InvitationResponseDto_Output',
     getCurrentUser: 'CurrentUserResponseDto_Output',
+    getListResolvedStatuses: 'ResolvedStatusResponseDto_Output',
     getLiveness: 'LivenessResponseDto_Output',
     getNode: 'NodeResponseDto_Output',
     getReadiness: 'ReadinessResponseDto_Output',
     listNodeGrants: 'GrantPageResponseDto_Output',
+    listScopeStatuses: 'ScopeStatusResponseDto_Output',
     listVisibleTree: 'TreePageResponseDto_Output',
     listWorkspaceMembers: 'MemberPageResponseDto_Output',
     listWorkspaces: 'WorkspacePageResponseDto_Output',
@@ -113,25 +116,58 @@ test('documented success responses retain their concrete DTO schemas', () => {
     signUp: 'SessionResponseDto_Output',
     switchWorkspace: 'SessionResponseDto_Output',
     updateNode: 'NodeResponseDto_Output',
+    updateScopeStatus: 'ScopeStatusMutationResponseDto_Output',
     updateWorkspaceMember: 'MemberMutationResponseDto_Output',
     upsertNodeGrant: 'GrantResponseDto_Output',
   };
   for (const operation of operations.filter(
     (item) =>
-      !['logOut', 'removeWorkspaceMember', 'archiveNode', 'removeNodeGrant'].includes(
-        item.operationId,
-      ),
+      ![
+        'logOut',
+        'removeWorkspaceMember',
+        'archiveNode',
+        'removeNodeGrant',
+        'removeScopeStatus',
+      ].includes(item.operationId),
   )) {
     const response =
       operation.responses[
-        ['signUp', 'addWorkspaceMember', 'createWorkspaceInvitation', 'createNode'].includes(
-          operation.operationId,
-        )
+        [
+          'signUp',
+          'addWorkspaceMember',
+          'createWorkspaceInvitation',
+          'createNode',
+          'createScopeStatus',
+        ].includes(operation.operationId)
           ? '201'
           : '200'
       ];
     const name = expected[operation.operationId];
     assert.equal(response.content['application/json'].schema.$ref, `#/components/schemas/${name}`);
     assert.ok(document.components.schemas[name], `${name} exists`);
+  }
+});
+
+test('status visibility remains a nullable boolean in every generated request and response', () => {
+  const schemas = document.components.schemas;
+  const hidden = [
+    schemas.CreateScopeStatusDto.oneOf[1].properties.hidden,
+    schemas.UpdateScopeStatusDto.properties.hidden,
+    schemas.ScopeStatusMutationResponseDto_Output.properties.data.properties.override.properties
+      .hidden,
+    schemas.ScopeStatusResponseDto_Output.properties.items.items.properties.override.properties
+      .hidden,
+  ];
+  for (const field of hidden) {
+    assert.equal(field.type, 'boolean');
+    assert.equal(field.nullable, true);
+    assert.equal(field.items, undefined);
+  }
+});
+
+test('published color patterns accept the uppercase colors returned by seeded lists', () => {
+  const color = document.components.schemas.CreateScopeStatusDto.oneOf[0].properties.color;
+  for (const value of ['#D97706', '#64748B', '#334455']) {
+    assert.match(value, new RegExp(color.pattern));
   }
 });

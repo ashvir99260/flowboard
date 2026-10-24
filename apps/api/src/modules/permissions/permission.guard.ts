@@ -1,4 +1,4 @@
-import { UuidSchema } from '@flowboard/contracts';
+import { StatusScopeSchema, UuidSchema } from '@flowboard/contracts';
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -9,6 +9,7 @@ import {
   NodePermissionKey,
   PermissionActionKey,
   PermissionService,
+  ScopePermissionKey,
 } from './permission.service.js';
 
 import type { PermissionAction } from '@flowboard/contracts';
@@ -24,7 +25,7 @@ export class PermissionGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<{
       identity?: IdentitySession;
-      params: { nodeId?: string; workspaceId?: string };
+      params: Record<string, string | undefined>;
     }>();
     const action = this.reflector.getAllAndOverride<PermissionAction>(PermissionActionKey, [
       context.getHandler(),
@@ -50,15 +51,31 @@ export class PermissionGuard implements CanActivate {
     if (!action) throw new ApiException(403, 'FORBIDDEN', 'Permission policy required');
 
     if (
-      this.reflector.getAllAndOverride<boolean>(NodePermissionKey, [
+      this.reflector.getAllAndOverride<boolean>(ScopePermissionKey, [
         context.getHandler(),
         context.getClass(),
       ])
     ) {
-      const node = UuidSchema.safeParse(request.params.nodeId);
+      const owner = StatusScopeSchema.safeParse({
+        ownerId: request.params.ownerId,
+        ownerType: request.params.ownerType,
+      });
+      if (!owner.success) throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid scope');
+
+      await this.permissions.authorizeScope(request.identity, owner.data, action);
+
+      return true;
+    }
+
+    const parameter = this.reflector.getAllAndOverride<string>(NodePermissionKey, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (parameter) {
+      const node = UuidSchema.safeParse(request.params[parameter]);
       if (!node.success)
         throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid container ID', [
-          { path: ['nodeId'], code: 'invalid_format', message: 'Expected container UUID' },
+          { path: [parameter], code: 'invalid_format', message: 'Expected container UUID' },
         ]);
 
       await this.permissions.authorizeNode(request.identity, node.data.toLowerCase(), action);

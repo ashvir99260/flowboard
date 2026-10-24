@@ -37,6 +37,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
         'MEMBERSHIP_EXISTS',
         'LAST_ADMIN',
         'CONFIG_CONFLICT',
+        'CONFIG_INVALIDATES_TASKS',
+        'STATUS_IN_USE',
         'VERSION_CONFLICT',
         'CURSOR_STALE',
         'INVITATION_UNAVAILABLE',
@@ -62,6 +64,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       details = exception.details;
     } else if (exception instanceof DatabaseError && status < 500) {
       error = { code: exception.code, message: exception.message };
+      details = exception.details;
     } else if (exception instanceof ZodValidationException) {
       const zodError = exception.getZodError();
       if (zodError instanceof ZodError)

@@ -12,6 +12,7 @@ import type {
   GrantEnvelope,
   GrantPage,
   PermissionAction,
+  StatusScope,
   TreePage,
   UpsertGrant,
   WorkspaceRole,
@@ -24,6 +25,8 @@ export const ActiveWorkspaceKey = 'flowboard:active-workspace-permission';
 export const PermissionActionKey = 'flowboard:permission-action';
 
 export const NodePermissionKey = 'flowboard:node-permission';
+
+export const ScopePermissionKey = 'flowboard:scope-permission';
 
 function presentGrant(
   grant: Omit<Grant, 'createdAt' | 'updatedAt'> & { createdAt: Date; updatedAt: Date },
@@ -58,6 +61,8 @@ export class PermissionService {
       'container.read': ['admin', 'member'],
       'container.write': ['admin'],
       'grant.manage': ['admin'],
+      'configuration.read': ['admin'],
+      'configuration.write': ['admin'],
     };
     if (!allowed[action]?.includes(context.role))
       throw new ApiException(403, 'FORBIDDEN', 'Access denied');
@@ -98,6 +103,16 @@ export class PermissionService {
     );
     if (!visible.some((entry) => entry.node.id === nodeId))
       throw new ApiException(403, 'FORBIDDEN', 'Access denied');
+  }
+  async assertScope(store: ReadRepositories, owner: StatusScope, action: PermissionAction) {
+    await store.statuses.path(owner);
+    if (owner.ownerType === 'workspace') this.assert(store.context, action, owner.ownerId);
+    else await this.assertNode(store, owner.ownerId, action);
+  }
+  async authorizeScope(identity: IdentitySession, owner: StatusScope, action: PermissionAction) {
+    await this.storage().read(this.context(identity), (store) =>
+      this.assertScope(store, owner, action),
+    );
   }
   async authorizeNode(identity: IdentitySession, nodeId: string, action: PermissionAction) {
     await this.storage().read(this.context(identity), (store) =>

@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateScopeStatusData, CreateScopeStatusErrors, CreateScopeStatusResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetListResolvedStatusesData, GetListResolvedStatusesErrors, GetListResolvedStatusesResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListScopeStatusesData, ListScopeStatusesErrors, ListScopeStatusesResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveScopeStatusData, RemoveScopeStatusErrors, RemoveScopeStatusResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateScopeStatusData, UpdateScopeStatusErrors, UpdateScopeStatusResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -133,6 +133,17 @@ export const acceptWorkspaceInvitation = <ThrowOnError extends boolean = false>(
 });
 
 /**
+ * Resolve visible list statuses
+ *
+ * Visible list members read the complete effective status set using the shared root-to-leaf resolver and a consistent configuration revision.
+ */
+export const getListResolvedStatuses = <ThrowOnError extends boolean = false>(options: Options<GetListResolvedStatusesData, ThrowOnError>): RequestResult<GetListResolvedStatusesResponses, GetListResolvedStatusesErrors, ThrowOnError> => (options.client ?? client).get<GetListResolvedStatusesResponses, GetListResolvedStatusesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/lists/{listId}/resolved-statuses',
+    ...options
+});
+
+/**
  * Read the current user and workspace
  *
  * Verify the access JWT and live session family. Return the current workspace only if its membership still exists; session-only recovery remains available after removal.
@@ -248,6 +259,62 @@ export const removeNodeGrant = <ThrowOnError extends boolean = false>(options: O
 export const reorderNode = <ThrowOnError extends boolean = false>(options: Options<ReorderNodeData, ThrowOnError>): RequestResult<ReorderNodeResponses, ReorderNodeErrors, ThrowOnError> => (options.client ?? client).post<ReorderNodeResponses, ReorderNodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/nodes/{nodeId}/reorder',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Read local status configuration
+ *
+ * Administrators read the complete bounded local collection and verified ancestor scopes, with its snapshot configuration revision.
+ */
+export const listScopeStatuses = <ThrowOnError extends boolean = false>(options: Options<ListScopeStatusesData, ThrowOnError>): RequestResult<ListScopeStatusesResponses, ListScopeStatusesErrors, ThrowOnError> => (options.client ?? client).get<ListScopeStatusesResponses, ListScopeStatusesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/scopes/{ownerType}/{ownerId}/statuses',
+    ...options
+});
+
+/**
+ * Create local status configuration
+ *
+ * Define or override a stable identity after validating the owner, all live descendants and their task references under one workspace lock.
+ */
+export const createScopeStatus = <ThrowOnError extends boolean = false>(options: Options<CreateScopeStatusData, ThrowOnError>): RequestResult<CreateScopeStatusResponses, CreateScopeStatusErrors, ThrowOnError> => (options.client ?? client).post<CreateScopeStatusResponses, CreateScopeStatusErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/scopes/{ownerType}/{ownerId}/statuses',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove local status configuration
+ *
+ * Remove only the local display row after checking fallback and live descendants. Canonical identity and historical task references are retained.
+ */
+export const removeScopeStatus = <ThrowOnError extends boolean = false>(options: Options<RemoveScopeStatusData, ThrowOnError>): RequestResult<RemoveScopeStatusResponses, RemoveScopeStatusErrors, ThrowOnError> => (options.client ?? client).delete<RemoveScopeStatusResponses, RemoveScopeStatusErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/scopes/{ownerType}/{ownerId}/statuses/{statusId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update local status configuration
+ *
+ * Patch a local row by canonical status ID. Omitted values are preserved and null inherits; effective descendants and live tasks must remain valid.
+ */
+export const updateScopeStatus = <ThrowOnError extends boolean = false>(options: Options<UpdateScopeStatusData, ThrowOnError>): RequestResult<UpdateScopeStatusResponses, UpdateScopeStatusErrors, ThrowOnError> => (options.client ?? client).patch<UpdateScopeStatusResponses, UpdateScopeStatusErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/scopes/{ownerType}/{ownerId}/statuses/{statusId}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module.js';
 import { PermissionsModule } from './modules/permissions/permissions.module.js';
 import { PlatformModule } from './modules/platform/platform.module.js';
+import { StatusesModule } from './modules/statuses/statuses.module.js';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module.js';
 import { SharedModule } from './shared/shared.module.js';
 
@@ -38,6 +39,7 @@ export class AppModule {
           permissions,
         ),
         HierarchyModule.forDatabase(database, logger, permissions),
+        StatusesModule.forDatabase(database, logger, permissions),
       ],
     };
   }
