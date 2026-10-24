@@ -7,6 +7,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./sdk": {
+      "types": "./dist/generated/sdk.gen.d.ts",
+      "import": "./dist/generated/sdk.gen.js"
+    },
+    "./types": {
+      "types": "./dist/generated/types.gen.d.ts",
+      "import": "./dist/generated/types.gen.js"
+    },
+    "./tanstack-query": {
+      "types": "./dist/generated/@tanstack/react-query.gen.d.ts",
+      "import": "./dist/generated/@tanstack/react-query.gen.js"
     }
   },
   "files": [
@@ -20,7 +32,8 @@
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
     "api:generate": "node scripts/generate.mjs --write",
-    "test": "node --test test/*.test.mjs && tsc -p test/tsconfig.json"
+    "test": "node --test test/*.test.mjs && tsc -p test/tsconfig.json",
+    "client:check": "node scripts/generate.mjs --check"
   },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",

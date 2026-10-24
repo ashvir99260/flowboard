@@ -9,6 +9,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "client:check": {
+      "cache": false,
+      "outputs": []
+    },
     "commitlint": {
       "cache": false,
       "outputs": []
