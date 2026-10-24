@@ -598,9 +598,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add validated hierarchy containers`.
   - **Completion evidence:** [P03-01](evidence/P03-01.md): four typed admin endpoints, tenant/parent/version validation, atomic subtree/task archive with rollback and race coverage; all 395 tests, root gates and Docker acceptance pass.
 
-- [ ] **P03-02 — Central permission policy, grants and visible tree**
+- [x] **P03-02 — Central permission policy, grants and visible tree**
   - **Goal:** Make tree/direct access agree on ancestor-aware visibility.
-  - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/modules/permissions/**`, `apps/api/src/modules/hierarchy/tree.controller.ts`, `apps/api/test/integration/permissions.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/{permissions,tree}.ts`, `apps/api/src/modules/permissions/**`, `apps/api/src/modules/hierarchy/tree.controller.ts`, `apps/api/src/modules/permissions/*.spec.mjs`, `packages/database/src/access-repository.ts`, repository and contracts tests, cursor/runtime composition, generated artifacts.
   - **Dependencies:** P03-01.
   - **Acceptance:** PermissionGuard + PermissionService are the only access policy. Admin bypass is tenant-local; private ancestors require explicit allow; ancestor deny prunes subtree. Cursor-only paginated flat tree contains visible nodes/parents only, orders parents before children, and rejects stale revision-bound cursors. Grants are admin-managed and transactions recheck authorization.
   - **Validation:** Alice sees all; Bob lacks private list; Carol allow works; Bob direct denied list 403; child allow cannot bypass parent deny/private; foreign IDs 404; counts/grants do not leak. Endpoint DoD and standard gate.

@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 
 import { AuthModule } from './modules/auth/auth.module.js';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module.js';
+import { PermissionsModule } from './modules/permissions/permissions.module.js';
 import { PlatformModule } from './modules/platform/platform.module.js';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module.js';
 import { SharedModule } from './shared/shared.module.js';
@@ -21,14 +22,22 @@ export class AppModule {
     logger: Logger = SilentLogger,
     database?: Database,
   ): DynamicModule {
+    const permissions = PermissionsModule.forRuntime(database, auth?.settings.secret, logger);
+
     return {
       module: AppModule,
       imports: [
         SharedModule.forLogger(logger),
         PlatformModule.forProbe(probe),
         AuthModule.forRuntime(auth, logger),
-        WorkspacesModule.forRuntime(database, auth?.identities, auth?.settings.secret, logger),
-        HierarchyModule.forDatabase(database, logger),
+        WorkspacesModule.forRuntime(
+          database,
+          auth?.identities,
+          auth?.settings.secret,
+          logger,
+          permissions,
+        ),
+        HierarchyModule.forDatabase(database, logger, permissions),
       ],
     };
   }

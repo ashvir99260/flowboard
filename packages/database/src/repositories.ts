@@ -6,6 +6,7 @@ import {
   VisibilitySchema,
 } from '@flowboard/contracts';
 
+import { accessRepository } from './access-repository.js';
 import { hierarchyRepository } from './hierarchy-repository.js';
 import { membershipRepository } from './membership-repository.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
@@ -78,6 +79,7 @@ export interface GrantRecord extends GrantInput {
 }
 
 export interface ReadRepositories {
+  access: ReturnType<typeof accessRepository>['read'];
   context: Readonly<TenantContext>;
   grants: { find(resourceId: string, userId: string): Promise<GrantRecord | null> };
   members: { find(userId: string): Promise<MembershipRecord | null> };
@@ -87,6 +89,7 @@ export interface ReadRepositories {
 }
 
 export interface WriteRepositories extends ReadRepositories {
+  access: ReturnType<typeof accessRepository>['write'];
   memberships: ReturnType<typeof membershipRepository>['write'];
   grants: ReadRepositories['grants'] & {
     remove(resourceId: string, userId: string): Promise<void>;
@@ -242,6 +245,7 @@ export function repositories(
 
   return {
     read: Object.freeze({
+      access: accessRepository(tx, context, assertActive, node).read,
       context: Object.freeze(context),
       grants: Object.freeze({ find: grants.find }),
       members: Object.freeze({ find: member }),
@@ -254,6 +258,7 @@ export function repositories(
       }),
     }) satisfies ReadRepositories,
     write: Object.freeze({
+      access: accessRepository(tx, context, assertActive, node).write,
       context: Object.freeze(context),
       grants,
       members: Object.freeze({ find: member }),

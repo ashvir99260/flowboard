@@ -6,6 +6,7 @@ import { ApiException } from '../../core/common/errors/api-exception.js';
 
 import {
   ActiveWorkspaceKey,
+  NodePermissionKey,
   PermissionActionKey,
   PermissionService,
 } from './permission.service.js';
@@ -20,10 +21,11 @@ export class PermissionGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly permissions: PermissionService,
   ) {}
-  canActivate(context: ExecutionContext) {
-    const request = context
-      .switchToHttp()
-      .getRequest<{ identity?: IdentitySession; params: { workspaceId?: string } }>();
+  async canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest<{
+      identity?: IdentitySession;
+      params: { nodeId?: string; workspaceId?: string };
+    }>();
     const action = this.reflector.getAllAndOverride<PermissionAction>(PermissionActionKey, [
       context.getHandler(),
       context.getClass(),
@@ -46,6 +48,23 @@ export class PermissionGuard implements CanActivate {
       ]);
 
     if (!action) throw new ApiException(403, 'FORBIDDEN', 'Permission policy required');
+
+    if (
+      this.reflector.getAllAndOverride<boolean>(NodePermissionKey, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    ) {
+      const node = UuidSchema.safeParse(request.params.nodeId);
+      if (!node.success)
+        throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid container ID', [
+          { path: ['nodeId'], code: 'invalid_format', message: 'Expected container UUID' },
+        ]);
+
+      await this.permissions.authorizeNode(request.identity, node.data.toLowerCase(), action);
+
+      return true;
+    }
 
     this.permissions.assert(
       { workspaceId: workspace.id, role: workspace.role },

@@ -126,7 +126,7 @@ export class HierarchyService {
 
     return this.logger.observe('hierarchy.read', () =>
       this.storage().read(context, async (store: ReadRepositories) => {
-        this.permissions.assert(store.context, 'container.read', context.workspaceId);
+        await this.permissions.assertNode(store, nodeId, 'container.read');
         const snapshot = await store.hierarchy.find(nodeId);
         if (!snapshot) throw new ApiException(404, 'NOT_FOUND', 'Container not found');
 

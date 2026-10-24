@@ -75,6 +75,7 @@ const descriptions = {
   400: 'The body or query failed validation. Details identify invalid fields or unexpected keys.',
   401: 'Email or password is incorrect. The same response is used for unknown accounts.',
   403: 'The request origin is not allowed or the selected workspace membership is unavailable.',
+  404: 'The requested resource was not found in the selected workspace.',
   409: 'The normalized email address is already registered. No partial account or workspace was created.',
   413: 'The JSON request exceeds the 256 KiB body limit.',
   429: 'The authentication attempt limit was reached. Retry after the indicated number of seconds.',
@@ -91,5 +92,31 @@ export function documentedError(
     headers: auth ? AuthResponseHeaders : RequestIdHeaders,
     status,
     type: ErrorResponseDto.Output,
+  };
+}
+
+/** Resource endpoints share status semantics without reusing login-specific examples. */
+export function documentedAccessError(
+  status: 400 | 401 | 403 | 404 | 409 | 500 | 503,
+): ApiResponseOptions {
+  const overrides = {
+    401: {
+      description: 'A valid access token is required.',
+      example: { error: { code: 'UNAUTHENTICATED', message: 'Authentication required' } },
+    },
+    403: {
+      description: 'Current workspace membership or permission is insufficient.',
+      example: { error: { code: 'FORBIDDEN', message: 'Access denied' } },
+    },
+    409: {
+      description:
+        'Configuration or collection changed; reload state or restart cursor pagination.',
+      example: { error: { code: 'CONFIG_CONFLICT', message: 'Workspace configuration changed' } },
+    },
+  };
+
+  return {
+    ...documentedError(status),
+    ...(status in overrides ? overrides[status as keyof typeof overrides] : {}),
   };
 }

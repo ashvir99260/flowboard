@@ -1,0 +1,9 @@
+import type { CursorCodec } from '../../core/common/cursor.js';
+import type { Database } from '@flowboard/database';
+
+export const PermissionsRuntimeKey = 'flowboard:permissions-runtime';
+
+export interface PermissionsRuntime {
+  cursor?: CursorCodec;
+  database?: Database;
+}

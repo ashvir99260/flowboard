@@ -19,3 +19,7 @@ export * from './workspaces.js';
 export * from './events.js';
 
 export * from './nodes.js';
+
+export * from './tree.js';
+
+export * from './permissions.js';

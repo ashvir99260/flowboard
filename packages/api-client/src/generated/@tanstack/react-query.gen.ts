@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createWorkspaceInvitation, getCurrentUser, getLiveness, getNode, getReadiness, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeWorkspaceMember, signUp, switchWorkspace, updateNode, updateWorkspaceMember } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createWorkspaceInvitation, getCurrentUser, getLiveness, getNode, getReadiness, listNodeGrants, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeWorkspaceMember, signUp, switchWorkspace, updateNode, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -256,7 +256,7 @@ export const getNodeQueryKey = (options: Options<GetNodeData>) => createQueryKey
 /**
  * Read a live hierarchy container
  *
- * Read a container with a complete live ancestor chain in the selected workspace. Administrator access is required until member visibility is implemented.
+ * Read a container in the selected workspace. Members require access through every ancestor; administrators bypass tenant-local grants.
  */
 export const getNodeOptions = (options: Options<GetNodeData>) => queryOptions<GetNodeResponse, GetNodeError, GetNodeResponse, ReturnType<typeof getNodeQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -290,16 +290,16 @@ export const updateNodeMutation = (options?: Partial<Options<UpdateNodeData>>): 
     return mutationOptions;
 };
 
-export const listWorkspacesQueryKey = (options?: Options<ListWorkspacesData>) => createQueryKey('listWorkspaces', options);
+export const listNodeGrantsQueryKey = (options: Options<ListNodeGrantsData>) => createQueryKey('listNodeGrants', options);
 
 /**
- * List your workspace memberships
+ * List container grants
  *
- * Live keyset page ordered by membership creation time and workspace ID. The signed cursor is bound to this caller and query.
+ * Administrators can page explicit grants for a live container. Cursor binds caller, workspace, container, limit and configuration revision; no member profile or hidden count is returned.
  */
-export const listWorkspacesOptions = (options?: Options<ListWorkspacesData>) => queryOptions<ListWorkspacesResponse, ListWorkspacesError, ListWorkspacesResponse, ReturnType<typeof listWorkspacesQueryKey>>({
+export const listNodeGrantsOptions = (options: Options<ListNodeGrantsData>) => queryOptions<ListNodeGrantsResponse, ListNodeGrantsError, ListNodeGrantsResponse, ReturnType<typeof listNodeGrantsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await listWorkspaces({
+        const { data } = await listNodeGrants({
             ...options,
             ...queryKey[0],
             signal,
@@ -307,7 +307,7 @@ export const listWorkspacesOptions = (options?: Options<ListWorkspacesData>) => 
         });
         return data;
     },
-    queryKey: listWorkspacesQueryKey(options)
+    queryKey: listNodeGrantsQueryKey(options)
 });
 
 const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
@@ -338,6 +338,148 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
     }
     return params as unknown as typeof page;
 };
+
+export const listNodeGrantsInfiniteQueryKey = (options: Options<ListNodeGrantsData>): QueryKey<Options<ListNodeGrantsData>> => createQueryKey('listNodeGrants', options, true);
+
+/**
+ * List container grants
+ *
+ * Administrators can page explicit grants for a live container. Cursor binds caller, workspace, container, limit and configuration revision; no member profile or hidden count is returned.
+ */
+export const listNodeGrantsInfiniteOptions = (options: Options<ListNodeGrantsData>) => {
+    const opts = infiniteQueryOptions<ListNodeGrantsResponse, ListNodeGrantsError, InfiniteData<ListNodeGrantsResponse>, QueryKey<Options<ListNodeGrantsData>>, string | Pick<QueryKey<Options<ListNodeGrantsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListNodeGrantsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    cursor: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listNodeGrants({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listNodeGrantsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Set a container grant
+ *
+ * Administrators may allow or deny a current workspace member on this container. Rechecks access and revision inside the locked transaction; same-value writes preserve timestamps and revisions.
+ */
+export const upsertNodeGrantMutation = (options?: Partial<Options<UpsertNodeGrantData>>): UseMutationOptions<UpsertNodeGrantResponse, UpsertNodeGrantError, Options<UpsertNodeGrantData>> => {
+    const mutationOptions: UseMutationOptions<UpsertNodeGrantResponse, UpsertNodeGrantError, Options<UpsertNodeGrantData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await upsertNodeGrant({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Remove a container grant
+ *
+ * Administrators remove a current member grant under a configuration revision precondition. An absent grant is a no-op after resource, member and revision checks. Removal restores inherited/public visibility.
+ */
+export const removeNodeGrantMutation = (options?: Partial<Options<RemoveNodeGrantData>>): UseMutationOptions<RemoveNodeGrantResponse, RemoveNodeGrantError, Options<RemoveNodeGrantData>> => {
+    const mutationOptions: UseMutationOptions<RemoveNodeGrantResponse, RemoveNodeGrantError, Options<RemoveNodeGrantData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await removeNodeGrant({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listVisibleTreeQueryKey = (options?: Options<ListVisibleTreeData>) => createQueryKey('listVisibleTree', options);
+
+/**
+ * List visible hierarchy containers
+ *
+ * Return only authorized live nodes in depth/full ancestor path order. Follow the opaque cursor with the same limit; changed workspace revisions require restarting. Parent nodes precede children across pages.
+ */
+export const listVisibleTreeOptions = (options?: Options<ListVisibleTreeData>) => queryOptions<ListVisibleTreeResponse, ListVisibleTreeError, ListVisibleTreeResponse, ReturnType<typeof listVisibleTreeQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listVisibleTree({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listVisibleTreeQueryKey(options)
+});
+
+export const listVisibleTreeInfiniteQueryKey = (options?: Options<ListVisibleTreeData>): QueryKey<Options<ListVisibleTreeData>> => createQueryKey('listVisibleTree', options, true);
+
+/**
+ * List visible hierarchy containers
+ *
+ * Return only authorized live nodes in depth/full ancestor path order. Follow the opaque cursor with the same limit; changed workspace revisions require restarting. Parent nodes precede children across pages.
+ */
+export const listVisibleTreeInfiniteOptions = (options?: Options<ListVisibleTreeData>) => {
+    const opts = infiniteQueryOptions<ListVisibleTreeResponse, ListVisibleTreeError, InfiniteData<ListVisibleTreeResponse>, QueryKey<Options<ListVisibleTreeData>>, string | Pick<QueryKey<Options<ListVisibleTreeData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListVisibleTreeData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    cursor: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listVisibleTree({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listVisibleTreeInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+export const listWorkspacesQueryKey = (options?: Options<ListWorkspacesData>) => createQueryKey('listWorkspaces', options);
+
+/**
+ * List your workspace memberships
+ *
+ * Live keyset page ordered by membership creation time and workspace ID. The signed cursor is bound to this caller and query.
+ */
+export const listWorkspacesOptions = (options?: Options<ListWorkspacesData>) => queryOptions<ListWorkspacesResponse, ListWorkspacesError, ListWorkspacesResponse, ReturnType<typeof listWorkspacesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listWorkspaces({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listWorkspacesQueryKey(options)
+});
 
 export const listWorkspacesInfiniteQueryKey = (options?: Options<ListWorkspacesData>): QueryKey<Options<ListWorkspacesData>> => createQueryKey('listWorkspaces', options, true);
 

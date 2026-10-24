@@ -8,7 +8,7 @@ export async function recordWorkspaceChange(
   tx: Prisma.TransactionClient,
   workspaceId: string,
   actorId: string,
-  reason: 'membership' | 'invitation' | 'hierarchy',
+  reason: 'membership' | 'invitation' | 'hierarchy' | 'permission',
   dataChanged = false,
 ) {
   const workspace = await tx.workspace.update({
