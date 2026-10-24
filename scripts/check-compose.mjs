@@ -99,7 +99,7 @@ try {
   const page = await fetch(`http://${webAddress}`, { signal: AbortSignal.timeout(10_000) });
   assert.equal(page.status, 200);
   const html = await page.text();
-  assert.match(html, /Application foundation is ready/);
+  assert.match(html, /Organize your work/);
   const asset = html.match(/src="([^"]*\/_next\/static\/[^"]+)"/);
   assert.ok(asset, 'The web image references compiled browser assets');
   const assetResponse = await fetch(`http://${webAddress}${asset[1]}`, {

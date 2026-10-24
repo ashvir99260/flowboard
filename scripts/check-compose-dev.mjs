@@ -203,12 +203,12 @@ try {
     `${await readFile(uiEntry, 'utf8')}\nexport const DevelopmentProbe = 'dev-ui-before';\n`,
   );
   await edit(
-    'apps/web/app/page.tsx',
+    'apps/web/app/(app)/page.tsx',
     'export default function',
     "import { DevelopmentProbe } from '@flowboard/ui';\n\nexport default function",
   );
   await edit(
-    'apps/web/app/page.tsx',
+    'apps/web/app/(app)/page.tsx',
     '<h1>Flowboard</h1>',
     '<h1>Flowboard</h1><p>{DevelopmentProbe}</p>',
   );
@@ -243,11 +243,7 @@ try {
   }
 
   assert.ok((await body(web)).includes('dev-ui-before'));
-  await edit(
-    'apps/web/app/page.tsx',
-    'Application foundation is ready.',
-    'Saved web change is visible.',
-  );
+  await edit('apps/web/app/(app)/page.tsx', 'Organize your work.', 'Saved web change is visible.');
   await eventually('web source reload', async () =>
     (await body(web)).includes('Saved web change is visible.'),
   );

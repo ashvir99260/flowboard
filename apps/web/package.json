@@ -26,6 +26,7 @@
     "@flowboard/ui": "workspace:*",
     "@hookform/resolvers": "5.9.2",
     "@mui/material": "9.5.0",
+    "@tanstack/react-query": "5.104.5",
     "next": "16.4.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",

@@ -6,7 +6,7 @@ import test from 'node:test';
 import { startProcess } from '@flowboard/config-jest/process';
 
 test(
-  'production Next serves an honest setup page and stops cleanly',
+  'production Next serves its welcome page and stops cleanly',
   { timeout: 60_000 },
   async (t) => {
     const reserve = createServer();
@@ -29,8 +29,7 @@ test(
     assert.equal(response.status, 200);
     const html = await response.text();
     assert.match(html, /<h1[^>]*>Flowboard<\/h1>/);
-    assert.match(html, /Application foundation is ready/);
-    assert.match(html, /Product features are not implemented yet/);
+    assert.match(html, /Organize your work/);
     const asset = html.match(/src="([^"]*\/_next\/static\/[^"]+)"/);
     assert.ok(asset, 'The page references its compiled JavaScript');
     const assetResponse = await fetch(`http://localhost:${port}${asset[1]}`, {

@@ -776,9 +776,10 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add shared form and board primitives`.
   - **Completion evidence:** [P08-02](evidence/P08-02.md).
 
-- [ ] **P08-03 — Auth pages, providers and visible sidebar**
+- [x] **P08-03 — Auth pages, providers and visible sidebar**
   - **Goal:** Connect generated transport to an authenticated app shell.
-  - **Files:** `apps/web/app/{layout,(auth)/**,(workspace)/**}`, `apps/web/src/{providers,features/auth/**,features/tree/**,lib/query-scope.ts}`, web component tests.
+  - **Requirements:** R28–R30, R33–R34, R40, R62, R69, R70.
+  - **Files:** `apps/web/app/(app)/**`, `apps/web/src/{providers,features/{auth,workspaces,tree}/**,lib/**}`, browser/pure tests and Docker smoke probes.
   - **Dependencies:** P08-02, P07-04.
   - **Acceptance:** Signup/login/refresh bootstrap/logout/workspace switch, one browser QueryClient, accessible collapsible paginated tree, list selection in URL. Loading/error/empty/forbidden states. Clear caches and sockets when identity changes; no prior-tenant flash.
   - **Validation:** Login errors, refresh expiry, logout then Bob after Alice, private list hidden, tree loading all pages, browser-back selection and mobile sidebar; standard gate.
