@@ -719,9 +719,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 7 — Complete API tooling and generated transport
 
-- [ ] **P07-01 — Full OpenAPI lint and deterministic drift checks**
+- [x] **P07-01 — Full OpenAPI lint and deterministic drift checks**
   - **Goal:** Make API contracts independently verifiable without running infrastructure.
-  - **Files:** `packages/openapi/{scripts/check.ts,scripts/lint.ts,.spectral.yaml,test/**}`, `packages/openapi/openapi.json`, API spec bootstrap, Turbo/manifests.
+  - **Files:** `packages/openapi/{scripts/check.mjs,scripts/lint.mjs,scripts/document.mjs,scripts/export.mjs,.spectral.yaml,test/**}`, package scripts and docs. Keep the existing real API spec bootstrap.
   - **Dependencies:** P06-05.
   - **Acceptance:** `pnpm openapi:check` regenerates to a temporary file and fails on drift. Spectral checks domain `/v1`, documented infrastructure exceptions, unique operationIds, typed error responses and cursor collection endpoints. All real controllers are exported without runtime clients connecting.
   - **Validation:** Remove an operationId/change a DTO/miss a page wrapper and assert check failure; restore and pass; no DB/Redis/network needed; standard gate.

@@ -11,14 +11,14 @@
     "./document": "./openapi.json"
   },
   "scripts": {
-    "build": "node scripts/export.mjs --check && tsc -p tsconfig.json",
+    "build": "node scripts/check.mjs && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint --fix . --max-warnings=0",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
     "api:generate": "node scripts/export.mjs --write",
-    "openapi:check": "node scripts/export.mjs --check && spectral lint openapi.json --fail-severity=warn",
+    "openapi:check": "node scripts/check.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "devDependencies": {
