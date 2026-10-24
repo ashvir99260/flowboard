@@ -20,6 +20,8 @@ Keep files grouped by feature and responsibility, not one global folder for ever
 
 Shared UI uses camelCase implementation files under `packages/ui/src/modules/<area>`, with one independent public component per file and cohesive compound slots kept together. Web adapters retain their feature folders. Follow [React section conventions](CODE_STYLE.md#react-hooks-and-component-sections): group related state/refs when dependencies permit, separate hook groups and effects with blank lines, and keep returns clear. Lint fixes whitespace; it never reorders hooks or their inputs.
 
+Use the [shared component creation checklist](UI_COMPONENT_SYSTEM.md#creating-a-shared-component) for reusable presentation. Web owns the adapter that supplies data/actions; `packages/forms` owns generic RHF bindings. Follow the [exact file patterns](NAMING_CONVENTIONS.md#exact-file-patterns): UI files are camelCase, web feature files remain kebab-case, and query hook exports follow `use<Operation>Query` / `use<Operation>InfiniteQuery`. Keep Node `.test.mjs` and Playwright `.spec.ts` files in their current test roots.
+
 ## Data and session flow
 
 Use generated query/mutation options from `@flowboard/api-client/tanstack-query` and SDK functions from its public exports. Never hand-write an endpoint fetch that the generator provides. Transport retries and cookie handling belong in [setup-client.ts](../packages/api-client/src/setup-client.ts); the server-only proxy forwards to a fixed origin and implements no domain API.

@@ -47,13 +47,13 @@ Seed coverage includes a workspace default, a space/folder definition and a list
 
 Use five explicit representations, with one source of truth for public shapes:
 
-| Representation                 | Location and purpose                                                    | May contain                                                                        |
-| ------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Prisma model/generated record  | packages/database; schema, migrations and repository implementation     | Native Dates, raw joins, password hashes, refresh digests, operational fields      |
-| Entity/read model              | Private repository/domain boundary; plain TypeScript such as TaskEntity | Typed domain data needed by a use case; no Nest decorators or HTTP behavior        |
-| Request DTO                    | apps/api/.../dto; class derived from shared request schema              | Only accepted command fields, including typed target role/owner and version guards |
-| Response DTO                   | apps/api/.../dto; class derived from shared response schema             | Explicit safe projection, response envelope, serialized dates and audit fields     |
-| Next.js generated type/options | packages/api-client/src/generated from OpenAPI                          | Public wire contract only; SDK functions and TanStack options                      |
+| Representation                 | Location and purpose                                                               | May contain                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Prisma model/generated record  | packages/database; schema, migrations and repository implementation                | Native Dates, raw joins, password hashes, refresh digests, operational fields      |
+| Entity/read model              | Private repository/domain boundary; plain TypeScript such as TaskEntity            | Typed domain data needed by a use case; no Nest decorators or HTTP behavior        |
+| Request DTO                    | `apps/api/src/modules/<feature>/<feature>.request.dto.ts`; schema-derived classes  | Only accepted command fields, including typed target role/owner and version guards |
+| Response DTO                   | `apps/api/src/modules/<feature>/<feature>.response.dto.ts`; schema-derived classes | Explicit safe projection, response envelope, serialized dates and audit fields     |
+| Next.js generated type/options | packages/api-client/src/generated from OpenAPI                                     | Public wire contract only; SDK functions and TanStack options                      |
 
 Keep Prisma as the ORM. The Prisma schema defines persistence entities; plain entity types may describe repository results where useful. Do not add TypeORM @Entity classes, decorate a Prisma model as an HTTP response or make Next.js import a backend class. Do not add a second class for every table solely for symmetry; internal entity aliases/read models can derive from repository selections. This preserves the user's DTO/entity distinction without duplicating every domain shape.
 

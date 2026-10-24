@@ -635,3 +635,11 @@ Date: 2026-10-25. Source: user request to separate frontend TanStack Query hooks
 Keep query setup in `.ts` hooks beside its owning feature. Match the generated operation in `use<Operation>Query` or `use<Operation>InfiniteQuery` (for example `useGetCurrentUserQuery` and `useListWorkspacesInfiniteQuery`); retain the web's kebab-case filenames. View `.tsx` files consume these hooks without importing TanStack Query or generated query-option factories. App-level QueryClient providers are infrastructure and stay in providers.
 
 Extract the four reads still configured in workspace and activity components. Preserve generated query functions/key structure, identity scoping, retry generations, pagination and polling exactly. Keep cohesive board/list/detail/configuration orchestration hooks and already-separated mutation hooks; do not rename their cache keys or turn dynamic `useQueries` into hooks called in a loop. Components still own rendering and response-specific validation; no generic query abstraction or API changes are needed.
+
+## D152 — Exact authoring names and scoped creation checklists
+
+Date: 2026-10-25. Source: user request for API DTO/test suffixes, module creation rules and matching UI component/naming/token instructions.
+
+Use the correctly spelled `.dto.ts`, `.unit.spec.mjs` and `.integration.spec.mjs` patterns. Group feature DTO classes in `<feature>.request.dto.ts` and `<feature>.response.dto.ts`; keep feature tests beside their implementation. Node bootstrap tests and UI tests retain their own configured suffixes. Six existing shared API suites still have plain `.spec.mjs` filenames; identify them as retained exceptions, not evidence that the precise naming convention is automatically enforced. Their migration or tighter test discovery would be a separate implementation task.
+
+Keep API feature modules under `apps/api/src/modules`, reusable presentation under `packages/ui/src/modules`, and data-aware web features under `apps/web/src/features`. These folders serve different frameworks and should not be mechanically renamed to match. Expand existing owning guides with creation checklists and concrete examples; scoped AGENTS files link to them. Preserve all code, generated contracts, dependency versions and global agent configuration.
