@@ -735,9 +735,10 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Frozen clean install/build without DB/Redis; temporary output equals committed; intentionally changed generated file fails check; standard gate.
   - **Commit:** `chore: finalize generated api client workflow`.
 
-- [ ] **P07-03 — Configured client with refresh and retry-once**
+- [x] **P07-03 — Configured client with refresh and retry-once**
   - **Goal:** Give web one safe transport integration without handwritten endpoints.
-  - **Files:** `packages/api-client/src/{setup-client,session-state}.ts`, `packages/api-client/test/setup-client.test.ts`, auth contract/client tests.
+  - **Requirements:** R19; preserves R29 and contributes to R16/R33/R69.
+  - **Files:** `packages/api-client/src/{setup-client,session-state,session-sync}.ts`, `packages/api-client/test/*`, client package exports/dependencies, the narrow client→contracts boundary rule and tests, docs/evidence.
   - **Dependencies:** P07-02.
   - **Acceptance:** `setupClient` configures an instance with base URL/credentials/token lookup, coordinates refresh and retries each rejected request once. Uses generated refresh SDK through an unwrapped instance; guards recursion and preserves abort. No retry for arbitrary network failure or forbidden 403. Defines origin-scoped tab lock and failure reauth behavior. Switch and refresh share that lock; generation checks prevent retrying an old-workspace request in a new workspace.
   - **Validation:** Concurrent 401s trigger one refresh; refresh failure/replayed token stops; 403 never refreshes; mutation retried at most once only after 401; aborted request stays aborted; instance state never shared across SSR requests; standard gate.

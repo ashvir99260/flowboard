@@ -1,5 +1,7 @@
+import { setupClient } from '@flowboard/api-client/session';
 import { getLivenessOptions, getReadinessOptions } from '@flowboard/api-client/tanstack-query';
 
+import type { SetupClientOptions } from '@flowboard/api-client/session';
 import type { GetLivenessResponse, GetReadinessResponse } from '@flowboard/api-client/types';
 
 export function consumeHealth(live: GetLivenessResponse, ready: GetReadinessResponse) {
@@ -44,3 +46,10 @@ export type {
   CreateTaskResponse,
   ListTasksData,
 } from '@flowboard/api-client/types';
+
+export function consumeSession(options: SetupClientOptions) {
+  const session = setupClient(options);
+  const query = getLivenessOptions({ client: session.client });
+
+  return { query, session };
+}

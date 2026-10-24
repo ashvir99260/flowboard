@@ -68,6 +68,10 @@ for (const [file, code] of [
   ['apps/worker/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['packages/database/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['apps/api/src/example.ts', "import { schema } from '@flowboard/contracts';"],
+  [
+    'packages/api-client/src/session-state.ts',
+    "import { SessionEnvelopeSchema } from '@flowboard/contracts';",
+  ],
   ['packages/contracts/src/example.ts', "import { z } from 'zod';"],
   ['packages/contracts/src/example.ts', "export { value } from './local.js';"],
   ['packages/database/src/example.ts', "import { PrismaClient } from '@prisma/client';"],
@@ -82,6 +86,7 @@ for (const [file, code] of [
 
 for (const [file, code] of [
   ['packages/logger/src/example.ts', "import { schema } from '@flowboard/contracts';"],
+  ['packages/api-client/src/setup-client.ts', "import { database } from '@flowboard/database';"],
   ['apps/web/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['packages/ui/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['apps/web/src/example.ts', "import type { Internal } from '@flowboard/api';"],
