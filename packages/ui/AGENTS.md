@@ -12,6 +12,8 @@ Use semantic HSL tokens, rem sizing, the documented MUI spacing scale and px bor
 
 Token definitions live in `src/modules/theme/tokens.ts`, MUI mapping/defaults in `theme.ts`, and Next/Emotion setup in `themeProvider.tsx`. Consume `(theme.vars ?? theme).palette` and `theme.spacing`; do not add a second provider or hardcoded per-component light/dark palette. See [token ownership and examples](../../docs/STYLE_TOKENS.md#where-tokens-and-theme-behavior-belong).
 
+Use 3.6rem desktop controls and at least 4.4rem coarse-pointer targets; multiline fields stay content-driven. Fields have complete outlines; metadata chips use filled backgrounds with readable text. Keep color literals in tokens and preserve stored-color contrast handling.
+
 Test public rendering/interaction and responsive/light/dark accessibility behavior. Domain examples are fixtures, never fake runtime API responses. Export through the package entry point.
 
 TaskTable owns MUI Data Grid Community presentation and pagination of already-loaded rows. Keep web's URL sort/filter and cursor loading authoritative. Preserve title-button roving focus, drawer focus attributes, inherited/local labels and rem-derived geometry; see the component system guide before changing grid behavior.

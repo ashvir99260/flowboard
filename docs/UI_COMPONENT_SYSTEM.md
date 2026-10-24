@@ -28,7 +28,7 @@ Each independent public component has its own file. Surface and Toolbar retain t
 - Simple structures use children and named parts. `Surface.Root/Header/Title/Description/Body/Footer` and `Toolbar.Root/Group` let callers arrange their content. Context is used only when parts share real state, such as a controlled overlay; do not add context to static layout.
 - The UI primitive entry point owns the MUI controls used by web. Layout-only primitives can retain MUI's implementation; reusable styling belongs in named styled components and the theme. Web does not import Material controls directly after migration. `sx` remains for genuinely local layout and DnD-provided positioning stays intact.
 - Domain views consume shared contract types and callbacks. Tables receive items/statuses/fields and `onOpenTask`; shells and drawers receive children, labels and controlled visibility. They do not infer authorization or fetch data.
-- Use semantic HSL palette tokens, rem spacing, 6px corners, no default card shadow, and at least 4.4rem interactive targets (44px at the normal browser default). Inputs/focus need discernible boundaries; subtle decorative dividers do not replace accessible input outlines.
+- Use semantic HSL palette tokens, rem spacing, 6px corners and no default card shadow. Standard desktop controls use 3.6rem height; coarse-pointer targets use at least 4.4rem. Navigation may retain larger hit areas. Inputs/focus need discernible boundaries; subtle decorative dividers do not replace accessible input outlines.
 - Neutral light/dark surfaces replace the previous blue-gray palette. Status/priority colors retain their meanings; text labels never rely on color alone.
 - Export typed public APIs, never package source paths. Prefer explicit variants and compound parts over accumulating boolean layout flags. Busy/disabled/open remain legitimate control state.
 
@@ -112,6 +112,10 @@ The later [P14 form system](FORM_SYSTEM.md) puts reusable React Hook Form bindin
 ## Color and unit refinement
 
 [P15-01 and D140](STYLE_TOKENS.md) refine the original 4px/16px scale: palette declarations use HSL, fixed dimensions use rem, and 1rem/one MUI spacing unit is 10px at the normal browser default. Existing spacing multipliers were adjusted to preserve layout. Borders/radii stay px, and larger browser font preferences remain effective. This supersedes earlier source-unit examples without changing component ownership or interaction behavior.
+
+P27-01/D153 revises the former 4.4rem desktop control height toward the compact shadcn reference. Text fields and selects explicitly default to small outlined controls; single-line text and native menus are 3.6rem, while multiline fields grow with content. Coarse-pointer targets remain at least 4.4rem. Actual input padding/line height are normalized, since a smaller minimum alone cannot override MUI padding.
+
+Status chips fill with their stored color; a selected field option uses its option color. Text chooses the more readable black/white contrast token. Missing/invalid options and mixed multi-select values use neutral fill. Priority fills use error/warning/info/success semantics. Labels keep names/categories so color is never the only cue. Application palette values, including severity and contrast choices, live in `tokens.ts`; `theme.ts` maps them to MUI.
 
 ## Action and live notifications
 

@@ -1160,6 +1160,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: clarify api and ui authoring rules`.
   - **Evidence:** [P26-01](evidence/P26-01.md).
 
+## Phase 27 — Compact controls and filled metadata
+
+- [x] **P27-01 — Align shared controls with the compact reference design**
+  - **Goal:** Give fields consistent outlines and compact geometry, fill metadata chips, and make tokens the single source for application colors.
+  - **Requirements:** R150; refine R134/R136 while preserving R135/R137 and existing accessibility/interaction contracts.
+  - **Files:** UI theme/tokens, text/select/button/chip primitives, status/priority/custom-field chips and color helper; UI/browser tests, playground examples and metadata stories; style/component guidance and task evidence.
+  - **Dependencies:** P13–P19 and P26-01.
+  - **Acceptance:** Standard single-line inputs/selects/buttons use 3.6rem desktop sizing, clear four-sided input borders, visible focus/error/disabled states, and larger coarse-pointer targets. Multiline fields grow naturally. Chips use filled backgrounds; status and single-select option colors have readable text. Theme color values come from tokens, including severity/info/secondary colors. Preserve HSL/rem scaling, native semantics, RHF state, SSR, light/dark contrast and responsive layouts. Keep MUI and composition; use shadcn's compact controls as the concrete visual reference, recognizing Headless UI is unstyled.
+  - **Validation:** G01–G05/G09/G10; fail new compact/fill/token regressions first, then UI/Storybook and real browser geometry/contrast/focus tests, screenshots in both themes and font scales, root build/lint/typecheck/test/format, and React diagnostics. No endpoint or Docker startup changes.
+  - **Commit:** `style(ui): compact controls and fill metadata chips`.
+  - **Evidence:** [P27-01](evidence/P27-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

@@ -1,18 +1,9 @@
 'use client';
 
-import { styled } from '@mui/material/styles';
-
 import { Chip } from '../../primitives.js';
-import { toHslColor } from '../../utils/color.js';
+import { colorFill } from '../../utils/color.js';
 
 import type { ResolvedStatus, StatusCategory } from '@flowboard/contracts';
-
-const Dot = styled('span', { name: 'FlowboardStatus', slot: 'Dot' })(({ theme }) => ({
-  border: `1px solid ${(theme.vars ?? theme).palette.text.secondary}`,
-  borderRadius: '999px',
-  height: '0.8rem',
-  width: '0.8rem',
-}));
 
 const categories: Record<StatusCategory, string> = {
   not_started: 'Not started',
@@ -28,11 +19,11 @@ export function StatusChip({
 
   return (
     <Chip
-      icon={<Dot aria-hidden="true" style={{ backgroundColor: toHslColor(status.color) }} />}
       label={label}
       size="small"
       title={label}
-      variant="outlined"
+      variant="filled"
+      style={colorFill(status.color)}
     />
   );
 }

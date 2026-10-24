@@ -21,6 +21,7 @@ import {
 } from '@flowboard/ui';
 import { useState } from 'react';
 
+import { CompactControlsExample } from './compact-controls-example';
 import { CompositionExamples } from './composition-examples';
 import { FieldPreviewExample } from './field-preview-example';
 import { FormExamples } from './form-examples';
@@ -213,6 +214,7 @@ export function Playground() {
           </Stack>
         </Section>
         <CompositionExamples />
+        <CompactControlsExample />
         <FormExamples />
         <InteractionExamples />
       </Box>

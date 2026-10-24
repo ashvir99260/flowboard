@@ -22,9 +22,26 @@ export const theme = createTheme({
           contrastText: designTokens.palette.light.surface,
           main: designTokens.palette.light.foreground,
         },
-        error: { main: 'hsl(4.2308, 76.4706%, 40%)' },
-        warning: { main: 'hsl(30.4348, 100%, 27.0588%)' },
-        success: { main: 'hsl(152.0455, 68.75%, 25.098%)' },
+        secondary: {
+          main: designTokens.palette.light.selected,
+          contrastText: designTokens.palette.light.foreground,
+        },
+        error: {
+          main: designTokens.palette.light.error,
+          contrastText: designTokens.palette.light.onAccent,
+        },
+        warning: {
+          main: designTokens.palette.light.warning,
+          contrastText: designTokens.palette.light.onAccent,
+        },
+        success: {
+          main: designTokens.palette.light.success,
+          contrastText: designTokens.palette.light.onAccent,
+        },
+        info: {
+          main: designTokens.palette.light.info,
+          contrastText: designTokens.palette.light.onAccent,
+        },
         divider: designTokens.palette.light.border,
         action: { selected: designTokens.palette.light.selected },
       },
@@ -44,9 +61,26 @@ export const theme = createTheme({
           contrastText: designTokens.palette.dark.background,
           main: designTokens.palette.dark.foreground,
         },
-        error: { main: 'hsl(6.4286, 100%, 83.5294%)' },
-        warning: { main: 'hsl(34.2857, 80.7692%, 69.4118%)' },
-        success: { main: 'hsl(146.3265, 57.6471%, 66.6667%)' },
+        secondary: {
+          main: designTokens.palette.dark.selected,
+          contrastText: designTokens.palette.dark.foreground,
+        },
+        error: {
+          main: designTokens.palette.dark.error,
+          contrastText: designTokens.palette.dark.onAccent,
+        },
+        warning: {
+          main: designTokens.palette.dark.warning,
+          contrastText: designTokens.palette.dark.onAccent,
+        },
+        success: {
+          main: designTokens.palette.dark.success,
+          contrastText: designTokens.palette.dark.onAccent,
+        },
+        info: {
+          main: designTokens.palette.dark.info,
+          contrastText: designTokens.palette.dark.onAccent,
+        },
         divider: designTokens.palette.dark.border,
         action: { selected: designTokens.palette.dark.selected },
       },
@@ -72,6 +106,10 @@ export const theme = createTheme({
     factor === 'auto' ? factor : `${factor * designTokens.spacing}rem`,
   shape: { borderRadius: designTokens.radius.control },
   components: {
+    MuiTextField: { defaultProps: { size: 'small', variant: 'outlined' } },
+    MuiFormControl: { defaultProps: { size: 'small', variant: 'outlined' } },
+    MuiSelect: { defaultProps: { size: 'small', variant: 'outlined' } },
+    MuiFormHelperText: { styleOverrides: { root: { marginLeft: 0, marginRight: 0 } } },
     MuiDialog: {
       styleOverrides: {
         paper: ({ ownerState }) => {
@@ -107,7 +145,23 @@ export const theme = createTheme({
     },
     MuiOutlinedInput: {
       defaultProps: { notched: false },
-      styleOverrides: { notchedOutline: { borderColor: 'var(--mui-palette-text-secondary)' } },
+      styleOverrides: {
+        root: ({ ownerState }) => ({
+          minHeight: designTokens.controlHeight,
+          fontSize: '1.4rem',
+          ...(ownerState.multiline ? { padding: '0.7rem 1.2rem' } : {}),
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderWidth: '1px' },
+          '@media (pointer: coarse)': { minHeight: designTokens.touchControlHeight },
+        }),
+        input: ({ ownerState }) => ({
+          lineHeight: '2rem',
+          ...(ownerState.multiline ? { padding: 0 } : { height: '2rem', padding: '0.7rem 1.2rem' }),
+        }),
+        notchedOutline: ({ theme }) => ({
+          borderColor: designTokens.palette.light.inputBorder,
+          ...theme.applyStyles('dark', { borderColor: designTokens.palette.dark.inputBorder }),
+        }),
+      },
     },
     MuiInput: {
       styleOverrides: {
@@ -129,9 +183,26 @@ export const theme = createTheme({
       },
     },
     MuiButton: {
-      styleOverrides: { root: { fontWeight: 500, minHeight: designTokens.controlHeight } },
+      styleOverrides: {
+        root: {
+          fontWeight: 500,
+          minHeight: designTokens.controlHeight,
+          '@media (pointer: coarse)': { minHeight: designTokens.touchControlHeight },
+        },
+      },
     },
-    MuiIconButton: { styleOverrides: { root: { minHeight: '4.4rem', minWidth: '4.4rem' } } },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          minHeight: designTokens.controlHeight,
+          minWidth: designTokens.controlHeight,
+          '@media (pointer: coarse)': {
+            minHeight: designTokens.touchControlHeight,
+            minWidth: designTokens.touchControlHeight,
+          },
+        },
+      },
+    },
     MuiPaper: { defaultProps: { elevation: 0 } },
     MuiCssBaseline: {
       styleOverrides: {
