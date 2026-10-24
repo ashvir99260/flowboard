@@ -29,7 +29,15 @@ const env = {
   DEMO_SEED: 'true',
   API_DOCS: 'true',
 };
-const prefix = ['compose', '--project-name', project, '-f', 'compose.yaml'];
+const prefix = [
+  'compose',
+  '--env-file',
+  '/dev/null',
+  '--project-name',
+  project,
+  '-f',
+  'compose.yaml',
+];
 if (!control) prefix.push('-f', 'compose.dev.yaml');
 
 async function docker(...args) {

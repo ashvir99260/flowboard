@@ -234,3 +234,35 @@ test('package exports reference configuration or sources emitted by their build'
     }
   }
 });
+
+test('strict Turbo development preserves worker dependencies and frozen image runtime settings', async () => {
+  for (const task of ['dev', 'dev:docker']) {
+    const result = spawnSync(
+      'pnpm',
+      ['exec', 'turbo', 'run', task, '--filter=@flowboard/worker', '--dry=json'],
+      {
+        cwd: fileURLToPath(root),
+        encoding: 'utf8',
+        env: { ...process.env, PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: 'false' },
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    const plan = JSON.parse(result.stdout);
+    const worker = plan.tasks.find((entry) => entry.taskId === `@flowboard/worker#${task}`);
+    for (const variable of ['DATABASE_URL', 'REDIS_URL', 'HOST', 'PORT', 'LOG_LEVEL'])
+      assert.ok(
+        worker.environmentVariables.specified.env.includes(variable),
+        `${task} drops ${variable}`,
+      );
+    assert.ok(
+      plan.globalCacheInputs.environmentVariables.specified.passThroughEnv.includes(
+        'PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN',
+      ),
+    );
+  }
+  for (const app of ['api', 'web', 'worker']) {
+    const dockerfile = await readFile(new URL(`apps/${app}/Dockerfile`, root), 'utf8');
+    const development = dockerfile.split(' AS development')[1].split(/^FROM /m)[0];
+    assert.match(development, /PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false/);
+  }
+});

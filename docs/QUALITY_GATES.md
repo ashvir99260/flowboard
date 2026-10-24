@@ -1,6 +1,6 @@
 # Flowboard Quality Gates
 
-A gate states what must be demonstrated before calling work complete. Documentation describes the gate; executable tools enforce it only after their owning task lands. **The Phase 0 workspace build/lint/typecheck/format and native configuration checks are active. Domain, database, browser and deployment verification still require their owning tasks.** No table below is evidence that a future check already passes.
+A gate states what must be demonstrated before calling work complete. Documentation describes the gate; executable tools enforce it only after their owning task lands. **Workspace, contract, real-database, browser, worker and realtime checks are active. Final clean-checkout verification and external rollout remain separately evidenced gates.** No table below is evidence that a future check already passes.
 
 ## Gate catalogue
 
@@ -21,9 +21,9 @@ A gate states what must be demonstrated before calling work complete. Documentat
 
 Every completed implementation task requires G01, G03, G04 and G05. Other gates apply by the changed behavior. A docs-only task requires scope/traceability and structural checks; it does not require pretending application tests exist.
 
-## Planned command contract
+## Command contract
 
-These are the promised interfaces to introduce through the tasks below. Until present in actual package scripts, their state is `not_available`.
+These commands are implemented in workspace scripts. Their existence does not establish a pass for any particular revision.
 
 | Command                     | Meaning                                                                                                   | Introduced/completed                              |
 | --------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
@@ -54,7 +54,7 @@ All items must be true in the endpoint's first complete task:
 - Spec and generated SDK/options match committed schema output. Web consumers use those generated operations.
 - Errors preserve the documented envelope/path and avoid secrets; DTO serialization prevents accidental sensitive fields.
 
-Before full drift scripts arrive, run the P01-02 generator and review the reproducible diff. Their later arrival never excuses missing spec/client artifacts on an earlier endpoint.
+Run `pnpm gen:api`, `pnpm openapi:check` and `pnpm client:check` for endpoint changes. Review reproducible generated differences alongside their schemas and controllers.
 
 ## Failure-case priorities
 
@@ -88,6 +88,6 @@ At a phase exit, review the corresponding PLAN exit criterion and requirement ro
 
 The final release requires all in-scope product requirements verified, the full required API/frontend path passing, reproducible generated artifacts, clean Docker startup/restart and usable README/cookbook instructions. NEXT-01 is explicitly deferred; shipping it as if search works is not acceptable. If the user changes scope, record that instruction and update the matrix/decisions rather than silently dropping rows.
 
-## Enabling automated enforcement
+## Automated enforcement
 
-P00-02 provides boundary fixtures and review template; P07-01/P07-02 provide drift enforcement; P12-03 assembles CI from checks already used locally. Until then, use the actual available scripts and record missing automation accurately. CI must not substitute a mock persistence layer, filter away required failing tests or mark a skipped Docker suite green.
+P00-02 provides boundary fixtures and the review template; P07-01/P07-02 provide drift enforcement. `.github/workflows/delivery.yml` runs parallel workspace and container checks; P12-03 revalidates them against a clean commit. Record missing or failed checks accurately. CI must not substitute a mock persistence layer, filter away required failing tests or mark a skipped Docker suite green.

@@ -28,7 +28,8 @@
     "gen:api": "turbo run api:generate",
     "openapi:check": "turbo run openapi:check",
     "docker:dev:check": "turbo run docker:dev:check",
-    "client:check": "turbo run client:check"
+    "client:check": "turbo run client:check",
+    "release:check": "turbo run release:check"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",

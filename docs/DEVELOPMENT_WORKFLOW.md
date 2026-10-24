@@ -1,6 +1,6 @@
 # Flowboard Development Workflow
 
-This is the operating procedure for a human or AI implementing Flowboard. Its purpose is to carry one requirement from the brief to working behavior, verified evidence and a reviewable commit. It does not authorize starting implementation: the user has authorized the Phase 0 monorepo, shared configuration and application-shell setup.
+This is the operating procedure for a human or AI implementing Flowboard. Its purpose is to carry one requirement from the brief to working behavior, verified evidence and a reviewable commit. The user has authorized ordered implementation through the remaining local MVP tasks. This workflow grants no additional scope or permission to publish, merge or deploy.
 
 ## 1. Read the right source
 

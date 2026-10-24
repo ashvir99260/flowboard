@@ -1,27 +1,69 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 const execute = promisify(execFile);
 const root = fileURLToPath(new URL('../', import.meta.url));
 const project = `flowboard-check-${randomUUID().slice(0, 8)}`;
+const fixture = await mkdtemp(path.join(tmpdir(), 'flowboard-compose-'));
+async function reservePort() {
+  const server = createServer();
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+
+  return {
+    port: server.address().port,
+    close: () => new Promise((resolve) => server.close(resolve)),
+  };
+}
+const reservations = await Promise.all([reservePort(), reservePort()]);
+const webOrigin = `http://localhost:${reservations[0].port}`;
+const apiOrigin = `http://localhost:${reservations[1].port}`;
 const env = {
   ...process.env,
-  WEB_PORT: '0',
-  API_PORT: '0',
+  WEB_PORT: String(reservations[0].port),
+  API_PORT: String(reservations[1].port),
+  REALTIME_PUBLIC_URL: apiOrigin,
+  API_DOCS: 'true',
   POSTGRES_DB: 'flowboard',
   POSTGRES_USER: 'flowboard',
   POSTGRES_PASSWORD: 'flowboard-check-only',
   DEMO_SEED: 'true',
   AUTH_SECRET: 'flowboard-docker-check-secret-abcdefghijklmnopqrstuvwxyz',
-  AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
-  WEB_ALLOWED_ORIGINS: 'http://localhost:3000',
+  AUTH_ALLOWED_ORIGINS: `${webOrigin},${apiOrigin}`,
+  WEB_ALLOWED_ORIGINS: webOrigin,
   AUTH_ALLOW_INSECURE_HTTP: 'true',
   LOG_LEVEL: 'debug',
 };
-const prefix = ['compose', '--project-name', project, '--file', 'compose.yaml'];
+const images = ['api', 'web', 'worker'].map((service) => `${project}-${service}`);
+const override = path.join(fixture, 'compose.json');
+await writeFile(
+  override,
+  JSON.stringify({
+    services: Object.fromEntries(
+      ['api', 'web', 'worker'].map((service, index) => [service, { image: images[index] }]),
+    ),
+  }),
+);
+const prefix = [
+  'compose',
+  '--env-file',
+  '/dev/null',
+  '--project-name',
+  project,
+  '--file',
+  'compose.yaml',
+  '--file',
+  override,
+];
 
 async function run(...args) {
   try {
@@ -64,11 +106,14 @@ assert.equal(config.services.postgres.ports, undefined, 'PostgreSQL is private b
 assert.equal(config.services.redis.ports, undefined, 'Redis is private by default');
 
 if (process.argv.includes('--config-only')) {
+  await Promise.all(reservations.map(({ close }) => close()));
+  await rm(fixture, { force: true, recursive: true });
   console.info('Compose configuration checks passed; no containers were started');
   process.exit(0);
 }
 
 try {
+  await Promise.all(reservations.map(({ close }) => close()));
   console.info(`[${project}] Build images and wait for all five services`);
   await run('up', '--build', '--detach', '--wait', '--wait-timeout', '180');
 
@@ -111,13 +156,9 @@ try {
   assert.deepEqual(await ready.json(), { status: 'ready' });
   const docs = await fetch(`http://${apiAddress}/docs/`);
   assert.equal(docs.status, 200);
-  const api = await fetch(`http://${apiAddress}/v1/tasks`, {
-    signal: AbortSignal.timeout(10_000),
-  });
-  assert.equal(api.status, 404, 'The shell must not claim a domain API exists');
   const login = await fetch(`http://${apiAddress}/v1/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:3000' },
+    headers: { 'Content-Type': 'application/json', Origin: webOrigin },
     body: JSON.stringify({ email: 'alice@example.com', password: 'FlowboardDemo123!' }),
     signal: AbortSignal.timeout(10_000),
   });
@@ -128,7 +169,7 @@ try {
   assert.ok(login.headers.get('set-cookie').includes('HttpOnly'));
   const proxyLogin = await fetch(`http://${webAddress}/api/v1/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:3000' },
+    headers: { 'Content-Type': 'application/json', Origin: webOrigin },
     body: JSON.stringify({ email: 'alice@example.com', password: 'FlowboardDemo123!' }),
     signal: AbortSignal.timeout(10_000),
   });
@@ -139,7 +180,7 @@ try {
   assert.ok(initialCookie.includes('HttpOnly'));
   const proxyRefresh = await fetch(`http://${webAddress}/api/v1/auth/refresh`, {
     method: 'POST',
-    headers: { Cookie: initialCookie.split(';')[0], Origin: 'http://localhost:3000' },
+    headers: { Cookie: initialCookie.split(';')[0], Origin: webOrigin },
     signal: AbortSignal.timeout(10_000),
   });
   assert.equal(proxyRefresh.status, 200);
@@ -148,7 +189,7 @@ try {
   assert.notEqual(rotatedCookie, initialCookie);
   const proxyLogout = await fetch(`http://${webAddress}/api/v1/auth/logout`, {
     method: 'POST',
-    headers: { Cookie: rotatedCookie.split(';')[0], Origin: 'http://localhost:3000' },
+    headers: { Cookie: rotatedCookie.split(';')[0], Origin: webOrigin },
     signal: AbortSignal.timeout(10_000),
   });
   assert.equal(proxyLogout.status, 204);
@@ -192,40 +233,135 @@ try {
     assert.ok(!logOutput.includes(secret), 'Runtime logs must exclude credentials');
   }
 
-  console.info(`[${project}] Verify persistent PostgreSQL and Redis data across restart`);
-  const psql = ['exec', '-T', 'postgres', 'psql', '-U', 'flowboard', '-d', 'flowboard', '-tAc'];
-  assert.equal(await run(...psql, 'SELECT count(*) FROM tasks;'), '27');
-  assert.equal(await run(...psql, 'SELECT count(*) FROM seed_states;'), '1');
-  assert.equal(
-    await run(
-      ...psql,
-      "SELECT count((entry->>'id')::uuid) FROM field_definitions CROSS JOIN LATERAL jsonb_array_elements(options) AS entry;",
-    ),
-    '4',
+  console.info(`[${project}] Run the real browser journey against production images`);
+  const browser = await execute(
+    'pnpm',
+    ['--filter', '@flowboard/web', 'exec', 'playwright', 'test', 'task-edit.spec.ts'],
+    {
+      cwd: root,
+      env: { ...env, FLOWBOARD_E2E_URL: webOrigin },
+      timeout: 120_000,
+      maxBuffer: 2 * 1024 * 1024,
+    },
   );
-  await run(
-    ...psql,
-    "UPDATE tasks SET title='Preserve this local edit' WHERE id=(SELECT id FROM tasks ORDER BY id LIMIT 1);",
-  );
-  await run(
-    ...psql,
-    "CREATE TABLE delivery_probe(value text); INSERT INTO delivery_probe VALUES ('retained');",
+  assert.match(browser.stdout, /1 passed/);
+  assert.doesNotMatch(browser.stdout, /[1-9]\d* (?:failed|skipped)/);
+
+  async function apiRequest(route, options = {}) {
+    const response = await fetch(`${apiOrigin}${route}`, {
+      ...options,
+      headers: {
+        Origin: webOrigin,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.data.accessToken}`,
+      },
+      signal: AbortSignal.timeout(10_000),
+    });
+    assert.ok(response.ok, `${route} returned ${response.status}`);
+
+    return response.json();
+  }
+  async function eventually(label, check) {
+    const deadline = Date.now() + 60_000;
+    while (Date.now() < deadline) {
+      if (await check()) return;
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    assert.fail(label);
+  }
+  // Page through the same public contract used by clients; do not hardcode seeded IDs.
+  const nodes = [];
+  let cursor;
+  do {
+    const page = await apiRequest(
+      `/v1/tree?limit=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`,
+    );
+    nodes.push(...page.items);
+    cursor = page.pageInfo.nextCursor;
+  } while (cursor);
+  const list = nodes.find((node) => node.type === 'list' && node.name === 'Product backlog');
+  assert.ok(list);
+  const statuses = await apiRequest(`/v1/lists/${list.id}/resolved-statuses`);
+  const initialStatus = statuses.items.find((status) => status.category === 'not_started');
+  const activeStatus = statuses.items.find((status) => status.category === 'active');
+  let task = await apiRequest(`/v1/lists/${list.id}/tasks`, {
+    method: 'POST',
+    body: JSON.stringify({
+      title: 'Docker persistence check',
+      statusId: initialStatus.id,
+      customFields: { effort: 1 },
+      expectedConfigVersion: statuses.configVersion,
+    }),
+  });
+  const patch = async (changes) =>
+    apiRequest(`/v1/tasks/${task.data.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        ...changes,
+        expectedVersion: task.data.version,
+        expectedConfigVersion: task.configVersion,
+      }),
+    });
+  task = await patch({ title: 'Preserve this API edit', customFields: { effort: 2 } });
+  const imageIds = await Promise.all(
+    ['api', 'web', 'worker'].map((service) => run('images', '-q', service)),
   );
   await run('exec', '-T', 'redis', 'redis-cli', 'SET', 'delivery-probe', 'retained');
   await run('restart', 'postgres', 'redis', 'api', 'worker', 'web');
   await run('up', '--detach', '--wait', '--wait-timeout', '180');
-  assert.equal(await run(...psql, 'SELECT value FROM delivery_probe;'), 'retained');
-  assert.equal(await run(...psql, 'SELECT count(*) FROM tasks;'), '27');
-  assert.equal(
-    await run(...psql, "SELECT count(*) FROM tasks WHERE title='Preserve this local edit';"),
-    '1',
+  assert.deepEqual(
+    await Promise.all(['api', 'web', 'worker'].map((service) => run('images', '-q', service))),
+    imageIds,
+    'Restart must reuse the built images',
   );
+  task = await apiRequest(`/v1/tasks/${task.data.id}`);
+  assert.equal(task.data.title, 'Preserve this API edit');
+  assert.equal(task.data.customFields.effort, 2);
   assert.equal(await run('exec', '-T', 'redis', 'redis-cli', 'GET', 'delivery-probe'), 'retained');
-  const restartedAddress = await run('port', 'web', '3000');
-  const restarted = await fetch(`http://${restartedAddress}`, {
-    signal: AbortSignal.timeout(10_000),
+  const psql = ['exec', '-T', 'postgres', 'psql', '-U', 'flowboard', '-d', 'flowboard', '-tAc'];
+  assert.equal(await run(...psql, 'SELECT count(*) FROM seed_states;'), '1');
+  assert.equal(await run(...psql, 'SELECT count(*) FROM tasks;'), '28');
+
+  console.info(`[${project}] Check dependency outage, durable write and recovery`);
+  await run('stop', 'redis');
+  const statusCode = async (route) =>
+    (
+      await fetch(`${apiOrigin}${route}`, {
+        signal: AbortSignal.timeout(10_000),
+      })
+    ).status;
+  const workerStatus = (route) =>
+    run(
+      'exec',
+      '-T',
+      'worker',
+      'node',
+      '-e',
+      `fetch('http://localhost:3002${route}',{signal:AbortSignal.timeout(3000)}).then(r=>console.log(r.status))`,
+    );
+  await eventually(
+    'API and worker must report Redis unavailability',
+    async () =>
+      (await statusCode('/health/ready')) === 503 &&
+      (await workerStatus('/health/ready')) === '503',
+  );
+  assert.equal(await statusCode('/health/live'), 200);
+  assert.equal(await workerStatus('/health/live'), '200');
+  task = await patch({ statusId: activeStatus.id });
+  const expectedVersion = task.data.version;
+  await run('start', 'redis');
+  await eventually(
+    'API and worker must recover after Redis returns',
+    async () =>
+      (await statusCode('/health/ready')) === 200 &&
+      (await workerStatus('/health/ready')) === '200',
+  );
+  await eventually('The durable status event must reach the activity feed', async () => {
+    const activity = await apiRequest(`/v1/tasks/${task.data.id}/activity?limit=100`);
+
+    return activity.items.some((entry) => entry.payload.taskVersion === expectedVersion);
   });
-  assert.equal(restarted.status, 200);
   const restartLogs = await run('logs', '--no-color', '--no-log-prefix', 'api', 'worker');
   assert.ok(restartLogs.includes('"event":"api.stopped"'));
   assert.ok(restartLogs.includes('"event":"worker.stopped"'));
@@ -234,5 +370,7 @@ try {
   // The random project name isolates this run from the user's development stack.
   // Volumes are retained; this command never deletes database storage.
   await run('down', '--timeout', '15');
+  await execute('docker', ['image', 'rm', ...images], { env }).catch(() => {});
+  await rm(fixture, { force: true, recursive: true });
   console.info(`[${project}] Test containers removed; isolated volumes retained`);
 }
