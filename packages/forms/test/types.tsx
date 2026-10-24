@@ -16,7 +16,7 @@ export function TypedExample() {
     <ControlledField
       control={form.control}
       // @ts-expect-error A field must name an existing input path.
-      config={{ kind: 'text', name: 'missing', label: 'Missing' }}
+      config={{ kind: 'text', label: 'Missing', name: 'missing' }}
     />
   );
   const fields = parseFormFields<z.input<typeof schema>>([], ['profile.name']);

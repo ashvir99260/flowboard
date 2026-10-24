@@ -6,11 +6,11 @@ import {
   selectTaskStatus,
   UuidSchema,
 } from '@flowboard/contracts';
+import { ControlledField, customFieldConfig, FormFields } from '@flowboard/forms';
+import { useZodForm } from '@flowboard/forms';
 import { Alert, Stack, Typography } from '@flowboard/ui';
-import { CustomFieldInput, FormField } from '@flowboard/ui';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useRef, useState } from 'react';
-import { Controller, useForm, useWatch } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { prepareMoveFields } from './task-placement';
@@ -18,8 +18,7 @@ import { prepareMoveFields } from './task-placement';
 import type { BoardColumn } from './board-data';
 import type { useTaskMutation } from './use-task-mutation';
 import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
-import type { ReactNode } from 'react';
-import type { Control, FieldPath } from 'react-hook-form';
+import type { FieldPath } from 'react-hook-form';
 
 const DraftSchema = z.strictObject({
   statusId: UuidSchema,
@@ -28,40 +27,6 @@ const DraftSchema = z.strictObject({
   customFields: z.record(FieldKeySchema, FieldValueSchema.nullable()),
 });
 type Draft = z.infer<typeof DraftSchema>;
-
-function SelectField({
-  name,
-  label,
-  control,
-  busy,
-  children,
-}: {
-  busy: boolean;
-  children: ReactNode;
-  control: Control<Draft>;
-  label: string;
-  name: 'statusId' | 'placementKind' | 'anchorId';
-}) {
-  return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field: { ref, ...input }, fieldState }) => (
-        <FormField
-          {...input}
-          inputRef={ref}
-          label={label}
-          select
-          slotProps={{ select: { native: true } }}
-          disabled={busy}
-          errorMessage={fieldState.error?.message}
-        >
-          {children}
-        </FormField>
-      )}
-    />
-  );
-}
 
 export function MoveForm({
   busy,
@@ -119,8 +84,7 @@ export function MoveForm({
     }
   });
   const selected = selectTaskStatus(sourceStatus, statuses);
-  const { control, handleSubmit, setError } = useForm<Draft>({
-    resolver: zodResolver(schema),
+  const { control, handleSubmit, setError } = useZodForm(schema, {
     mode: 'onBlur',
     defaultValues: {
       statusId: selected.success ? selected.statusId : '',
@@ -192,38 +156,57 @@ export function MoveForm({
       spacing={3}
     >
       {message && <Alert severity="error">{message}</Alert>}
-      <SelectField name="statusId" label="Status" control={control} busy={busy}>
-        <option value="">Select a status</option>
-        {statuses.map((status) => (
-          <option key={status.id} value={status.id}>
-            {status.name}
-          </option>
-        ))}
-      </SelectField>
-      <SelectField name="placementKind" label="Placement" control={control} busy={busy}>
-        <option value="start">Start of column</option>
-        <option value="end">End of column</option>
-        {sameList && anchors.length > 0 && (
-          <>
-            <option value="before">Before a loaded task</option>
-            <option value="after">After a loaded task</option>
-          </>
-        )}
-      </SelectField>
+      <FormFields
+        control={control}
+        disabled={busy}
+        fields={[
+          {
+            kind: 'select',
+            name: 'statusId',
+            label: 'Status',
+            options: [
+              { value: '', label: 'Select a status' },
+              ...statuses.map((status) => ({ value: status.id, label: status.name })),
+            ],
+          },
+          {
+            kind: 'select',
+            name: 'placementKind',
+            label: 'Placement',
+            options: [
+              { value: 'start', label: 'Start of column' },
+              { value: 'end', label: 'End of column' },
+              ...(sameList && anchors.length > 0
+                ? [
+                    { value: 'before', label: 'Before a loaded task' },
+                    { value: 'after', label: 'After a loaded task' },
+                  ]
+                : []),
+            ],
+          },
+        ]}
+      />
       {placementKind === 'end' && (
         <Typography color="text.secondary" variant="body2">
           A task moved to the end may appear on a later page.
         </Typography>
       )}
       {(placementKind === 'before' || placementKind === 'after') && (
-        <SelectField name="anchorId" label="Anchor task" control={control} busy={busy}>
-          <option value="">Choose a task</option>
-          {anchors.map((anchor) => (
-            <option key={anchor.id} value={anchor.id}>
-              {anchor.title}
-            </option>
-          ))}
-        </SelectField>
+        <FormFields
+          control={control}
+          disabled={busy}
+          fields={[
+            {
+              kind: 'select',
+              name: 'anchorId',
+              label: 'Anchor task',
+              options: [
+                { value: '', label: 'Choose a task' },
+                ...anchors.map((anchor) => ({ value: anchor.id, label: anchor.title })),
+              ],
+            },
+          ]}
+        />
       )}
       {removedKeys.length > 0 && (
         <Alert severity="info">
@@ -232,21 +215,11 @@ export function MoveForm({
         </Alert>
       )}
       {fields.map((definition) => (
-        <Controller
+        <ControlledField
           key={definition.key}
           control={control}
-          name={`customFields.${definition.key}`}
-          render={({ field, fieldState }) => (
-            <CustomFieldInput
-              field={definition}
-              disabled={busy}
-              inputRef={field.ref}
-              value={field.value}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              error={fieldState.error?.message}
-            />
-          )}
+          disabled={busy}
+          config={customFieldConfig<Draft>(`customFields.${definition.key}`, definition)}
         />
       ))}
     </Stack>

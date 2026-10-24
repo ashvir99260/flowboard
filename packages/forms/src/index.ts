@@ -9,3 +9,5 @@ export { FormFieldsSchema, parseFormFields } from './field-config.js';
 export type { FormFieldConfig } from './field-config.js';
 
 export { useZodForm } from './use-zod-form.js';
+
+export { customFieldConfig } from './custom-field-config.js';
