@@ -29,6 +29,8 @@ This also applies to JSX returns and NestJS service/controller methods. Existing
 
 ## Existing conventions
 
+[NAMING_CONVENTIONS.md](NAMING_CONVENTIONS.md) maps names and file roles to actual source examples and identifies which rules are automated.
+
 Use `const` unless reassignment is necessary, type-only imports where appropriate, descriptive camelCase values, and PascalCase types/components. Keep pure helpers small, avoid nested conditionals when a guard improves clarity, and retain normal branching when a lookup table would obscure validation or authorization. Keep functions focused on one responsibility; there is no arbitrary function-length rule.
 
 Existing shared lint also checks unused imports, import order and boundaries, selected SonarJS correctness rules, and safe sorting of applicable type/object/JSX members. React/Next presets include their framework and accessibility checks. Do not sort package.json properties or reorder runtime-sensitive object initialization to satisfy a style preference.

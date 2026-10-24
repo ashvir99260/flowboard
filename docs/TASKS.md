@@ -1011,6 +1011,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add action and realtime toast notifications`.
   - **Evidence:** [P16-01](evidence/P16-01.md).
 
+## Phase 17 — Repository AI guidance
+
+- [x] **P17-01 — Split agent guidance and document implemented conventions**
+  - **Goal:** Give agents a short entry map and scoped instructions grounded in the current code.
+  - **Requirements:** R138.
+  - **Files:** Root/app/package `AGENTS.md`, `docs/agents/README.md`, naming/frontend guides, backend/code-quality/logging/design navigation, database README, plan/decisions/matrix/evidence.
+  - **Dependencies:** P16-01.
+  - **Acceptance:** Guidance routes work by ownership; names, imports, DTO/Swagger, forms, styling, notifications and test patterns link to real examples. Distinguish compiler/lint enforcement from review conventions. Preserve access/security/task rules and Next's generated block. Correct stale future-tense implementation claims; keep historical research labeled. No global settings or runtime changes.
+  - **Validation:** Resolve all local links in changed Markdown, check source examples and rule claims against configuration, run Markdown formatting/diff/secret checks, independent review; G01/G02 documentation consistency. Application gates are not applicable to documentation-only changes; retain P16-01's current implementation evidence.
+  - **Commit:** `docs: organize repository ai guidance`.
+  - **Evidence:** [P17-01](evidence/P17-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

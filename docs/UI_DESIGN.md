@@ -1,6 +1,6 @@
 # Flowboard UI design: Linear-inspired, built with MUI
 
-Status: **implementation guide, not a shipped interface**. Research checked 23 October 2026. This document maps publicly documented Linear interactions to Flowboard's existing requirements, [API catalog](API_CATALOG.md), [system design](SYSTEM_DESIGN.md) and P08–P11 tasks. No signed-in Linear workspace, private source code or proprietary design file was accessed. Measurements below are proposed Flowboard defaults, not extracted Linear tokens.
+Status: **historical research and design baseline**. The local interface is implemented and verified through P08–P16; [FRONTEND_GUIDELINES.md](FRONTEND_GUIDELINES.md), [UI_COMPONENT_SYSTEM.md](UI_COMPONENT_SYSTEM.md), [FORM_SYSTEM.md](FORM_SYSTEM.md) and [STYLE_TOKENS.md](STYLE_TOKENS.md) govern current implementation. Future-tense proposals and measurements below retain their original research context. Research checked 23 October 2026. This document maps publicly documented Linear interactions to Flowboard's existing requirements, [API catalog](API_CATALOG.md), [system design](SYSTEM_DESIGN.md) and P08–P11 tasks. No signed-in Linear workspace, private source code or proprietary design file was accessed. Measurements below are proposed Flowboard defaults, not extracted Linear tokens.
 
 ## 1. What the public research supports
 

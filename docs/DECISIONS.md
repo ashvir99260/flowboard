@@ -557,3 +557,11 @@ Use pinned React Toastify 11.1.0 (React 18/19 support), styled through the share
 Realtime invalidations remain content-free. Add an optional recipient-relative `self` flag, computed by the server from authenticated identity and the trusted outbox actor. Clients opt in with the public `notifications=v1` handshake query capability (the auth payload remains token-only, so older servers also accept new clients); older clients receive the unchanged strict payload, supporting independent releases. New clients notify only for explicit `self: false`, deduplicating event IDs across both move endpoints; legacy messages still invalidate data without toasting. Self means the acting account, including its other browser tabs. No new notification persistence, delivery API or actor information is exposed. Existing permission checks run before each emission.
 
 Show one notification at a time with a bounded queue, success/info auto-dismiss after six seconds, and persistent errors with a close button. Toastify provides timer pause behavior; overlay-aware placement preserves modal accessibility. Inline repair messages remain visible but do not duplicate the toast announcement. No new global mutation/HTTP interceptor or handwritten API calls.
+
+## D142 — Scoped repository guidance with one owner per convention
+
+Date: 2026-10-25. Source: user request to split and improve AI skill/guidance documentation with the patterns and naming used in the implementation.
+
+Keep root AGENTS as the task/security entry point. App/package AGENTS files describe their own boundary and route readers to canonical guides. Add an agent guide index, a frontend guide and a naming reference; reuse existing backend, forms, UI, style, quality and delivery guides. These are repository instructions, with no global agent settings or installed skills changed.
+
+Document actual conventions and identify their enforcement level. PascalCase applies to types/classes and component conventions, not every variable or external field. Kebab-case filenames and role suffixes are review conventions. Type-only/Node ESM paths follow compiler/runtime constraints; package.json order is preserved. Historical design research stays labeled and cannot override current implementation, explicit user requests or executable contracts.

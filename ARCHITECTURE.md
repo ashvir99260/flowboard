@@ -1,11 +1,11 @@
 # Flowboard architecture reference
 
-**Status: API, web, worker and realtime implemented; final operational/release verification is tracked in P12.** Updated 24 October 2026.
+**Status: local MVP and P12 operational acceptance are implemented and verified; subsequent UI refinements are tracked through P16. External activation remains separately tracked.** Updated 25 October 2026.
 This is a navigation and change-impact reference for the agreed design, not evidence that its controls run today.
 The complete behavior lives in [PLAN.md](docs/PLAN.md), the original brief in [REQUIREMENTS.md](docs/REQUIREMENTS.md), and chosen defaults in [DECISIONS.md](docs/DECISIONS.md).
-Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish observed behavior from remaining release/deployment work.
+Use the [agent guide map](docs/agents/README.md) and [naming conventions](docs/NAMING_CONVENTIONS.md). Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish observed behavior from remaining release/deployment work.
 
-For the dated ClickUp/Asana/Linear research, see [product architecture references](docs/REFERENCE_ARCHITECTURES.md). For the concrete UI composition, tenant-aware ERD, query/index mapping, auth boundary and request/event sequences, see [system design](docs/SYSTEM_DESIGN.md). These describe intended implementation and do not mark domain requirements complete.
+For the dated ClickUp/Asana/Linear research, see [product architecture references](docs/REFERENCE_ARCHITECTURES.md). For the concrete UI composition, tenant-aware ERD, query/index mapping, auth boundary and request/event sequences, see [system design](docs/SYSTEM_DESIGN.md). Use these design references with the requirement matrix and task evidence; research alone does not mark a requirement complete.
 
 The implementation-ready [database and ER specification](docs/DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 

@@ -61,3 +61,7 @@ Keep logs and reports local. Redaction masks detected secrets, but metadata can 
 Keep optional reports under `.ai-local/`, Graphify output under `graphify-out/`, and Serena state under `.serena/`. These are Git-ignored and excluded from image contexts and formatting. The committed tool configuration and this guide remain visible.
 
 References: [ast-grep CLI](https://ast-grep.github.io/reference/cli), [Gitleaks usage and configuration](https://github.com/gitleaks/gitleaks), [Serena project configuration](https://oraios.github.io/serena/02-usage/020_running.html).
+
+## Repository instructions
+
+Start with the [agent guide map](agents/README.md) and scoped AGENTS files. Tool output is navigation evidence; verify it against the current source, [naming conventions](NAMING_CONVENTIONS.md) and executable checks. Keep global tool setup separate from repository guidance changes.
