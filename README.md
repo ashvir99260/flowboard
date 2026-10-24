@@ -270,7 +270,9 @@ PATCH preserves omitted fields, replaces the complete assignee array, clears due
 
 Use `GET /v1/workspaces/{workspaceId}/members?assignableToListId={listId}` for eligible assignees. The caller must see the list; candidates must see every ancestor. Filtering happens before pagination, and cursors bind the list. Foreign members return404; same-workspace members without list access return403 with the original input index.
 
-Writes recheck access and configuration under the workspace lock. Each real mutation advances dataVersion once, leaves configVersion unchanged, and commits its outbox event atomically. Creation emits `task.created`; edits/archives emit `task.updated` with sanitized changes and no raw title, description or field values. Worker dispatch and live browser updates remain later tasks.
+Writes recheck access and configuration under the workspace lock. Each real mutation advances dataVersion once, leaves configVersion unchanged, and commits its outbox event atomically. Creation emits `task.created`; edits/archives emit `task.updated` with sanitized changes and no raw title, description or field values.
+
+The API dispatches committed task, hierarchy and configuration events to BullMQ. PostgreSQL retains delivery intent: concurrent dispatchers claim bounded batches with expiring database-clock leases and fresh fencing tokens. Jobs carry only `{schemaVersion, eventId, workspaceId}` and use the event UUID as their stable ID. Redis acceptance marks an event `queued`, never `delivered`. Queued events are rechecked every 30 seconds, expired claims recover, and transient failures retry with capped exponential delay. Invalid persisted envelopes are quarantined with a sanitized error code. The dispatcher starts only in the running API, not during OpenAPI export, and stops with the application. Activity consumption and live browser updates remain the next tasks.
 
 ### Task placement
 

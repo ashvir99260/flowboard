@@ -11,6 +11,7 @@ import { NestLogger } from './shared/logging/nest-logger.js';
 import { requestLogging } from './shared/logging/request-logging.js';
 
 import type { AuthRuntime } from './modules/auth/runtime.js';
+import type { OutboxRuntime } from './modules/outbox/outbox.runtime.js';
 import type { DependencyProbe } from './modules/platform/dependency-probe.js';
 import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
@@ -19,11 +20,17 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export async function createApplication(
   probe: DependencyProbe,
-  options: { auth?: AuthRuntime; database?: Database; exposeDocs?: boolean; logger?: Logger } = {},
+  options: {
+    auth?: AuthRuntime;
+    database?: Database;
+    exposeDocs?: boolean;
+    logger?: Logger;
+    outbox?: OutboxRuntime;
+  } = {},
 ) {
   const logger = options.logger ?? SilentLogger;
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule.forProbe(probe, options.auth, logger, options.database),
+    AppModule.forProbe(probe, options.auth, logger, options.database, options.outbox),
     new ExpressAdapter(),
     {
       bodyParser: false,

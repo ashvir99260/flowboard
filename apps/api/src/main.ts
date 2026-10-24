@@ -7,6 +7,7 @@ import { createApplication } from './application.js';
 import { readApplicationConfig } from './core/config/application.config.js';
 import { readAuthSettings } from './modules/auth/auth.config.js';
 import { createAuthRuntime } from './modules/auth/runtime.js';
+import { createOutboxRuntime } from './modules/outbox/outbox.runtime.js';
 import { runtimeProbe } from './modules/platform/dependency-probe.js';
 
 import type { Server } from 'node:http';
@@ -33,6 +34,7 @@ async function bootstrap(): Promise<void> {
     auth: createAuthRuntime(databaseUrl, redisUrl, authSettings, logger),
     database: createDatabase(databaseUrl, logger),
     exposeDocs: config.exposeDocs,
+    outbox: createOutboxRuntime(databaseUrl, redisUrl, logger),
     logger,
   });
   app.enableShutdownHooks(['SIGINT', 'SIGTERM']);

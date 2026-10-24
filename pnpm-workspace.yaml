@@ -12,3 +12,4 @@ allowBuilds:
   '@parcel/watcher': false
   '@ast-grep/cli': true
   unrs-resolver: true
+  msgpackr-extract: false

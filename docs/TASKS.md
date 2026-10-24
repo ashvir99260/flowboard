@@ -851,13 +851,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 11 — Durable activity and realtime
 
-- [ ] **P11-01 — Durable outbox dispatch to BullMQ**
+- [x] **P11-01 — Durable outbox dispatch to BullMQ**
   - **Goal:** Deliver persisted task events after commit, surviving Redis outages.
-  - **Files:** `apps/api/src/modules/outbox/**`, `packages/contracts/src/{events,jobs}.ts`, `apps/api/test/integration/outbox.integration.test.ts`, Redis test harness/config.
+  - **Requirements:** R11, R15, R74, R75, R112.
+  - **Files:** `apps/api/src/modules/outbox/**`, runtime module wiring, contracts jobs/events, database outbox repository and enum/constraint migration, colocated API and database tests, Redis configuration, dependencies/lockfile and task documentation.
   - **Dependencies:** P10-02.
   - **Acceptance:** Claim/retry durable events; stable event ID/job ID; bounded backoff and observable failures. No lost intent after DB commit, no event from rolled-back write, multiple dispatchers safely claim work.
   - **Validation:** Redis unavailable then recovers, dispatcher crash/retry, duplicate attempts, two dispatchers, malformed job schema; standard gate with real Redis/Postgres.
   - **Commit:** `feat: dispatch durable task events to bullmq`.
+  - **Completion evidence:** [P11-01](evidence/P11-01.md): fenced concurrent claims, strict jobs, real Redis outage recovery, duplicate suppression and active-enqueue shutdown pass; all 907 tests and root gates pass.
 
 - [ ] **P11-02 — Idempotent activity worker and drawer feed**
   - **Goal:** Turn status-change events into stored, visible activity.

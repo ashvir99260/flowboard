@@ -64,6 +64,8 @@ enum Priority {
 
 enum OutboxState {
   pending
+  dispatching
+  queued
   processing
   delivered
   failed
