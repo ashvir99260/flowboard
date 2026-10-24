@@ -13,4 +13,6 @@ The migration preserves existing sizes by converting old 4px spacing multipliers
 
 Stored/API custom colors retain their existing hex contract and validated inputs. `toHslColor` converts those values when applying them to presentation, without changing records or requests. Do not turn a presentation-unit change into a schema migration.
 
+Data Grid requires numeric pixel geometry for columns and headers. `useRemSize` observes a one-rem element and converts the authored rem values for that API; container sizing, padding and typography remain rem CSS. Initial server/client rendering uses the normal 10px equivalent, then browser measurement updates it. The observer handles later font changes and disconnects on unmount; do not hardcode pixel geometry that ignores user font preferences.
+
 Tests cover public theme values, computed browser geometry and colors, both color schemes, responsive widths and an increased browser default font. See the official [MUI typography](https://mui.com/material-ui/customization/typography/#html-font-size), [spacing](https://mui.com/material-ui/customization/spacing/) and [CSS length](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length) references.

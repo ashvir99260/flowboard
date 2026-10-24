@@ -69,6 +69,16 @@ The development-only `/playground` page demonstrates controls, compound parts an
 
 The executable ESLint boundary rejects direct `@mui/*` imports/reexports/dynamic imports in web `src` and `app`. MUI imports belong in UI; test fixtures remain allowed. UI also rejects data clients, router hooks and React Hook Form. Existing package-layer checks continue to reject app imports and package source-path shortcuts. Review is still needed for component ownership, visual quality and excessive local layout styles; those cannot be proved by an import rule.
 
+## Task Data Grid
+
+`TaskTable` uses MUI X Data Grid Community and keeps the same plain `items`, `statuses`, `fields` and `onOpenTask` props. UI owns the grid, title row headers, keyboard task actions, metadata renderers and inherited/local custom-field labels. Web owns URL-backed sort/filter controls, generated requests and cursor loading. Grid-local sort/filter/menu controls stay disabled so partial loaded results never imply server-wide ordering.
+
+The visible Community paginator offers 25/50/100 rows per page over the rows already loaded. Web's **Load more tasks** action retrieves the next cursor page; grid page changes make no API request. Keep the paginator visible so every loaded row remains reachable beyond 100. Do not add offset endpoints or paid grid features for this presentation.
+
+The bounded rem-sized container uses virtualized, content-height rows. Numeric grid geometry derives from an observed one-rem element, preserving browser font preferences. Keep `data-open-task` on title buttons for drawer focus restoration and use the grid's supplied `tabIndex` for its roving keyboard focus. Storybook covers keyboard activation, empty data, appended pages, reset and font scaling.
+
+References: [Community pagination](https://mui.com/x/react-data-grid/pagination/), [grid accessibility](https://mui.com/x/react-data-grid/accessibility/), [row height](https://mui.com/x/react-data-grid/row-height/).
+
 ## Form bindings
 
 The later [P14 form system](FORM_SYSTEM.md) puts reusable React Hook Form bindings in `packages/forms`, above this UI layer. Web retains schema/default selection, requests, field arrays, resets and conflict decisions. This refines the earlier web-only controller ownership; the UI prohibition on RHF remains. UI controls can receive hint/value/error/ref callbacks from the shared adapter without depending on the form library.
