@@ -1,11 +1,7 @@
 'use client';
 
+import { Alert, Button, Chip, Stack, Typography } from '@flowboard/ui';
 import { ErrorState } from '@flowboard/ui';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRef, useState } from 'react';
 
 import { SessionLoading } from '../../auth/session-gate';

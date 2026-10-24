@@ -1,6 +1,6 @@
 'use client';
 
-import Box from '@mui/material/Box';
+import { Box } from '@flowboard/ui';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 

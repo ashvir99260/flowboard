@@ -1,9 +1,7 @@
 'use client';
 
+import { Button, Stack, Typography } from '@flowboard/ui';
 import { ErrorState } from '@flowboard/ui';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useTransition } from 'react';

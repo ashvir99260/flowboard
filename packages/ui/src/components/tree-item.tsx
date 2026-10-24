@@ -11,7 +11,7 @@ const Item = styled('li')({ listStyle: 'none', minWidth: 0 });
 const Row = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  borderRadius: 4,
+  borderRadius: theme.shape.borderRadius,
   '&[data-selected="true"]': { backgroundColor: (theme.vars ?? theme).palette.action.selected },
 }));
 const Toggle = styled(ButtonBase)({ minWidth: 44, minHeight: 44 });

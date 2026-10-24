@@ -18,6 +18,8 @@ Visibility grants let members work on visible tasks; they do not grant configura
 
 **Field settings** supports all six field types at the same scopes. An inherited field can be copied into a complete local definition; removing the local override restores the ancestor when existing task values allow it. Option identities survive renames and reordering. Type changes, option removal and required-field promotion are rejected if they invalidate live tasks, with the draft retained. The effective preview accepts sample values without saving them to tasks.
 
+The [shared UI component guide](docs/UI_COMPONENT_SYSTEM.md) covers MUI styled controls, compound components and controlled views. Reusable presentation lives in `packages/ui`; web supplies data and actions. Activity timestamps display in UTC.
+
 The [system design](docs/SYSTEM_DESIGN.md) covers the UI, backend, database ERD and request/event flows. [ClickUp/Asana/Linear research](docs/REFERENCE_ARCHITECTURES.md) explains the public patterns behind it, with sources and explicit limits on what is known.
 
 The implementation-ready [database and ER specification](docs/DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.

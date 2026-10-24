@@ -168,3 +168,50 @@ test('only the server-only API proxy may perform direct web fetches', async () =
     1,
   );
 });
+
+for (const code of [
+  "import Button from '@mui/material/Button';",
+  "export { Button } from '@mui/material';",
+  "export * from '@mui/material/styles';",
+  "await import('@mui/material/Dialog');",
+  "import type { Theme } from '@mui/material/styles';",
+]) {
+  for (const directory of ['src', 'app']) {
+    test(`web ${directory} uses shared presentation: ${code}`, async () => {
+      assert.equal((await check(`apps/web/${directory}/example.ts`, code)).length, 1);
+    });
+  }
+}
+for (const [file, code] of [
+  ['apps/web/src/example.ts', "import { Button } from '@flowboard/ui';"],
+  ['packages/ui/src/example.ts', "import Button from '@mui/material/Button';"],
+  [
+    'packages/ui/src/example.ts',
+    "import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';",
+  ],
+  ['apps/web/test/fixtures/src/example.ts', "import Button from '@mui/material/Button';"],
+]) {
+  test(`shared presentation allowance ${file}`, async () =>
+    assert.equal((await check(file, code)).length, 0));
+}
+for (const code of [
+  "import { useRouter } from 'next/navigation';",
+  "import { useRouter } from 'next/router';",
+  "import { useForm } from 'react-hook-form';",
+]) {
+  test(`shared UI rejects web coordination: ${code}`, async () =>
+    assert.equal((await check('packages/ui/src/example.ts', code)).length, 1));
+}
+
+for (const entry of [
+  'next/compat/router',
+  'next/compat/router.js',
+  'next/navigation.js',
+  'next/router.js',
+]) {
+  test(`shared UI rejects alternate router entry ${entry}`, async () =>
+    assert.equal(
+      (await check('packages/ui/src/example.ts', `import { useRouter } from '${entry}';`)).length,
+      1,
+    ));
+}

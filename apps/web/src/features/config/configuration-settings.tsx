@@ -1,9 +1,7 @@
 'use client';
 
+import { Button, Stack, Typography } from '@flowboard/ui';
 import { ConfirmDialog, ErrorState, FormField } from '@flowboard/ui';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '../../providers/app-providers';

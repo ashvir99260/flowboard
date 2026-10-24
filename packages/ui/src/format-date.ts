@@ -12,3 +12,13 @@ export function formatCalendarDate(value: string): string | undefined {
 
   return formatter.format(new Date(`${value}T00:00:00Z`));
 }
+
+export function formatTimestamp(value: string): string {
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return 'Invalid time';
+
+  return new Date(timestamp)
+    .toISOString()
+    .replace('T', ' ')
+    .replace(/\.\d{3}Z$/, ' UTC');
+}

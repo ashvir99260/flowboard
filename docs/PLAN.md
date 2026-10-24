@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** The local MVP is implemented and verified through P12-03, including a clean checkout and both Docker modes. Updated 24 October 2026. The requested P13 composable-UI refinement is in progress. Hosted preview activation, first publication and future environment promotion remain separately tracked.
+**Status:** The local MVP is implemented and verified through P12-03, including a clean checkout and both Docker modes. Updated 25 October 2026. The P13 composable UI refinement is complete and verified. Hosted preview activation, first publication and future environment promotion remain separately tracked.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
