@@ -1047,6 +1047,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: use mui data grid for task lists`.
   - **Evidence:** [P19-01](evidence/P19-01.md).
 
+## Phase 20 — As-built architecture and delivery documentation
+
+- [x] **P20-01 — Explain the architecture, application and delivered requirements**
+  - **Goal:** Give a new reader an accurate view of the implemented system and how the original brief and later requests were delivered.
+  - **Requirements:** R141; summarize existing R01–R140 without redefining their evidence.
+  - **Files:** `docs/HLD.md`, `docs/LLD.md`, `docs/APPLICATION_GUIDE.md`, `docs/DELIVERY_SUMMARY.md`, `docs/README.md`; navigation in root README/ARCHITECTURE and agent index; related stale delivery prose; plan, decisions, matrix and evidence.
+  - **Dependencies:** P19-01.
+  - **Acceptance:** Separate high/low-level designs include system boundaries, modules, data relationships, security, request/event flows and failure behavior. The application guide explains implemented features, every workspace package and key libraries. The delivery summary maps original prompt sections and later refinements to requirements, ordered tasks, source and recorded verification; explicitly separates implemented, superseded, deferred and externally unverified work. Dates, counts and test results name their source snapshot. Existing detailed specs remain linked authorities rather than duplicated dictionaries.
+  - **Validation:** Review source/manifests/evidence; validate all new local links/anchors, requirement/task coverage, package inventory and Mermaid structure; run formatting and whitespace checks. Documentation-only: no new runtime tests or fresh application-build claims.
+  - **Commit:** `docs: explain architecture and delivered scope`.
+  - **Evidence:** [P20-01](evidence/P20-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

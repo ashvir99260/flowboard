@@ -1,9 +1,11 @@
 # Flowboard architecture reference
 
-**Status: local MVP and P12 operational acceptance are implemented and verified; subsequent UI refinements are tracked through P16. External activation remains separately tracked.** Updated 25 October 2026.
+**Status: local MVP and P12 operational acceptance are implemented and verified; subsequent UI refinements are tracked through P19. External activation remains separately tracked.** Updated 25 October 2026.
 This is a navigation and change-impact reference for the agreed design, not evidence that its controls run today.
 The complete behavior lives in [PLAN.md](docs/PLAN.md), the original brief in [REQUIREMENTS.md](docs/REQUIREMENTS.md), and chosen defaults in [DECISIONS.md](docs/DECISIONS.md).
 Use the [agent guide map](docs/agents/README.md) and [naming conventions](docs/NAMING_CONVENTIONS.md). Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish observed behavior from remaining release/deployment work.
+
+For a reader-oriented overview, use [HLD](docs/HLD.md), [LLD](docs/LLD.md), the [application guide](docs/APPLICATION_GUIDE.md) and [delivery summary](docs/DELIVERY_SUMMARY.md). This file remains the concise ownership/change-impact reference.
 
 For the dated ClickUp/Asana/Linear research, see [product architecture references](docs/REFERENCE_ARCHITECTURES.md). For the concrete UI composition, tenant-aware ERD, query/index mapping, auth boundary and request/event sequences, see [system design](docs/SYSTEM_DESIGN.md). Use these design references with the requirement matrix and task evidence; research alone does not mark a requirement complete.
 

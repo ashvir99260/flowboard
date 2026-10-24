@@ -2,6 +2,8 @@
 
 Use this map after the [root instructions](../../AGENTS.md). Read the guide for the area being changed, then the current implementation and tests. New direct user instructions take precedence; historical articles and generated code graphs are reference material.
 
+For application context before coding, read the [application guide](../APPLICATION_GUIDE.md), [HLD](../HLD.md), [LLD](../LLD.md) and [delivery summary](../DELIVERY_SUMMARY.md). Their source snapshots and recorded evidence do not replace verification of a new change.
+
 ## Find the right guidance
 
 | Work                         | Start with                                                                                                           | Detailed reference                                                                                                               |

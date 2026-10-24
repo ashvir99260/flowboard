@@ -581,3 +581,9 @@ Date: 2026-10-25. Source: user request to use MUI Data Grid for the table view.
 Use the MIT Community package in UI and preserve the TaskTable public props. Web continues to own URL-backed sort/filter and cursor loading. Disable competing grid-local sort/filter controls; a visible Community paginator pages only the rows already loaded, with page sizes at most 100. Retain Load More for fetching additional cursor pages. No API offsets, paid features or license keys are introduced.
 
 Keep stable task IDs, title row headers and task-button callbacks/focus attributes. Reuse metadata renderers and inherited/local custom headers. Use virtualized rows in a bounded rem-sized container; convert the widget's required numeric geometry from a measured rem unit and allow content-height rows. Test beyond 100 loaded rows, keyboard navigation and font scaling. Browser/Next bundlers own real grid CSS; Node tests import the installed package without a CSS shim.
+
+## D145 — Separate as-built design, onboarding and delivery evidence
+
+Date: 2026-10-25. Source: user request for better HLD/LLD, a prompt-by-prompt delivery summary and an explanation of the application/features/packages.
+
+Use `docs/HLD.md` for system boundaries and tradeoffs, `docs/LLD.md` for implementation flows and invariants, `docs/APPLICATION_GUIDE.md` for features/package responsibilities, and `docs/DELIVERY_SUMMARY.md` for the execution and requirement map. `docs/README.md` is the reading index. Base descriptions on the P19 source snapshot; label historical test evidence and external activation separately. Preserve the matrix as the authoritative per-requirement status and the existing field/API/database guides as detailed dictionaries. This task changes documentation only and does not rerun or imply new runtime/release verification.
