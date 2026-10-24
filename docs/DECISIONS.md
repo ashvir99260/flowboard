@@ -627,3 +627,11 @@ Date: 2026-10-25. Source: user request to preview the complete application with 
 `compose.yaml` already supplies a complete local demonstration configuration. Keep that single source rather than generating files, adding a launcher, baking secrets into images or introducing a second preview stack. Put `docker compose up --build` first in the README; `.env` remains an optional override and host development retains its separate setup. Local-only credentials, demo seeding and HTTP cookie settings stay inside Compose; hosted application validation still requires supplied credentials and secure settings.
 
 Verify a copy of the Compose file in a temporary directory without `.env`, clearing inherited interpolation variables. Run the existing real Docker acceptance with default database/auth/seed/Swagger/origin settings, overriding only unique host ports and debug logging for test isolation. Reuse its browser edit, session rotation, persistence and worker recovery checks. Existing functionality may pass the new regression immediately; record that honestly rather than manufacture a red test.
+
+## D151 — Feature-owned named query hooks
+
+Date: 2026-10-25. Source: user request to separate frontend TanStack Query hooks from actual components and use names such as `useGetUserQuery`.
+
+Keep query setup in `.ts` hooks beside its owning feature. Match the generated operation in `use<Operation>Query` or `use<Operation>InfiniteQuery` (for example `useGetCurrentUserQuery` and `useListWorkspacesInfiniteQuery`); retain the web's kebab-case filenames. View `.tsx` files consume these hooks without importing TanStack Query or generated query-option factories. App-level QueryClient providers are infrastructure and stay in providers.
+
+Extract the four reads still configured in workspace and activity components. Preserve generated query functions/key structure, identity scoping, retry generations, pagination and polling exactly. Keep cohesive board/list/detail/configuration orchestration hooks and already-separated mutation hooks; do not rename their cache keys or turn dynamic `useQueries` into hooks called in a loop. Components still own rendering and response-specific validation; no generic query abstraction or API changes are needed.

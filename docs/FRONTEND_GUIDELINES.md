@@ -26,6 +26,16 @@ Use generated query/mutation options from `@flowboard/api-client/tanstack-query`
 
 Use [withQueryScope](../apps/web/src/lib/query-scope.ts) without breaking the generated first query-key item. Scope caches by session revision, user and workspace; clear them on logout/workspace changes. Do not place access tokens in localStorage or mirror query results into a global store. Keep shareable list/filter/sort state in the URL.
 
+Keep TanStack Query setup in feature-owned `.ts` hooks, separate from `.tsx` views. Name an endpoint hook `use<Operation>Query`, matching the generated operation, and use `use<Operation>InfiniteQuery` for cursor collections. For example, [useGetCurrentUserQuery](../apps/web/src/features/auth/use-get-current-user-query.ts) wraps `getCurrentUserOptions`; [useListTaskActivityInfiniteQuery](../apps/web/src/features/tasks/use-list-task-activity-infinite-query.ts) owns activity pagination and polling. Hook filenames use web's existing kebab-case convention.
+
+```tsx
+const query = useGetCurrentUserQuery({ runtime, scope });
+```
+
+The hook owns generated options, scope tags and query policy; the view owns rendering, response-specific validation and user interaction. Preserve retry-generation tags when a caller restarts a paginated read. Existing composite hooks such as `useBoard` and `useTaskDetail` coordinate several reads and retain their descriptive names. Existing mutation hooks retain their operation keys and optimistic behavior. Do not call individual hooks in a loop: dynamic parallel reads continue to use `useQueries` inside their coordinating hook.
+
+The [view import boundary test](../apps/web/test/data-hook-boundary.test.mjs) rejects TanStack Query and generated query-option imports in feature `.tsx` files. Providers may still own `QueryClient` infrastructure. Imperative generated SDK verification, such as the task drawer's conflict check, is a separate responsibility and remains unchanged.
+
 Follow [use-task-write.ts](../apps/web/src/features/tasks/use-task-write.ts) for validated write results and [use-task-mutation.ts](../apps/web/src/features/board/use-task-mutation.ts) for placement changes. Validate authoritative responses before showing success. Preserve optimistic rollback, concurrent-write guards and newer updates. Loading, empty, forbidden and recoverable error states are part of the feature.
 
 ## Forms

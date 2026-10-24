@@ -1136,6 +1136,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `test: verify setup-free docker preview`.
   - **Evidence:** [P24-01](evidence/P24-01.md).
 
+## Phase 25 — Named frontend data hooks
+
+- [x] **P25-01 — Separate query hooks from view components**
+  - **Goal:** Keep TanStack Query configuration in named, feature-owned hooks so view components focus on interaction and rendering.
+  - **Requirements:** R148; preserve R23, R70 and existing session, pagination and activity behavior.
+  - **Files:** Four `use-*-query.ts` hooks in web auth/tree/workspaces/tasks; workspace shell/picker and activity feed; web boundary test; frontend/naming guides; plan/decisions/matrix/delivery summary and evidence.
+  - **Dependencies:** P08-02, P08-03, P11-02 and P21-02; prioritized by the direct frontend refactor request.
+  - **Acceptance:** Components consume `useGetCurrentUserQuery`, `useGetNodeQuery`, `useListWorkspacesInfiniteQuery` and `useListTaskActivityInfiniteQuery`. Hooks use generated options, retain session-scoped keys, cursor validation, retry-generation tags and activity polling/error policy. Existing composite query and mutation hooks retain their behavior. A source-boundary regression rejects direct TanStack/query-option imports in feature view files. No endpoint, generated client or presentation changes.
+  - **Validation:** G01–G05/G09; observe the new boundary check fail before extraction; pass it and existing cache, auth/navigation, activity and real-service browser tests; root build/lint/test/typecheck/format. Docker checks are not applicable to this source-only refactor.
+  - **Commit:** `refactor(web): separate named query hooks`.
+  - **Evidence:** [P25-01](evidence/P25-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

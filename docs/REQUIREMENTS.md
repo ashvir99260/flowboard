@@ -179,3 +179,7 @@ Make plan for the given requirements for now
 ## Follow-up requirement — setup-free Docker preview (25 October 2026)
 
 A new contributor must be able to run `docker compose up --build` from the repository root and preview the working application without copying or creating any `.env` file, installing host Node/pnpm, manually running migrations, or manually seeding data. Docker/Compose and available local ports are the prerequisites. Start web, API, worker, PostgreSQL and Redis; provide seeded demo accounts; document the web/Swagger URLs and optional configuration separately. Preserve local-only defaults, health checks and data across restarts. Track this request in the requirement matrix, task ledger and observable verification evidence.
+
+## Follow-up requirement — named frontend query hooks (25 October 2026)
+
+Separate frontend TanStack Query setup from view components into custom hooks with descriptive names such as `useGetUserQuery`. Use the existing generated API client and preserve session isolation, pagination, error handling and UI behavior.

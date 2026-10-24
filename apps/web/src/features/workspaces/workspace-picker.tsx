@@ -1,6 +1,5 @@
 'use client';
 
-import { listWorkspacesInfiniteOptions } from '@flowboard/api-client/tanstack-query';
 import { WorkspacePageSchema } from '@flowboard/contracts';
 import {
   Box,
@@ -12,14 +11,14 @@ import {
   Toolbar,
   Typography,
 } from '@flowboard/ui';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { apiError } from '../../lib/api-error';
-import { withQueryScope } from '../../lib/query-scope';
 import { useSession } from '../../providers/app-providers';
 import { SessionGate, SessionLoading } from '../auth/session-gate';
+
+import { useListWorkspacesInfiniteQuery } from './use-list-workspaces-infinite-query';
 
 import type { QueryScope } from '../../lib/query-scope';
 import type { ClientRuntime } from '../../providers/app-providers';
@@ -30,19 +29,7 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
   const [error, setError] = useState<string | null>(null);
   const [changing, setChanging] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const query = useInfiniteQuery({
-    ...withQueryScope(
-      listWorkspacesInfiniteOptions({ client: runtime.client, query: { limit: '50' } }),
-      scope,
-      [`memberships-attempt:${attempt}`],
-    ),
-    initialPageParam: { query: {} },
-    getNextPageParam: (page) => {
-      const parsed = WorkspacePageSchema.safeParse(page);
-
-      return parsed.success ? (parsed.data.pageInfo.nextCursor ?? undefined) : undefined;
-    },
-  });
+  const query = useListWorkspacesInfiniteQuery({ generation: attempt, runtime, scope });
 
   const pages = WorkspacePageSchema.array().safeParse(query.data?.pages ?? []);
   const cursors = pages.success ? pages.data.flatMap((page) => page.pageInfo.nextCursor ?? []) : [];

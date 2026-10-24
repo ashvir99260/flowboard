@@ -348,3 +348,9 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | ID   | Source              | Requirement                                                                                                                          | Owner/tasks          | Acceptance evidence                                                                                                                               | Status   |
 | ---- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | R147 | E · User refinement | Start the complete working local preview with `docker compose up --build`, without creating env files or manually initializing data. | Docker/docs · P24-01 | Clean configuration defaults and real five-service startup, demo login/edit, health and restart-persistence checks; [P24-01](evidence/P24-01.md). | Verified |
+
+## Named frontend query hooks
+
+| ID   | Source              | Requirement                                                                  | Owner/tasks  | Acceptance evidence                                                                                                         | Status   |
+| ---- | ------------------- | ---------------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------- | -------- |
+| R148 | E · User refinement | Separate TanStack Query setup from components into descriptive custom hooks. | Web · P25-01 | Named feature hooks, generated transport/session isolation, boundary and browser regressions; [P25-01](evidence/P25-01.md). | Verified |

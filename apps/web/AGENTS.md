@@ -14,6 +14,7 @@ Read the [root instructions](../../AGENTS.md), [frontend guide](../../docs/FRONT
 
 - Routes/layouts stay in `app`; data-aware code lives in `src/features/<feature>`. Shared presentation belongs in `@flowboard/ui`, generic typed form wiring in `@flowboard/forms`, and shared schemas in contracts.
 - Use generated Hey API SDK/query options. Keep session-scoped query keys, validated responses and correct optimistic rollback. No handwritten domain fetches, backend imports, direct Material control imports or duplicate server-state store.
+- Put TanStack Query setup in feature-owned `.ts` hooks, named `use<Operation>Query` or `use<Operation>InfiniteQuery`; views call the hooks. Keep existing composite/mutation hooks and their policies. The web view-import test enforces separation; QueryClient providers remain infrastructure.
 - Use shared Zod/RHF controls with complete defaults. Preserve dirty edits, explicit clearing, server issue paths, stable option IDs and focus. Keep shareable view/filter/sort state in the URL.
 - Read the [component](../../docs/UI_COMPONENT_SYSTEM.md), [form](../../docs/FORM_SYSTEM.md) and [token](../../docs/STYLE_TOKENS.md) guides before adding reusable UI. Preserve MUI/Emotion SSR, HSL/rem conventions, native semantics and keyboard alternatives.
 - Action feedback uses the notification provider and shared ToastHost. Capture final results once, clear on session changes, keep background reads quiet, and use shared overlays for accessible placement.

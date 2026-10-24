@@ -1,22 +1,21 @@
 'use client';
 
-import { getCurrentUserOptions, getNodeOptions } from '@flowboard/api-client/tanstack-query';
 import { CurrentUserEnvelopeSchema, NodeEnvelopeSchema } from '@flowboard/contracts';
 import { Alert, Box, Button, Divider, Stack, Typography } from '@flowboard/ui';
 import { ErrorState, WorkspaceLayout } from '@flowboard/ui';
-import { useQuery } from '@tanstack/react-query';
 import NextLink from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { apiError } from '../../lib/api-error';
-import { withQueryScope } from '../../lib/query-scope';
 import { useSession } from '../../providers/app-providers';
 import { SessionGate, SessionLoading } from '../auth/session-gate';
+import { useGetCurrentUserQuery } from '../auth/use-get-current-user-query';
 import { ConfigurationSettingsHost } from '../config/configuration-settings-host';
 import { ListViews } from '../list/list-view';
 import { TaskEditorProvider } from '../tasks/task-drawer';
 import { Sidebar } from '../tree/sidebar';
+import { useGetNodeQuery } from '../tree/use-get-node-query';
 
 import type { QueryScope } from '../../lib/query-scope';
 import type { ClientRuntime } from '../../providers/app-providers';
@@ -31,9 +30,7 @@ function SelectedList({
   runtime: ClientRuntime;
   scope: QueryScope;
 }) {
-  const query = useQuery(
-    withQueryScope(getNodeOptions({ client: runtime.client, path: { nodeId: listId } }), scope),
-  );
+  const query = useGetNodeQuery({ nodeId: listId, runtime, scope });
 
   if (query.isPending) return <SessionLoading />;
 
@@ -120,7 +117,7 @@ function VerifiedWorkspace({
 }) {
   const { logout } = useSession();
   const [open, setOpen] = useState(false);
-  const query = useQuery(withQueryScope(getCurrentUserOptions({ client: runtime.client }), scope));
+  const query = useGetCurrentUserQuery({ runtime, scope });
 
   if (query.isPending) return <SessionLoading />;
 
