@@ -197,10 +197,10 @@ try {
   }
 
   // Probe-only UI exports live in the disposable copy, never in the user's checkout.
-  await edit(
-    'packages/ui/src/index.ts',
-    'export {};',
-    "export const DevelopmentProbe = 'dev-ui-before';",
+  const uiEntry = path.join(fixture, 'packages/ui/src/index.ts');
+  await writeFile(
+    uiEntry,
+    `${await readFile(uiEntry, 'utf8')}\nexport const DevelopmentProbe = 'dev-ui-before';\n`,
   );
   await edit(
     'apps/web/app/page.tsx',
@@ -368,6 +368,17 @@ try {
     `[${project}] All live-edit, recovery, isolation and data-preservation checks passed`,
   );
 } catch (error) {
+  console.error(
+    await docker(
+      'exec',
+      '-T',
+      'api',
+      'node',
+      '--input-type=module',
+      '-e',
+      "import { readFile } from 'node:fs/promises'; for (const file of ['src/modules/platform/health.controller.ts', 'dist/modules/platform/health.controller.js']) { const text = await readFile(`/repo/apps/api/${file}`, 'utf8'); console.log(file, text.match(/api-(?:reloaded|recovered)/g)); } const response = await fetch('http://localhost:3001/health/live'); console.log('Recovery probe', response.status, response.headers.get('x-development-probe'));",
+    ).catch(() => 'Recovery diagnostic unavailable'),
+  );
   console.error(
     await docker('logs', '--no-color', '--tail', '60', 'postgres', 'redis', 'api', 'worker', 'web'),
   );
