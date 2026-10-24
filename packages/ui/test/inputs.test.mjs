@@ -345,3 +345,19 @@ test('board primitives expose status and task metadata without nesting action bu
   assert.equal(opened, 1);
   assert.equal(globalThis.document.querySelector('button button'), null);
 });
+
+test('a read-only board card exposes a heading without an inactive title button', () => {
+  render(
+    createElement(UI.KanbanCard, {
+      task: {
+        id: 'read-only',
+        title: 'Read-only task',
+        priority: 'none',
+        dueDate: null,
+        assignees: [],
+      },
+    }),
+  );
+  assert.ok(screen.getByRole('heading', { level: 3, name: 'Read-only task' }));
+  assert.equal(screen.queryByRole('button', { name: 'Read-only task' }), null);
+});
