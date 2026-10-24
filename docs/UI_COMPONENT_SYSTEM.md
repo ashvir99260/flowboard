@@ -24,7 +24,7 @@ flowchart LR
 - Simple structures use children and named parts. `Surface.Root/Header/Title/Description/Body/Footer` and `Toolbar.Root/Group` let callers arrange their content. Context is used only when parts share real state, such as a controlled overlay; do not add context to static layout.
 - The UI primitive entry point owns the MUI controls used by web. Layout-only primitives can retain MUI's implementation; reusable styling belongs in named styled components and the theme. Web does not import Material controls directly after migration. `sx` remains for genuinely local layout and DnD-provided positioning stays intact.
 - Domain views consume shared contract types and callbacks. Tables receive items/statuses/fields and `onOpenTask`; shells and drawers receive children, labels and controlled visibility. They do not infer authorization or fetch data.
-- Use semantic palette tokens, 4px spacing, 6px corners, no default card shadow, and at least 44px interactive targets. Inputs/focus need discernible boundaries; subtle decorative dividers do not replace accessible input outlines.
+- Use semantic HSL palette tokens, rem spacing, 6px corners, no default card shadow, and at least 4.4rem interactive targets (44px at the normal browser default). Inputs/focus need discernible boundaries; subtle decorative dividers do not replace accessible input outlines.
 - Neutral light/dark surfaces replace the previous blue-gray palette. Status/priority colors retain their meanings; text labels never rely on color alone.
 - Export typed public APIs, never package source paths. Prefer explicit variants and compound parts over accumulating boolean layout flags. Busy/disabled/open remain legitimate control state.
 
@@ -72,3 +72,7 @@ The executable ESLint boundary rejects direct `@mui/*` imports/reexports/dynamic
 ## Form bindings
 
 The later [P14 form system](FORM_SYSTEM.md) puts reusable React Hook Form bindings in `packages/forms`, above this UI layer. Web retains schema/default selection, requests, field arrays, resets and conflict decisions. This refines the earlier web-only controller ownership; the UI prohibition on RHF remains. UI controls can receive hint/value/error/ref callbacks from the shared adapter without depending on the form library.
+
+## Color and unit refinement
+
+[P15-01 and D140](STYLE_TOKENS.md) refine the original 4px/16px scale: palette declarations use HSL, fixed dimensions use rem, and 1rem/one MUI spacing unit is 10px at the normal browser default. Existing spacing multipliers were adjusted to preserve layout. Borders/radii stay px, and larger browser font preferences remain effective. This supersedes earlier source-unit examples without changing component ownership or interaction behavior.

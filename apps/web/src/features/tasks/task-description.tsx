@@ -13,7 +13,7 @@ export function TaskDescription({ control, busy }: { busy: boolean; control: Con
   const [preview, setPreview] = useState(false);
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={0.8}>
       <ControlledField
         control={control}
         disabled={busy}

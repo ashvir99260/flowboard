@@ -216,7 +216,7 @@ export function TaskForm({
   };
 
   return (
-    <Stack component="form" noValidate onSubmit={save} spacing={3} aria-busy={busy}>
+    <Stack component="form" noValidate onSubmit={save} spacing={1.2} aria-busy={busy}>
       {notice && (
         <Alert
           severity={

@@ -154,7 +154,7 @@ export function StatusForm({
       aria-label="Status editor"
       onSubmit={save}
       noValidate
-      spacing={3}
+      spacing={1.2}
       aria-busy={busy}
     >
       <Typography component="h2" variant="h3">
@@ -174,7 +174,7 @@ export function StatusForm({
         items={preview.success ? preview.items : []}
         errors={preview.success ? [] : preview.issues.map((issue) => issue.message)}
       />
-      <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
         <Button type="submit" variant="contained" disabled={busy || conflict || !preview.success}>
           {busy ? 'Saving…' : 'Save status'}
         </Button>

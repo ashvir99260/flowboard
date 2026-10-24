@@ -15,34 +15,34 @@ const SurfaceHeader = styled('header', { name: 'FlowboardSurface', slot: 'Header
   ({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2),
-    padding: theme.spacing(6, 6, 0),
+    gap: theme.spacing(0.8),
+    padding: theme.spacing(2.4, 2.4, 0),
   }),
 );
 const SurfaceTitle = styled(Typography, { name: 'FlowboardSurface', slot: 'Title' })({
-  fontSize: '1.125rem',
+  fontSize: '1.8rem',
   fontWeight: 600,
   lineHeight: 1.5,
 }) as typeof Typography;
 const SurfaceDescription = styled('p', { name: 'FlowboardSurface', slot: 'Description' })(
   ({ theme }) => ({
     color: (theme.vars ?? theme).palette.text.secondary,
-    fontSize: '0.875rem',
+    fontSize: '1.4rem',
     lineHeight: 1.5,
     margin: 0,
   }),
 );
 const SurfaceBody = styled('div', { name: 'FlowboardSurface', slot: 'Body' })(({ theme }) => ({
   minWidth: 0,
-  padding: theme.spacing(6),
+  padding: theme.spacing(2.4),
 }));
 const SurfaceFooter = styled('footer', { name: 'FlowboardSurface', slot: 'Footer' })(
   ({ theme }) => ({
     display: 'flex',
     flexWrap: 'wrap',
-    gap: theme.spacing(2),
+    gap: theme.spacing(0.8),
     alignItems: 'center',
-    padding: theme.spacing(0, 6, 6),
+    padding: theme.spacing(0, 2.4, 2.4),
   }),
 );
 
@@ -67,14 +67,14 @@ const ToolbarRoot = styled('div', { name: 'FlowboardToolbar', slot: 'Root' })(({
   alignItems: 'center',
   justifyContent: 'space-between',
   flexWrap: 'wrap',
-  gap: theme.spacing(3),
+  gap: theme.spacing(1.2),
   minWidth: 0,
 }));
 const ToolbarGroup = styled('div', { name: 'FlowboardToolbar', slot: 'Group' })(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'wrap',
-  gap: theme.spacing(2),
+  gap: theme.spacing(0.8),
   minWidth: 0,
 }));
 
@@ -87,9 +87,9 @@ const AuthRoot = styled('main', { name: 'FlowboardAuthPanel', slot: 'Root' })(({
   minHeight: '100dvh',
   display: 'grid',
   placeItems: 'center',
-  padding: theme.spacing(4),
+  padding: theme.spacing(1.6),
 }));
-const AuthSurface = styled(SurfaceRoot)({ width: '100%', maxWidth: 420 });
+const AuthSurface = styled(SurfaceRoot)({ width: '100%', maxWidth: '42rem' });
 
 export function AuthPanel({
   children,

@@ -17,7 +17,7 @@ export function TaskCustomFields({
   fields: readonly ResolvedField[];
 }) {
   return fields.map((definition) => (
-    <Stack key={definition.id} spacing={1}>
+    <Stack key={definition.id} spacing={0.4}>
       <Typography color="text.secondary" variant="caption">
         {definition.isInherited ? 'Inherited' : 'Local'}
       </Typography>

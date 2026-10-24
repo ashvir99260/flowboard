@@ -13,12 +13,16 @@ const Root = styled('div', { name: 'FlowboardWorkspace', slot: 'Root' })({
 const Sidebar = styled(Drawer, { name: 'FlowboardWorkspace', slot: 'Sidebar' })(({ theme }) => ({
   width: 0,
   flexShrink: 0,
-  [theme.breakpoints.up('md')]: { width: 272 },
-  '& .MuiDrawer-paper': { width: 272, maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box' },
+  [theme.breakpoints.up('md')]: { width: '27.2rem' },
+  '& .MuiDrawer-paper': {
+    width: '27.2rem',
+    maxWidth: 'calc(100vw - 3.2rem)',
+    boxSizing: 'border-box',
+  },
 }));
 const Navigation = styled('nav', { name: 'FlowboardWorkspace', slot: 'Navigation' })(
   ({ theme }) => ({
-    padding: theme.spacing(3),
+    padding: theme.spacing(1.2),
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100%',
@@ -26,8 +30,8 @@ const Navigation = styled('nav', { name: 'FlowboardWorkspace', slot: 'Navigation
 );
 const Content = styled('div')({ flex: 1, minWidth: 0 });
 const Main = styled('main', { name: 'FlowboardWorkspace', slot: 'Main' })(({ theme }) => ({
-  padding: theme.spacing(4),
-  [theme.breakpoints.up('md')]: { padding: theme.spacing(8) },
+  padding: theme.spacing(1.6),
+  [theme.breakpoints.up('md')]: { padding: theme.spacing(3.2) },
 }));
 
 export function WorkspaceLayout({
@@ -59,7 +63,7 @@ export function WorkspaceLayout({
       </Sidebar>
       <Content>
         {!desktop && (
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: 1.2 }}>
             <Button onClick={onOpen}>Open navigation</Button>
           </Box>
         )}

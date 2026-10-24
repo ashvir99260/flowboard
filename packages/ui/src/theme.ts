@@ -22,9 +22,9 @@ export const theme = createTheme({
           contrastText: designTokens.palette.light.surface,
           main: designTokens.palette.light.foreground,
         },
-        error: { main: '#B42318' },
-        warning: { main: '#8A4600' },
-        success: { main: '#146C43' },
+        error: { main: 'hsl(4.2308, 76.4706%, 40%)' },
+        warning: { main: 'hsl(30.4348, 100%, 27.0588%)' },
+        success: { main: 'hsl(152.0455, 68.75%, 25.098%)' },
         divider: designTokens.palette.light.border,
         action: { selected: designTokens.palette.light.selected },
       },
@@ -44,33 +44,61 @@ export const theme = createTheme({
           contrastText: designTokens.palette.dark.background,
           main: designTokens.palette.dark.foreground,
         },
-        error: { main: '#FFB4AB' },
-        warning: { main: '#F0BA72' },
-        success: { main: '#79DBA4' },
+        error: { main: 'hsl(6.4286, 100%, 83.5294%)' },
+        warning: { main: 'hsl(34.2857, 80.7692%, 69.4118%)' },
+        success: { main: 'hsl(146.3265, 57.6471%, 66.6667%)' },
         divider: designTokens.palette.dark.border,
         action: { selected: designTokens.palette.dark.selected },
       },
     },
   },
+  breakpoints: {
+    unit: 'rem',
+    values: { lg: 75, md: 56.25, sm: 37.5, xl: 96, xs: 0 },
+    step: 0.3125,
+  },
   typography: {
+    htmlFontSize: 10,
     fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     fontSize: 14,
-    h1: { fontSize: '1.375rem', fontWeight: 650, lineHeight: 1.45 },
-    h2: { fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.5 },
-    h3: { fontSize: '1rem', fontWeight: 600, lineHeight: 1.5 },
-    body1: { fontSize: '0.875rem', lineHeight: 1.5 },
-    body2: { fontSize: '0.8125rem', lineHeight: 1.5 },
-    button: { fontSize: '0.875rem', textTransform: 'none' },
+    h1: { fontSize: '2.2rem', fontWeight: 650, lineHeight: 1.45 },
+    h2: { fontSize: '1.8rem', fontWeight: 600, lineHeight: 1.5 },
+    h3: { fontSize: '1.6rem', fontWeight: 600, lineHeight: 1.5 },
+    body1: { fontSize: '1.4rem', lineHeight: 1.5 },
+    body2: { fontSize: '1.3rem', lineHeight: 1.5 },
+    button: { fontSize: '1.4rem', textTransform: 'none' },
   },
-  spacing: designTokens.spacing,
+  spacing: (factor: number | 'auto') =>
+    factor === 'auto' ? factor : `${factor * designTokens.spacing}rem`,
   shape: { borderRadius: designTokens.radius.control },
   components: {
+    MuiDialog: {
+      styleOverrides: {
+        paper: ({ ownerState }) => {
+          if (ownerState.fullScreen) return {};
+
+          const widths = { lg: '120rem', md: '90rem', sm: '60rem', xl: '153.6rem', xs: '44.4rem' };
+          const available = 'calc(100% - 6.4rem)';
+          const maxWidth = ownerState.maxWidth
+            ? `min(${widths[ownerState.maxWidth]}, ${available})`
+            : available;
+
+          return {
+            margin: '3.2rem',
+            maxWidth,
+            ...(ownerState.fullWidth ? { width: available } : {}),
+            ...(ownerState.scroll === 'paper' ? { maxHeight: available } : {}),
+            '&.MuiDialog-paperScrollBody': { maxWidth },
+          };
+        },
+      },
+    },
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          fontSize: '0.8125rem',
+          fontSize: '1.3rem',
           fontWeight: 500,
-          marginBottom: 6,
+          marginBottom: '0.6rem',
           pointerEvents: 'auto',
           position: 'static',
           transform: 'none',
@@ -95,7 +123,7 @@ export const theme = createTheme({
         root: {
           '&.Mui-focusVisible': {
             outline: '2px solid var(--mui-palette-primary-main)',
-            outlineOffset: 3,
+            outlineOffset: '0.3rem',
           },
         },
       },
@@ -103,14 +131,15 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: { root: { fontWeight: 500, minHeight: designTokens.controlHeight } },
     },
-    MuiIconButton: { styleOverrides: { root: { minHeight: 44, minWidth: 44 } } },
+    MuiIconButton: { styleOverrides: { root: { minHeight: '4.4rem', minWidth: '4.4rem' } } },
     MuiPaper: { defaultProps: { elevation: 0 } },
     MuiCssBaseline: {
       styleOverrides: {
+        html: { fontSize: '62.5%' },
         body: { overflowWrap: 'anywhere' },
         ':focus-visible': {
           outline: '2px solid var(--mui-palette-primary-main)',
-          outlineOffset: 3,
+          outlineOffset: '0.3rem',
         },
         '@media (prefers-reduced-motion: reduce)': {
           '*, *::before, *::after': {

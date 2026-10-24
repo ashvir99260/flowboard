@@ -80,7 +80,7 @@ function Card({
                 data-drag-task={task.id}
                 aria-label={`Drag task: ${task.title}`}
                 disabled={pending}
-                sx={{ touchAction: 'none', mb: 1 }}
+                sx={{ touchAction: 'none', mb: 0.4 }}
               >
                 Drag
               </Button>

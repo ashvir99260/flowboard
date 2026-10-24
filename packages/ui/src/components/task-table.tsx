@@ -28,13 +28,13 @@ const Scroll = styled(TableContainer)({
   overflowX: 'auto',
 }) as typeof TableContainer;
 const Grid = styled(Table)({
-  minWidth: 960,
+  minWidth: '96rem',
   overflowWrap: 'normal',
   '& td': { whiteSpace: 'nowrap' },
 }) as typeof Table;
 const TitleCell = styled(TableCell)({
-  minWidth: 220,
-  maxWidth: 360,
+  minWidth: '22rem',
+  maxWidth: '36rem',
   overflowWrap: 'anywhere',
 }) as typeof TableCell;
 const OpenButton = styled(Button)({
@@ -42,7 +42,7 @@ const OpenButton = styled(Button)({
   justifyContent: 'flex-start',
   overflowWrap: 'anywhere',
 }) as typeof Button;
-const ValueCell = styled(TableCell)({ minWidth: 140 }) as typeof TableCell;
+const ValueCell = styled(TableCell)({ minWidth: '14rem' }) as typeof TableCell;
 
 export function TaskTable({
   items,

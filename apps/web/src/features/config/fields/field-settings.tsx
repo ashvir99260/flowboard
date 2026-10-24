@@ -44,14 +44,14 @@ function ScopeConfiguration({ active, owner, runtime, scope, onState }: Configur
   if (result.state !== 'ready') return <SessionLoading />;
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={1.6}>
       {notice && (
         <Alert role="status" severity="success">
           {notice}
         </Alert>
       )}
       <FieldPreview items={result.effective} />
-      <Stack component="section" aria-label="Field configuration" spacing={2}>
+      <Stack component="section" aria-label="Field configuration" spacing={0.8}>
         <Typography component="h2" variant="h3">
           Fields
         </Typography>
@@ -61,7 +61,7 @@ function ScopeConfiguration({ active, owner, runtime, scope, onState }: Configur
             aria-label={`Field ${field.key}`}
             key={field.key}
             direction="row"
-            spacing={2}
+            spacing={0.8}
             sx={{ alignItems: 'center', flexWrap: 'wrap' }}
           >
             <Typography>{field.name}</Typography>

@@ -65,16 +65,16 @@ export { default as Link } from '@mui/material/Link';
 
 const SelectRoot = styled(MuiNativeSelect, { name: 'FlowboardSelect', slot: 'Root' })(
   ({ theme }) => ({
-    minHeight: 44,
+    minHeight: '4.4rem',
     border: `1px solid ${(theme.vars ?? theme).palette.text.secondary}`,
     borderRadius: theme.shape.borderRadius,
     backgroundColor: (theme.vars ?? theme).palette.background.paper,
     '&::before, &::after': { display: 'none' },
-    '& select': { padding: theme.spacing(2, 8, 2, 3) },
+    '& select': { padding: theme.spacing(0.8, 3.2, 0.8, 1.2) },
     '&.Mui-error': { borderColor: (theme.vars ?? theme).palette.error.main },
     '&:focus-within': {
       outline: `2px solid ${(theme.vars ?? theme).palette.primary.main}`,
-      outlineOffset: 2,
+      outlineOffset: '0.2rem',
     },
   }),
 );

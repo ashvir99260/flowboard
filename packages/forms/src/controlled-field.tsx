@@ -86,7 +86,7 @@ export function ControlledField<T extends FieldValues, Output extends FieldValue
           };
 
     return (
-      <Stack spacing={1}>
+      <Stack spacing={0.4}>
         <CustomFieldInput
           hint={config.hint}
           field={definition}

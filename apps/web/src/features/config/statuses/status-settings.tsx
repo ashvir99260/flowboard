@@ -58,14 +58,14 @@ function ScopeConfiguration({
   if (result.state !== 'ready') return <SessionLoading />;
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={1.6}>
       {notice && (
         <Alert role="status" severity="success">
           {notice}
         </Alert>
       )}
       <StatusPreview items={result.effective} />
-      <Stack component="section" aria-label="Status configuration" spacing={2}>
+      <Stack component="section" aria-label="Status configuration" spacing={0.8}>
         <Typography component="h2" variant="h3">
           Statuses
         </Typography>
@@ -85,7 +85,7 @@ function ScopeConfiguration({
               aria-label={`Status ${identity.key}`}
               key={identity.id}
               direction="row"
-              spacing={2}
+              spacing={0.8}
               sx={{ alignItems: 'center', flexWrap: 'wrap' }}
             >
               <Typography>{name}</Typography>

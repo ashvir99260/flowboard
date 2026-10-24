@@ -10,7 +10,7 @@ import type { Task } from '@flowboard/contracts';
 
 const Group = styled(AvatarGroup)({
   justifyContent: 'flex-end',
-  '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 12 },
+  '& .MuiAvatar-root': { width: '2.8rem', height: '2.8rem', fontSize: '1.2rem' },
 });
 const Person = styled(Avatar)(({ theme }) => ({
   backgroundColor: (theme.vars ?? theme).palette.primary.main,

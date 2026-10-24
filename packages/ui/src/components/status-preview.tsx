@@ -16,14 +16,14 @@ export function StatusPreview({
   label?: string;
 }) {
   return (
-    <Stack component="section" aria-label={label} spacing={2}>
+    <Stack component="section" aria-label={label} spacing={0.8}>
       <Typography component="h2" variant="h3">
         {label}
       </Typography>
       {errors.length ? (
         <Alert severity="error">{errors.join(' ')}</Alert>
       ) : (
-        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={0.4} useFlexGap sx={{ flexWrap: 'wrap' }}>
           {items.map((status) => (
             <StatusChip key={status.id} status={status} />
           ))}

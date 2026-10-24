@@ -62,7 +62,7 @@ function Settings({
   };
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={1.6}>
       <Typography component="h1" variant="h1">
         {kind === 'status' ? 'Status settings' : 'Field settings'}
       </Typography>

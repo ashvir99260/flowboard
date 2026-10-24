@@ -41,8 +41,11 @@ function BoardContent({
     );
 
   return (
-    <Stack spacing={3} sx={{ minWidth: 0 }}>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+    <Stack spacing={1.2} sx={{ minWidth: 0 }}>
+      <Stack
+        direction="row"
+        sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 0.8 }}
+      >
         <Typography component="h2" variant="h2">
           Board
         </Typography>
@@ -131,7 +134,7 @@ function ConnectedBoard({
   return (
     <>
       {notice && (
-        <Typography role="status" sx={{ my: 2 }}>
+        <Typography role="status" sx={{ my: 0.8 }}>
           {notice}
         </Typography>
       )}

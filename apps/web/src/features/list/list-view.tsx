@@ -39,8 +39,11 @@ function ConnectedList({
   const view = useListQuery({ listId, runtime, scope, query });
 
   return (
-    <Stack spacing={3} sx={{ minWidth: 0 }}>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+    <Stack spacing={1.2} sx={{ minWidth: 0 }}>
+      <Stack
+        direction="row"
+        sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 0.8 }}
+      >
         <Typography component="h2" variant="h2">
           Tasks
         </Typography>
@@ -145,8 +148,8 @@ function Views({ listId }: { listId: string }) {
     );
 
   return (
-    <Stack spacing={3} sx={{ minWidth: 0 }}>
-      <Stack component="nav" aria-label="List views" direction="row" spacing={2}>
+    <Stack spacing={1.2} sx={{ minWidth: 0 }}>
+      <Stack component="nav" aria-label="List views" direction="row" spacing={0.8}>
         <ViewLink active={location.ok && location.view === 'board'} href={pathname}>
           Board
         </ViewLink>

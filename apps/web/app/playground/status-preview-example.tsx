@@ -27,7 +27,7 @@ const items = [
 
 export function StatusPreviewExample() {
   return (
-    <Stack spacing={3}>
+    <Stack spacing={1.2}>
       <StatusPreview label="Valid configuration example" items={items} />
       <StatusPreview
         label="Invalid configuration example"

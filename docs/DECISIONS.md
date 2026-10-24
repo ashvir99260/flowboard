@@ -537,3 +537,13 @@ Date: 2026-10-25. Source: user request for React Hook Form controls, Zod validat
 Add `@flowboard/forms` depending on UI, contracts, React Hook Form, its Zod resolver and Zod. UI remains presentational. Web owns domain schemas, complete defaults, submission/reset, server errors, permission and conflict state. Shared controls receive `control`/typed field names and forward blur/change/ref; disabled is a visual state and never unregisters a value.
 
 JSON describes an allowlisted presentation vocabulary and typed option values, not a second validation language. A strict parser rejects unknown widgets/properties, duplicate or unsafe paths and ambiguous options; callers allowlist names when JSON is external. No expressions, URLs, component imports or execution in JSON. Zod schemas remain the authority for values; the resolver preserves distinct schema input/output types. Existing domain custom-field input behavior is reused, including unfinished numeric drafts, nullable values and unavailable options. Conditional sections and field-array lifecycles remain explicit React composition, not an expression engine.
+
+## D140 — HSL presentation and ten-pixel rem units
+
+Date: 2026-10-25. Source: user request for HSL, rem sizing, px borders/radii and a 10px rem/MUI spacing scale.
+
+Set root font size 62.5% and MUI typography.htmlFontSize 10, retaining 14px body calibration. With a normal 16px browser default,1rem=10px; larger user defaults scale naturally. MUI spacing(1)=1rem; spacing(1.6)=16px. Convert old 4px spacing factors by 0.4, old 16px-based rem values by 1.6, and authored absolute dimensions from px/10, preserving current layout. Borders and radii retain px; unitless values, percentages, viewport units, SVG coordinates and library drag geometry keep their semantics.
+
+Use comma-form HSL for authored palette values, supported by the installed MUI parser. Stored status/custom-field colors and API validation remain hexadecimal contracts; convert those colors at the presentation boundary. MUI-generated CSS/color channels are library output, not hand-authored tokens.
+
+Use rem media queries at the equivalent initial 16px browser scale: sm 37.5, md 56.25, lg 75, xl 96. Media-query rem is relative to the initial browser font, not the 62.5% document root. This retains current breakpoints and improves reflow with enlarged default fonts.
