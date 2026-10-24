@@ -92,7 +92,7 @@ function Card({
                   aria-label={`Open task: ${task.title}`}
                   onClick={() => openTask(task.id)}
                 >
-                  Details
+                  Open task
                 </Button>
                 <Button
                   data-move-task={task.id}

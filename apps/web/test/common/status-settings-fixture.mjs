@@ -3,9 +3,10 @@ import { chromium } from '@playwright/test';
 import { startRealApp } from './real-app-fixture.mjs';
 
 export async function openSettings(t, kind = 'Status') {
-  const app = await startRealApp(t);
   const browser = await chromium.launch({ headless: true });
+  // Node runs after hooks in registration order: close clients before services.
   t.after(() => browser.close());
+  const app = await startRealApp(t);
   const page = await browser.newPage();
   page.setDefaultTimeout(8000);
   await page.goto(`${app.origin}/login`);
