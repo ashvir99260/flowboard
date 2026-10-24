@@ -18,6 +18,7 @@ import { useEffect, useId, useState } from 'react';
 import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
 import { readBoardStatuses } from '../board/board-data';
+import { configurationChanged } from '../config/configuration-events';
 import { taskMutationAffectsList } from '../tasks/task-events';
 
 import { assembleTaskList, readListFields } from './list-data';
@@ -53,6 +54,7 @@ function subscribeChanges(
     if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
 
     if (
+      configurationChanged(event.mutation.options.mutationKey, event.action.type, scope) ||
       taskMutationAffectsList(
         event.mutation.options.mutationKey,
         event.mutation.state.variables,

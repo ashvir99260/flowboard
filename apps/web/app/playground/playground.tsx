@@ -21,6 +21,7 @@ import { useState } from 'react';
 
 import { FormExamples } from './form-examples';
 import { InteractionExamples } from './interaction-examples';
+import { StatusPreviewExample } from './status-preview-example';
 
 import type { ComponentProps, ReactNode } from 'react';
 
@@ -125,6 +126,12 @@ export function Playground() {
               }}
             />
           </Stack>
+        </Section>
+        <Section
+          description="Presentational examples of an effective set and a rejected draft."
+          title="Status configuration previews"
+        >
+          <StatusPreviewExample />
         </Section>
         <Section
           title="Priority"

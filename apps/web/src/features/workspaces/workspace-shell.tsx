@@ -20,6 +20,7 @@ import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
 import { useSession } from '../../providers/app-providers';
 import { SessionGate, SessionLoading } from '../auth/session-gate';
+import { StatusSettingsHost } from '../config/statuses/status-settings-host';
 import { ListViews } from '../list/list-view';
 import { TaskEditorProvider } from '../tasks/task-drawer';
 import { Sidebar } from '../tree/sidebar';
@@ -216,6 +217,15 @@ function VerifiedWorkspace({
             <Button component={NextLink} href="/workspaces">
               Switch workspace
             </Button>
+            {activeWorkspace.role === 'admin' && (
+              <Button
+                component={NextLink}
+                href={`/w/${scope.workspaceId}/settings/statuses`}
+                onClick={() => setOpen(false)}
+              >
+                Status settings
+              </Button>
+            )}
             <Divider sx={{ my: 3 }} />
             <Sidebar
               runtime={runtime}
@@ -244,7 +254,7 @@ function VerifiedWorkspace({
             </Box>
           )}
           <Box component="main" sx={{ p: { xs: 4, md: 8 } }}>
-            {children}
+            <StatusSettingsHost>{children}</StatusSettingsHost>
           </Box>
         </Box>
       </Box>

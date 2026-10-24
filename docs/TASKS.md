@@ -829,13 +829,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 10 — Configuration UI
 
-- [ ] **P10-01 — Scoped status editor and preview**
+- [x] **P10-01 — Scoped status editor and preview**
   - **Goal:** Make inheritance, overrides and safety errors understandable to admins.
-  - **Files:** `apps/web/src/features/config/statuses/**`, config routes, status editor tests, playground examples.
+  - **Requirements:** R12, R13, R41, R67, R68, R70.
+  - **Files:** `apps/web/src/features/config/statuses/**`, config routes, workspace host/navigation, board/list configuration settlement observers, status editor tests and playground examples.
   - **Dependencies:** P09-04.
-  - **Acceptance:** Space/folder/list editors show inherited/local/hidden states; change label/color/order, add/hide/unhide/remove override; preview uses shared resolver. Authoritative save uses generated API and refreshes descendant views.
+  - **Acceptance:** Workspace/space/folder/list editors show inherited/local/hidden states; change label/color/order, add/hide/unhide/remove override; preview uses shared resolver. Authoritative save uses generated API and refreshes descendant views.
   - **Validation:** Last-category/in-use rejection, stable ID on rename, sibling isolation, member read-only behavior, focus/keyboard and field-error mapping; standard gate.
   - **Commit:** `feat: manage inherited status configuration`.
+  - **Completion evidence:** [P10-01](evidence/P10-01.md): inherited/local/hidden configuration, shared previews, safety/role denials and retained drafts pass; 863 tests and all root gates pass.
 
 - [ ] **P10-02 — Scoped custom-field editor and preview**
   - **Goal:** Configure all six field types without hiding downstream consequences.
