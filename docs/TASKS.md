@@ -817,13 +817,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add task table sorting and field filters`.
   - **Completion evidence:** [P09-03](evidence/P09-03.md): typed filters, server sorting, URL/history/cursor safety and responsive table pass; 826 tests, root gates and both Docker checks pass.
 
-- [ ] **P09-04 — Task drawer and early browser acceptance path**
+- [x] **P09-04 — Task drawer and early browser acceptance path**
   - **Goal:** Edit task built-ins/custom fields through the same shared contracts.
-  - **Files:** `apps/web/src/features/tasks/{task-drawer,task-form,task-create}.tsx`, drawer tests, `apps/web/playwright.config.ts`, `apps/web/e2e/task-edit.spec.ts`.
+  - **Requirements:** R12, R45, R48, R66, R68–R70, R84.
+  - **Files:** `apps/web/src/features/tasks/*`, board/table integration, shared task-write coordination, task fixtures/pure/browser tests, executed Playwright configuration and real-API task-edit journey, web dependencies/lockfile and task documentation.
   - **Dependencies:** P09-03.
   - **Acceptance:** Create/edit/archive, resolved dynamic inputs, safe Markdown, field-specific API errors, dirty-edit preservation, save resets defaults and closing prompts appropriately. Implement the required login→list→columns→drawer→field-save flow now. Activity UI waits for P11-02.
   - **Validation:** All input types, required/option errors, failed save preserves values, malicious raw HTML not executed, focus return; Playwright save persists after reload; standard gate includes browser path.
   - **Commit:** `feat: edit tasks in a validated detail drawer`.
+  - **Completion evidence:** [P09-04](evidence/P09-04.md): create/edit/archive, all six field types, safe Markdown, dirty/conflict recovery and real-API Playwright acceptance pass; 846 tests and all root gates pass.
 
 ## Phase 10 — Configuration UI
 

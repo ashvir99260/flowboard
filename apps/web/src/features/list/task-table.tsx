@@ -8,6 +8,7 @@ import {
   StatusChip,
 } from '@flowboard/ui';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -15,6 +16,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+
+import { useTaskEditor } from '../tasks/task-drawer';
 
 import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
 
@@ -27,6 +30,7 @@ export function TaskTable({
   items: readonly Task[];
   statuses: readonly ResolvedStatus[];
 }) {
+  const openTask = useTaskEditor();
   const statusById = new Map(statuses.map((status) => [status.id, status]));
 
   return (
@@ -69,10 +73,18 @@ export function TaskTable({
             <TableRow key={task.id}>
               <TableCell
                 component="th"
+                aria-label={task.title}
                 scope="row"
                 sx={{ minWidth: 220, maxWidth: 360, overflowWrap: 'anywhere' }}
               >
-                {task.title}
+                <Button
+                  data-open-task={task.id}
+                  aria-label={`Open task: ${task.title}`}
+                  onClick={() => openTask(task.id)}
+                  sx={{ textAlign: 'left', justifyContent: 'flex-start', overflowWrap: 'anywhere' }}
+                >
+                  {task.title}
+                </Button>
               </TableCell>
               <TableCell>
                 <StatusChip status={statusById.get(task.statusId)!} />

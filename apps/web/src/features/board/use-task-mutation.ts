@@ -10,6 +10,7 @@ import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-q
 import { useState } from 'react';
 
 import { apiError } from '../../lib/api-error';
+import { isTaskBusy } from '../tasks/task-events';
 
 import type { TaskPlacement } from './task-placement';
 import type { QueryScope } from '../../lib/query-scope';
@@ -63,13 +64,7 @@ export function useTaskMutation(runtime: ClientRuntime, scope: QueryScope) {
     select: (entry) => entry.state.variables as TaskPlacement,
   });
   const submit = async (command: TaskPlacement) => {
-    if (
-      client.isMutating({
-        mutationKey,
-        exact: true,
-        predicate: (entry) => (entry.state.variables as TaskPlacement).taskId === command.taskId,
-      }) > 0
-    )
+    if (isTaskBusy(client, scope, command.taskId))
       return {
         success: false as const,
         error: { code: 'BUSY', message: 'This task is already saving.' },

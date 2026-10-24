@@ -1,13 +1,19 @@
 // Isolated HTTP fixture for generated-client browser tests; runtime authorization lives in the API.
 import {
   applyTaskFieldPatch,
+  ArchiveTaskSchema,
+  CreateTaskSchema,
   ListTasksQuerySchema,
+  MemberPageSchema,
+  MemberSchema,
   MoveTaskSchema,
   ReorderTaskSchema,
   ResolvedFieldCollectionSchema,
   ResolvedStatusCollectionSchema,
+  TaskEnvelopeSchema,
   TaskMutationEnvelopeSchema,
   TaskPageSchema,
+  UpdateTaskSchema,
 } from '@flowboard/contracts';
 
 import { boardFixture, field, ids, status, task } from './board-fixture.mjs';
@@ -32,6 +38,10 @@ export function createBoardApi(nodes) {
     moveGates: new Map(),
     requiredDestination: null,
     tableMode: false,
+    rejectNextWrite: null,
+    writeGate: null,
+    writeResponse: null,
+    extraFields: false,
   };
   const send = (response, statusCode, data) =>
     response
@@ -44,7 +54,23 @@ export function createBoardApi(nodes) {
     node.workspaceId === session.data.activeWorkspace.id &&
     !(node.visibility === 'private' && session.data.user.name === 'Bob');
   const fieldsFor = (node) => {
-    if (controls.tableMode) return tableFields(node);
+    if (controls.tableMode) {
+      const fields = tableFields(node);
+      if (controls.extraFields)
+        fields.push(
+          ...[
+            { ...field('notes', 'text', false, 4), name: 'Notes' },
+            { ...field('milestone', 'date', false, 5), name: 'Milestone' },
+          ].map((item) => ({
+            ...item,
+            workspaceId: node.workspaceId,
+            ownerId: node.workspaceId,
+            source: { ...item.source, ownerId: node.workspaceId },
+          })),
+        );
+
+      return fields;
+    }
 
     const fields = boardFixture().fields.items.map((item) => ({
       ...item,
@@ -103,7 +129,69 @@ export function createBoardApi(nodes) {
           },
         })),
       ...[...overrides.values()].filter((item) => item.primaryListId === node.id),
-    ].sort((left, right) => left.position - right.position || left.id.localeCompare(right.id));
+    ]
+      .filter((item) => item.archivedAt === null)
+      .sort((left, right) => left.position - right.position || left.id.localeCompare(right.id));
+  };
+  const writeTask = async ({ current, node, body, session, response }) => {
+    if (controls.writeGate) await controls.writeGate;
+
+    if (controls.rejectNextWrite) {
+      const failure = controls.rejectNextWrite;
+      controls.rejectNextWrite = null;
+      error(response, failure.code, failure.message, failure.status, failure.details);
+
+      return;
+    }
+
+    const parsed = (current ? UpdateTaskSchema : CreateTaskSchema).safeParse(body);
+    if (!parsed.success)
+      return error(
+        response,
+        'VALIDATION_FAILED',
+        'Invalid task',
+        400,
+        parsed.error.issues.map(({ path, message, code }) => ({ path, message, code })),
+      );
+
+    const { expectedConfigVersion, expectedVersion, ...changes } = parsed.data;
+    if (expectedConfigVersion !== 1 || (current && expectedVersion !== current.version))
+      return error(response, 'VERSION_CONFLICT', 'Task changed. Reload it before saving.', 409);
+
+    const fields = applyTaskFieldPatch({
+      fields: fieldsFor(node),
+      current: current?.customFields ?? {},
+      patch: changes.customFields ?? {},
+    });
+    if (!fields.success)
+      return error(response, 'FIELD_VALUE_INVALID', 'Check custom fields', 400, fields.issues);
+
+    const assigneeIds = changes.assigneeIds ?? current?.assigneeIds ?? [];
+    const saved = {
+      ...(current ?? task(1000 + ++cursorSequence)),
+      ...changes,
+      workspaceId: node.workspaceId,
+      primaryListId: node.id,
+      customFields: fields.values,
+      assigneeIds,
+      assignees: assigneeIds.map((id) => ({
+        id,
+        name: id === session.data.user.id ? session.data.user.name : 'Workspace member',
+      })),
+      version: current ? current.version + 1 : 1,
+    };
+    overrides.set(saved.id, saved);
+    dataVersion++;
+    send(
+      response,
+      current ? 200 : 201,
+      TaskMutationEnvelopeSchema.parse({
+        data: { ...saved, ...controls.writeResponse },
+        configVersion: 1,
+        dataVersion,
+        changedTaskIds: [saved.id],
+      }),
+    );
   };
   const mutate = async ({ taskId, kind, body, session, response }) => {
     const parsed = (kind === 'move' ? MoveTaskSchema : ReorderTaskSchema).safeParse(body);
@@ -205,6 +293,114 @@ export function createBoardApi(nodes) {
     );
   };
   const respond = async ({ url, session, response, body, method }) => {
+    const detail = /^\/v1\/tasks\/([^/]+)$/.exec(url.pathname);
+    if (detail && method === 'GET') {
+      const task = nodes
+        .filter((node) => node.type === 'list' && visible(node, session))
+        .flatMap((node) => tasksFor(node, session))
+        .find((item) => item.id === detail[1]);
+      if (!task) error(response, 'NOT_FOUND', 'Task not found', 404);
+      else
+        send(
+          response,
+          200,
+          TaskEnvelopeSchema.parse({ data: task, configVersion: 1, dataVersion }),
+        );
+
+      return true;
+    }
+
+    if (detail && method === 'PATCH') {
+      const node = nodes.find(
+        (entry) =>
+          entry.type === 'list' &&
+          visible(entry, session) &&
+          tasksFor(entry, session).some((task) => task.id === detail[1]),
+      );
+      if (!node) error(response, 'NOT_FOUND', 'Task not found', 404);
+      else
+        await writeTask({
+          current: tasksFor(node, session).find((task) => task.id === detail[1]),
+          node,
+          body,
+          session,
+          response,
+        });
+
+      return true;
+    }
+
+    if (detail && method === 'DELETE') {
+      const current = nodes
+        .filter((node) => node.type === 'list' && visible(node, session))
+        .flatMap((node) => tasksFor(node, session))
+        .find((task) => task.id === detail[1]);
+      const parsed = ArchiveTaskSchema.safeParse(body);
+      if (!current) {
+        error(response, 'NOT_FOUND', 'Task not found', 404);
+
+        return true;
+      }
+
+      if (!parsed.success) {
+        error(response, 'VALIDATION_FAILED', 'Invalid archive request');
+
+        return true;
+      }
+
+      if (controls.writeGate) await controls.writeGate;
+
+      if (controls.rejectNextWrite) {
+        const failure = controls.rejectNextWrite;
+        controls.rejectNextWrite = null;
+        error(response, failure.code, failure.message, failure.status);
+
+        return true;
+      }
+
+      if (
+        parsed.data.expectedVersion !== current.version ||
+        parsed.data.expectedConfigVersion !== 1
+      ) {
+        error(response, 'VERSION_CONFLICT', 'Task changed. Reload it before archiving.', 409);
+
+        return true;
+      }
+
+      overrides.set(current.id, {
+        ...current,
+        archivedAt: new Date().toISOString(),
+        version: current.version + 1,
+      });
+      dataVersion++;
+      response.writeHead(204).end();
+
+      return true;
+    }
+
+    if (/^\/v1\/workspaces\/[^/]+\/members$/.test(url.pathname)) {
+      const list = nodes.find((node) => node.id === url.searchParams.get('assignableToListId'));
+      if (!visible(list, session)) error(response, 'FORBIDDEN', 'Access denied', 403);
+      else
+        send(
+          response,
+          200,
+          MemberPageSchema.parse({
+            items: [
+              {
+                ...MemberSchema.meta().example,
+                userId: session.data.user.id,
+                name: session.data.user.name,
+              },
+            ],
+            configVersion: 1,
+            pageInfo: { hasNextPage: false, nextCursor: null },
+          }),
+        );
+
+      return true;
+    }
+
     const mutation = /^\/v1\/tasks\/([^/]+)\/(move|reorder)$/.exec(url.pathname);
     if (mutation && method === 'POST') {
       await mutate({ taskId: mutation[1], kind: mutation[2], body, session, response });
@@ -234,6 +430,12 @@ export function createBoardApi(nodes) {
     }
 
     if (controls.publicGate && node.name === 'Public list') await controls.publicGate;
+
+    if (kind === 'tasks' && method === 'POST') {
+      await writeTask({ node, body, session, response });
+
+      return true;
+    }
 
     if (kind === 'resolved-statuses') {
       send(

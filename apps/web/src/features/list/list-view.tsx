@@ -11,6 +11,7 @@ import { Suspense, useTransition } from 'react';
 import { useSession } from '../../providers/app-providers';
 import { SessionLoading } from '../auth/session-gate';
 import { Board } from '../board/board';
+import { useTaskEditor } from '../tasks/task-drawer';
 
 import { readListLocation, writeListLocation } from './list-location';
 import { ListResult } from './list-result';
@@ -130,6 +131,7 @@ function ViewContent({
 }
 
 function Views({ listId }: { listId: string }) {
+  const openTask = useTaskEditor();
   const pathname = usePathname();
   const search = useSearchParams();
   const router = useRouter();
@@ -156,6 +158,7 @@ function Views({ listId }: { listId: string }) {
         >
           List
         </ViewLink>
+        <Button onClick={() => openTask(null)}>New task</Button>
       </Stack>
       <ViewContent
         location={location}

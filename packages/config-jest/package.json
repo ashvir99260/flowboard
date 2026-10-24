@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.mjs",
+    "./infrastructure": "./src/infrastructure.mjs",
     "./process": "./src/process.mjs",
     "./local-command": "./src/local-command.mjs"
   },
