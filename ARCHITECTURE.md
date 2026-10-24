@@ -1,15 +1,15 @@
 # Flowboard architecture reference
 
-**Status: backend core through Phase 6 implemented; UI and realtime sections remain target architecture.** Updated 24 October 2026.
+**Status: API, web, worker and realtime implemented; final operational/release verification is tracked in P12.** Updated 24 October 2026.
 This is a navigation and change-impact reference for the agreed design, not evidence that its controls run today.
 The complete behavior lives in [PLAN.md](docs/PLAN.md), the original brief in [REQUIREMENTS.md](docs/REQUIREMENTS.md), and chosen defaults in [DECISIONS.md](docs/DECISIONS.md).
-Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish tested backend/client transport behavior from planned product UI and realtime delivery.
+Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish observed behavior from remaining release/deployment work.
 
 For the dated ClickUp/Asana/Linear research, see [product architecture references](docs/REFERENCE_ARCHITECTURES.md). For the concrete UI composition, tenant-aware ERD, query/index mapping, auth boundary and request/event sequences, see [system design](docs/SYSTEM_DESIGN.md). These describe intended implementation and do not mark domain requirements complete.
 
 The implementation-ready [database and ER specification](docs/DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
-The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for backend implementation.
+The [REST API catalog](docs/API_CATALOG.md) lists operation IDs, schemas, permissions, errors and pagination for API usage and future changes.
 
 The [Linear-inspired MUI guide](docs/UI_DESIGN.md) maps public UI patterns to our components, screens, state and accessibility tests.
 
@@ -48,7 +48,7 @@ flowchart LR
 
 Five normal Compose services run: `web`, `api`, `worker`, `postgres`, `redis`. Web/API publish localhost ports 3000/3001; database and Redis ports remain internal unless a development override exposes them. Deployment, readiness, seed and scaling details are in [PLAN sections 8–9](docs/PLAN.md#8-realtime-and-asynchronous-activity).
 
-For hosted browsers, the web-origin `/api/v1` proxy preserves first-party refresh cookies while forwarding to API `/v1` at a fixed server-only runtime origin (D57/D119). It validates Origin, bounds bodies, filters headers/cookies and disables caching without domain logic. Browser clients default to this route; independent SSR instances require explicit origins. Socket.IO remains a planned direct JWT-authenticated connection to API. The product UI/session provider is still pending.
+For hosted browsers, the web-origin `/api/v1` proxy preserves first-party refresh cookies while forwarding to API `/v1` at a fixed server-only runtime origin (D57/D119). It validates Origin, bounds bodies, filters headers/cookies and disables caching without domain logic. Browser clients default to this route; independent SSR instances require explicit origins. Socket.IO is a direct JWT-authenticated connection to the API with a separate runtime public origin. The session provider disposes sockets and query state on identity/workspace changes.
 
 ## Package boundary matrix
 
@@ -75,7 +75,7 @@ Applications cannot import one another. The OpenAPI tooling exception (D19) is n
 
 Authored workspaces and root tooling use native ESM (D95). Module manifests and verbatim TypeScript syntax prevent implicit CommonJS rewriting; NodeNext resolves Node output while ESNext/Bundler serves Next.js. CLI resolution uses import.meta.resolve. Generated Next.js and third-party internals retain their framework-supported module format.
 
-The planned build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
+The build graph is `contracts/logger → database → api → openapi → api-client → web`; UI branches from contracts and worker from contracts/database. Root scripts delegate to Turbo; packages own tasks, inputs and outputs. Normal builds write ignored output. Explicit `pnpm gen:api` synchronizes committed spec/generated sources; temporary regeneration powers drift checks. See D17–D21 and [PLAN section 6](docs/PLAN.md#6-api-conventions-and-contract-pipeline).
 
 Features live under `apps/api/src/modules/` (D93). Auth and platform remain flat (D89): grouped DTOs and auth configuration sit beside controllers/services/modules, with colocated unit/integration tests (D90/D92). D96 groups foundations in `src/core/`: `config` holds reusable settings, `utils` pure helpers, and `common` HTTP helpers and injection tokens. `src/shared/` owns SharedModule and logging; it registers core HTTP filters/validation/serialization once. Core cannot import shared/features, and shared cannot import features; shared ESLint checks these directions. The common runtime/spec factory explicitly uses Express. Prisma stays in `packages/database`. Shared test helpers and process tests keep their existing grouping. See the [adapted feature-first guide](docs/BACKEND_GUIDELINES.md).
 
@@ -105,7 +105,7 @@ Controllers translate transport and call services. Services orchestrate policy a
 ## Trust boundaries and access
 
 - An access JWT identifies a user, session and selected workspace; current database membership supplies the acting role. Request bodies cannot establish acting identity, tenant or authority. Typed membership-role changes and workspace-switch destinations are validated targets.
-- `TenantDatabase.forWorkspace(context)` fails without verified context, scopes reads/writes and validates relations. Auth's global identity access is deliberately narrow; workers derive tenant context from a verified persisted outbox event.
+- `createDatabase(...).read(context, ...)` / `.write(context, ...)` fails without verified context, scopes reads/writes and validates relations. Auth's global identity access is deliberately narrow; workers derive tenant context from a verified persisted outbox event.
 - Admin bypass applies only inside the active workspace. For members, any ancestor deny blocks its subtree; every private ancestor needs its own allow. A child grant cannot override an ancestor restriction. Visible containers permit task edits; configuration/container/access management is admin-only (D07–D08).
 - Check source, destination, ordering anchors and assignees, including same-tenant relationships. Repeat access checks after taking the write lock. Filter tree, counts, feed and realtime content through the same policy.
 - Use `401` for absent/expired authentication, `403` for forbidden resources in the active tenant, and `404` for missing or foreign-tenant resources. Other tenant identifiers must not disclose existence.
@@ -168,7 +168,7 @@ sequenceDiagram
     API->>DB: Commit task/order/version and outbox event
     API-->>UI: Authoritative task response
     UI->>UI: Reconcile matching tenant/list cache
-    Note over API,UI: Outbox/worker later invalidates other authorized clients
+    Note over API,UI: Outbox/worker invalidates other authorized clients
   end
 ```
 
@@ -199,7 +199,7 @@ The search-index worker stub is intentionally deferred as `NEXT-01`; it must not
 
 ## Change-impact guide
 
-Use this table to identify the smallest complete slice, then follow the corresponding task's acceptance criteria and [PLAN test strategy](docs/PLAN.md#10-test-strategy-and-execution-gates). These are planned checks, not currently executable guarantees.
+Use this table to identify the smallest complete slice, then follow the corresponding task's acceptance criteria and [PLAN test strategy](docs/PLAN.md#10-test-strategy-and-execution-gates). These checks are executable through the owning packages; task evidence records the runs and remaining release gates.
 
 | Change                                  | Layers and required evidence                                                                                                                                                                     |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -212,7 +212,7 @@ Use this table to identify the smallest complete slice, then follow the correspo
 | Shared component or view                | Presentational UI and web coordination; accessible component tests, 320/768/1024/1440px, long content/reduced motion and relevant browser path (P08–P10, P12-01)                                 |
 | Build, dependency or Docker change      | Package manifests/exports, Turbo graph, generation and image inputs; boundary fixtures, clean frozen build, drift checks and five-service health/restart (P00, P07, P12-03)                      |
 
-After each implementation task, required build/lint/test and applicable contract/Docker gates must run with recorded results. Until Phase 0 creates them, report their absence instead of claiming they passed. Boundary lint, drift checks, integration tests and CI become enforcement only when their owning tasks are implemented and verified.
+After each implementation task, required build/lint/test and applicable contract/Docker gates must run with recorded results. Boundary lint, drift checks, integration tests and CI are implemented. Report actual results and unavailable infrastructure; a configured check is not evidence that a particular revision passed.
 
 ## Independent delivery
 
