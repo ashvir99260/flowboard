@@ -8,6 +8,7 @@ import { HierarchyModule } from './modules/hierarchy/hierarchy.module.js';
 import { OutboxModule } from './modules/outbox/outbox.module.js';
 import { PermissionsModule } from './modules/permissions/permissions.module.js';
 import { PlatformModule } from './modules/platform/platform.module.js';
+import { RealtimeModule } from './modules/realtime/realtime.module.js';
 import { StatusesModule } from './modules/statuses/statuses.module.js';
 import { TasksModule } from './modules/tasks/tasks.module.js';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module.js';
@@ -28,7 +29,9 @@ export class AppModule {
     logger: Logger = SilentLogger,
     database?: Database,
     outbox?: OutboxRuntime,
+    realtime?: { redisUrl: string },
   ): DynamicModule {
+    const authentication = AuthModule.forRuntime(auth, logger);
     const permissions = PermissionsModule.forRuntime(database, auth?.settings.secret, logger);
 
     return {
@@ -37,7 +40,8 @@ export class AppModule {
         SharedModule.forLogger(logger),
         PlatformModule.forProbe(probe),
         OutboxModule.forRuntime(outbox),
-        AuthModule.forRuntime(auth, logger),
+        authentication,
+        RealtimeModule.forRuntime(authentication, permissions, logger, realtime),
         WorkspacesModule.forRuntime(
           database,
           auth?.identities,

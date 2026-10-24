@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 
 import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
+import { useRealtime } from '../realtime/realtime-provider';
 
 import { assembleTree } from './assemble-tree';
 
@@ -37,6 +38,7 @@ function treeProgress(value: unknown, hasNext: boolean, workspaceId: string) {
 
 export function useTree(runtime: ClientRuntime, scope: QueryScope) {
   const [attempt, setAttempt] = useState(0);
+  useRealtime(undefined, () => setAttempt((current) => current + 1));
   const query = useInfiniteQuery({
     ...withQueryScope(
       listVisibleTreeInfiniteOptions({ client: runtime.client, query: { limit: '50' } }),

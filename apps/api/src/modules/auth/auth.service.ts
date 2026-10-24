@@ -20,6 +20,7 @@ import type { Logger } from '@flowboard/logger';
 const issuer = 'flowboard';
 const audience = 'flowboard-api';
 const claimsSchema = z.object({
+  exp: z.number().int().positive(),
   sid: UuidSchema,
   sub: UuidSchema,
   workspaceId: UuidSchema.nullable(),
@@ -196,6 +197,9 @@ export class AuthService {
     });
   }
   async authenticate(authorization: string | undefined, sessionOnly = false) {
+    return (await this.authenticateAccess(authorization, sessionOnly)).identity;
+  }
+  async authenticateAccess(authorization: string | undefined, sessionOnly = false) {
     return this.logger.observe('auth.authenticate', async () => {
       const runtime = this.requireRuntime();
       if (!authorization?.match(/^Bearer [A-Za-z0-9_.-]+$/))
@@ -233,7 +237,7 @@ export class AuthService {
         ...(session.activeWorkspace ? { workspaceId: session.activeWorkspace.id } : {}),
       });
 
-      return session;
+      return { identity: session, accessExpiresAt: new Date(claims.exp * 1000) };
     });
   }
 }

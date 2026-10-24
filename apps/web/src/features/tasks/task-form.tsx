@@ -1,5 +1,7 @@
 'use client';
 
+import { getTask } from '@flowboard/api-client/sdk';
+import { TaskEnvelopeSchema } from '@flowboard/contracts';
 import { ConfirmDialog } from '@flowboard/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Alert from '@mui/material/Alert';
@@ -7,6 +9,8 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
+import { useRealtime } from '../realtime/realtime-provider';
 
 import { TaskBuiltInFields } from './task-built-in-fields';
 import { TaskCustomFields } from './task-custom-fields';
@@ -46,6 +50,11 @@ export function TaskForm({
   const [notice, setNotice] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [remoteChange, setRemoteChange] = useState(0);
+  const [checkedChange, setCheckedChange] = useState(0);
+  useRealtime(listId, () => {
+    if (baseline) setRemoteChange((value) => value + 1);
+  });
   const inFlight = useRef(false);
   const errorFocus = useRef<FieldPath<TaskDraft> | null>(null);
   const { submit } = useTaskWrite(runtime, scope, detail);
@@ -79,6 +88,43 @@ export function TaskForm({
 
     return () => window.removeEventListener('beforeunload', confirm);
   }, [isDirty]);
+
+  useEffect(() => {
+    if (remoteChange <= checkedChange || busy || !baseline) return;
+
+    let active = true;
+    void getTask({ client: runtime.client, path: { taskId: baseline.id }, throwOnError: true })
+      .then((response) => {
+        if (!active) return;
+
+        const current = TaskEnvelopeSchema.parse(response.data);
+        if (
+          current.data.version <= baseline.version &&
+          current.configVersion === detail.configVersion
+        ) {
+          setCheckedChange(remoteChange);
+
+          return;
+        }
+
+        if (isDirty) {
+          setConflict(true);
+          setNotice('This task changed elsewhere. Your unsaved edits are preserved.');
+          setCheckedChange(remoteChange);
+        } else reload();
+      })
+      .catch(() => {
+        if (!active) return;
+
+        setConflict(true);
+        setNotice('Task access or connection changed. Reload to check the latest task.');
+        setCheckedChange(remoteChange);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [remoteChange, checkedChange, busy, baseline, detail.configVersion, isDirty, reload, runtime]);
 
   const save = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

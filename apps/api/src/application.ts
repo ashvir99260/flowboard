@@ -7,6 +7,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { AppModule } from './app.module.js';
+import { RealtimeService } from './modules/realtime/realtime.service.js';
 import { NestLogger } from './shared/logging/nest-logger.js';
 import { requestLogging } from './shared/logging/request-logging.js';
 
@@ -26,11 +27,29 @@ export async function createApplication(
     exposeDocs?: boolean;
     logger?: Logger;
     outbox?: OutboxRuntime;
+    realtime?: { redisUrl: string };
   } = {},
 ) {
   const logger = options.logger ?? SilentLogger;
+  let realtimeReady = () => false;
+  const checkedProbe = options.realtime
+    ? {
+        close: () => probe.close(),
+        async check() {
+          await probe.check();
+          if (!realtimeReady()) throw new Error('Realtime unavailable');
+        },
+      }
+    : probe;
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule.forProbe(probe, options.auth, logger, options.database, options.outbox),
+    AppModule.forProbe(
+      checkedProbe,
+      options.auth,
+      logger,
+      options.database,
+      options.outbox,
+      options.realtime,
+    ),
     new ExpressAdapter(),
     {
       bodyParser: false,
@@ -38,6 +57,8 @@ export async function createApplication(
       abortOnError: false,
     },
   );
+  if (options.realtime) realtimeReady = () => app.get(RealtimeService).isReady();
+
   try {
     app.use(requestLogging(logger));
     app.use('/v1', (_request: IncomingMessage, response: ServerResponse, next: () => void) => {

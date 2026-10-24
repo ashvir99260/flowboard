@@ -121,6 +121,7 @@ test('pointer dragging changes status and keyboard dragging reorders with focus 
   await expect(page.getByText(/^Over In progress, position 1/)).toBeAttached();
   await page.keyboard.press('Space');
   await expect(active.getByRole('heading', { level: 3 }).first()).toHaveText('Review navigation');
+  await expect(moved).toBeEnabled();
   await expect(moved).toBeFocused();
   await page.keyboard.press('Space');
   await expect(page.getByText(/^Picked up Review navigation, In progress/)).toBeAttached();

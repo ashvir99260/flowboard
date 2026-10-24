@@ -53,7 +53,13 @@ async function developmentCopy() {
   }
 }
 
-export async function startWeb(t, api, hostname = 'localhost', development = false) {
+export async function startWeb(
+  t,
+  api,
+  hostname = 'localhost',
+  development = false,
+  realtimeUrl = '',
+) {
   const reserve = reserveServer();
   reserve.listen(0, 'localhost');
   await once(reserve, 'listening');
@@ -79,6 +85,7 @@ export async function startWeb(t, api, hostname = 'localhost', development = fal
     outboundOrigins: [api],
     env: {
       API_INTERNAL_URL: api,
+      REALTIME_PUBLIC_URL: realtimeUrl,
       WEB_ALLOWED_ORIGINS: origin,
       NEXT_TELEMETRY_DISABLED: '1',
       HOSTNAME: 'localhost',
