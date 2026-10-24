@@ -43,12 +43,11 @@ test('login, select a list, edit a custom field and reload persisted data', asyn
       .getByRole('button', { exact: true, name: 'Open task: Build demo workflow 1' })
       .click();
     const bobDrawer = bobPage.getByRole('dialog', { name: 'Task details' });
+    await drawer.getByLabel(/^Effort/).fill('8');
     await bobDrawer.getByLabel(/^Effort/).fill('9');
     await bobDrawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(bobDrawer.getByRole('status')).toContainText('Task saved');
 
-    await drawer.getByLabel(/^Effort/).fill('8');
-    await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(drawer.getByRole('alert')).toBeVisible();
     await expect(drawer.getByLabel(/^Effort/)).toHaveValue('8');
     await expect(drawer.getByRole('button', { exact: true, name: 'Save changes' })).toBeDisabled();

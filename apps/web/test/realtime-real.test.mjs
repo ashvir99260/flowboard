@@ -8,9 +8,9 @@ test(
   'independent clients refresh lists and preserve dirty drawers across remote updates and reconnect',
   { timeout: 120000 },
   async (t) => {
-    const app = await startRealApp(t, { activityWorker: true, realtime: true });
     const browser = await chromium.launch({ headless: true });
     t.after(() => browser.close());
+    const app = await startRealApp(t, { activityWorker: true, realtime: true });
     const pages = [];
     let token;
     for (let i = 0; i < 2; i++) {

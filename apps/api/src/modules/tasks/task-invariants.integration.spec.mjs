@@ -103,6 +103,7 @@ async function validBoard(listId) {
     await api().get(`/v1/lists/${listId}/resolved-statuses`).set(headers.Alice),
     ResolvedStatusCollectionSchema,
   );
+  expect(fields.configVersion).toBe(statuses.configVersion);
   const tasks = await allTasks(listId);
   for (const task of tasks) {
     expect(statuses.items.some((status) => status.id === task.statusId)).toBe(true);
@@ -116,6 +117,21 @@ async function validBoard(listId) {
 
   return tasks;
 }
+
+test('every seeded demo task matches its current resolved list configuration', async () => {
+  const groups = [];
+  for (const listId of [id(221), id(222), id(223)]) {
+    const tasks = await validBoard(listId);
+    expect(tasks).toHaveLength(8);
+    expect(tasks.every((task) => task.workspaceId === id(1) && task.primaryListId === listId)).toBe(
+      true,
+    );
+    groups.push(...tasks);
+  }
+  expect(groups.map((task) => task.id).sort()).toEqual(
+    Array.from({ length: 24 }, (_, index) => id(700 + index)).sort(),
+  );
+});
 
 test('API-created tasks keep ancestor field/status changes safe and all responses typed', async () => {
   const source = await newList('Invariant source'),

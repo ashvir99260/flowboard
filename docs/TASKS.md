@@ -893,13 +893,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 12 — Release verification and documentation
 
-- [ ] **P12-01 — End-to-end role and collaboration regression**
+- [x] **P12-01 — End-to-end role and collaboration regression**
   - **Goal:** Consolidate browser release checks without postponing earlier feature tests.
-  - **Files:** `apps/web/e2e/{task-edit,permissions,realtime,config}.spec.ts`, `compose.test.yaml`, CI test orchestration, any discovered focused fixes.
+  - **Requirements:** R53, R64, R69, R70, R73, R79, R80, R84, R85.
+  - **Files:** `apps/web/e2e/**`, the real-service test wrapper, accessibility dependency/lockfile, API seed-validation integration test, existing CI orchestration and any discovered focused fixes.
   - **Dependencies:** P11-03.
   - **Acceptance:** Required edit path, Alice→Bob private-list disappearance, exact sibling columns, rollback, configuration save and two-client realtime pass using real services. Fresh fixtures and independent sessions prevent leaked auth/state.
   - **Validation:** Headless Chromium full suite; keyboard path, axe checks, responsive/reduced-motion smoke; root test demonstrably runs API+UI+worker+E2E; standard gate.
   - **Commit:** `test: verify flowboard user journeys end to end`.
+  - **Completion evidence:** [P12-01](evidence/P12-01.md): 955 tests pass, including all four real-service Playwright journeys, axe/keyboard/responsive checks, seed validation and corrected browser-first cleanup.
 
 - [ ] **P12-02 — Operational docs and second-channel cookbook**
   - **Goal:** Make the app understandable and usable without its web UI.

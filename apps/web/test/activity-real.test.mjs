@@ -9,9 +9,9 @@ test(
   'a real status save reaches the worker and drawer feed while later activity preserves a draft',
   { timeout: 120000 },
   async (t) => {
-    const app = await startRealApp(t, { activityWorker: true });
     const browser = await chromium.launch({ headless: true });
     t.after(() => browser.close());
+    const app = await startRealApp(t, { activityWorker: true });
     async function open() {
       const page = await browser.newPage();
       await page.goto(`${app.origin}/login`);
