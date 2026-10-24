@@ -1,6 +1,6 @@
-import { getLivenessOptions, getReadinessOptions } from '../src/index.js';
+import { getLivenessOptions, getReadinessOptions } from '@flowboard/api-client/tanstack-query';
 
-import type { GetLivenessResponse, GetReadinessResponse } from '../src/index.js';
+import type { GetLivenessResponse, GetReadinessResponse } from '@flowboard/api-client/types';
 
 export function consumeHealth(live: GetLivenessResponse, ready: GetReadinessResponse) {
   const liveStatus: 'ok' = live.status;
@@ -15,8 +15,8 @@ export function consumeHealth(live: GetLivenessResponse, ready: GetReadinessResp
 }
 
 export function consumeAuth(
-  input: import('../src/index.js').LogInData['body'],
-  response: import('../src/index.js').LogInResponse,
+  input: import('@flowboard/api-client/types').LogInData['body'],
+  response: import('@flowboard/api-client/types').LogInResponse,
 ) {
   const password: string = input.password;
   const role: 'admin' | 'member' | undefined = response.data.activeWorkspace?.role;
@@ -24,6 +24,23 @@ export function consumeAuth(
   return { password, role };
 }
 
-export function consumeRefresh(input: import('../src/index.js').RefreshSessionData['body']) {
+export function consumeRefresh(
+  input: import('@flowboard/api-client/types').RefreshSessionData['body'],
+) {
   return input;
 }
+
+export { listTasks } from '@flowboard/api-client/sdk';
+
+export {
+  createTaskMutation,
+  listTasksInfiniteOptions,
+  listTasksOptions,
+  listTasksQueryKey,
+} from '@flowboard/api-client/tanstack-query';
+
+export type {
+  CreateTaskData,
+  CreateTaskResponse,
+  ListTasksData,
+} from '@flowboard/api-client/types';

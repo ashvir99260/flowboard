@@ -1,10 +1,22 @@
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { createClient } from '@hey-api/openapi-ts';
 
-import config from '../openapi-ts.config.mjs';
+import configuration from '../openapi-ts.config.mjs';
+
+const config = {
+  ...configuration,
+  configFile: fileURLToPath(new URL('../openapi-ts.config.mjs', import.meta.url)),
+};
+
+async function generate(options) {
+  const contexts = await createClient(options);
+  if (!Array.isArray(contexts) || contexts.length !== 1)
+    throw new Error('API client generation did not complete. Check the OpenAPI input.');
+}
 
 async function files(directory, prefix = '') {
   const result = [];
@@ -17,14 +29,14 @@ async function files(directory, prefix = '') {
 }
 
 if (process.argv.includes('--write')) {
-  await createClient(config);
+  await generate(config);
 } else {
   const target =
     process.argv.find((value) => value.startsWith('--target='))?.slice('--target='.length) ??
-    'src/generated';
+    fileURLToPath(new URL('../src/generated', import.meta.url));
   const temporary = await mkdtemp(join(tmpdir(), 'flowboard-client-'));
   try {
-    await createClient({ ...config, output: { ...config.output, path: temporary } });
+    await generate({ ...config, output: { ...config.output, path: temporary } });
     const expected = await files(temporary);
     const committed = await files(target);
     if (JSON.stringify(expected) !== JSON.stringify(committed))

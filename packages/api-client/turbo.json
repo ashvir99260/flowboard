@@ -1,6 +1,13 @@
 {
   "extends": ["//"],
   "tasks": {
-    "api:generate": { "cache": false, "dependsOn": ["^api:generate"] }
+    "api:generate": {
+      "cache": false,
+      "dependsOn": ["^api:generate"]
+    },
+    "client:check": {
+      "cache": false,
+      "dependsOn": ["^build"]
+    }
   }
 }

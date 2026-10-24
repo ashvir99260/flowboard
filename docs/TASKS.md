@@ -727,9 +727,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Remove an operationId/change a DTO/miss a page wrapper and assert check failure; restore and pass; no DB/Redis/network needed; standard gate.
   - **Commit:** `chore: enforce openapi conventions and drift checks`.
 
-- [ ] **P07-02 — Client generation exports and reproducibility**
+- [x] **P07-02 — Client generation exports and reproducibility**
   - **Goal:** Stabilize the generated SDK/TanStack package and check clean builds.
-  - **Files:** `packages/api-client/{openapi-ts.config.ts,src/index.ts,src/generated/**,scripts/check.ts,test/generation.test.ts}`, package exports/Turbo tasks.
+  - **Files:** `packages/api-client/{openapi-ts.config.mjs,scripts/generate.mjs,test/**,package.json,turbo.json}`, root scripts/Turbo and docs. Generated sources remain isolated; keep the existing root barrel.
   - **Dependencies:** P07-01.
   - **Acceptance:** SDK/types/queryKeys/queryOptions/mutationOptions exported from package subpaths; generated code isolated. `pnpm gen:api` syncs committed artifacts; `pnpm client:check` compares temporary regeneration. Normal builds emit ignored files and never mutate committed sources.
   - **Validation:** Frozen clean install/build without DB/Redis; temporary output equals committed; intentionally changed generated file fails check; standard gate.
