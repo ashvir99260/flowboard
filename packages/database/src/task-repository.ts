@@ -3,7 +3,10 @@ import {
   ArchiveTaskSchema,
   CreateTaskSchema,
   ListTasksQuerySchema,
+  MoveTaskSchema,
   PrioritySchema,
+  ReorderTaskSchema,
+  selectTaskStatus,
   TaskPositionSchema,
   UpdateTaskSchema,
   UuidSchema,
@@ -11,7 +14,7 @@ import {
 } from '@flowboard/contracts';
 
 import { Prisma } from './generated/client.js';
-import { recordTaskChange } from './task-events.js';
+import { recordTaskChange, recordTaskChanges } from './task-events.js';
 import { DatabaseError } from './tenant-context.js';
 
 import type { accessRepository } from './access-repository.js';
@@ -23,6 +26,8 @@ import type {
   ArchiveTask,
   CreateTask,
   ListTasksQuery,
+  MoveTask,
+  ReorderTask,
   Task,
   TaskPosition,
   TaskUpdatedEvent,
@@ -287,7 +292,156 @@ export function taskRepository(
     if (issues.length)
       throw new DatabaseError('FIELD_VALUE_INVALID', 'Task field values are invalid', issues);
   }
+  async function place(taskId: string, input: MoveTask | ReorderTask) {
+    const moving = 'destinationListId' in input;
+    const command: ReorderTask &
+      Partial<Pick<MoveTask, 'destinationListId' | 'statusId' | 'customFields'>> = moving
+      ? MoveTaskSchema.parse(input)
+      : ReorderTaskSchema.parse(input);
+    const previous = await find(taskId);
+    const current = await preconditions(
+      command.expectedConfigVersion,
+      previous,
+      command.expectedVersion,
+    );
+    const destinationListId = command.destinationListId ?? previous.primaryListId;
+    await scopes.path({ ownerType: 'list', ownerId: destinationListId });
+    const sourceStatuses = await statuses.resolved(previous.primaryListId);
+    const sourceStatus = sourceStatuses.items.find((status) => status.id === previous.statusId);
+    if (!sourceStatus)
+      throw new DatabaseError('STATUS_NOT_AVAILABLE', 'Source status is unavailable');
+
+    const destinationStatuses = await statuses.resolved(destinationListId);
+    const selected = selectTaskStatus(
+      sourceStatus,
+      destinationStatuses.items,
+      moving ? command.statusId : previous.statusId,
+    );
+    if (!selected.success)
+      throw new DatabaseError('STATUS_NOT_AVAILABLE', 'No matching destination status', [
+        {
+          code: 'unavailable_status',
+          path: ['statusId'],
+          message: 'Choose an available destination status',
+        },
+      ]);
+
+    const statusId = selected.statusId;
+    const schema = await fields.resolved(destinationListId);
+    const values = applyTaskFieldPatch({
+      fields: schema.items,
+      current: previous.customFields,
+      patch: command.customFields ?? {},
+    });
+    if (!values.success)
+      throw new DatabaseError(
+        'FIELD_VALUE_INVALID',
+        'Task field values are invalid',
+        values.issues,
+      );
+
+    await validate(destinationListId, {
+      statusId,
+      assigneeIds: previous.assigneeIds,
+      customFields: values.values,
+    });
+    const { placement } = command;
+    const anchorId =
+      'beforeId' in placement
+        ? placement.beforeId
+        : 'afterId' in placement
+          ? placement.afterId
+          : undefined;
+    if (anchorId) {
+      const anchor = await find(anchorId);
+      if (
+        anchor.id === previous.id ||
+        anchor.primaryListId !== destinationListId ||
+        anchor.statusId !== statusId
+      )
+        throw new DatabaseError(
+          'INVALID_ANCHOR',
+          'Anchor must be a distinct task in the destination column',
+        );
+    }
+
+    const column = (listId: string, columnStatusId: string) =>
+      tx.task.findMany({
+        where: { workspaceId, primaryListId: listId, statusId: columnStatusId, archivedAt: null },
+        orderBy: [{ position: 'asc' }, { id: 'asc' }],
+      });
+    const sourceRows = await column(previous.primaryListId, previous.statusId);
+    const sameColumn =
+      destinationListId === previous.primaryListId && statusId === previous.statusId;
+    const destinationRows = sameColumn ? sourceRows : await column(destinationListId, statusId);
+    const remaining = destinationRows.filter((row) => row.id !== previous.id);
+    const index =
+      'edge' in placement
+        ? placement.edge === 'start'
+          ? 0
+          : remaining.length
+        : remaining.findIndex((row) => row.id === anchorId) + ('afterId' in placement ? 1 : 0);
+    const destinationOrder = [...remaining.slice(0, index), previous, ...remaining.slice(index)];
+    const originals = new Map([...sourceRows, ...destinationRows].map((row) => [row.id, row]));
+    const positions = new Map<string, number>();
+    if (!sameColumn)
+      sourceRows
+        .filter((row) => row.id !== previous.id)
+        .forEach((row, position) => positions.set(row.id, position));
+
+    destinationOrder.forEach((row, position) => positions.set(row.id, position));
+    const events: Parameters<typeof recordTaskChanges>[2][number][] = [];
+    for (const [id, position] of positions) {
+      const before = originals.get(id)!;
+      const target = id === previous.id;
+      const changes: TaskUpdatedEvent['changes'] = {};
+      if (before.position !== position)
+        changes.position = { before: before.position, after: position };
+
+      if (target) {
+        if (before.primaryListId !== destinationListId)
+          changes.primaryListId = { before: before.primaryListId, after: destinationListId };
+
+        if (before.statusId !== statusId)
+          changes.statusId = { before: before.statusId, after: statusId };
+
+        const keys = [
+          ...new Set([...Object.keys(previous.customFields), ...Object.keys(values.values)]),
+        ]
+          .filter(
+            (key) =>
+              JSON.stringify(previous.customFields[key]) !== JSON.stringify(values.values[key]),
+          )
+          .sort();
+        if (keys.length) changes.customFieldKeys = keys;
+      }
+
+      if (Object.keys(changes).length === 0) continue;
+
+      const updated = await tx.task.update({
+        where: { workspaceId_id: { workspaceId, id } },
+        data: {
+          position,
+          version: { increment: 1 },
+          ...(target
+            ? { primaryListId: destinationListId, statusId, customFields: values.values }
+            : {}),
+        },
+      });
+      events.push({ task: updated, changes, previousListId: before.primaryListId });
+    }
+    const revisions = events.length ? await recordTaskChanges(tx, context, events) : current;
+
+    return {
+      data: await find(previous.id),
+      ...revisions,
+      changedTaskIds: events.map((event) => event.task.id),
+    };
+  }
+
   const write = Object.freeze({
+    move: (taskId: string, input: MoveTask) => place(taskId, MoveTaskSchema.parse(input)),
+    reorder: (taskId: string, input: ReorderTask) => place(taskId, ReorderTaskSchema.parse(input)),
     ...read,
     async create(listId: string, input: CreateTask) {
       await scopes.path({ ownerType: 'list', ownerId: listId });

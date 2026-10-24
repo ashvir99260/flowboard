@@ -693,9 +693,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Unknown statusId 400; foreign/disallowed assignee; title 501; wrong type/option/missing required; explicit clear; stale edit 409; rollback emits no event. Endpoint DoD and standard gate.
   - **Commit:** `feat: write tasks with scoped validation`.
 
-- [ ] **P06-03 — Cross-list moves and column ordering**
+- [x] **P06-03 — Cross-list moves and column ordering**
   - **Goal:** Move cards atomically while preserving valid status, fields and ordering.
-  - **Files:** `apps/api/src/modules/tasks/task-move.service.ts`, task contracts/controller, `apps/api/test/integration/task-moves.spec.mjs`, generated artifacts.
+  - **Files:** `packages/contracts/src/task-moves.ts`, task repository/event batching, existing task service/controller/DTO, colocated API move tests, database move tests, contract tests and generated artifacts.
   - **Dependencies:** P06-02.
   - **Acceptance:** Source/destination permissions checked; preserve status or map first same category; missing category rejects. Move accepts required field values/explicit clears. Reorder validates neighbor list+column and versions; each changed task version advances once, dataVersion advances once, and one transaction updates everything/outbox.
   - **Validation:** Same-category mapping success; closed→no closed rejects; required destination field missing rejects/provided succeeds; source-only value needs explicit clear; wrong anchors/tenant reject; concurrent config/move remains valid; failure leaves task unchanged. Endpoint DoD and standard gate.

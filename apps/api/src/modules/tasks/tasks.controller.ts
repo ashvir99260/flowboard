@@ -1,6 +1,8 @@
 import {
   ArchiveTaskSchema,
   CreateTaskSchema,
+  MoveTaskSchema,
+  ReorderTaskSchema,
   TaskEnvelopeSchema,
   TaskMutationEnvelopeSchema,
   TaskPageSchema,
@@ -39,6 +41,8 @@ import {
   ArchiveTaskDto,
   CreateTaskDto,
   ListTasksQueryDto,
+  MoveTaskDto,
+  ReorderTaskDto,
   TaskListParamsDto,
   TaskParamsDto,
   UpdateTaskDto,
@@ -189,6 +193,70 @@ export class TasksController {
     @Req() request: { identity: IdentitySession },
   ) {
     return this.tasks.update(request.identity, params.taskId, input);
+  }
+  @Post('move')
+  @HttpCode(200)
+  @TaskPermission('task.write')
+  @ApiOperation({
+    description:
+      'Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.',
+    operationId: 'moveTask',
+    summary: 'Move a task',
+  })
+  @ApiBody({
+    type: MoveTaskDto,
+    description: 'Placement and expected revisions, with destination fields for a move.',
+    examples: { move: { summary: 'Move a task', value: MoveTaskSchema.meta()?.example } },
+  })
+  @ApiResponse({
+    status: 200,
+    type: TaskMutationResponseDto.Output,
+    example: TaskMutationEnvelopeSchema.meta()?.example,
+  })
+  @ZodResponse({
+    status: 200,
+    type: TaskMutationResponseDto,
+    description: 'Persisted task, revisions and every changed task identity.',
+  })
+  move(
+    @Param() params: TaskParamsDto,
+    @Body() input: MoveTaskDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ) {
+    return this.tasks.move(request.identity, params.taskId, input);
+  }
+  @Post('reorder')
+  @HttpCode(200)
+  @TaskPermission('task.write')
+  @ApiOperation({
+    description:
+      'Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.',
+    operationId: 'reorderTask',
+    summary: 'Reorder a task',
+  })
+  @ApiBody({
+    type: ReorderTaskDto,
+    description: 'Placement and expected revisions, with destination fields for a move.',
+    examples: { reorder: { summary: 'Reorder a task', value: ReorderTaskSchema.meta()?.example } },
+  })
+  @ApiResponse({
+    status: 200,
+    type: TaskMutationResponseDto.Output,
+    example: TaskMutationEnvelopeSchema.meta()?.example,
+  })
+  @ZodResponse({
+    status: 200,
+    type: TaskMutationResponseDto,
+    description: 'Persisted task, revisions and every changed task identity.',
+  })
+  reorder(
+    @Param() params: TaskParamsDto,
+    @Body() input: ReorderTaskDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ) {
+    return this.tasks.reorder(request.identity, params.taskId, input);
   }
   @Delete()
   @HttpCode(204)

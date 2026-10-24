@@ -1681,6 +1681,178 @@
         "title": "Member page",
         "type": "object"
       },
+      "MoveTaskDto": {
+        "additionalProperties": false,
+        "description": "Move to a visible list and valid status, applying explicit field corrections before validation.",
+        "example": {
+          "destinationListId": "10000000-0000-4000-8000-000000000010",
+          "expectedConfigVersion": 1,
+          "expectedVersion": 1,
+          "placement": {
+            "edge": "end"
+          }
+        },
+        "properties": {
+          "customFields": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "description": "A value validated against the resolved field type.",
+                  "maxLength": 2000,
+                  "minLength": 0,
+                  "nullable": true,
+                  "type": "string"
+                },
+                {
+                  "description": "A value validated against the resolved field type.",
+                  "nullable": true,
+                  "type": "number"
+                },
+                {
+                  "description": "A value validated against the resolved field type.",
+                  "nullable": true,
+                  "type": "boolean"
+                },
+                {
+                  "description": "A value validated against the resolved field type.",
+                  "items": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  },
+                  "maxItems": 100,
+                  "nullable": true,
+                  "type": "array"
+                }
+              ]
+            },
+            "description": "Omitted keys retain values; explicit null removes a key before full validation.",
+            "example": {
+              "effort": 3,
+              "old_field": null
+            },
+            "title": "Custom-field patch",
+            "type": "object"
+          },
+          "destinationListId": {
+            "description": "Visible live list receiving this task.",
+            "example": "10000000-0000-4000-8000-000000000010",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "title": "Destination list ID",
+            "type": "string"
+          },
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "expectedVersion": {
+            "description": "Task revision loaded by the caller.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Expected task version",
+            "type": "integer"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Absolute position in the sibling collection.",
+                "example": {
+                  "edge": "start"
+                },
+                "properties": {
+                  "edge": {
+                    "description": "Place before all siblings or after all siblings.",
+                    "enum": [
+                      "start",
+                      "end"
+                    ],
+                    "example": "start",
+                    "title": "Placement edge",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "edge"
+                ],
+                "title": "Edge placement",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "description": "Place immediately before a sibling.",
+                "example": {
+                  "beforeId": "10000000-0000-4000-8000-000000000010"
+                },
+                "properties": {
+                  "beforeId": {
+                    "description": "A distinct live sibling in the selected workspace.",
+                    "example": "10000000-0000-4000-8000-000000000010",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Sibling anchor ID",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "beforeId"
+                ],
+                "title": "Before placement",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "description": "Place immediately after a sibling.",
+                "example": {
+                  "afterId": "10000000-0000-4000-8000-000000000010"
+                },
+                "properties": {
+                  "afterId": {
+                    "description": "A distinct live sibling in the selected workspace.",
+                    "example": "10000000-0000-4000-8000-000000000010",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Sibling anchor ID",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "afterId"
+                ],
+                "title": "After placement",
+                "type": "object"
+              }
+            ],
+            "description": "Exactly one edge or one sibling anchor. Numeric positions and multiple anchors are rejected.",
+            "example": {
+              "edge": "start"
+            },
+            "title": "Sibling placement"
+          },
+          "statusId": {
+            "description": "Canonical status identity available in the primary list.",
+            "example": "10000000-0000-4000-8000-000000000101",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "title": "Status ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "expectedConfigVersion",
+          "placement",
+          "destinationListId"
+        ],
+        "title": "Move task request",
+        "type": "object"
+      },
       "NodeResponseDto_Output": {
         "additionalProperties": false,
         "description": "Container and workspace revisions from one transaction.",
@@ -2066,6 +2238,119 @@
           "placement"
         ],
         "title": "Reorder container request",
+        "type": "object"
+      },
+      "ReorderTaskDto": {
+        "additionalProperties": false,
+        "description": "Place a task within its current list and status column using current revisions.",
+        "example": {
+          "expectedConfigVersion": 1,
+          "expectedVersion": 1,
+          "placement": {
+            "edge": "end"
+          }
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "expectedVersion": {
+            "description": "Task revision loaded by the caller.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Expected task version",
+            "type": "integer"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Absolute position in the sibling collection.",
+                "example": {
+                  "edge": "start"
+                },
+                "properties": {
+                  "edge": {
+                    "description": "Place before all siblings or after all siblings.",
+                    "enum": [
+                      "start",
+                      "end"
+                    ],
+                    "example": "start",
+                    "title": "Placement edge",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "edge"
+                ],
+                "title": "Edge placement",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "description": "Place immediately before a sibling.",
+                "example": {
+                  "beforeId": "10000000-0000-4000-8000-000000000010"
+                },
+                "properties": {
+                  "beforeId": {
+                    "description": "A distinct live sibling in the selected workspace.",
+                    "example": "10000000-0000-4000-8000-000000000010",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Sibling anchor ID",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "beforeId"
+                ],
+                "title": "Before placement",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "description": "Place immediately after a sibling.",
+                "example": {
+                  "afterId": "10000000-0000-4000-8000-000000000010"
+                },
+                "properties": {
+                  "afterId": {
+                    "description": "A distinct live sibling in the selected workspace.",
+                    "example": "10000000-0000-4000-8000-000000000010",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "title": "Sibling anchor ID",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "afterId"
+                ],
+                "title": "After placement",
+                "type": "object"
+              }
+            ],
+            "description": "Exactly one edge or one sibling anchor. Numeric positions and multiple anchors are rejected.",
+            "example": {
+              "edge": "start"
+            },
+            "title": "Sibling placement"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "expectedConfigVersion",
+          "placement"
+        ],
+        "title": "Reorder task request",
         "type": "object"
       },
       "ResolvedFieldResponseDto_Output": {
@@ -14972,6 +15257,589 @@
           }
         ],
         "summary": "Update a task",
+        "tags": [
+          "Tasks"
+        ]
+      }
+    },
+    "/v1/tasks/{taskId}/move": {
+      "post": {
+        "description": "Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.",
+        "operationId": "moveTask",
+        "parameters": [
+          {
+            "description": "Stable task identity.",
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Task ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "move": {
+                  "summary": "Move a task",
+                  "value": {
+                    "destinationListId": "10000000-0000-4000-8000-000000000010",
+                    "expectedConfigVersion": 1,
+                    "expectedVersion": 1,
+                    "placement": {
+                      "edge": "end"
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MoveTaskDto"
+              }
+            }
+          },
+          "description": "Placement and expected revisions, with destination fields for a move.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "changedTaskIds": [],
+                  "configVersion": 1,
+                  "data": {
+                    "archivedAt": null,
+                    "assigneeIds": [],
+                    "assignees": [],
+                    "createdAt": "2026-10-24T10:00:00.000Z",
+                    "customFields": {},
+                    "description": "Review the latest design.",
+                    "dueDate": null,
+                    "id": "10000000-0000-4000-8000-000000000100",
+                    "position": 0,
+                    "primaryListId": "10000000-0000-4000-8000-000000000010",
+                    "priority": "normal",
+                    "statusId": "10000000-0000-4000-8000-000000000101",
+                    "title": "Review dashboard",
+                    "updatedAt": "2026-10-24T10:00:00.000Z",
+                    "version": 1,
+                    "workspaceId": "10000000-0000-4000-8000-000000000002"
+                  },
+                  "dataVersion": 1
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TaskMutationResponseDto_Output"
+                }
+              }
+            },
+            "description": "Persisted task, revisions and every changed task identity."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Move a task",
+        "tags": [
+          "Tasks"
+        ]
+      }
+    },
+    "/v1/tasks/{taskId}/reorder": {
+      "post": {
+        "description": "Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.",
+        "operationId": "reorderTask",
+        "parameters": [
+          {
+            "description": "Stable task identity.",
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Task ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "reorder": {
+                  "summary": "Reorder a task",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "expectedVersion": 1,
+                    "placement": {
+                      "edge": "end"
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ReorderTaskDto"
+              }
+            }
+          },
+          "description": "Placement and expected revisions, with destination fields for a move.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "changedTaskIds": [],
+                  "configVersion": 1,
+                  "data": {
+                    "archivedAt": null,
+                    "assigneeIds": [],
+                    "assignees": [],
+                    "createdAt": "2026-10-24T10:00:00.000Z",
+                    "customFields": {},
+                    "description": "Review the latest design.",
+                    "dueDate": null,
+                    "id": "10000000-0000-4000-8000-000000000100",
+                    "position": 0,
+                    "primaryListId": "10000000-0000-4000-8000-000000000010",
+                    "priority": "normal",
+                    "statusId": "10000000-0000-4000-8000-000000000101",
+                    "title": "Review dashboard",
+                    "updatedAt": "2026-10-24T10:00:00.000Z",
+                    "version": 1,
+                    "workspaceId": "10000000-0000-4000-8000-000000000002"
+                  },
+                  "dataVersion": 1
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TaskMutationResponseDto_Output"
+                }
+              }
+            },
+            "description": "Persisted task, revisions and every changed task identity."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Reorder a task",
         "tags": [
           "Tasks"
         ]

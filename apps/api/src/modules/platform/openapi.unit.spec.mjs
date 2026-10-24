@@ -27,6 +27,8 @@ test('the spec-only bootstrap exposes real typed controller metadata without con
     '/v1/scopes/{ownerType}/{ownerId}/statuses',
     '/v1/scopes/{ownerType}/{ownerId}/statuses/{statusId}',
     '/v1/tasks/{taskId}',
+    '/v1/tasks/{taskId}/move',
+    '/v1/tasks/{taskId}/reorder',
     '/v1/tree',
     '/v1/workspaces',
     '/v1/workspaces/{workspaceId}/invitations',

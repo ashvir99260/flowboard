@@ -893,6 +893,73 @@ export type MemberPageResponseDtoOutput = {
 };
 
 /**
+ * Move task request
+ *
+ * Move to a visible list and valid status, applying explicit field corrections before validation.
+ */
+export type MoveTaskDto = {
+    /**
+     * Custom-field patch
+     *
+     * Omitted keys retain values; explicit null removes a key before full validation.
+     */
+    customFields?: {
+        [key: string]: string | null | number | null | boolean | null | Array<string> | null;
+    };
+    /**
+     * Destination list ID
+     *
+     * Visible live list receiving this task.
+     */
+    destinationListId: string;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Expected task version
+     *
+     * Task revision loaded by the caller.
+     */
+    expectedVersion: number;
+    /**
+     * Sibling placement
+     *
+     * Exactly one edge or one sibling anchor. Numeric positions and multiple anchors are rejected.
+     */
+    placement: {
+        /**
+         * Placement edge
+         *
+         * Place before all siblings or after all siblings.
+         */
+        edge: 'start' | 'end';
+    } | {
+        /**
+         * Sibling anchor ID
+         *
+         * A distinct live sibling in the selected workspace.
+         */
+        beforeId: string;
+    } | {
+        /**
+         * Sibling anchor ID
+         *
+         * A distinct live sibling in the selected workspace.
+         */
+        afterId: string;
+    };
+    /**
+     * Status ID
+     *
+     * Canonical status identity available in the primary list.
+     */
+    statusId?: string;
+};
+
+/**
  * Container response
  *
  * Container and workspace revisions from one transaction.
@@ -1063,6 +1130,53 @@ export type ReorderNodeDto = {
      * Expected node version
      *
      * Last observed node revision; a stale revision is a conflict.
+     */
+    expectedVersion: number;
+    /**
+     * Sibling placement
+     *
+     * Exactly one edge or one sibling anchor. Numeric positions and multiple anchors are rejected.
+     */
+    placement: {
+        /**
+         * Placement edge
+         *
+         * Place before all siblings or after all siblings.
+         */
+        edge: 'start' | 'end';
+    } | {
+        /**
+         * Sibling anchor ID
+         *
+         * A distinct live sibling in the selected workspace.
+         */
+        beforeId: string;
+    } | {
+        /**
+         * Sibling anchor ID
+         *
+         * A distinct live sibling in the selected workspace.
+         */
+        afterId: string;
+    };
+};
+
+/**
+ * Reorder task request
+ *
+ * Place a task within its current list and status column using current revisions.
+ */
+export type ReorderTaskDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Expected task version
+     *
+     * Task revision loaded by the caller.
      */
     expectedVersion: number;
     /**
@@ -5077,6 +5191,124 @@ export type UpdateTaskResponses = {
 };
 
 export type UpdateTaskResponse = UpdateTaskResponses[keyof UpdateTaskResponses];
+
+export type MoveTaskData = {
+    /**
+     * Placement and expected revisions, with destination fields for a move.
+     */
+    body: MoveTaskDto;
+    path: {
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        taskId: string;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/move';
+};
+
+export type MoveTaskErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type MoveTaskError = MoveTaskErrors[keyof MoveTaskErrors];
+
+export type MoveTaskResponses = {
+    /**
+     * Persisted task, revisions and every changed task identity.
+     */
+    200: TaskMutationResponseDtoOutput;
+};
+
+export type MoveTaskResponse = MoveTaskResponses[keyof MoveTaskResponses];
+
+export type ReorderTaskData = {
+    /**
+     * Placement and expected revisions, with destination fields for a move.
+     */
+    body: ReorderTaskDto;
+    path: {
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        taskId: string;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/reorder';
+};
+
+export type ReorderTaskErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ReorderTaskError = ReorderTaskErrors[keyof ReorderTaskErrors];
+
+export type ReorderTaskResponses = {
+    /**
+     * Persisted task, revisions and every changed task identity.
+     */
+    200: TaskMutationResponseDtoOutput;
+};
+
+export type ReorderTaskResponse = ReorderTaskResponses[keyof ReorderTaskResponses];
 
 export type ListVisibleTreeData = {
     body?: never;

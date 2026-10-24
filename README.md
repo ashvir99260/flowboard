@@ -237,11 +237,19 @@ Before committing configuration, the API validates all affected live schemas and
 
 Visible workspace members can create tasks with `POST /v1/lists/{listId}/tasks`, edit with `PATCH /v1/tasks/{taskId}`, and archive with `DELETE /v1/tasks/{taskId}`. Create requires title, resolved statusId and expectedConfigVersion; description defaults to empty, priority to none, dueDate to null, and assignees/customFields to empty. Required fields still need valid values. PATCH/DELETE also require expectedVersion. The server owns tenant, identity, position, versions and audit timestamps.
 
-PATCH preserves omitted fields, replaces the complete assignee array, clears dueDate with null, and patches customFields with null to remove an optional value. It validates the complete result, including retained assignees. Status changes append to the destination column; ordinary edits retain position. Unchanged edits preserve all versions and timestamps. Archive keeps history and assignments but hides the task from normal reads. Cross-list moves and explicit reorder remain P06-03.
+PATCH preserves omitted fields, replaces the complete assignee array, clears dueDate with null, and patches customFields with null to remove an optional value. It validates the complete result, including retained assignees. Status changes append to the destination column; ordinary edits retain position. Unchanged edits preserve all versions and timestamps. Archive keeps history and assignments but hides the task from normal reads. Use the placement endpoints below for cross-list moves and explicit ordering.
 
 Use `GET /v1/workspaces/{workspaceId}/members?assignableToListId={listId}` for eligible assignees. The caller must see the list; candidates must see every ancestor. Filtering happens before pagination, and cursors bind the list. Foreign members return404; same-workspace members without list access return403 with the original input index.
 
 Writes recheck access and configuration under the workspace lock. Each real mutation advances dataVersion once, leaves configVersion unchanged, and commits its outbox event atomically. Creation emits `task.created`; edits/archives emit `task.updated` with sanitized changes and no raw title, description or field values. Worker dispatch and live browser updates remain later tasks.
+
+### Task placement
+
+`POST /v1/tasks/{taskId}/move` accepts `{destinationListId,statusId?,customFields?,placement,expectedVersion,expectedConfigVersion}`. `POST /v1/tasks/{taskId}/reorder` accepts placement and both expected versions within the current list/status. Placement is exactly `{edge:"start"}`, `{edge:"end"}`, `{beforeId:"task-uuid"}` or `{afterId:"task-uuid"}`. Source, destination, anchor and retained assignees must satisfy current access rules.
+
+A move retains a destination-visible status, otherwise uses the first destination status in the same category (position/key/ID order). With no match it returns400; an explicit valid status may be supplied. Missing destination-required values and source-only values reject until supplied or explicitly cleared in customFields. An anchor must belong to the destination status column; hidden/foreign/archived anchors fail without a partial move.
+
+Both affected columns are renumbered densely using all live tasks. Every changed task advances its version once; changedTaskIds includes shifted siblings. The command advances dataVersion once, preserves configVersion and commits all events atomically. Canonical no-ops preserve audits/revisions. Existing task-page cursors must restart after a successful mutation. A stale task/configuration version returns409; refetch before retrying.
 
 ### Task reads
 

@@ -27,6 +27,7 @@ export const TaskUpdatedEventSchema = z.strictObject({
   currentListId: UuidSchema,
   changes: z
     .strictObject({
+      primaryListId: z.strictObject({ before: UuidSchema, after: UuidSchema }).optional(),
       assigneeIds: z
         .strictObject({ before: z.array(UuidSchema), after: z.array(UuidSchema) })
         .optional(),
