@@ -31,3 +31,9 @@ export * from './statuses.js';
 export * from './status-resolution.js';
 
 export * from './status-configuration.js';
+
+export * from './fields.js';
+
+export * from './field-resolution.js';
+
+export * from './field-values.js';

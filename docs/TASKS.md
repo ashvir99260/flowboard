@@ -644,13 +644,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 ## Phase 5 — Custom fields
 
-- [ ] **P05-01 — Pure field resolution and value validation**
+- [x] **P05-01 — Pure field resolution and value validation**
   - **Goal:** Share exact field precedence/types across server and forms.
-  - **Files:** `packages/contracts/src/{fields,field-resolution,field-values}.ts`, `packages/contracts/test/field-values.test.ts`.
+  - **Files:** `packages/contracts/src/{custom-fields,fields,field-resolution,field-values}.ts`, `packages/contracts/test/field-values.test.mjs`, plan/decision/evidence records.
   - **Dependencies:** P04-03.
   - **Acceptance:** Resolve workspace → space → folder → list; nearest full definition wins. All six field types, strict calendar dates, finite numbers, unique option IDs, required semantics and path-based errors are specified; null clear and omitted value differ.
   - **Validation:** Wrong types, unknown/duplicate options/keys, blank required text, missing required, invalid dates, zero/false accepted, nearest collision changes entire schema; standard gate.
   - **Commit:** `feat: resolve and validate custom fields`.
+  - **Completion evidence:** [P05-01 verification](evidence/P05-01.md): 35 added contract cases, 489 full-suite tests and all standard/contract gates pass; API integration remains P05-02.
 
 - [ ] **P05-02 — Custom-field configuration and resolved schemas**
   - **Goal:** Add scoped field CRUD and authoritative list schemas.
