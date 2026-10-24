@@ -24,7 +24,9 @@
   "dependencies": {
     "@flowboard/contracts": "workspace:*",
     "@flowboard/database": "workspace:*",
-    "@flowboard/logger": "workspace:*"
+    "@flowboard/logger": "workspace:*",
+    "bullmq": "6.3.16",
+    "ioredis": "6.0.0"
   },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",

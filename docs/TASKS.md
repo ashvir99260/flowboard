@@ -861,18 +861,29 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: dispatch durable task events to bullmq`.
   - **Completion evidence:** [P11-01](evidence/P11-01.md): fenced concurrent claims, strict jobs, real Redis outage recovery, duplicate suppression and active-enqueue shutdown pass; all 907 tests and root gates pass.
 
-- [ ] **P11-02 — Idempotent activity worker and drawer feed**
+- [x] **P11-02 — Idempotent activity worker and drawer feed**
   - **Goal:** Turn status-change events into stored, visible activity.
-  - **Files:** `apps/worker/src/{main,activity.processor,health,search-index.stub}.ts`, `apps/worker/test/activity.integration.test.ts`, `apps/api/src/modules/activity/**`, `apps/web/src/features/tasks/activity-feed.tsx`, generated artifacts.
+  - **Requirements:** R07, R08, R11, R12, R15, R25, R74, R75, R92, R112, R114.
+  - **Files:** shared activity/job contracts; database consumer/activity repositories; `apps/worker/src/**` and real-service tests; `apps/api/src/modules/activity/**` and cursor/permission wiring; task drawer/feed and browser tests; generated OpenAPI/client artifacts and task documentation.
   - **Dependencies:** P11-01.
-  - **Acceptance:** Worker verifies each job against its persisted outbox record, derives tenant context, and inserts one Activity per event. Paginated authorized activity endpoint and drawer feed show actor/time/from/to. Publication retries even if Activity already exists; mark delivery complete only after successful publish. Graceful worker shutdown/heartbeat. Search stub is explicit `TODO(NEXT-01)` and does not advertise indexing.
+  - **Acceptance:** Worker verifies each job against its persisted outbox record, derives tenant context, and inserts one Activity per status-change event. Other supported events publish invalidations without creating status activity. Paginated authorized activity endpoint and drawer feed show actor/time/from/to. Publication retries even if Activity already exists; mark delivery complete only after successful publish. Graceful worker shutdown/dependency readiness. Search stub is explicit `TODO(NEXT-01)` and does not advertise indexing.
   - **Validation:** Duplicate/retried delivery yields one activity; crash after Activity insert but before publish recovers the notification; malformed/cross-tenant payload blocked; forbidden task feed 403; empty/loading/error feed states; endpoint DoD and standard gate.
   - **Commit:** `feat: persist and display task activity`.
+  - **Completion evidence:** [P11-02 verification](evidence/P11-02.md): 930 tests, including 136 web cases, pass; idempotent worker delivery, authorized cursor feed and dirty-draft refresh are verified.
+
+- [ ] **P11-04 — Adopt the maintained beautiful-dnd fork for the board**
+  - **Goal:** Apply the user's confirmed `@hello-pangea/dnd` choice without losing board behavior.
+  - **Requirements:** R64, R70.
+  - **Files:** `apps/web/src/features/board/board-dnd.tsx`, affected board composition, app dependency/lockfile, pointer/keyboard/browser tests and decision/evidence records.
+  - **Dependencies:** P11-02.
+  - **Acceptance:** Replace the board's dnd-kit integration with the maintained React 19-compatible fork; preserve cross-column moves, within-column order, button alternatives, focus, optimistic rollback and list-switch safety. Remove unused dnd-kit dependencies after verifying there are no remaining consumers.
+  - **Validation:** Existing pointer/keyboard/button move and rejection cases, cancellation, empty columns and multiple viewport sizes; root gates and generated-contract checks.
+  - **Commit:** `feat: use maintained beautiful dnd for boards`.
 
 - [ ] **P11-03 — Permission-safe Socket.IO collaboration**
   - **Goal:** Update other clients while preserving tenant and resource access.
   - **Files:** `apps/api/src/modules/realtime/**`, `apps/api/test/integration/realtime.integration.test.ts`, `apps/web/src/features/realtime/**`, realtime browser tests.
-  - **Dependencies:** P11-02.
+  - **Dependencies:** P11-04.
   - **Acceptance:** Redis adapter, verified JWT handshake, guarded list subscriptions and safe source/destination invalidations. Revoke rooms on access changes, disconnect at token expiry, refetch on reconnect. Dirty forms preserve local edits and report conflicts; duplicate/stale events ignored.
   - **Validation:** Two clients update; two API instances fan out; Bob cannot subscribe to private list; foreign room blocked; grant revocation stops next event; move does not reveal hidden target; reconnect catches missed changes. Standard gate.
   - **Commit:** `feat: synchronize authorized clients in realtime`.

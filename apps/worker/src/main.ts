@@ -1,45 +1,61 @@
-import { createServer } from 'node:net';
+import { once } from 'node:events';
 
 import { createLogger, readLogLevel } from '@flowboard/logger';
+
+import { createActivityWorker } from './activity.worker.js';
+import { readWorkerConfig, WorkerConfigError } from './config.js';
+import { createHealthServer } from './health.js';
 
 let logger = createLogger({ level: 'info', service: 'worker' });
 let stage = 'log_config';
 
-function bootstrap() {
+async function bootstrap() {
   logger = createLogger({ service: 'worker', level: readLogLevel(process.env.LOG_LEVEL) });
-  stage = 'listen';
-  const port = Number(process.env.PORT ?? 3002);
-  if (!Number.isInteger(port) || port < 0 || port > 65535) {
-    logger.fatal('worker.startup.failed', { code: 'INVALID_PORT' });
-    process.exitCode = 1;
-
-    return;
-  }
-
-  // TODO(P11-02): Replace process-only liveness with the real BullMQ worker lifecycle.
-  const server = createServer((socket) => socket.end(() => socket.destroy()));
-  server.on('error', () => {
-    logger.fatal('worker.startup.failed', { code: 'LISTEN_FAILED' });
-    process.exitCode = 1;
-  });
-  server.once('close', () => logger.info('worker.stopped'));
-  server.listen(port, process.env.HOST ?? 'localhost', () => {
+  stage = 'configuration';
+  const config = readWorkerConfig(process.env);
+  const runtime = createActivityWorker(config.databaseUrl, config.redisUrl, logger);
+  const server = createHealthServer(runtime);
+  let closing: Promise<void> | undefined;
+  const close = () =>
+    (closing ??= (async () => {
+      server.close();
+      server.closeAllConnections();
+      await runtime.close();
+      logger.info('worker.stopped');
+    })());
+  try {
+    stage = 'listen';
+    server.listen(config.port, config.host);
+    await once(server, 'listening');
     const address = server.address();
-    if (address && typeof address !== 'string') {
-      logger.info('worker.started', { port: address.port, outcome: 'process_only' });
-    }
-  });
-  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-    process.once(signal, () => server.close());
+    if (address && typeof address !== 'string')
+      logger.info('worker.started', { port: address.port, outcome: 'activity_worker' });
+
+    void runtime
+      .ready()
+      .then(() => logger.info('worker.ready'))
+      .catch(() => logger.warn('worker.readiness.pending', { code: 'DEPENDENCIES_UNAVAILABLE' }));
+    for (const signal of ['SIGINT', 'SIGTERM'] as const)
+      process.once(signal, () => {
+        void close().catch(() => {
+          process.exitCode = 1;
+        });
+      });
+  } catch (error) {
+    await close();
+    throw error;
   }
 }
 
-try {
-  bootstrap();
-} catch {
+bootstrap().catch((error: unknown) => {
   logger.fatal('worker.startup.failed', {
-    code: stage === 'log_config' ? 'INVALID_LOG_LEVEL' : 'LISTEN_FAILED',
+    code:
+      stage === 'log_config'
+        ? 'INVALID_LOG_LEVEL'
+        : error instanceof WorkerConfigError
+          ? error.code
+          : 'STARTUP_FAILED',
     operation: stage,
   });
   process.exitCode = 1;
-}
+});

@@ -6,7 +6,11 @@ import { fileURLToPath } from 'node:url';
 import { startProcess } from './process.mjs';
 
 // Exercise the actual package command without reading a developer's private .env.
-export async function startLocalCommand(packageDirectory, scriptName, { env, envFile } = {}) {
+export async function startLocalCommand(
+  packageDirectory,
+  scriptName,
+  { env, envFile, outboundOrigins = [] } = {},
+) {
   const directory = fileURLToPath(packageDirectory);
   const { scripts } = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
   const command =
@@ -18,7 +22,7 @@ export async function startLocalCommand(packageDirectory, scriptName, { env, env
     await symlink(path.join(directory, 'dist'), path.join(cwd, 'dist'), 'dir');
     if (envFile !== undefined) await writeFile(path.join(cwd, '.env'), envFile, { mode: 0o600 });
 
-    const runtime = startProcess(command.split(' ').slice(1), { cwd, env });
+    const runtime = startProcess(command.split(' ').slice(1), { cwd, env, outboundOrigins });
 
     return {
       ...runtime,

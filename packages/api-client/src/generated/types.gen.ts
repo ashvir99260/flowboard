@@ -64,6 +64,132 @@ export type AcceptInvitationDto = {
 };
 
 /**
+ * Task activity page
+ *
+ * Authorized feed entries below a fixed first-page upper watermark.
+ */
+export type ActivityPageResponseDtoOutput = {
+    /**
+     * Items
+     *
+     * Authorized items in stable order.
+     */
+    items: Array<{
+        /**
+         * Activity actor
+         *
+         * Safe summary of the user who made the change.
+         */
+        actor: {
+            /**
+             * Actor ID
+             *
+             * Original user identity, retained after membership removal.
+             */
+            id: string;
+            /**
+             * Actor name
+             *
+             * Current public display name without account credentials or email.
+             */
+            name: string;
+        };
+        /**
+         * Created at
+         *
+         * Server-assigned activity insertion time used for feed ordering.
+         */
+        createdAt: string;
+        /**
+         * Event ID
+         *
+         * Original committed event; unique across retries.
+         */
+        eventId: string;
+        /**
+         * Activity ID
+         *
+         * Stable feed-entry identity.
+         */
+        id: string;
+        /**
+         * Status activity details
+         *
+         * Verified status identities and original event metadata; display labels may change later.
+         */
+        payload: {
+            /**
+             * Current status ID
+             *
+             * Canonical status after this event.
+             */
+            afterStatusId: string;
+            /**
+             * Previous status ID
+             *
+             * Canonical status before this event.
+             */
+            beforeStatusId: string;
+            /**
+             * Event time
+             *
+             * Time of the original committed task change.
+             */
+            occurredAt: string;
+            /**
+             * Task version
+             *
+             * Task revision produced by the original change.
+             */
+            taskVersion: number;
+        };
+        /**
+         * Task ID
+         *
+         * Task whose visible feed contains this entry.
+         */
+        taskId: string;
+        /**
+         * Activity type
+         *
+         * Supported feed-entry discriminator.
+         */
+        type: 'task.status_changed';
+        /**
+         * Updated at
+         *
+         * Server-maintained audit timestamp; retrying insertion does not change it.
+         */
+        updatedAt: string;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the activity.
+         */
+        workspaceId: string;
+    }>;
+    /**
+     * Page information
+     *
+     * Consistent forward-pagination state.
+     */
+    pageInfo: {
+        /**
+         * Has next page
+         *
+         * Whether another page is available.
+         */
+        hasNextPage: boolean;
+        /**
+         * Next cursor
+         *
+         * Continuation token, or null at the end.
+         */
+        nextCursor: string | null;
+    };
+};
+
+/**
  * Add workspace member request
  *
  * Administrator adds an existing account with a workspace-local role.
@@ -5303,6 +5429,71 @@ export type UpdateTaskResponses = {
 };
 
 export type UpdateTaskResponse = UpdateTaskResponses[keyof UpdateTaskResponses];
+
+export type ListTaskActivityData = {
+    body?: never;
+    path: {
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        taskId: string;
+    };
+    query?: {
+        /**
+         * Cursor
+         *
+         * Opaque server-authenticated continuation token; keep the same query.
+         */
+        cursor?: string;
+        /**
+         * Page limit
+         *
+         * Maximum returned items, from 1 to 100.
+         */
+        limit?: string;
+    };
+    url: '/v1/tasks/{taskId}/activity';
+};
+
+export type ListTaskActivityErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ListTaskActivityError = ListTaskActivityErrors[keyof ListTaskActivityErrors];
+
+export type ListTaskActivityResponses = {
+    /**
+     * Authorized status activity and cursor continuation.
+     */
+    200: ActivityPageResponseDtoOutput;
+};
+
+export type ListTaskActivityResponse = ListTaskActivityResponses[keyof ListTaskActivityResponses];
 
 export type MoveTaskData = {
     /**

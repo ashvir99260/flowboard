@@ -175,7 +175,7 @@ try {
   );
   assert.ok(
     logRecords.some(
-      ({ event, outcome }) => event === 'worker.started' && outcome === 'process_only',
+      ({ event, outcome }) => event === 'worker.started' && outcome === 'activity_worker',
     ),
   );
   for (const secret of [

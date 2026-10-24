@@ -6,6 +6,7 @@ import { createApplication } from '../../../dist/application.js';
 import { createOutboxDispatcher, retryDelay } from '../../../dist/modules/outbox/outbox.service.js';
 
 function fixture() {
+  const listId = randomUUID();
   const row = {
     id: randomUUID(),
     workspaceId: randomUUID(),
@@ -26,8 +27,8 @@ function fixture() {
     occurredAt: new Date().toISOString(),
     taskId: row.aggregateId,
     taskVersion: 2,
-    currentListId: randomUUID(),
-    previousListId: randomUUID(),
+    currentListId: listId,
+    previousListId: listId,
     changes: { title: true },
   };
   const actions = [];

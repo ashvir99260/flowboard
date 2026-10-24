@@ -1,6 +1,7 @@
 import { SilentLogger } from '@flowboard/logger';
 import { Module } from '@nestjs/common';
 
+import { ActivityModule } from './modules/activity/activity.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { FieldsModule } from './modules/fields/fields.module.js';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module.js';
@@ -48,6 +49,7 @@ export class AppModule {
         StatusesModule.forDatabase(database, logger, permissions),
         FieldsModule.forDatabase(database, logger, permissions),
         TasksModule.forDatabase(database, auth?.settings.secret, logger, permissions),
+        ActivityModule.forDatabase(database, auth?.settings.secret, logger, permissions),
       ],
     };
   }

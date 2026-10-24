@@ -19,37 +19,62 @@ const eventIdentity = {
   occurredAt: TimestampSchema,
 };
 
-export const TaskUpdatedEventSchema = z.strictObject({
-  ...eventIdentity,
-  taskId: UuidSchema,
-  taskVersion: VersionSchema,
-  previousListId: UuidSchema,
-  currentListId: UuidSchema,
-  changes: z
-    .strictObject({
-      primaryListId: z.strictObject({ before: UuidSchema, after: UuidSchema }).optional(),
-      assigneeIds: z
-        .strictObject({ before: z.array(UuidSchema), after: z.array(UuidSchema) })
-        .optional(),
-      archivedAt: z.strictObject({ before: z.null(), after: TimestampSchema }).optional(),
-      statusId: z.strictObject({ before: UuidSchema, after: UuidSchema }).optional(),
-      priority: z.strictObject({ before: PrioritySchema, after: PrioritySchema }).optional(),
-      dueDate: z
-        .strictObject({
-          before: CalendarDateSchema.nullable(),
-          after: CalendarDateSchema.nullable(),
-        })
-        .optional(),
-      position: z.strictObject({ before: PositionSchema, after: PositionSchema }).optional(),
-      title: z.literal(true).optional(),
-      description: z.literal(true).optional(),
-      customFieldKeys: z.array(FieldKeySchema).min(1).optional(),
-    })
-    .refine(
-      (value) => Object.values(value).some((item) => item !== undefined),
-      'A task event must describe a change',
-    ),
-});
+export const TaskUpdatedEventSchema = z
+  .strictObject({
+    ...eventIdentity,
+    taskId: UuidSchema,
+    taskVersion: VersionSchema,
+    previousListId: UuidSchema,
+    currentListId: UuidSchema,
+    changes: z
+      .strictObject({
+        primaryListId: z.strictObject({ before: UuidSchema, after: UuidSchema }).optional(),
+        assigneeIds: z
+          .strictObject({ before: z.array(UuidSchema), after: z.array(UuidSchema) })
+          .optional(),
+        archivedAt: z.strictObject({ before: z.null(), after: TimestampSchema }).optional(),
+        statusId: z.strictObject({ before: UuidSchema, after: UuidSchema }).optional(),
+        priority: z.strictObject({ before: PrioritySchema, after: PrioritySchema }).optional(),
+        dueDate: z
+          .strictObject({
+            before: CalendarDateSchema.nullable(),
+            after: CalendarDateSchema.nullable(),
+          })
+          .optional(),
+        position: z.strictObject({ before: PositionSchema, after: PositionSchema }).optional(),
+        title: z.literal(true).optional(),
+        description: z.literal(true).optional(),
+        customFieldKeys: z.array(FieldKeySchema).min(1).optional(),
+      })
+      .refine(
+        (value) => Object.values(value).some((item) => item !== undefined),
+        'A task event must describe a change',
+      ),
+  })
+  .superRefine((event, context) => {
+    const previous = event.previousListId.toLowerCase();
+    const current = event.currentListId.toLowerCase();
+    const movement = event.changes.primaryListId;
+    if (
+      (previous !== current) !== Boolean(movement) ||
+      (movement &&
+        (movement.before.toLowerCase() !== previous || movement.after.toLowerCase() !== current))
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['changes', 'primaryListId'],
+        message: 'List change must agree with the event source and destination',
+      });
+    }
+
+    const status = event.changes.statusId;
+    if (status && status.before.toLowerCase() === status.after.toLowerCase())
+      context.addIssue({
+        code: 'custom',
+        path: ['changes', 'statusId'],
+        message: 'Status change must use different identities',
+      });
+  });
 
 export const WorkspaceConfigUpdatedEventSchema = z.strictObject({
   ...eventIdentity,

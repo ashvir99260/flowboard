@@ -26,8 +26,8 @@ COPY .gitignore .gitignore
 RUN find /repo -name node_modules -prune -o -exec chown node:node {} +
 USER node
 EXPOSE 3002
-HEALTHCHECK --interval=5s --timeout=3s --start-period=60s --retries=24 \
-    CMD node --input-type=module -e "import net from 'node:net';const s=net.connect({host:'127.0.0.1',port:Number(process.env.PORT)});s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));s.setTimeout(2000,()=>process.exit(1))"
+HEALTHCHECK --interval=5s --timeout=5s --start-period=60s --retries=24 \
+    CMD node --input-type=module -e "const r=await fetch('http://127.0.0.1:'+process.env.PORT+'/health/ready',{signal:AbortSignal.timeout(4000)});process.exit(r.ok?0:1)"
 CMD ["pnpm", "exec", "turbo", "watch", "dev:docker", "--filter=@flowboard/worker", "--ui=stream"]
 
 FROM build AS production
@@ -40,7 +40,6 @@ ENV NODE_ENV=production HOST=0.0.0.0 PORT=3002
 COPY --from=production --chown=node:node /prod/worker/ .
 USER node
 EXPOSE 3002
-# TODO(P11-02): Queue readiness is separate from this process-liveness probe.
-HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=6 \
-    CMD node --input-type=module -e "import net from 'node:net';const s=net.connect({host:'127.0.0.1',port:Number(process.env.PORT)});s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));s.setTimeout(2000,()=>process.exit(1))"
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=6 \
+    CMD node --input-type=module -e "const r=await fetch('http://127.0.0.1:'+process.env.PORT+'/health/ready',{signal:AbortSignal.timeout(4000)});process.exit(r.ok?0:1)"
 CMD ["node", "dist/main.js"]

@@ -12,6 +12,8 @@ export const EventQueueName = 'flowboard-events';
 
 export const EventJobName = 'event';
 
+export const EventChannelName = 'flowboard:events';
+
 export const EventJobReferenceSchema = z.strictObject({
   schemaVersion: z.literal(1),
   eventId: UuidSchema,
