@@ -45,7 +45,18 @@ test('login, select a list, edit a custom field and reload persisted data', asyn
     const bobDrawer = bobPage.getByRole('dialog', { name: 'Task details' });
     await drawer.getByLabel(/^Effort/).fill('8');
     await bobDrawer.getByLabel(/^Effort/).fill('9');
-    await bobDrawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
+    await Promise.all([
+      // A saved write precedes the worker event and the receiving client's refetch.
+      page.waitForResponse(
+        async (response) =>
+          response.request().method() === 'GET' &&
+          /\/api\/v1\/tasks\/[^/]+$/.test(new URL(response.url()).pathname) &&
+          response.ok() &&
+          (await response.json()).data.customFields.effort === 9,
+        { timeout: 15000 },
+      ),
+      bobDrawer.getByRole('button', { exact: true, name: 'Save changes' }).click(),
+    ]);
     await expect(bobDrawer.getByRole('status', { exact: true, name: '' })).toContainText(
       'Task saved',
     );
