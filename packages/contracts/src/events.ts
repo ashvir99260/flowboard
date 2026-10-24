@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
-import { TimestampSchema } from './dates.js';
-import { UuidSchema, VersionSchema } from './identifiers.js';
+import { CalendarDateSchema, TimestampSchema } from './dates.js';
+import { PrioritySchema } from './enums.js';
+import { FieldKeySchema, PositionSchema, UuidSchema, VersionSchema } from './identifiers.js';
 
 export const RealtimeEvents = {
   nodeUpdated: 'node.updated',
+  taskCreated: 'task.created',
   taskUpdated: 'task.updated',
   workspaceConfigUpdated: 'workspace.config.updated',
 } as const;
@@ -23,12 +25,29 @@ export const TaskUpdatedEventSchema = z.strictObject({
   taskVersion: VersionSchema,
   previousListId: UuidSchema,
   currentListId: UuidSchema,
-  changes: z.union([
-    z.strictObject({
-      assigneeIds: z.strictObject({ before: z.array(UuidSchema), after: z.array(UuidSchema) }),
-    }),
-    z.strictObject({ archivedAt: z.strictObject({ before: z.null(), after: TimestampSchema }) }),
-  ]),
+  changes: z
+    .strictObject({
+      assigneeIds: z
+        .strictObject({ before: z.array(UuidSchema), after: z.array(UuidSchema) })
+        .optional(),
+      archivedAt: z.strictObject({ before: z.null(), after: TimestampSchema }).optional(),
+      statusId: z.strictObject({ before: UuidSchema, after: UuidSchema }).optional(),
+      priority: z.strictObject({ before: PrioritySchema, after: PrioritySchema }).optional(),
+      dueDate: z
+        .strictObject({
+          before: CalendarDateSchema.nullable(),
+          after: CalendarDateSchema.nullable(),
+        })
+        .optional(),
+      position: z.strictObject({ before: PositionSchema, after: PositionSchema }).optional(),
+      title: z.literal(true).optional(),
+      description: z.literal(true).optional(),
+      customFieldKeys: z.array(FieldKeySchema).min(1).optional(),
+    })
+    .refine(
+      (value) => Object.values(value).some((item) => item !== undefined),
+      'A task event must describe a change',
+    ),
 });
 
 export const WorkspaceConfigUpdatedEventSchema = z.strictObject({
@@ -45,3 +64,13 @@ export const NodeUpdatedEventSchema = z.strictObject({
   nodeVersion: VersionSchema,
   operation: z.enum(['created', 'updated', 'archived']),
 });
+
+export const TaskCreatedEventSchema = z.strictObject({
+  ...eventIdentity,
+  taskId: UuidSchema,
+  taskVersion: VersionSchema,
+  currentListId: UuidSchema,
+  statusId: UuidSchema,
+});
+
+export type TaskCreatedEvent = z.infer<typeof TaskCreatedEventSchema>;

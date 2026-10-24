@@ -32,6 +32,7 @@ import {
   AddMemberDto,
   CreateInvitationDto,
   ExpectedConfigDto,
+  MemberPageQueryDto,
   MemberParamsDto,
   UpdateMemberDto,
   WorkspacePageQueryDto,
@@ -310,7 +311,7 @@ export class WorkspacesController {
   @WorkspacePermission('member.list')
   @ApiOperation({
     description:
-      'Revision-bound keyset page. Administrators see emails; ordinary members see only their own email. Unknown and offset parameters are rejected.',
+      'Revision-bound keyset page. Optional assignableToListId includes only members with full ancestor visibility to that list. Administrators see emails; ordinary members see only their own email.',
     operationId: 'listWorkspaceMembers',
     summary: 'List members in the active workspace',
   })
@@ -326,7 +327,7 @@ export class WorkspacesController {
   })
   listMembers(
     @Param() params: WorkspaceParamsDto,
-    @Query() query: WorkspacePageQueryDto,
+    @Query() query: MemberPageQueryDto,
     @Req() request: { identity: IdentitySession },
   ): Promise<MemberPage> {
     return this.workspaces.listMembers(request.identity, params.workspaceId, query);

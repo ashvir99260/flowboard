@@ -90,6 +90,26 @@ export type AddMemberDto = {
 };
 
 /**
+ * Archive task request
+ *
+ * Task and configuration preconditions for soft deletion.
+ */
+export type ArchiveTaskDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Expected task version
+     *
+     * Task revision loaded by the caller.
+     */
+    expectedVersion: number;
+};
+
+/**
  * Create invitation request
  *
  * Create a 48-hour single-use invitation for this email and role.
@@ -313,6 +333,64 @@ export type CreateScopeStatusDto = {
      * Stable identity referenced by tasks; never an override-row ID.
      */
     statusId: string;
+};
+
+/**
+ * Create task request
+ *
+ * Complete task inputs and workspace configuration precondition; defaults are validated against the list schema.
+ */
+export type CreateTaskDto = {
+    /**
+     * Assignee IDs
+     *
+     * Assigned member identities in ascending UUID order.
+     */
+    assigneeIds?: Array<string>;
+    /**
+     * Custom-field values
+     *
+     * Complete stored values, limited to 100 keys and 20000 UTF-8 JSON bytes.
+     */
+    customFields?: {
+        [key: string]: string | number | boolean | Array<string>;
+    };
+    /**
+     * Description
+     *
+     * Markdown content; clients render without raw HTML.
+     */
+    description?: string;
+    /**
+     * Due date
+     *
+     * Calendar day or null when no due date is set.
+     */
+    dueDate?: string | null;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Priority
+     *
+     * Urgent, high, normal, low or none.
+     */
+    priority?: 'urgent' | 'high' | 'normal' | 'low' | 'none';
+    /**
+     * Status ID
+     *
+     * Canonical status identity available in the primary list.
+     */
+    statusId: string;
+    /**
+     * Task title
+     *
+     * Task title, at most 500 characters.
+     */
+    title: string;
 };
 
 /**
@@ -2116,6 +2194,150 @@ export type SwitchWorkspaceDto = {
 };
 
 /**
+ * Task mutation response
+ *
+ * Persisted task, revisions and changed identities.
+ */
+export type TaskMutationResponseDtoOutput = {
+    /**
+     * Changed task IDs
+     *
+     * Tasks whose revisions changed; empty for a no-op.
+     */
+    changedTaskIds: Array<string>;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Task
+     *
+     * Safe task projection with built-ins, fields and assignees.
+     */
+    data: {
+        /**
+         * Archived at
+         *
+         * Archive timestamp or null for a live task.
+         */
+        archivedAt: string | null;
+        /**
+         * Assignee IDs
+         *
+         * Assigned member identities in ascending UUID order.
+         */
+        assigneeIds: Array<string>;
+        /**
+         * Assignees
+         *
+         * Safe assigned member summaries in UUID order.
+         */
+        assignees: Array<{
+            /**
+             * Assignee ID
+             *
+             * Workspace member assigned to the task.
+             */
+            id: string;
+            /**
+             * Assignee name
+             *
+             * Public display name without email or account details.
+             */
+            name: string;
+        }>;
+        /**
+         * Created at
+         *
+         * Immutable creation time from the database clock.
+         */
+        createdAt: string;
+        /**
+         * Custom fields
+         *
+         * Values keyed by the list resolved field schema.
+         */
+        customFields: {
+            [key: string]: string | number | boolean | Array<string>;
+        };
+        /**
+         * Description
+         *
+         * Markdown content; clients render without raw HTML.
+         */
+        description: string;
+        /**
+         * Due date
+         *
+         * Calendar day or null when no due date is set.
+         */
+        dueDate: string | null;
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        id: string;
+        /**
+         * Position
+         *
+         * Server-controlled order within the current status column.
+         */
+        position: number;
+        /**
+         * Primary list ID
+         *
+         * Live list owning the task.
+         */
+        primaryListId: string;
+        /**
+         * Priority
+         *
+         * Urgent, high, normal, low or none.
+         */
+        priority: 'urgent' | 'high' | 'normal' | 'low' | 'none';
+        /**
+         * Status ID
+         *
+         * Canonical status identity available in the primary list.
+         */
+        statusId: string;
+        /**
+         * Task title
+         *
+         * Task title, at most 500 characters.
+         */
+        title: string;
+        /**
+         * Updated at
+         *
+         * Database-maintained time of the last changed command.
+         */
+        updatedAt: string;
+        /**
+         * Task version
+         *
+         * Optimistic task revision advanced by changed commands.
+         */
+        version: number;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the task.
+         */
+        workspaceId: string;
+    };
+    /**
+     * Data version
+     *
+     * Workspace task and tree data revision.
+     */
+    dataVersion: number;
+};
+
+/**
  * Task page
  *
  * Authorized tasks and same-snapshot revisions.
@@ -2698,6 +2920,70 @@ export type UpdateScopeStatusDto = {
      * Null inherits; zero is a valid explicit position.
      */
     position?: number | null;
+};
+
+/**
+ * Update task request
+ *
+ * Replace supplied built-ins and assignees; patch custom fields with null to clear optional values.
+ */
+export type UpdateTaskDto = {
+    /**
+     * Assignee IDs
+     *
+     * Assigned member identities in ascending UUID order.
+     */
+    assigneeIds?: Array<string>;
+    /**
+     * Custom-field patch
+     *
+     * Omitted keys retain values; explicit null removes a key before full validation.
+     */
+    customFields?: {
+        [key: string]: string | null | number | null | boolean | null | Array<string> | null;
+    };
+    /**
+     * Description
+     *
+     * Markdown content; clients render without raw HTML.
+     */
+    description?: string;
+    /**
+     * Due date
+     *
+     * Calendar day or null when no due date is set.
+     */
+    dueDate?: string | null;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Expected task version
+     *
+     * Task revision loaded by the caller.
+     */
+    expectedVersion: number;
+    /**
+     * Priority
+     *
+     * Urgent, high, normal, low or none.
+     */
+    priority?: 'urgent' | 'high' | 'normal' | 'low' | 'none';
+    /**
+     * Status ID
+     *
+     * Canonical status identity available in the primary list.
+     */
+    statusId?: string;
+    /**
+     * Task title
+     *
+     * Task title, at most 500 characters.
+     */
+    title?: string;
 };
 
 /**
@@ -3493,6 +3779,65 @@ export type ListTasksResponses = {
 };
 
 export type ListTasksResponse = ListTasksResponses[keyof ListTasksResponses];
+
+export type CreateTaskData = {
+    /**
+     * Task inputs and expected configuration revision.
+     */
+    body: CreateTaskDto;
+    path: {
+        /**
+         * Primary list ID
+         *
+         * Live list owning the task.
+         */
+        listId: string;
+    };
+    query?: never;
+    url: '/v1/lists/{listId}/tasks';
+};
+
+export type CreateTaskErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type CreateTaskError = CreateTaskErrors[keyof CreateTaskErrors];
+
+export type CreateTaskResponses = {
+    /**
+     * Created task, committed revisions and changed task IDs.
+     */
+    201: TaskMutationResponseDtoOutput;
+};
+
+export type CreateTaskResponse = CreateTaskResponses[keyof CreateTaskResponses];
 
 export type GetCurrentUserData = {
     body?: never;
@@ -4559,6 +4904,65 @@ export type UpdateScopeStatusResponses = {
 
 export type UpdateScopeStatusResponse = UpdateScopeStatusResponses[keyof UpdateScopeStatusResponses];
 
+export type ArchiveTaskData = {
+    /**
+     * Both expected revisions for archiving.
+     */
+    body: ArchiveTaskDto;
+    path: {
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        taskId: string;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}';
+};
+
+export type ArchiveTaskErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ArchiveTaskError = ArchiveTaskErrors[keyof ArchiveTaskErrors];
+
+export type ArchiveTaskResponses = {
+    /**
+     * Task archived; normal reads no longer return it.
+     */
+    204: void;
+};
+
+export type ArchiveTaskResponse = ArchiveTaskResponses[keyof ArchiveTaskResponses];
+
 export type GetTaskData = {
     body?: never;
     path: {
@@ -4591,6 +4995,10 @@ export type GetTaskErrors = {
      */
     404: ErrorResponseDtoOutput;
     /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
      * An unexpected internal failure occurred. The response omits internal details and credentials.
      */
     500: ErrorResponseDtoOutput;
@@ -4610,6 +5018,65 @@ export type GetTaskResponses = {
 };
 
 export type GetTaskResponse = GetTaskResponses[keyof GetTaskResponses];
+
+export type UpdateTaskData = {
+    /**
+     * Task patch and both expected revisions.
+     */
+    body: UpdateTaskDto;
+    path: {
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        taskId: string;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}';
+};
+
+export type UpdateTaskErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type UpdateTaskError = UpdateTaskErrors[keyof UpdateTaskErrors];
+
+export type UpdateTaskResponses = {
+    /**
+     * Persisted task and revisions; no-op returns no changed IDs.
+     */
+    200: TaskMutationResponseDtoOutput;
+};
+
+export type UpdateTaskResponse = UpdateTaskResponses[keyof UpdateTaskResponses];
 
 export type ListVisibleTreeData = {
     body?: never;
@@ -4813,6 +5280,12 @@ export type ListWorkspaceMembersData = {
          * Maximum returned items, from 1 to 100.
          */
         limit?: string;
+        /**
+         * Assignable to list
+         *
+         * Only members with visibility through every ancestor of this list.
+         */
+        assignableToListId?: string;
     };
     url: '/v1/workspaces/{workspaceId}/members';
 };

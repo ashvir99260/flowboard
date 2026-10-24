@@ -231,11 +231,21 @@ Administrators manage complete local field definitions at `/v1/scopes/{ownerType
 
 Resolution walks workspace → space → folder → list. The nearest matching key replaces the **whole definition**, including type, required flag and options; options are never merged. Results sort by position, key, then ID and include source/audit metadata plus `isInherited`. Empty schemas are valid. IDs, keys and owners are immutable; PATCH preserves omitted attributes and rejects nulls. A type change may require replacing options in the same request.
 
-Before committing configuration, the API validates all affected live schemas and task values. In-use removal or incompatible fallback/type/option/required changes return409 with field paths and leave data unchanged. Compatible inherited fallback may succeed. To make a field required, first add it as optional, populate valid values, then enable required. Task value editing is delivered by the upcoming task API; this sequence does not imply that endpoint exists yet.
+Before committing configuration, the API validates all affected live schemas and task values. In-use removal or incompatible fallback/type/option/required changes return409 with field paths and leave data unchanged. Compatible inherited fallback may succeed. To make a field required, first add it as optional, populate valid values, then enable required. Use the task PATCH endpoint to populate values before enabling the required flag.
+
+### Task writes
+
+Visible workspace members can create tasks with `POST /v1/lists/{listId}/tasks`, edit with `PATCH /v1/tasks/{taskId}`, and archive with `DELETE /v1/tasks/{taskId}`. Create requires title, resolved statusId and expectedConfigVersion; description defaults to empty, priority to none, dueDate to null, and assignees/customFields to empty. Required fields still need valid values. PATCH/DELETE also require expectedVersion. The server owns tenant, identity, position, versions and audit timestamps.
+
+PATCH preserves omitted fields, replaces the complete assignee array, clears dueDate with null, and patches customFields with null to remove an optional value. It validates the complete result, including retained assignees. Status changes append to the destination column; ordinary edits retain position. Unchanged edits preserve all versions and timestamps. Archive keeps history and assignments but hides the task from normal reads. Cross-list moves and explicit reorder remain P06-03.
+
+Use `GET /v1/workspaces/{workspaceId}/members?assignableToListId={listId}` for eligible assignees. The caller must see the list; candidates must see every ancestor. Filtering happens before pagination, and cursors bind the list. Foreign members return404; same-workspace members without list access return403 with the original input index.
+
+Writes recheck access and configuration under the workspace lock. Each real mutation advances dataVersion once, leaves configVersion unchanged, and commits its outbox event atomically. Creation emits `task.created`; edits/archives emit `task.updated` with sanitized changes and no raw title, description or field values. Worker dispatch and live browser updates remain later tasks.
 
 ### Task reads
 
-`GET /v1/lists/{listId}/tasks` returns a cursor page; `GET /v1/tasks/{taskId}` returns task details. Both check the task's live list and ancestors and include `configVersion` and `dataVersion` from the same database snapshot. Assignees contain only ID/name. Task writes are tracked separately in Phase6.
+`GET /v1/lists/{listId}/tasks` returns a cursor page; `GET /v1/tasks/{taskId}` returns task details. Both check the task's live list and ancestors and include `configVersion` and `dataVersion` from the same database snapshot. Assignees contain only ID/name. Task writes use the same scoped repository and access policy.
 
 Task pages accept `limit` (1–100), `cursor`, `sort=manual|dueDate|priority`, and `direction=asc|desc` (manual supports asc). Manual order follows resolved statuses, then card position/ID. Due dates place nulls last in either direction; ties use ascending IDs. Filters are `statusId`, `assigneeId`, `priority`, or one complete `fieldKey`/`fieldOperator`/`fieldValue` triplet. Field values are JSON-encoded scalars: `3`, `false` or `"Platform"`; `eq` matches a typed scalar, and `contains` matches one multi-select option ID. Invalid field types/options return400 with paths.
 

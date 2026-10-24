@@ -14,7 +14,7 @@ const hasExample = (schema) =>
   Object.hasOwn(schema, 'example') || Object.hasOwn(schema, 'examples');
 
 test('every Swagger operation and payload has a description and example', () => {
-  assert.equal(operations.length, 36);
+  assert.equal(operations.length, 39);
   for (const operation of operations) {
     meaningful(operation.summary, `${operation.operationId} summary`);
     meaningful(operation.description, `${operation.operationId} description`);
@@ -100,6 +100,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
     createNode: 'NodeResponseDto_Output',
     createScopeField: 'ScopeFieldMutationResponseDto_Output',
     createScopeStatus: 'ScopeStatusMutationResponseDto_Output',
+    createTask: 'TaskMutationResponseDto_Output',
     createWorkspaceInvitation: 'InvitationResponseDto_Output',
     getCurrentUser: 'CurrentUserResponseDto_Output',
     getListResolvedFields: 'ResolvedFieldResponseDto_Output',
@@ -123,6 +124,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
     updateNode: 'NodeResponseDto_Output',
     updateScopeField: 'ScopeFieldMutationResponseDto_Output',
     updateScopeStatus: 'ScopeStatusMutationResponseDto_Output',
+    updateTask: 'TaskMutationResponseDto_Output',
     updateWorkspaceMember: 'MemberMutationResponseDto_Output',
     upsertNodeGrant: 'GrantResponseDto_Output',
   };
@@ -132,6 +134,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
         'logOut',
         'removeWorkspaceMember',
         'archiveNode',
+        'archiveTask',
         'removeNodeGrant',
         'removeScopeStatus',
         'removeScopeField',
@@ -144,6 +147,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
           'addWorkspaceMember',
           'createWorkspaceInvitation',
           'createNode',
+          'createTask',
           'createScopeStatus',
           'createScopeField',
         ].includes(operation.operationId)
@@ -178,4 +182,15 @@ test('published color patterns accept the uppercase colors returned by seeded li
   for (const value of ['#D97706', '#64748B', '#334455']) {
     assert.match(value, new RegExp(color.pattern));
   }
+});
+
+test('custom-field patch clearing has typed nullable alternatives', () => {
+  const values =
+    document.components.schemas.UpdateTaskDto.properties.customFields.additionalProperties;
+  assert.equal(values.nullable, undefined);
+  assert.deepEqual(
+    values.anyOf.map((schema) => schema.type),
+    ['string', 'number', 'boolean', 'array'],
+  );
+  assert.ok(values.anyOf.every((schema) => schema.nullable === true));
 });

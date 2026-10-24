@@ -7,8 +7,15 @@ import { ApiLoggerKey } from '../../core/common/tokens/logger.token.js';
 import { PermissionService } from '../permissions/permission.service.js';
 
 import type { CursorCodec } from '../../core/common/cursor.js';
-import type { ListTasksQuery, Task, TaskPosition } from '@flowboard/contracts';
-import type { Database, IdentitySession } from '@flowboard/database';
+import type {
+  ArchiveTask,
+  CreateTask,
+  ListTasksQuery,
+  Task,
+  TaskPosition,
+  UpdateTask,
+} from '@flowboard/contracts';
+import type { Database, IdentitySession, WriteRepositories } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
 
 export const TasksRuntimeKey = 'flowboard:tasks-runtime';
@@ -37,6 +44,33 @@ export class TasksService {
       cursor: this.runtime.cursor,
       context: { actorUserId: identity.user.id, workspaceId: identity.activeWorkspace.id },
     };
+  }
+  private write<T>(
+    identity: IdentitySession,
+    target: { listId: string } | { taskId: string },
+    action: (store: WriteRepositories) => Promise<T>,
+  ) {
+    const { database, context } = this.resources(identity);
+
+    return this.logger.observe('tasks.write', () =>
+      database.write(context, async (store) => {
+        if ('listId' in target) {
+          await store.scopes.path({ ownerType: 'list', ownerId: target.listId });
+          await this.permissions.assertNode(store, target.listId, 'task.write');
+        } else await this.permissions.assertTask(store, target.taskId, 'task.write');
+
+        return action(store);
+      }),
+    );
+  }
+  create(identity: IdentitySession, listId: string, input: CreateTask) {
+    return this.write(identity, { listId }, (store) => store.tasks.create(listId, input));
+  }
+  update(identity: IdentitySession, taskId: string, input: UpdateTask) {
+    return this.write(identity, { taskId }, (store) => store.tasks.update(taskId, input));
+  }
+  archive(identity: IdentitySession, taskId: string, input: ArchiveTask) {
+    return this.write(identity, { taskId }, (store) => store.tasks.archive(taskId, input));
   }
   detail(identity: IdentitySession, taskId: string) {
     const { database, context } = this.resources(identity);

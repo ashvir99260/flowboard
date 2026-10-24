@@ -1,6 +1,31 @@
-import { TaskEnvelopeSchema, TaskPageSchema } from '@flowboard/contracts';
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ArchiveTaskSchema,
+  CreateTaskSchema,
+  TaskEnvelopeSchema,
+  TaskMutationEnvelopeSchema,
+  TaskPageSchema,
+  UpdateTaskSchema,
+} from '@flowboard/contracts';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiNoContentResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
 import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
@@ -10,8 +35,19 @@ import {
 } from '../../core/common/swagger/api-documentation.js';
 import { NodePermission, TaskPermission } from '../permissions/permission.decorator.js';
 
-import { ListTasksQueryDto, TaskListParamsDto, TaskParamsDto } from './tasks.request.dto.js';
-import { TaskPageResponseDto, TaskResponseDto } from './tasks.response.dto.js';
+import {
+  ArchiveTaskDto,
+  CreateTaskDto,
+  ListTasksQueryDto,
+  TaskListParamsDto,
+  TaskParamsDto,
+  UpdateTaskDto,
+} from './tasks.request.dto.js';
+import {
+  TaskMutationResponseDto,
+  TaskPageResponseDto,
+  TaskResponseDto,
+} from './tasks.response.dto.js';
 import { TasksService } from './tasks.service.js';
 
 import type { IdentitySession } from '@flowboard/database';
@@ -53,6 +89,37 @@ export class ListTasksController {
   ) {
     return this.tasks.list(request.identity, params.listId, query);
   }
+  @Post()
+  @NodePermission('task.write', 'listId')
+  @ApiOperation({
+    description:
+      'Validate current list status, fields and visible member assignments under the workspace lock; append within the status column and record an outbox event.',
+    operationId: 'createTask',
+    summary: 'Create a task',
+  })
+  @ApiBody({
+    type: CreateTaskDto,
+    description: 'Task inputs and expected configuration revision.',
+    examples: { create: { summary: 'Create a task', value: CreateTaskSchema.meta()?.example } },
+  })
+  @ApiResponse({
+    status: 201,
+    type: TaskMutationResponseDto.Output,
+    example: TaskMutationEnvelopeSchema.meta()?.example,
+  })
+  @ZodResponse({
+    status: 201,
+    type: TaskMutationResponseDto,
+    description: 'Created task, committed revisions and changed task IDs.',
+  })
+  create(
+    @Param() params: TaskListParamsDto,
+    @Body() input: CreateTaskDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ) {
+    return this.tasks.create(request.identity, params.listId, input);
+  }
 }
 
 @ApiTags('Tasks')
@@ -61,6 +128,7 @@ export class ListTasksController {
 @ApiResponse(documentedAccessError(401))
 @ApiResponse(documentedAccessError(403))
 @ApiResponse(documentedError(404))
+@ApiResponse(documentedAccessError(409))
 @ApiResponse(documentedError(500))
 @ApiResponse(documentedError(503))
 @Controller('tasks/:taskId')
@@ -90,5 +158,61 @@ export class TasksController {
     @Req() request: { identity: IdentitySession },
   ) {
     return this.tasks.detail(request.identity, params.taskId);
+  }
+  @Patch()
+  @TaskPermission('task.write')
+  @ApiOperation({
+    description:
+      'Patch supplied fields and revalidate the complete task, current permissions and expected revisions; omitted values are preserved and changed status appends to its column.',
+    operationId: 'updateTask',
+    summary: 'Update a task',
+  })
+  @ApiBody({
+    type: UpdateTaskDto,
+    description: 'Task patch and both expected revisions.',
+    examples: { update: { summary: 'Rename a task', value: UpdateTaskSchema.meta()?.example } },
+  })
+  @ApiResponse({
+    status: 200,
+    type: TaskMutationResponseDto.Output,
+    example: TaskMutationEnvelopeSchema.meta()?.example,
+  })
+  @ZodResponse({
+    status: 200,
+    type: TaskMutationResponseDto,
+    description: 'Persisted task and revisions; no-op returns no changed IDs.',
+  })
+  update(
+    @Param() params: TaskParamsDto,
+    @Body() input: UpdateTaskDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ) {
+    return this.tasks.update(request.identity, params.taskId, input);
+  }
+  @Delete()
+  @HttpCode(204)
+  @TaskPermission('task.write')
+  @ApiOperation({
+    description:
+      'Soft-delete a live task and atomically record its data revision and event; retained assignments and values remain historical.',
+    operationId: 'archiveTask',
+    summary: 'Archive a task',
+  })
+  @ApiBody({
+    type: ArchiveTaskDto,
+    description: 'Both expected revisions for archiving.',
+    examples: {
+      archive: { summary: 'Archive the loaded task', value: ArchiveTaskSchema.meta()?.example },
+    },
+  })
+  @ApiNoContentResponse({ description: 'Task archived; normal reads no longer return it.' })
+  async archive(
+    @Param() params: TaskParamsDto,
+    @Body() input: ArchiveTaskDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ): Promise<void> {
+    await this.tasks.archive(request.identity, params.taskId, input);
   }
 }

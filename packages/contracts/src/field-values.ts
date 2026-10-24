@@ -35,7 +35,19 @@ function validateKeys(value: unknown, ctx: z.RefinementCtx) {
 }
 const rawMap = z.preprocess(validateKeys, z.record(FieldKeySchema, valueSchema));
 const patchMap = z
-  .preprocess(validateKeys, z.record(FieldKeySchema, valueSchema.nullable()))
+  .preprocess(
+    validateKeys,
+    z.record(
+      FieldKeySchema,
+      z.union(
+        valueSchema.options.map((schema) =>
+          schema
+            .meta({ description: 'A value validated against the resolved field type.' })
+            .nullable(),
+        ),
+      ),
+    ),
+  )
   .refine((value) => Object.keys(value).length <= 100, 'At most 100 field keys are allowed');
 const byteSize = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)).length;
 

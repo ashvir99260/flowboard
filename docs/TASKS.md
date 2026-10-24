@@ -685,9 +685,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: query paginated tasks with typed filters`.
   - **Completion evidence:** [P06-01 verification](evidence/P06-01.md): two typed read endpoints, stable cursor/filter/access regressions and 556 full-suite tests; all standard/contract gates pass.
 
-- [ ] **P06-02 — Validated task create, edit and archive**
+- [x] **P06-02 — Validated task create, edit and archive**
   - **Goal:** Persist complete valid tasks and durable event intent.
-  - **Files:** `apps/api/src/modules/tasks/task-write.service.ts`, `packages/contracts/src/events.ts`, task controllers/repositories, assignable-member filter/contracts, `apps/api/test/integration/task-writes.spec.mjs`, generated artifacts.
+  - **Files:** `apps/api/src/modules/tasks/{tasks.service,tasks.controller,tasks.request.dto,tasks.response.dto}.ts`, `packages/contracts/src/{task-mutations,events}.ts`, task/access/member repositories, `task-events.ts`, colocated API integration tests, database/contract tests and generated artifacts.
   - **Dependencies:** P06-01.
   - **Acceptance:** Validate title ≤500, Markdown string, dates, destination status, members/assignee access and effective custom fields. PATCH omission/clear semantics and expected versions work. Member listing accepts an authorized assignableToListId filter for eligible assignee choices. Task update and outbox insert commit together. Archive removes task from normal reads.
   - **Validation:** Unknown statusId 400; foreign/disallowed assignee; title 501; wrong type/option/missing required; explicit clear; stale edit 409; rollback emits no event. Endpoint DoD and standard gate.

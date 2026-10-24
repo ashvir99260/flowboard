@@ -7,6 +7,7 @@ export interface MembershipPosition {
 
 export interface MembershipPageQuery {
   after?: MembershipPosition;
+  assignableToListId?: string;
   limit: number;
 }
 
