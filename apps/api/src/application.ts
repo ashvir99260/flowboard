@@ -57,6 +57,7 @@ export async function createApplication(
           .addTag('Authentication', 'Account and session lifecycle')
           .addTag('Workspaces', 'Workspace memberships, invitations and current identity')
           .addTag('Statuses', 'Scoped status configuration and list inheritance')
+          .addTag('Fields', 'Scoped custom-field configuration and list inheritance')
           .addTag('Hierarchy', 'Workspace spaces, folders and lists')
           .addTag('Permissions', 'Administrator-managed container access grants')
           .addBearerAuth(

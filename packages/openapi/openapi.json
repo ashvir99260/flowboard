@@ -259,6 +259,131 @@
         "title": "Create container request",
         "type": "object"
       },
+      "CreateScopeFieldDto": {
+        "additionalProperties": false,
+        "description": "Complete local definition replacing any inherited definition of the same key.",
+        "example": {
+          "expectedConfigVersion": 1,
+          "key": "estimate",
+          "name": "Estimate",
+          "options": [],
+          "position": 0,
+          "required": false,
+          "type": "number"
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "key": {
+            "description": "Stable task-value key; nearest complete definition wins.",
+            "example": "effort",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "title": "Field key",
+            "type": "string"
+          },
+          "name": {
+            "description": "Human-readable display name.",
+            "example": "Effort",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Field name",
+            "type": "string"
+          },
+          "options": {
+            "description": "At most 100 unique option IDs for select fields; empty for other types.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "One selectable identity and its presentation.",
+              "example": {
+                "color": "#334455",
+                "id": "20000000-0000-4000-8000-000000000500",
+                "label": "Platform"
+              },
+              "properties": {
+                "color": {
+                  "description": "Six-digit hexadecimal display color.",
+                  "example": "#334455",
+                  "pattern": "^#[0-9a-fA-F]{6}$",
+                  "title": "Option color",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Stable canonical option identity used in task values.",
+                  "example": "20000000-0000-4000-8000-000000000500",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Option ID",
+                  "type": "string"
+                },
+                "label": {
+                  "description": "Display label; distinct options may share a label.",
+                  "example": "Platform",
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "title": "Option label",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "color",
+                "id",
+                "label"
+              ],
+              "title": "Custom-field option",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Select options",
+            "type": "array"
+          },
+          "position": {
+            "description": "Display order with key and ID ties.",
+            "example": 0,
+            "maximum": 2147483647,
+            "minimum": 0,
+            "title": "Field position",
+            "type": "integer"
+          },
+          "required": {
+            "description": "Every live task must supply a nonempty value of the declared type.",
+            "example": false,
+            "title": "Required value",
+            "type": "boolean"
+          },
+          "type": {
+            "description": "Exact value type; values are never implicitly coerced.",
+            "enum": [
+              "text",
+              "number",
+              "single_select",
+              "multi_select",
+              "date",
+              "checkbox"
+            ],
+            "example": "number",
+            "title": "Field type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "type",
+          "required",
+          "options",
+          "position",
+          "expectedConfigVersion"
+        ],
+        "title": "Create scoped field request",
+        "type": "object"
+      },
       "CreateScopeStatusDto": {
         "description": "Define a complete local status or override one inherited identity.",
         "example": {
@@ -1635,6 +1760,28 @@
         "title": "Readiness response",
         "type": "object"
       },
+      "RemoveScopeFieldDto": {
+        "additionalProperties": false,
+        "description": "Required revision check for workspace mutations.",
+        "example": {
+          "expectedConfigVersion": 1
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedConfigVersion"
+        ],
+        "title": "Configuration precondition",
+        "type": "object"
+      },
       "RemoveScopeStatusDto": {
         "additionalProperties": false,
         "description": "Required revision check for workspace mutations.",
@@ -1768,6 +1915,321 @@
           "placement"
         ],
         "title": "Reorder container request",
+        "type": "object"
+      },
+      "ResolvedFieldResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Effective list schema with source metadata and same-snapshot revision.",
+        "example": {
+          "configVersion": 1,
+          "items": [
+            {
+              "createdAt": "2026-10-24T00:00:00.000Z",
+              "id": "20000000-0000-4000-8000-000000000100",
+              "isInherited": true,
+              "key": "effort",
+              "name": "Effort",
+              "options": [],
+              "ownerId": "20000000-0000-4000-8000-000000000001",
+              "ownerType": "workspace",
+              "position": 0,
+              "required": false,
+              "source": {
+                "createdAt": "2026-10-24T00:00:00.000Z",
+                "fieldId": "20000000-0000-4000-8000-000000000100",
+                "ownerId": "20000000-0000-4000-8000-000000000001",
+                "ownerType": "workspace",
+                "updatedAt": "2026-10-24T00:00:00.000Z"
+              },
+              "type": "number",
+              "updatedAt": "2026-10-24T00:00:00.000Z",
+              "workspaceId": "20000000-0000-4000-8000-000000000001"
+            }
+          ]
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Complete effective fields ordered by position, key and ID.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "Nearest full definition with its exact source and inheritance indicator.",
+              "example": {
+                "createdAt": "2026-10-24T00:00:00.000Z",
+                "id": "20000000-0000-4000-8000-000000000100",
+                "isInherited": true,
+                "key": "effort",
+                "name": "Effort",
+                "options": [],
+                "ownerId": "20000000-0000-4000-8000-000000000001",
+                "ownerType": "workspace",
+                "position": 0,
+                "required": false,
+                "source": {
+                  "createdAt": "2026-10-24T00:00:00.000Z",
+                  "fieldId": "20000000-0000-4000-8000-000000000100",
+                  "ownerId": "20000000-0000-4000-8000-000000000001",
+                  "ownerType": "workspace",
+                  "updatedAt": "2026-10-24T00:00:00.000Z"
+                },
+                "type": "number",
+                "updatedAt": "2026-10-24T00:00:00.000Z",
+                "workspaceId": "20000000-0000-4000-8000-000000000001"
+              },
+              "properties": {
+                "createdAt": {
+                  "description": "Immutable definition creation timestamp.",
+                  "example": "2026-10-24T00:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Created at",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Identity of this complete scoped definition.",
+                  "example": "20000000-0000-4000-8000-000000000100",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Field definition ID",
+                  "type": "string"
+                },
+                "isInherited": {
+                  "description": "The winning definition belongs to an ancestor of the requested scope.",
+                  "example": true,
+                  "title": "Inherited field",
+                  "type": "boolean"
+                },
+                "key": {
+                  "description": "Stable task-value key; nearest complete definition wins.",
+                  "example": "effort",
+                  "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                  "title": "Field key",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Human-readable display name.",
+                  "example": "Effort",
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "title": "Field name",
+                  "type": "string"
+                },
+                "options": {
+                  "description": "At most 100 unique option IDs for select fields; empty for other types.",
+                  "example": [],
+                  "items": {
+                    "additionalProperties": false,
+                    "description": "One selectable identity and its presentation.",
+                    "example": {
+                      "color": "#334455",
+                      "id": "20000000-0000-4000-8000-000000000500",
+                      "label": "Platform"
+                    },
+                    "properties": {
+                      "color": {
+                        "description": "Six-digit hexadecimal display color.",
+                        "example": "#334455",
+                        "pattern": "^#[0-9a-fA-F]{6}$",
+                        "title": "Option color",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "Stable canonical option identity used in task values.",
+                        "example": "20000000-0000-4000-8000-000000000500",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "title": "Option ID",
+                        "type": "string"
+                      },
+                      "label": {
+                        "description": "Display label; distinct options may share a label.",
+                        "example": "Platform",
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "title": "Option label",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "color",
+                      "id",
+                      "label"
+                    ],
+                    "title": "Custom-field option",
+                    "type": "object"
+                  },
+                  "maxItems": 100,
+                  "title": "Select options",
+                  "type": "array"
+                },
+                "ownerId": {
+                  "description": "Identifier of the owning workspace or container.",
+                  "example": "20000000-0000-4000-8000-000000000001",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Owner ID",
+                  "type": "string"
+                },
+                "ownerType": {
+                  "description": "Workspace or a live hierarchy container.",
+                  "enum": [
+                    "workspace",
+                    "space",
+                    "folder",
+                    "list"
+                  ],
+                  "example": "workspace",
+                  "title": "Owner type",
+                  "type": "string"
+                },
+                "position": {
+                  "description": "Display order with key and ID ties.",
+                  "example": 0,
+                  "maximum": 2147483647,
+                  "minimum": 0,
+                  "title": "Field position",
+                  "type": "integer"
+                },
+                "required": {
+                  "description": "Every live task must supply a nonempty value of the declared type.",
+                  "example": false,
+                  "title": "Required value",
+                  "type": "boolean"
+                },
+                "source": {
+                  "additionalProperties": false,
+                  "description": "The exact complete definition supplying every resolved attribute.",
+                  "example": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "fieldId": "20000000-0000-4000-8000-000000000100",
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "updatedAt": "2026-10-24T00:00:00.000Z"
+                  },
+                  "properties": {
+                    "createdAt": {
+                      "description": "Immutable definition creation timestamp.",
+                      "example": "2026-10-24T00:00:00.000Z",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                      "title": "Created at",
+                      "type": "string"
+                    },
+                    "fieldId": {
+                      "description": "Identity of this complete scoped definition.",
+                      "example": "20000000-0000-4000-8000-000000000100",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Field definition ID",
+                      "type": "string"
+                    },
+                    "ownerId": {
+                      "description": "Identifier of the owning workspace or container.",
+                      "example": "20000000-0000-4000-8000-000000000001",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Owner ID",
+                      "type": "string"
+                    },
+                    "ownerType": {
+                      "description": "Workspace or a live hierarchy container.",
+                      "enum": [
+                        "workspace",
+                        "space",
+                        "folder",
+                        "list"
+                      ],
+                      "example": "workspace",
+                      "title": "Owner type",
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "description": "Timestamp of the last changed definition.",
+                      "example": "2026-10-24T00:00:00.000Z",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                      "title": "Updated at",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ownerType",
+                    "ownerId",
+                    "fieldId",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "title": "Field source",
+                  "type": "object"
+                },
+                "type": {
+                  "description": "Exact value type; values are never implicitly coerced.",
+                  "enum": [
+                    "text",
+                    "number",
+                    "single_select",
+                    "multi_select",
+                    "date",
+                    "checkbox"
+                  ],
+                  "example": "number",
+                  "title": "Field type",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "Timestamp of the last changed definition.",
+                  "example": "2026-10-24T00:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Updated at",
+                  "type": "string"
+                },
+                "workspaceId": {
+                  "description": "Tenant owning the definition.",
+                  "example": "20000000-0000-4000-8000-000000000001",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Workspace ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ownerType",
+                "ownerId",
+                "id",
+                "workspaceId",
+                "key",
+                "name",
+                "type",
+                "required",
+                "options",
+                "position",
+                "createdAt",
+                "updatedAt",
+                "source",
+                "isInherited"
+              ],
+              "title": "Resolved custom field",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Resolved fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "configVersion"
+        ],
+        "title": "Resolved field collection",
         "type": "object"
       },
       "ResolvedStatusResponseDto_Output": {
@@ -2376,6 +2838,477 @@
           "configVersion"
         ],
         "title": "Resolved status collection",
+        "type": "object"
+      },
+      "ScopeFieldMutationResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Persisted local definition and committed workspace revision.",
+        "example": {
+          "configVersion": 2,
+          "data": {
+            "createdAt": "2026-10-24T00:00:00.000Z",
+            "id": "20000000-0000-4000-8000-000000000100",
+            "key": "effort",
+            "name": "Effort",
+            "options": [],
+            "ownerId": "20000000-0000-4000-8000-000000000001",
+            "ownerType": "workspace",
+            "position": 0,
+            "required": false,
+            "type": "number",
+            "updatedAt": "2026-10-24T00:00:00.000Z",
+            "workspaceId": "20000000-0000-4000-8000-000000000001"
+          }
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "data": {
+            "additionalProperties": false,
+            "description": "Complete scoped field definition with immutable identity and audit timestamps.",
+            "example": {
+              "createdAt": "2026-10-24T00:00:00.000Z",
+              "id": "20000000-0000-4000-8000-000000000100",
+              "key": "effort",
+              "name": "Effort",
+              "options": [],
+              "ownerId": "20000000-0000-4000-8000-000000000001",
+              "ownerType": "workspace",
+              "position": 0,
+              "required": false,
+              "type": "number",
+              "updatedAt": "2026-10-24T00:00:00.000Z",
+              "workspaceId": "20000000-0000-4000-8000-000000000001"
+            },
+            "properties": {
+              "createdAt": {
+                "description": "Immutable definition creation timestamp.",
+                "example": "2026-10-24T00:00:00.000Z",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Created at",
+                "type": "string"
+              },
+              "id": {
+                "description": "Identity of this complete scoped definition.",
+                "example": "20000000-0000-4000-8000-000000000100",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Field definition ID",
+                "type": "string"
+              },
+              "key": {
+                "description": "Stable task-value key; nearest complete definition wins.",
+                "example": "effort",
+                "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                "title": "Field key",
+                "type": "string"
+              },
+              "name": {
+                "description": "Human-readable display name.",
+                "example": "Effort",
+                "maxLength": 120,
+                "minLength": 1,
+                "title": "Field name",
+                "type": "string"
+              },
+              "options": {
+                "description": "At most 100 unique option IDs for select fields; empty for other types.",
+                "example": [],
+                "items": {
+                  "additionalProperties": false,
+                  "description": "One selectable identity and its presentation.",
+                  "example": {
+                    "color": "#334455",
+                    "id": "20000000-0000-4000-8000-000000000500",
+                    "label": "Platform"
+                  },
+                  "properties": {
+                    "color": {
+                      "description": "Six-digit hexadecimal display color.",
+                      "example": "#334455",
+                      "pattern": "^#[0-9a-fA-F]{6}$",
+                      "title": "Option color",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "Stable canonical option identity used in task values.",
+                      "example": "20000000-0000-4000-8000-000000000500",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "title": "Option ID",
+                      "type": "string"
+                    },
+                    "label": {
+                      "description": "Display label; distinct options may share a label.",
+                      "example": "Platform",
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "title": "Option label",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "color",
+                    "id",
+                    "label"
+                  ],
+                  "title": "Custom-field option",
+                  "type": "object"
+                },
+                "maxItems": 100,
+                "title": "Select options",
+                "type": "array"
+              },
+              "ownerId": {
+                "description": "Identifier of the owning workspace or container.",
+                "example": "20000000-0000-4000-8000-000000000001",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Owner ID",
+                "type": "string"
+              },
+              "ownerType": {
+                "description": "Workspace or a live hierarchy container.",
+                "enum": [
+                  "workspace",
+                  "space",
+                  "folder",
+                  "list"
+                ],
+                "example": "workspace",
+                "title": "Owner type",
+                "type": "string"
+              },
+              "position": {
+                "description": "Display order with key and ID ties.",
+                "example": 0,
+                "maximum": 2147483647,
+                "minimum": 0,
+                "title": "Field position",
+                "type": "integer"
+              },
+              "required": {
+                "description": "Every live task must supply a nonempty value of the declared type.",
+                "example": false,
+                "title": "Required value",
+                "type": "boolean"
+              },
+              "type": {
+                "description": "Exact value type; values are never implicitly coerced.",
+                "enum": [
+                  "text",
+                  "number",
+                  "single_select",
+                  "multi_select",
+                  "date",
+                  "checkbox"
+                ],
+                "example": "number",
+                "title": "Field type",
+                "type": "string"
+              },
+              "updatedAt": {
+                "description": "Timestamp of the last changed definition.",
+                "example": "2026-10-24T00:00:00.000Z",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Updated at",
+                "type": "string"
+              },
+              "workspaceId": {
+                "description": "Tenant owning the definition.",
+                "example": "20000000-0000-4000-8000-000000000001",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Workspace ID",
+                "type": "string"
+              }
+            },
+            "required": [
+              "ownerType",
+              "ownerId",
+              "id",
+              "workspaceId",
+              "key",
+              "name",
+              "type",
+              "required",
+              "options",
+              "position",
+              "createdAt",
+              "updatedAt"
+            ],
+            "title": "Custom field definition",
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "configVersion"
+        ],
+        "title": "Scoped field response",
+        "type": "object"
+      },
+      "ScopeFieldResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Bounded local configuration and same-snapshot revision.",
+        "example": {
+          "ancestorScopes": [],
+          "configVersion": 1,
+          "items": []
+        },
+        "properties": {
+          "ancestorScopes": {
+            "description": "Verified root-to-parent path excluding the requested owner.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "One verified configuration scope in the hierarchy.",
+              "example": {
+                "ownerId": "20000000-0000-4000-8000-000000000001",
+                "ownerType": "workspace"
+              },
+              "properties": {
+                "ownerId": {
+                  "description": "Identifier of the owning workspace or container.",
+                  "example": "20000000-0000-4000-8000-000000000001",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Owner ID",
+                  "type": "string"
+                },
+                "ownerType": {
+                  "description": "Workspace or a live hierarchy container.",
+                  "enum": [
+                    "workspace",
+                    "space",
+                    "folder",
+                    "list"
+                  ],
+                  "example": "workspace",
+                  "title": "Owner type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ownerType",
+                "ownerId"
+              ],
+              "title": "Field scope",
+              "type": "object"
+            },
+            "maxItems": 3,
+            "title": "Ancestor scopes",
+            "type": "array"
+          },
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Complete local definitions ordered by position, key and ID.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "Complete scoped field definition with immutable identity and audit timestamps.",
+              "example": {
+                "createdAt": "2026-10-24T00:00:00.000Z",
+                "id": "20000000-0000-4000-8000-000000000100",
+                "key": "effort",
+                "name": "Effort",
+                "options": [],
+                "ownerId": "20000000-0000-4000-8000-000000000001",
+                "ownerType": "workspace",
+                "position": 0,
+                "required": false,
+                "type": "number",
+                "updatedAt": "2026-10-24T00:00:00.000Z",
+                "workspaceId": "20000000-0000-4000-8000-000000000001"
+              },
+              "properties": {
+                "createdAt": {
+                  "description": "Immutable definition creation timestamp.",
+                  "example": "2026-10-24T00:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Created at",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Identity of this complete scoped definition.",
+                  "example": "20000000-0000-4000-8000-000000000100",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Field definition ID",
+                  "type": "string"
+                },
+                "key": {
+                  "description": "Stable task-value key; nearest complete definition wins.",
+                  "example": "effort",
+                  "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                  "title": "Field key",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Human-readable display name.",
+                  "example": "Effort",
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "title": "Field name",
+                  "type": "string"
+                },
+                "options": {
+                  "description": "At most 100 unique option IDs for select fields; empty for other types.",
+                  "example": [],
+                  "items": {
+                    "additionalProperties": false,
+                    "description": "One selectable identity and its presentation.",
+                    "example": {
+                      "color": "#334455",
+                      "id": "20000000-0000-4000-8000-000000000500",
+                      "label": "Platform"
+                    },
+                    "properties": {
+                      "color": {
+                        "description": "Six-digit hexadecimal display color.",
+                        "example": "#334455",
+                        "pattern": "^#[0-9a-fA-F]{6}$",
+                        "title": "Option color",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "Stable canonical option identity used in task values.",
+                        "example": "20000000-0000-4000-8000-000000000500",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "title": "Option ID",
+                        "type": "string"
+                      },
+                      "label": {
+                        "description": "Display label; distinct options may share a label.",
+                        "example": "Platform",
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "title": "Option label",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "color",
+                      "id",
+                      "label"
+                    ],
+                    "title": "Custom-field option",
+                    "type": "object"
+                  },
+                  "maxItems": 100,
+                  "title": "Select options",
+                  "type": "array"
+                },
+                "ownerId": {
+                  "description": "Identifier of the owning workspace or container.",
+                  "example": "20000000-0000-4000-8000-000000000001",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Owner ID",
+                  "type": "string"
+                },
+                "ownerType": {
+                  "description": "Workspace or a live hierarchy container.",
+                  "enum": [
+                    "workspace",
+                    "space",
+                    "folder",
+                    "list"
+                  ],
+                  "example": "workspace",
+                  "title": "Owner type",
+                  "type": "string"
+                },
+                "position": {
+                  "description": "Display order with key and ID ties.",
+                  "example": 0,
+                  "maximum": 2147483647,
+                  "minimum": 0,
+                  "title": "Field position",
+                  "type": "integer"
+                },
+                "required": {
+                  "description": "Every live task must supply a nonempty value of the declared type.",
+                  "example": false,
+                  "title": "Required value",
+                  "type": "boolean"
+                },
+                "type": {
+                  "description": "Exact value type; values are never implicitly coerced.",
+                  "enum": [
+                    "text",
+                    "number",
+                    "single_select",
+                    "multi_select",
+                    "date",
+                    "checkbox"
+                  ],
+                  "example": "number",
+                  "title": "Field type",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "Timestamp of the last changed definition.",
+                  "example": "2026-10-24T00:00:00.000Z",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Updated at",
+                  "type": "string"
+                },
+                "workspaceId": {
+                  "description": "Tenant owning the definition.",
+                  "example": "20000000-0000-4000-8000-000000000001",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Workspace ID",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ownerType",
+                "ownerId",
+                "id",
+                "workspaceId",
+                "key",
+                "name",
+                "type",
+                "required",
+                "options",
+                "position",
+                "createdAt",
+                "updatedAt"
+              ],
+              "title": "Custom field definition",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Local fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "ancestorScopes",
+          "configVersion"
+        ],
+        "title": "Scope field collection",
         "type": "object"
       },
       "ScopeStatusMutationResponseDto_Output": {
@@ -3592,6 +4525,113 @@
           "expectedVersion"
         ],
         "title": "Update container request",
+        "type": "object"
+      },
+      "UpdateScopeFieldDto": {
+        "additionalProperties": false,
+        "description": "Non-null attributes to replace in a local definition. The complete resulting definition and live task values must remain valid.",
+        "example": {
+          "expectedConfigVersion": 1,
+          "name": "Estimated effort"
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Human-readable display name.",
+            "example": "Effort",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Field name",
+            "type": "string"
+          },
+          "options": {
+            "description": "At most 100 unique option IDs for select fields; empty for other types.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "One selectable identity and its presentation.",
+              "example": {
+                "color": "#334455",
+                "id": "20000000-0000-4000-8000-000000000500",
+                "label": "Platform"
+              },
+              "properties": {
+                "color": {
+                  "description": "Six-digit hexadecimal display color.",
+                  "example": "#334455",
+                  "pattern": "^#[0-9a-fA-F]{6}$",
+                  "title": "Option color",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Stable canonical option identity used in task values.",
+                  "example": "20000000-0000-4000-8000-000000000500",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Option ID",
+                  "type": "string"
+                },
+                "label": {
+                  "description": "Display label; distinct options may share a label.",
+                  "example": "Platform",
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "title": "Option label",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "color",
+                "id",
+                "label"
+              ],
+              "title": "Custom-field option",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Select options",
+            "type": "array"
+          },
+          "position": {
+            "description": "Display order with key and ID ties.",
+            "example": 0,
+            "maximum": 2147483647,
+            "minimum": 0,
+            "title": "Field position",
+            "type": "integer"
+          },
+          "required": {
+            "description": "Every live task must supply a nonempty value of the declared type.",
+            "example": false,
+            "title": "Required value",
+            "type": "boolean"
+          },
+          "type": {
+            "description": "Exact value type; values are never implicitly coerced.",
+            "enum": [
+              "text",
+              "number",
+              "single_select",
+              "multi_select",
+              "date",
+              "checkbox"
+            ],
+            "example": "number",
+            "title": "Field type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedConfigVersion"
+        ],
+        "title": "Update scoped field request",
         "type": "object"
       },
       "UpdateScopeStatusDto": {
@@ -6197,6 +7237,278 @@
         ]
       }
     },
+    "/v1/lists/{listId}/resolved-fields": {
+      "get": {
+        "description": "Visible list members read the complete effective field set using the shared nearest-definition resolver and a consistent configuration revision.",
+        "operationId": "getListResolvedFields",
+        "parameters": [
+          {
+            "description": "Live list in the active workspace.",
+            "in": "path",
+            "name": "listId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000010",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "List ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "items": [
+                    {
+                      "createdAt": "2026-10-24T00:00:00.000Z",
+                      "id": "20000000-0000-4000-8000-000000000100",
+                      "isInherited": true,
+                      "key": "effort",
+                      "name": "Effort",
+                      "options": [],
+                      "ownerId": "20000000-0000-4000-8000-000000000001",
+                      "ownerType": "workspace",
+                      "position": 0,
+                      "required": false,
+                      "source": {
+                        "createdAt": "2026-10-24T00:00:00.000Z",
+                        "fieldId": "20000000-0000-4000-8000-000000000100",
+                        "ownerId": "20000000-0000-4000-8000-000000000001",
+                        "ownerType": "workspace",
+                        "updatedAt": "2026-10-24T00:00:00.000Z"
+                      },
+                      "type": "number",
+                      "updatedAt": "2026-10-24T00:00:00.000Z",
+                      "workspaceId": "20000000-0000-4000-8000-000000000001"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedFieldResponseDto_Output"
+                }
+              }
+            },
+            "description": "Visible effective fields with inheritance provenance."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Resolve visible list fields",
+        "tags": [
+          "Fields"
+        ]
+      }
+    },
     "/v1/lists/{listId}/resolved-statuses": {
       "get": {
         "description": "Visible list members read the complete effective status set using the shared root-to-leaf resolver and a consistent configuration revision.",
@@ -8637,6 +9949,1172 @@
         "summary": "Reorder a container among siblings",
         "tags": [
           "Hierarchy"
+        ]
+      }
+    },
+    "/v1/scopes/{ownerType}/{ownerId}/fields": {
+      "get": {
+        "description": "Administrators read the complete bounded local collection and verified ancestor scopes, with its snapshot configuration revision.",
+        "operationId": "listScopeFields",
+        "parameters": [
+          {
+            "description": "Workspace or a live hierarchy container.",
+            "in": "path",
+            "name": "ownerType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "workspace",
+                "space",
+                "folder",
+                "list"
+              ],
+              "example": "workspace",
+              "title": "Owner type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifier of the owning workspace or container.",
+            "in": "path",
+            "name": "ownerId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000001",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Owner ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "ancestorScopes": [],
+                  "configVersion": 1,
+                  "items": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeFieldResponseDto_Output"
+                }
+              }
+            },
+            "description": "Local rows and ancestor scope metadata."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Read local field configuration",
+        "tags": [
+          "Fields"
+        ]
+      },
+      "post": {
+        "description": "Create a complete local definition after validating the owner, all live descendants and task values under one workspace lock.",
+        "operationId": "createScopeField",
+        "parameters": [
+          {
+            "description": "Workspace or a live hierarchy container.",
+            "in": "path",
+            "name": "ownerType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "workspace",
+                "space",
+                "folder",
+                "list"
+              ],
+              "example": "workspace",
+              "title": "Owner type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifier of the owning workspace or container.",
+            "in": "path",
+            "name": "ownerId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000001",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Owner ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "define": {
+                  "summary": "Add estimate field",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "key": "estimate",
+                    "name": "Estimate",
+                    "options": [],
+                    "position": 0,
+                    "required": false,
+                    "type": "number"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateScopeFieldDto"
+              }
+            }
+          },
+          "description": "Complete definition and expected configuration revision.",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 2,
+                  "data": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "id": "20000000-0000-4000-8000-000000000100",
+                    "key": "effort",
+                    "name": "Effort",
+                    "options": [],
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "position": 0,
+                    "required": false,
+                    "type": "number",
+                    "updatedAt": "2026-10-24T00:00:00.000Z",
+                    "workspaceId": "20000000-0000-4000-8000-000000000001"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeFieldMutationResponseDto_Output"
+                }
+              }
+            },
+            "description": "Created local configuration and committed revision."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create local field configuration",
+        "tags": [
+          "Fields"
+        ]
+      }
+    },
+    "/v1/scopes/{ownerType}/{ownerId}/fields/{fieldId}": {
+      "delete": {
+        "description": "Remove a local definition only when the resulting inherited schema remains valid for all live descendant tasks.",
+        "operationId": "removeScopeField",
+        "parameters": [
+          {
+            "description": "Workspace or a live hierarchy container.",
+            "in": "path",
+            "name": "ownerType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "workspace",
+                "space",
+                "folder",
+                "list"
+              ],
+              "example": "workspace",
+              "title": "Owner type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifier of the owning workspace or container.",
+            "in": "path",
+            "name": "ownerId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000001",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Owner ID",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identity of this complete scoped definition.",
+            "in": "path",
+            "name": "fieldId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Field definition ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "remove": {
+                  "summary": "Remove current local row",
+                  "value": {
+                    "expectedConfigVersion": 1
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RemoveScopeFieldDto"
+              }
+            }
+          },
+          "description": "Expected configuration revision for this removal.",
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Local row removed and configuration invalidation recorded atomically."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Remove local field configuration",
+        "tags": [
+          "Fields"
+        ]
+      },
+      "patch": {
+        "description": "Patch a local definition. Omitted attributes are preserved; null is invalid. All effective descendants and live tasks must remain valid.",
+        "operationId": "updateScopeField",
+        "parameters": [
+          {
+            "description": "Workspace or a live hierarchy container.",
+            "in": "path",
+            "name": "ownerType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "workspace",
+                "space",
+                "folder",
+                "list"
+              ],
+              "example": "workspace",
+              "title": "Owner type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifier of the owning workspace or container.",
+            "in": "path",
+            "name": "ownerId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000001",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Owner ID",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identity of this complete scoped definition.",
+            "in": "path",
+            "name": "fieldId",
+            "required": true,
+            "schema": {
+              "example": "20000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Field definition ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "rename": {
+                  "summary": "Rename local field",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "name": "Estimated effort"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScopeFieldDto"
+              }
+            }
+          },
+          "description": "Definition attributes and expected configuration revision.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 2,
+                  "data": {
+                    "createdAt": "2026-10-24T00:00:00.000Z",
+                    "id": "20000000-0000-4000-8000-000000000100",
+                    "key": "effort",
+                    "name": "Effort",
+                    "options": [],
+                    "ownerId": "20000000-0000-4000-8000-000000000001",
+                    "ownerType": "workspace",
+                    "position": 0,
+                    "required": false,
+                    "type": "number",
+                    "updatedAt": "2026-10-24T00:00:00.000Z",
+                    "workspaceId": "20000000-0000-4000-8000-000000000001"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeFieldMutationResponseDto_Output"
+                }
+              }
+            },
+            "description": "Updated local row and committed revision; no-op preserves both."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Resource not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The requested resource was not found in the selected workspace.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update local field configuration",
+        "tags": [
+          "Fields"
         ]
       }
     },
@@ -11518,6 +13996,10 @@
     {
       "description": "Scoped status configuration and list inheritance",
       "name": "Statuses"
+    },
+    {
+      "description": "Scoped custom-field configuration and list inheritance",
+      "name": "Fields"
     },
     {
       "description": "Workspace spaces, folders and lists",

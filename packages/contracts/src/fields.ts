@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CustomFieldOptionSchema } from './custom-fields.js';
+import { CustomFieldOptionSchema, refineFieldOptions } from './custom-fields.js';
 import { TimestampSchema } from './dates.js';
 import { CustomFieldTypeSchema } from './enums.js';
 import { ValidationIssueSchema } from './errors.js';
@@ -71,25 +71,7 @@ export const FieldDefinitionSchema = FieldScopeSchema.extend({
   ...audit,
 })
   .superRefine((field, ctx) => {
-    const select = field.type === 'single_select' || field.type === 'multi_select';
-    if (!select && field.options.length > 0)
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Only select fields can have options',
-        path: ['options'],
-      });
-
-    const seen = new Set<string>();
-    for (const [index, option] of field.options.entries()) {
-      if (seen.has(option.id))
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Option IDs must be unique',
-          path: ['options', index, 'id'],
-        });
-
-      seen.add(option.id);
-    }
+    refineFieldOptions(field, ctx);
     if (field.ownerType === 'workspace' && field.ownerId !== field.workspaceId)
       ctx.addIssue({
         code: 'custom',

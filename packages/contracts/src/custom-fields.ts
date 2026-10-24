@@ -27,3 +27,27 @@ export const CustomFieldOptionSchema = z
   });
 
 export type CustomFieldOption = z.infer<typeof CustomFieldOptionSchema>;
+
+export function refineFieldOptions(
+  field: { options: readonly { id: string }[]; type: string },
+  ctx: z.RefinementCtx,
+) {
+  if (!['single_select', 'multi_select'].includes(field.type) && field.options.length > 0)
+    ctx.addIssue({
+      code: 'custom',
+      path: ['options'],
+      message: 'Only select fields can have options',
+    });
+
+  const seen = new Set<string>();
+  for (const [index, option] of field.options.entries()) {
+    if (seen.has(option.id))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['options', index, 'id'],
+        message: 'Option IDs must be unique',
+      });
+
+    seen.add(option.id);
+  }
+}

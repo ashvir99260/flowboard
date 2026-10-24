@@ -7,8 +7,10 @@ import {
 } from '@flowboard/contracts';
 
 import { accessRepository } from './access-repository.js';
+import { fieldRepository } from './field-repository.js';
 import { hierarchyRepository } from './hierarchy-repository.js';
 import { membershipRepository } from './membership-repository.js';
+import { scopeRepository } from './scope-repository.js';
 import { statusRepository } from './status-repository.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
 
@@ -83,6 +85,8 @@ export interface GrantRecord extends GrantInput {
 export interface ReadRepositories {
   access: ReturnType<typeof accessRepository>['read'];
   context: Readonly<TenantContext>;
+  scopes: ReturnType<typeof scopeRepository>;
+  fields: ReturnType<typeof fieldRepository>['read'];
   statuses: ReturnType<typeof statusRepository>['read'];
   grants: { find(resourceId: string, userId: string): Promise<GrantRecord | null> };
   members: { find(userId: string): Promise<MembershipRecord | null> };
@@ -92,6 +96,7 @@ export interface ReadRepositories {
 }
 
 export interface WriteRepositories extends ReadRepositories {
+  fields: ReturnType<typeof fieldRepository>['write'];
   statuses: ReturnType<typeof statusRepository>['write'];
   access: ReturnType<typeof accessRepository>['write'];
   memberships: ReturnType<typeof membershipRepository>['write'];
@@ -249,11 +254,17 @@ export function repositories(
     },
   });
 
+  const scopes = scopeRepository(tx, context, assertActive, nodePath);
+  const fields = fieldRepository(tx, context, scopes);
+  const statuses = statusRepository(tx, context, assertActive, nodePath);
+
   return {
     read: Object.freeze({
+      scopes,
+      fields: fields.read,
       access: accessRepository(tx, context, assertActive, node).read,
       context: Object.freeze(context),
-      statuses: statusRepository(tx, context, assertActive, nodePath).read,
+      statuses: statuses.read,
       grants: Object.freeze({ find: grants.find }),
       members: Object.freeze({ find: member }),
       memberships: membershipRepository(tx, context, assertActive).read,
@@ -266,9 +277,11 @@ export function repositories(
       }),
     }) satisfies ReadRepositories,
     write: Object.freeze({
+      scopes,
+      fields: fields.write,
       access: accessRepository(tx, context, assertActive, node).write,
       context: Object.freeze(context),
-      statuses: statusRepository(tx, context, assertActive, nodePath).write,
+      statuses: statuses.write,
       grants,
       members: Object.freeze({ find: member }),
       memberships: membershipRepository(tx, context, assertActive).write,

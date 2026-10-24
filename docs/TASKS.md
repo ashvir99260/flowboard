@@ -653,13 +653,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: resolve and validate custom fields`.
   - **Completion evidence:** [P05-01 verification](evidence/P05-01.md): 35 added contract cases, 489 full-suite tests and all standard/contract gates pass; API integration remains P05-02.
 
-- [ ] **P05-02 — Custom-field configuration and resolved schemas**
+- [x] **P05-02 — Custom-field configuration and resolved schemas**
   - **Goal:** Add scoped field CRUD and authoritative list schemas.
-  - **Files:** `apps/api/src/modules/fields/**`, `apps/api/test/integration/fields.spec.mjs`, generated artifacts.
+  - **Requirements:** R13, R29, R31, R32, R40, R41, R42, R56, R57, R60, R61, R71, R91, R92.
+  - **Files:** `apps/api/src/modules/fields/**`, `packages/contracts/src/field-configuration.ts`, `packages/database/src/{field,scope}-repository.ts`, colocated/API and database integration tests, generated artifacts.
   - **Dependencies:** P05-01.
   - **Acceptance:** Workspace/space/folder/list owners, workspace ownerId equals active tenant, admin-only mutations, typed options and provenance, `GET /v1/lists/:id/resolved-fields`. Uses shared resolver and tenant repositories. In-use/descendant validation ships with the first write routes; P05-03 hardens edge coverage. Mutations increment configVersion and resolved reads return a consistent version.
   - **Validation:** Owner mismatch/foreign workspace, workspace defaults inherited across separate spaces, list override, field-key collision, sibling independence, member writes 403, foreign fields 404 and schema response shape; endpoint DoD and standard gate.
   - **Commit:** `feat: expose scoped custom field schemas`.
+  - **Completion evidence:** [P05-02 verification](evidence/P05-02.md): five typed endpoints, six-type/all-scope CRUD and safety/isolation tests; all 500 tests and standard/contract gates pass.
 
 - [ ] **P05-03 — Reject destructive field-schema changes**
   - **Goal:** Keep stored task values valid after ancestor/local configuration changes.

@@ -154,6 +154,75 @@ export type CreateNodeDto = {
 };
 
 /**
+ * Create scoped field request
+ *
+ * Complete local definition replacing any inherited definition of the same key.
+ */
+export type CreateScopeFieldDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Field key
+     *
+     * Stable task-value key; nearest complete definition wins.
+     */
+    key: string;
+    /**
+     * Field name
+     *
+     * Human-readable display name.
+     */
+    name: string;
+    /**
+     * Select options
+     *
+     * At most 100 unique option IDs for select fields; empty for other types.
+     */
+    options: Array<{
+        /**
+         * Option color
+         *
+         * Six-digit hexadecimal display color.
+         */
+        color: string;
+        /**
+         * Option ID
+         *
+         * Stable canonical option identity used in task values.
+         */
+        id: string;
+        /**
+         * Option label
+         *
+         * Display label; distinct options may share a label.
+         */
+        label: string;
+    }>;
+    /**
+     * Field position
+     *
+     * Display order with key and ID ties.
+     */
+    position: number;
+    /**
+     * Required value
+     *
+     * Every live task must supply a nonempty value of the declared type.
+     */
+    required: boolean;
+    /**
+     * Field type
+     *
+     * Exact value type; values are never implicitly coerced.
+     */
+    type: 'text' | 'number' | 'single_select' | 'multi_select' | 'date' | 'checkbox';
+};
+
+/**
  * Create scoped status request
  *
  * Define a complete local status or override one inherited identity.
@@ -877,6 +946,20 @@ export type ReadinessResponseDtoOutput = {
  *
  * Required revision check for workspace mutations.
  */
+export type RemoveScopeFieldDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+};
+
+/**
+ * Configuration precondition
+ *
+ * Required revision check for workspace mutations.
+ */
 export type RemoveScopeStatusDto = {
     /**
      * Configuration version
@@ -931,6 +1014,161 @@ export type ReorderNodeDto = {
          */
         afterId: string;
     };
+};
+
+/**
+ * Resolved field collection
+ *
+ * Effective list schema with source metadata and same-snapshot revision.
+ */
+export type ResolvedFieldResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Resolved fields
+     *
+     * Complete effective fields ordered by position, key and ID.
+     */
+    items: Array<{
+        /**
+         * Created at
+         *
+         * Immutable definition creation timestamp.
+         */
+        createdAt: string;
+        /**
+         * Field definition ID
+         *
+         * Identity of this complete scoped definition.
+         */
+        id: string;
+        /**
+         * Inherited field
+         *
+         * The winning definition belongs to an ancestor of the requested scope.
+         */
+        isInherited: boolean;
+        /**
+         * Field key
+         *
+         * Stable task-value key; nearest complete definition wins.
+         */
+        key: string;
+        /**
+         * Field name
+         *
+         * Human-readable display name.
+         */
+        name: string;
+        /**
+         * Select options
+         *
+         * At most 100 unique option IDs for select fields; empty for other types.
+         */
+        options: Array<{
+            /**
+             * Option color
+             *
+             * Six-digit hexadecimal display color.
+             */
+            color: string;
+            /**
+             * Option ID
+             *
+             * Stable canonical option identity used in task values.
+             */
+            id: string;
+            /**
+             * Option label
+             *
+             * Display label; distinct options may share a label.
+             */
+            label: string;
+        }>;
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Field position
+         *
+         * Display order with key and ID ties.
+         */
+        position: number;
+        /**
+         * Required value
+         *
+         * Every live task must supply a nonempty value of the declared type.
+         */
+        required: boolean;
+        /**
+         * Field source
+         *
+         * The exact complete definition supplying every resolved attribute.
+         */
+        source: {
+            /**
+             * Created at
+             *
+             * Immutable definition creation timestamp.
+             */
+            createdAt: string;
+            /**
+             * Field definition ID
+             *
+             * Identity of this complete scoped definition.
+             */
+            fieldId: string;
+            /**
+             * Owner ID
+             *
+             * Identifier of the owning workspace or container.
+             */
+            ownerId: string;
+            /**
+             * Owner type
+             *
+             * Workspace or a live hierarchy container.
+             */
+            ownerType: 'workspace' | 'space' | 'folder' | 'list';
+            /**
+             * Updated at
+             *
+             * Timestamp of the last changed definition.
+             */
+            updatedAt: string;
+        };
+        /**
+         * Field type
+         *
+         * Exact value type; values are never implicitly coerced.
+         */
+        type: 'text' | 'number' | 'single_select' | 'multi_select' | 'date' | 'checkbox';
+        /**
+         * Updated at
+         *
+         * Timestamp of the last changed definition.
+         */
+        updatedAt: string;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the definition.
+         */
+        workspaceId: string;
+    }>;
 };
 
 /**
@@ -1195,6 +1433,249 @@ export type ResolvedStatusResponseDtoOutput = {
          * Workspace ID
          *
          * Tenant owning the immutable status key and category.
+         */
+        workspaceId: string;
+    }>;
+};
+
+/**
+ * Scoped field response
+ *
+ * Persisted local definition and committed workspace revision.
+ */
+export type ScopeFieldMutationResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Custom field definition
+     *
+     * Complete scoped field definition with immutable identity and audit timestamps.
+     */
+    data: {
+        /**
+         * Created at
+         *
+         * Immutable definition creation timestamp.
+         */
+        createdAt: string;
+        /**
+         * Field definition ID
+         *
+         * Identity of this complete scoped definition.
+         */
+        id: string;
+        /**
+         * Field key
+         *
+         * Stable task-value key; nearest complete definition wins.
+         */
+        key: string;
+        /**
+         * Field name
+         *
+         * Human-readable display name.
+         */
+        name: string;
+        /**
+         * Select options
+         *
+         * At most 100 unique option IDs for select fields; empty for other types.
+         */
+        options: Array<{
+            /**
+             * Option color
+             *
+             * Six-digit hexadecimal display color.
+             */
+            color: string;
+            /**
+             * Option ID
+             *
+             * Stable canonical option identity used in task values.
+             */
+            id: string;
+            /**
+             * Option label
+             *
+             * Display label; distinct options may share a label.
+             */
+            label: string;
+        }>;
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Field position
+         *
+         * Display order with key and ID ties.
+         */
+        position: number;
+        /**
+         * Required value
+         *
+         * Every live task must supply a nonempty value of the declared type.
+         */
+        required: boolean;
+        /**
+         * Field type
+         *
+         * Exact value type; values are never implicitly coerced.
+         */
+        type: 'text' | 'number' | 'single_select' | 'multi_select' | 'date' | 'checkbox';
+        /**
+         * Updated at
+         *
+         * Timestamp of the last changed definition.
+         */
+        updatedAt: string;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the definition.
+         */
+        workspaceId: string;
+    };
+};
+
+/**
+ * Scope field collection
+ *
+ * Bounded local configuration and same-snapshot revision.
+ */
+export type ScopeFieldResponseDtoOutput = {
+    /**
+     * Ancestor scopes
+     *
+     * Verified root-to-parent path excluding the requested owner.
+     */
+    ancestorScopes: Array<{
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+    }>;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Local fields
+     *
+     * Complete local definitions ordered by position, key and ID.
+     */
+    items: Array<{
+        /**
+         * Created at
+         *
+         * Immutable definition creation timestamp.
+         */
+        createdAt: string;
+        /**
+         * Field definition ID
+         *
+         * Identity of this complete scoped definition.
+         */
+        id: string;
+        /**
+         * Field key
+         *
+         * Stable task-value key; nearest complete definition wins.
+         */
+        key: string;
+        /**
+         * Field name
+         *
+         * Human-readable display name.
+         */
+        name: string;
+        /**
+         * Select options
+         *
+         * At most 100 unique option IDs for select fields; empty for other types.
+         */
+        options: Array<{
+            /**
+             * Option color
+             *
+             * Six-digit hexadecimal display color.
+             */
+            color: string;
+            /**
+             * Option ID
+             *
+             * Stable canonical option identity used in task values.
+             */
+            id: string;
+            /**
+             * Option label
+             *
+             * Display label; distinct options may share a label.
+             */
+            label: string;
+        }>;
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Field position
+         *
+         * Display order with key and ID ties.
+         */
+        position: number;
+        /**
+         * Required value
+         *
+         * Every live task must supply a nonempty value of the declared type.
+         */
+        required: boolean;
+        /**
+         * Field type
+         *
+         * Exact value type; values are never implicitly coerced.
+         */
+        type: 'text' | 'number' | 'single_select' | 'multi_select' | 'date' | 'checkbox';
+        /**
+         * Updated at
+         *
+         * Timestamp of the last changed definition.
+         */
+        updatedAt: string;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the definition.
          */
         workspaceId: string;
     }>;
@@ -1824,6 +2305,69 @@ export type UpdateNodeDto = {
 };
 
 /**
+ * Update scoped field request
+ *
+ * Non-null attributes to replace in a local definition. The complete resulting definition and live task values must remain valid.
+ */
+export type UpdateScopeFieldDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Field name
+     *
+     * Human-readable display name.
+     */
+    name?: string;
+    /**
+     * Select options
+     *
+     * At most 100 unique option IDs for select fields; empty for other types.
+     */
+    options?: Array<{
+        /**
+         * Option color
+         *
+         * Six-digit hexadecimal display color.
+         */
+        color: string;
+        /**
+         * Option ID
+         *
+         * Stable canonical option identity used in task values.
+         */
+        id: string;
+        /**
+         * Option label
+         *
+         * Display label; distinct options may share a label.
+         */
+        label: string;
+    }>;
+    /**
+     * Field position
+     *
+     * Display order with key and ID ties.
+     */
+    position?: number;
+    /**
+     * Required value
+     *
+     * Every live task must supply a nonempty value of the declared type.
+     */
+    required?: boolean;
+    /**
+     * Field type
+     *
+     * Exact value type; values are never implicitly coerced.
+     */
+    type?: 'text' | 'number' | 'single_select' | 'multi_select' | 'date' | 'checkbox';
+};
+
+/**
  * Update scoped status request
  *
  * Patch an existing local row; null inherits and omission preserves its value.
@@ -2426,6 +2970,62 @@ export type AcceptWorkspaceInvitationResponses = {
 
 export type AcceptWorkspaceInvitationResponse = AcceptWorkspaceInvitationResponses[keyof AcceptWorkspaceInvitationResponses];
 
+export type GetListResolvedFieldsData = {
+    body?: never;
+    path: {
+        /**
+         * List ID
+         *
+         * Live list in the active workspace.
+         */
+        listId: string;
+    };
+    query?: never;
+    url: '/v1/lists/{listId}/resolved-fields';
+};
+
+export type GetListResolvedFieldsErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type GetListResolvedFieldsError = GetListResolvedFieldsErrors[keyof GetListResolvedFieldsErrors];
+
+export type GetListResolvedFieldsResponses = {
+    /**
+     * Visible effective fields with inheritance provenance.
+     */
+    200: ResolvedFieldResponseDtoOutput;
+};
+
+export type GetListResolvedFieldsResponse = GetListResolvedFieldsResponses[keyof GetListResolvedFieldsResponses];
+
 export type GetListResolvedStatusesData = {
     body?: never;
     path: {
@@ -3008,6 +3608,275 @@ export type ReorderNodeResponses = {
 };
 
 export type ReorderNodeResponse = ReorderNodeResponses[keyof ReorderNodeResponses];
+
+export type ListScopeFieldsData = {
+    body?: never;
+    path: {
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+    };
+    query?: never;
+    url: '/v1/scopes/{ownerType}/{ownerId}/fields';
+};
+
+export type ListScopeFieldsErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ListScopeFieldsError = ListScopeFieldsErrors[keyof ListScopeFieldsErrors];
+
+export type ListScopeFieldsResponses = {
+    /**
+     * Local rows and ancestor scope metadata.
+     */
+    200: ScopeFieldResponseDtoOutput;
+};
+
+export type ListScopeFieldsResponse = ListScopeFieldsResponses[keyof ListScopeFieldsResponses];
+
+export type CreateScopeFieldData = {
+    /**
+     * Complete definition and expected configuration revision.
+     */
+    body: CreateScopeFieldDto;
+    path: {
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+    };
+    query?: never;
+    url: '/v1/scopes/{ownerType}/{ownerId}/fields';
+};
+
+export type CreateScopeFieldErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type CreateScopeFieldError = CreateScopeFieldErrors[keyof CreateScopeFieldErrors];
+
+export type CreateScopeFieldResponses = {
+    /**
+     * Created local configuration and committed revision.
+     */
+    201: ScopeFieldMutationResponseDtoOutput;
+};
+
+export type CreateScopeFieldResponse = CreateScopeFieldResponses[keyof CreateScopeFieldResponses];
+
+export type RemoveScopeFieldData = {
+    /**
+     * Expected configuration revision for this removal.
+     */
+    body: RemoveScopeFieldDto;
+    path: {
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Field definition ID
+         *
+         * Identity of this complete scoped definition.
+         */
+        fieldId: string;
+    };
+    query?: never;
+    url: '/v1/scopes/{ownerType}/{ownerId}/fields/{fieldId}';
+};
+
+export type RemoveScopeFieldErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type RemoveScopeFieldError = RemoveScopeFieldErrors[keyof RemoveScopeFieldErrors];
+
+export type RemoveScopeFieldResponses = {
+    /**
+     * Local row removed and configuration invalidation recorded atomically.
+     */
+    204: void;
+};
+
+export type RemoveScopeFieldResponse = RemoveScopeFieldResponses[keyof RemoveScopeFieldResponses];
+
+export type UpdateScopeFieldData = {
+    /**
+     * Definition attributes and expected configuration revision.
+     */
+    body: UpdateScopeFieldDto;
+    path: {
+        /**
+         * Owner type
+         *
+         * Workspace or a live hierarchy container.
+         */
+        ownerType: 'workspace' | 'space' | 'folder' | 'list';
+        /**
+         * Owner ID
+         *
+         * Identifier of the owning workspace or container.
+         */
+        ownerId: string;
+        /**
+         * Field definition ID
+         *
+         * Identity of this complete scoped definition.
+         */
+        fieldId: string;
+    };
+    query?: never;
+    url: '/v1/scopes/{ownerType}/{ownerId}/fields/{fieldId}';
+};
+
+export type UpdateScopeFieldErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type UpdateScopeFieldError = UpdateScopeFieldErrors[keyof UpdateScopeFieldErrors];
+
+export type UpdateScopeFieldResponses = {
+    /**
+     * Updated local row and committed revision; no-op preserves both.
+     */
+    200: ScopeFieldMutationResponseDtoOutput;
+};
+
+export type UpdateScopeFieldResponse = UpdateScopeFieldResponses[keyof UpdateScopeFieldResponses];
 
 export type ListScopeStatusesData = {
     body?: never;

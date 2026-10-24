@@ -37,3 +37,5 @@ export * from './fields.js';
 export * from './field-resolution.js';
 
 export * from './field-values.js';
+
+export * from './field-configuration.js';
