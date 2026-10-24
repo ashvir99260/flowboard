@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -27,20 +27,17 @@ async function reservePort() {
 const reservations = await Promise.all([reservePort(), reservePort()]);
 const webOrigin = `http://localhost:${reservations[0].port}`;
 const apiOrigin = `http://localhost:${reservations[1].port}`;
+// Exercise Compose's local defaults, independent of the caller's app configuration.
+const composeSource = await readFile(path.join(root, 'compose.yaml'), 'utf8');
+const inheritedEnvironment = { ...process.env };
+for (const [, key] of composeSource.matchAll(/\$\{([A-Z_][A-Z0-9_]*)/g)) {
+  delete inheritedEnvironment[key];
+}
+
 const env = {
-  ...process.env,
+  ...inheritedEnvironment,
   WEB_PORT: String(reservations[0].port),
   API_PORT: String(reservations[1].port),
-  REALTIME_PUBLIC_URL: apiOrigin,
-  API_DOCS: 'true',
-  POSTGRES_DB: 'flowboard',
-  POSTGRES_USER: 'flowboard',
-  POSTGRES_PASSWORD: 'flowboard-check-only',
-  DEMO_SEED: 'true',
-  AUTH_SECRET: 'flowboard-docker-check-secret-abcdefghijklmnopqrstuvwxyz',
-  AUTH_ALLOWED_ORIGINS: `${webOrigin},${apiOrigin}`,
-  WEB_ALLOWED_ORIGINS: webOrigin,
-  AUTH_ALLOW_INSECURE_HTTP: 'true',
   LOG_LEVEL: 'debug',
 };
 const images = ['api', 'web', 'worker'].map((service) => `${project}-${service}`);
@@ -114,7 +111,7 @@ if (process.argv.includes('--config-only')) {
 
 try {
   await Promise.all(reservations.map(({ close }) => close()));
-  console.info(`[${project}] Build images and wait for all five services`);
+  console.info(`[${project}] Build the no-env preview and wait for all five services`);
   await run('up', '--build', '--detach', '--wait', '--wait-timeout', '180');
 
   for (const service of ['api', 'web', 'worker']) {
@@ -127,7 +124,7 @@ try {
       'node',
       '--input-type=module',
       '-e',
-      "import assert from 'node:assert/strict'; import { existsSync } from 'node:fs'; for (const name of ['.env', '.env.local', 'apps/web/.env', 'apps/web/.env.local']) assert.equal(existsSync(name), false, 'Private env files must not enter images');",
+      "import assert from 'node:assert/strict'; import { existsSync } from 'node:fs'; for (const name of ['.env', '.env.local', 'apps/api/.env', 'apps/worker/.env', 'apps/web/.env', 'apps/web/.env.local']) assert.equal(existsSync(name), false, 'Private env files must not enter images');",
     );
   }
   await run(
@@ -220,8 +217,8 @@ try {
     ),
   );
   for (const secret of [
-    env.AUTH_SECRET,
-    env.POSTGRES_PASSWORD,
+    config.services.api.environment.AUTH_SECRET,
+    config.services.postgres.environment.POSTGRES_PASSWORD,
     'FlowboardDemo123!',
     session.data.accessToken,
     proxySession.data.accessToken,

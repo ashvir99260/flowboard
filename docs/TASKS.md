@@ -1124,6 +1124,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: add rendered architecture diagram atlas`.
   - **Evidence:** [P23-01](evidence/P23-01.md).
 
+## Phase 24 — Setup-free local preview
+
+- [x] **P24-01 — Verify the one-command Docker preview without environment files**
+  - **Goal:** Let a new contributor preview the complete seeded application with `docker compose up --build` and Docker alone.
+  - **Requirements:** R147; strengthen R24–R27 and R79–R82 without changing hosted defaults.
+  - **Files:** `README.md`, `apps/api/test/bootstrap/compose-origins.test.mjs`, `scripts/check-compose.mjs`, canonical requirements/plan/decisions/matrix/delivery summary and `docs/evidence/P24-01.md`.
+  - **Dependencies:** P12-03, P02-20/P02-23 and P23-01; prioritized by the direct preview request.
+  - **Acceptance:** No root or app env files, host package installation, manual migrations or manual seed needed for the Docker preview. All five services become healthy, web and Swagger work, demo login/task edit succeeds, and data remains after restart. Configuration checks cover a clean directory and absent/empty inherited application settings, local-only published ports, origins and existing override behavior. Optional configuration is clearly separate from the quick start. Preserve unrelated containers/volumes and existing hosted security validation.
+  - **Validation:** G01–G05/G11; focused Compose configuration regressions, root build/lint/test/type/format, real isolated `pnpm docker:check` using defaults, documentation links and whitespace. Use existing PostgreSQL/Redis/browser seams; record pre-existing passing behavior and any environment limitations truthfully.
+  - **Commit:** `test: verify setup-free docker preview`.
+  - **Evidence:** [P24-01](evidence/P24-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**
