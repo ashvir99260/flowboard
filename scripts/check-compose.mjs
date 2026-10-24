@@ -17,6 +17,7 @@ const env = {
   DEMO_SEED: 'true',
   AUTH_SECRET: 'flowboard-docker-check-secret-abcdefghijklmnopqrstuvwxyz',
   AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
+  WEB_ALLOWED_ORIGINS: 'http://localhost:3000',
   AUTH_ALLOW_INSECURE_HTTP: 'true',
   LOG_LEVEL: 'debug',
 };
@@ -125,6 +126,34 @@ try {
   assert.equal(session.data.activeWorkspace.role, 'admin');
   assert.equal(session.data.user.email, 'alice@example.com');
   assert.ok(login.headers.get('set-cookie').includes('HttpOnly'));
+  const proxyLogin = await fetch(`http://${webAddress}/api/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:3000' },
+    body: JSON.stringify({ email: 'alice@example.com', password: 'FlowboardDemo123!' }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  assert.equal(proxyLogin.status, 200);
+  const proxySession = await proxyLogin.json();
+  assert.equal(proxySession.data.user.email, 'alice@example.com');
+  const initialCookie = proxyLogin.headers.getSetCookie()[0];
+  assert.ok(initialCookie.includes('HttpOnly'));
+  const proxyRefresh = await fetch(`http://${webAddress}/api/v1/auth/refresh`, {
+    method: 'POST',
+    headers: { Cookie: initialCookie.split(';')[0], Origin: 'http://localhost:3000' },
+    signal: AbortSignal.timeout(10_000),
+  });
+  assert.equal(proxyRefresh.status, 200);
+  const refreshedSession = await proxyRefresh.json();
+  const rotatedCookie = proxyRefresh.headers.getSetCookie()[0];
+  assert.notEqual(rotatedCookie, initialCookie);
+  const proxyLogout = await fetch(`http://${webAddress}/api/v1/auth/logout`, {
+    method: 'POST',
+    headers: { Cookie: rotatedCookie.split(';')[0], Origin: 'http://localhost:3000' },
+    signal: AbortSignal.timeout(10_000),
+  });
+  assert.equal(proxyLogout.status, 204);
+  assert.ok(proxyLogout.headers.getSetCookie()[0].includes('Max-Age=0'));
+
   const logOutput = await run('logs', '--no-color', '--no-log-prefix', 'api', 'worker');
   const logRecords = logOutput
     .split('\n')
@@ -154,6 +183,10 @@ try {
     env.POSTGRES_PASSWORD,
     'FlowboardDemo123!',
     session.data.accessToken,
+    proxySession.data.accessToken,
+    refreshedSession.data.accessToken,
+    initialCookie,
+    rotatedCookie,
     login.headers.get('set-cookie'),
   ]) {
     assert.ok(!logOutput.includes(secret), 'Runtime logs must exclude credentials');

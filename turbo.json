@@ -57,12 +57,12 @@
     },
     "docker:check": {
       "cache": false,
-      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
+      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG", "COMPOSE_PARALLEL_LIMIT"],
       "outputs": []
     },
     "docker:dev:check": {
       "cache": false,
-      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG"],
+      "env": ["DOCKER_CONTEXT", "DOCKER_HOST", "DOCKER_CONFIG", "COMPOSE_PARALLEL_LIMIT"],
       "outputs": []
     },
     "format": {

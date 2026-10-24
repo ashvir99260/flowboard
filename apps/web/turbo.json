@@ -6,9 +6,16 @@
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "dev": {
-      "env": ["NEXT_TELEMETRY_DISABLED", "PORT"]
+      "env": ["NEXT_TELEMETRY_DISABLED", "PORT", "API_INTERNAL_URL", "WEB_ALLOWED_ORIGINS"]
     },
     "dev:docker": {
+      "env": [
+        "NEXT_TELEMETRY_DISABLED",
+        "PORT",
+        "NODE_ENV",
+        "API_INTERNAL_URL",
+        "WEB_ALLOWED_ORIGINS"
+      ],
       "interruptible": false
     },
     "test": {

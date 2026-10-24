@@ -1011,3 +1011,32 @@ test('a disposed client cannot be revived or issue another request', async () =>
   assert.equal(requests, 0);
   runtime.dispose();
 });
+
+test('browser clients default to the current web origin proxy', async () => {
+  const { setupClient } = await import('@flowboard/api-client/session');
+  Object.defineProperty(globalThis, 'window', {
+    configurable: true,
+    value: { location: { origin: 'https://web.example.test' } },
+  });
+  const requests = [];
+  const runtime = setupClient({
+    initialSession: session(),
+    fetch: async (request) => {
+      requests.push(request.url);
+
+      return globalThis.Response.json({ ok: true });
+    },
+  });
+  try {
+    await getTask({ client: runtime.client, path: { taskId: 'one' }, throwOnError: true });
+    assert.deepEqual(requests, ['https://web.example.test/api/v1/tasks/one']);
+  } finally {
+    runtime.dispose();
+    delete globalThis.window;
+  }
+});
+
+test('server-side clients require explicit request-scoped origins', async () => {
+  const { setupClient } = await import('@flowboard/api-client/session');
+  assert.throws(() => setupClient({}), /origins/);
+});

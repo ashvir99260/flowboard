@@ -4,12 +4,17 @@ import { EventEmitter } from 'node:events';
 
 // Real-process smoke tests share lifecycle handling, not application internals.
 export function startProcess(args, options) {
+  const { outboundOrigins = [], ...spawnOptions } = options;
   const child = spawn(
     process.execPath,
     ['--import', new URL('./no-network.mjs', import.meta.url).href, ...args],
     {
-      ...options,
-      env: { ...process.env, ...options.env },
+      ...spawnOptions,
+      env: {
+        ...process.env,
+        ...spawnOptions.env,
+        FLOWBOARD_TEST_OUTBOUND_ORIGINS: JSON.stringify(outboundOrigins),
+      },
       stdio: ['ignore', 'pipe', 'pipe'],
     },
   );

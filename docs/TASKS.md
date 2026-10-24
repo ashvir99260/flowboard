@@ -744,14 +744,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Concurrent 401s trigger one refresh; refresh failure/replayed token stops; 403 never refreshes; mutation retried at most once only after 401; aborted request stays aborted; instance state never shared across SSR requests; standard gate.
   - **Commit:** `feat: configure generated client session refresh`.
 
-- [ ] **P07-04 — Same-origin browser transport for hosted authentication**
+- [x] **P07-04 — Same-origin browser transport for hosted authentication**
   - **Goal:** Preserve rotating httpOnly cookies when the web and API use separate provider domains.
   - **Requirements:** R29, R33, R91; follows D57.
-  - **Files:** `apps/web/app/api/v1/[...path]/route.ts`, `apps/web/src/server/api-proxy.ts`, proxy integration tests, `packages/api-client/src/setup-client.ts`, `packages/config-eslint/src/boundaries.mjs`, `packages/config-eslint/test/boundaries.test.mjs`, server environment docs.
+  - **Files:** `apps/web/app/api/v1/[...path]/route.ts`, `apps/web/src/server/api-proxy.ts`, proxy unit/built-app/Chromium tests, `packages/api-client/src/setup-client.ts`, exact-file ESLint boundary/tests, shared smoke-process loopback allowlist, web package/Turbo settings, API/worker Docker production-export stages, Compose/CI browser setup and environment docs.
   - **Dependencies:** P07-03.
   - **Acceptance:** Browser-generated requests use same-origin `/api/v1`; the server forwards only to a fixed runtime-configured API origin and `/v1` paths. Preserve abort/status/body and separate Set-Cookie headers; forward only approved headers, validate browser Origin for cookie mutations, bypass caches and reject arbitrary destinations/redirects. Host-only refresh cookies use Path=/, Secure on HTTPS and SameSite=Lax. Forward only approved cookie names. The lint exception permits direct fetch only in the designated server-only proxy module; feature-code fetches remain rejected. No domain logic or second endpoint client in the proxy. Socket.IO connects directly to API with memory-held access JWT. CLI clients retain direct `/v1` access.
   - **Validation:** Integration tests with distinct web/API origins cover login/refresh/logout cookies, malicious origins/paths, no caching, upstream failure/abort, rejection of feature-code fetches, and no browser exposure of the upstream configuration. Browser tests prove refresh on separate-site hosts; standard gate.
   - **Commit:** `feat: proxy browser api transport on same origin`.
+  - **Completion evidence:** [P07-04](evidence/P07-04.md).
 
 ## Phase 8 — UI package and application shell
 
