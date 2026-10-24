@@ -156,8 +156,17 @@ test('archive requires confirmation and removes the task from the board after re
   await confirmation.getByRole('button', { exact: true, name: 'Cancel' }).click();
   assert.equal(api.requests.filter((request) => request.method === 'DELETE').length, 0);
   await drawer.getByRole('button', { exact: true, name: 'Archive task' }).click();
+  const archived = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'DELETE' &&
+      /\/tasks\/[^/]+$/.test(new URL(response.url()).pathname),
+  );
   await confirmation.getByRole('button', { exact: true, name: 'Archive task' }).click();
-  await expect(drawer).toHaveCount(0);
+  assert.equal((await archived).status(), 204);
+  await expect(confirmation).toHaveCount(0);
+  await expect(page.getByRole('dialog', { includeHidden: true, name: 'Task details' })).toHaveCount(
+    0,
+  );
   await expect(page.getByRole('button', { exact: true, name: 'Open task: Fix login' })).toHaveCount(
     0,
   );

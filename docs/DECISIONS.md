@@ -439,3 +439,13 @@ Use `react-markdown` 10.1.0 for the task description preview, with `skipHtml` an
 Validate mutation responses against the active status/field schema and expected identity/configuration/version before replacing a form baseline. Invalid responses preserve edits and require recovery. Retain the new server ID after creation so a later conflict reloads that task, and disable further writes while an unresolved conflict requires explicit reload. Error focus occurs after pending controls are re-enabled.
 
 Keep the last verified workspace mounted through transient network/5xx refresh errors, with a retry notice, so a background failure cannot destroy a draft. Continue validating that cached identity/workspace against the active session; authorization/session errors still fail closed.
+
+## D128 — Scoped status settings
+
+P10-01 edits one status per request because the API has no atomic bulk-reorder endpoint. Numeric position controls expose the existing explicit order; a save may affect descendant lists. Load the selected scope and its verified ancestors at one configuration revision before resolving or previewing. Keep canonical identity/key/category immutable during overrides and show hidden inherited identities so an administrator can restore them.
+
+An empty override input means explicit `null` inheritance; omission is used only for unchanged attributes. Visibility has three choices: inherit, show and hide. A definition requires complete display values. Preview uses the shared resolver and explains invalid required-category sets; only the server can authorize and validate affected descendants/in-use references. Keep failed drafts, and reload stale configurations only with consent to discard them. Completed or uncertain configuration mutations restart complete active workspace board/list generations; a failed response can follow a committed server write.
+
+Configuration reads and writes retain the existing administrator-only policy. Members use effective status views on lists; a direct settings URL shows an access-denied state and no editor. Include workspace alongside space/folder/list in the selector, consistent with the existing scope contract.
+
+Keep the status editor mounted in its verified workspace host while navigating between that workspace's pages, including Back/Forward. Hide inactive content and make it inert. Dirty editors keep their original revision; clean editors reload on reactivation. Leaving the workspace layout or changing identity ends this retained editor. Normalize shared-schema values before comparing patches; accept an unchanged update revision only when the response matches the requested values and scope.
