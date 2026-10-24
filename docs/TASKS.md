@@ -633,13 +633,14 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: expose scoped status configuration`.
   - **Completion evidence:** [P04-02 verification](evidence/P04-02.md): five typed operations, six real-API cases, 442 full-suite tests and all standard/contract gates pass.
 
-- [ ] **P04-03 — Safe status mutation across descendants**
+- [x] **P04-03 — Safe status mutation across descendants**
   - **Goal:** Prevent orphaned tasks when ancestor configuration changes.
-  - **Files:** `apps/api/src/modules/statuses/status-safety.service.ts`, status service/repositories, `apps/api/test/integration/status-safety.spec.mjs`.
+  - **Files:** `packages/database/test/{statuses.integration.test,cleanup.integration.test,postgres}.mjs`, `apps/api/src/modules/{statuses/statuses,platform/test-infrastructure}.integration.spec.mjs`, `apps/api/test/common/infrastructure.mjs`, task/decision/evidence records. Safety stays inside the existing tenant transaction; no forwarding service.
   - **Dependencies:** P04-02.
   - **Acceptance:** Proposed mutations validate owning scope and all affected active descendant lists under one lock. Hide/delete rejects in-use effective statuses. Physical identity deletion respects archived references. Removing overrides re-evaluates fallback.
   - **Validation:** Parent hide with child task, hiding last active/done, safe unused deletion, child overrides unaffected where appropriate, rollback leaves all lists valid; endpoint DoD and standard gate.
-  - **Commit:** `fix: prevent orphaned status references`.
+  - **Commit:** `test: verify status mutation safety`.
+  - **Completion evidence:** [P04-03 verification](evidence/P04-03.md): 12 added regressions, 454 full-suite tests and all standard gates pass; test-owned anonymous volume cleanup prevents repeated disk growth.
 
 ## Phase 5 — Custom fields
 

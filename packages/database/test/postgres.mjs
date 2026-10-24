@@ -30,7 +30,8 @@ export async function startPostgres() {
     ],
     { stdio: 'pipe' },
   );
-  const stop = () => execFileSync('docker', ['rm', '--force', name], { stdio: 'pipe' });
+  const stop = () =>
+    execFileSync('docker', ['rm', '--force', '--volumes', name], { stdio: 'pipe' });
   const connectionUrl = () => {
     const mapping = execFileSync('docker', ['port', name, '5432/tcp'], { encoding: 'utf8' }).trim();
 
