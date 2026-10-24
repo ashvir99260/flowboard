@@ -25,14 +25,19 @@ export class PermissionGuard implements CanActivate {
   ) {}
   async canActivate(context: ExecutionContext) {
     if (context.getType?.() === 'ws') {
-      const identity = context.switchToWs().getClient<{ identity?: IdentitySession }>().identity;
-      if (!identity) throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
+      const socket = context
+        .switchToWs()
+        .getClient<{ connected: boolean; identity?: IdentitySession }>();
+      const { identity } = socket;
+      if (!socket.connected || !identity)
+        throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
 
       const input = ListSubscriptionSchema.safeParse(context.switchToWs().getData<unknown>());
       if (!input.success)
         throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid list subscription');
 
       await this.permissions.authorizeList(identity, input.data.listId);
+      if (!socket.connected) throw new ApiException(401, 'UNAUTHENTICATED', 'Socket disconnected');
 
       return true;
     }

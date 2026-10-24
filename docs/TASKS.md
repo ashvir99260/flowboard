@@ -891,6 +891,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: synchronize authorized clients in realtime`.
   - **Completion evidence:** [P11-03 verification](evidence/P11-03.md): 951 tests pass, including two-instance fanout, access/expiry/recovery and independent-browser draft/permission flows; all workspace gates pass.
 
+- [x] **P11-05 — Drain realtime work before closing application resources**
+  - **Goal:** Fix the late permission recheck discovered by the release suite; retain strict responsive browser checks without racing a viewport transition.
+  - **Requirements:** R32, R70, R72, R76, R90.
+  - **Files:** realtime service/lifecycle integration tests, auth/permission guards and unit tests, activity browser assertion, task/matrix/evidence records.
+  - **Dependencies:** P11-03, P12-01.
+  - **Acceptance:** Closing an API rejects new socket work, waits for active rechecks/dispatch/authentication before DB pools close, emits no late invalidation and leaves no asynchronous work after teardown. The activity check waits for the same strict 320px no-overflow bound.
+  - **Validation:** Deferred-authentication shutdown regression first fails then passes; real realtime and activity suites plus root build/lint/typecheck/format/test pass.
+  - **Commit:** `fix: drain realtime work before shutdown`.
+  - **Completion evidence:** [P11-05](evidence/P11-05.md): 960 tests and all workspace gates pass; active rechecks drain before database shutdown and disconnected socket guards fail closed.
+
 ## Phase 12 — Release verification and documentation
 
 - [x] **P12-01 — End-to-end role and collaboration regression**
@@ -906,7 +916,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 - [ ] **P12-02 — Operational docs and second-channel cookbook**
   - **Goal:** Make the app understandable and usable without its web UI.
   - **Files:** `README.md`, `scripts/curl-cookbook.md`, `docs/api-events.md`, `docs/DECISIONS.md`, `docs/system-design.docx` refreshed only for design changes.
-  - **Dependencies:** P12-01.
+  - **Dependencies:** P12-01, P11-05.
   - **Acceptance:** README covers every requested section: run/ports/users, Mermaid architecture plus load-board/drag flow, model, exact resolution rules, archive policy, auth/OIDC, permission/team evolution, scalability/indexes, splits/tradeoffs and tests in Docker. Cookbook logs in with cookie jar, refreshes, loads/edits/moves a task and handles errors. Event examples are schema-valid and clearly not a deployed webhook service.
   - **Validation:** Execute cookbook against demo services, schema-check event examples, verify links/commands/credentials and no real tokens committed; standard gate.
   - **Commit:** `docs: explain operations and shared api contracts`.

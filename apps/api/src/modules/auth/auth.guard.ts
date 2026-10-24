@@ -19,14 +19,20 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     if (context.getType?.() === 'ws') {
       const socket = context.switchToWs().getClient<{
+        connected: boolean;
         handshake: { auth: { token?: string }; headers: { origin?: string } };
         identity?: Awaited<ReturnType<AuthService['authenticate']>>;
       }>();
+      if (!socket.connected) throw new ApiException(401, 'UNAUTHENTICATED', 'Socket disconnected');
+
       this.auth.assertOrigin(socket.handshake.headers.origin);
       const token = socket.handshake.auth.token;
-      socket.identity = await this.auth.authenticate(
+      const identity = await this.auth.authenticate(
         typeof token === 'string' ? `Bearer ${token}` : undefined,
       );
+      if (!socket.connected) throw new ApiException(401, 'UNAUTHENTICATED', 'Socket disconnected');
+
+      socket.identity = identity;
 
       return true;
     }

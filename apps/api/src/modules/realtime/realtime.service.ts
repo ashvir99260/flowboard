@@ -13,7 +13,11 @@ import { observedAdapterClient } from './adapter-client.js';
 
 import type { OutboxRecord, RealtimeInvalidation } from '@flowboard/contracts';
 import type { Logger } from '@flowboard/logger';
-import type { OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
+import type {
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import type { Server, Socket } from 'socket.io';
 
 export const RealtimeConfigKey = Symbol('RealtimeConfig');
@@ -22,13 +26,16 @@ const peerEvent = 'flowboard.internal.event';
 const room = (workspaceId: string, listId: string) => `workspace:${workspaceId}:list:${listId}`;
 
 @Injectable()
-export class RealtimeService implements OnApplicationBootstrap, OnApplicationShutdown {
+export class RealtimeService
+  implements OnApplicationBootstrap, OnApplicationShutdown, OnModuleDestroy
+{
   private server?: Server;
   private readonly clients = new Map<
     Socket,
     { expiry: ReturnType<typeof setTimeout>; lists: Set<string>; workspaceId: string }
   >();
   private readonly seen = new Set<string>();
+  private readonly pending = new Set<Promise<unknown>>();
   private readonly redis: Redis[];
   private ready = false;
   private closing = false;
@@ -61,37 +68,40 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
     const [publisher, subscriber, events] = this.redis as [Redis, Redis, Redis];
 
     server.on(peerEvent, (event: unknown) => {
-      void this.acceptPeerEvent(event);
+      this.background(() => this.acceptPeerEvent(event));
     });
     server.use((socket, next) => {
-      void this.authenticate(socket)
-        .then(({ identity, accessExpiresAt }) => {
-          if (socket.conn.readyState !== 'open' || this.closing) return;
+      this.background(() =>
+        this.authenticate(socket)
+          .then(({ identity, accessExpiresAt }) => {
+            if (socket.conn.readyState !== 'open' || this.closing) return;
 
-          const expiry = setTimeout(
-            () => socket.disconnect(true),
-            Math.max(0, accessExpiresAt.getTime() - Date.now()),
-          );
-          expiry.unref();
-          this.clients.set(socket, {
-            expiry,
-            lists: new Set(),
-            workspaceId: identity.activeWorkspace!.id,
-          });
-          socket.conn.once('close', () => this.disconnected(socket));
-          next();
-        })
-        .catch(() => next(new Error('Authentication required')));
+            const expiry = setTimeout(
+              () => socket.disconnect(true),
+              Math.max(0, accessExpiresAt.getTime() - Date.now()),
+            );
+            expiry.unref();
+            this.clients.set(socket, {
+              expiry,
+              lists: new Set(),
+              workspaceId: identity.activeWorkspace!.id,
+            });
+            socket.conn.once('close', () => this.disconnected(socket));
+            next();
+          })
+          .catch(() => next(new Error('Authentication required'))),
+      );
     });
     events.on('message', (_channel, value) => {
       try {
-        void this.acceptWorkerEvent(JSON.parse(value));
+        const event: unknown = JSON.parse(value);
+        this.background(() => this.acceptWorkerEvent(event));
       } catch {
         /* Invalid trusted-channel input is dropped. */
       }
     });
     const subscribe = async () => {
-      if (this.redis.some((connection) => connection.status !== 'ready')) return;
+      if (this.closing || this.redis.some((connection) => connection.status !== 'ready')) return;
 
       await events.subscribe(EventChannelName);
       await subscriber.ping();
@@ -100,10 +110,7 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
     };
     for (const connection of this.redis)
       connection.on('ready', () => {
-        if (events.status === 'ready' && !this.closing)
-          void subscribe().catch(() => {
-            this.ready = false;
-          });
+        if (events.status === 'ready' && !this.closing) this.background(subscribe);
       });
     server.adapter(
       createAdapter(
@@ -112,19 +119,36 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
         { key: 'flowboard:socket.io' },
       ),
     );
-    void Promise.all(
-      this.redis.map(async (connection) => {
-        if (connection.status === 'wait') await connection.connect();
-      }),
-    )
-      .then(subscribe)
-      .catch(() => {
+    this.background(() =>
+      Promise.all(
+        this.redis.map(async (connection) => {
+          if (connection.status === 'wait') await connection.connect();
+        }),
+      ).then(subscribe),
+    );
+  }
+  private track<T>(work: Promise<T>): Promise<T> {
+    this.pending.add(work);
+    const done = () => {
+      this.pending.delete(work);
+    };
+    void work.then(done, done);
+
+    return work;
+  }
+  private background(action: () => Promise<unknown>) {
+    if (this.closing) return;
+
+    void this.track(Promise.resolve().then(() => (this.closing ? undefined : action()))).catch(
+      () => {
         this.ready = false;
-      });
+        this.logger.warn('realtime.work.failed', { code: 'REALTIME_WORK_FAILED' });
+      },
+    );
   }
   onApplicationBootstrap() {
     this.timer = setInterval(() => {
-      void this.recheck();
+      this.background(() => this.recheck());
     }, 2000);
     this.timer.unref();
   }
@@ -153,6 +177,8 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
     if (typeof token !== 'string' || token.length > 8192) throw new Error('Invalid credentials');
 
     const verified = await this.auth.authenticateAccess(`Bearer ${token}`);
+    if (this.closing) throw new Error('Unavailable');
+
     if (!verified.identity.activeWorkspace) throw new Error('Membership required');
 
     return verified;
@@ -163,15 +189,22 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
 
     this.clients.delete(socket);
   }
-  async subscribe(socket: Socket, listId: string) {
+  subscribe(socket: Socket, listId: string) {
+    return this.track(this.joinList(socket, listId));
+  }
+  private async joinList(socket: Socket, listId: string) {
+    if (this.closing || !socket.connected) return { ok: false };
+
     const state = this.clients.get(socket);
     if (!state || (state.lists.size >= 20 && !state.lists.has(listId)))
       throw new ApiException(429, 'RATE_LIMITED', 'Subscription limit reached');
 
     // PermissionGuard already verified this packet; re-read at the join boundary.
     const { identity } = await this.authenticate(socket);
+    if (this.closing || !socket.connected) return { ok: false };
+
     await this.permissions.authorizeList(identity, listId);
-    if (!socket.connected) return { ok: false };
+    if (this.closing || !socket.connected) return { ok: false };
 
     if (state.lists.size >= 20 && !state.lists.has(listId))
       throw new ApiException(429, 'RATE_LIMITED', 'Subscription limit reached');
@@ -181,7 +214,10 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
 
     return { ok: true };
   }
-  async unsubscribe(socket: Socket, listId: string) {
+  unsubscribe(socket: Socket, listId: string) {
+    return this.track(this.leaveList(socket, listId));
+  }
+  private async leaveList(socket: Socket, listId: string) {
     const state = this.clients.get(socket);
     if (state) {
       state.lists.delete(listId);
@@ -199,7 +235,10 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
 
     return parsed.data;
   }
-  async acceptWorkerEvent(input: unknown) {
+  acceptWorkerEvent(input: unknown) {
+    return this.track(this.workerEvent(input));
+  }
+  private async workerEvent(input: unknown) {
     const event = this.claim(input);
     if (!event || this.closing) return;
 
@@ -211,7 +250,8 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
     if (event && !this.closing) await this.dispatch(event);
   }
   private emit(socket: Socket, payload: RealtimeInvalidation) {
-    if (socket.connected && this.ready) socket.emit(SocketEvents.invalidate, payload);
+    if (!this.closing && socket.connected && this.ready)
+      socket.emit(SocketEvents.invalidate, payload);
   }
   private async check(socket: Socket) {
     const state = this.clients.get(socket);
@@ -223,6 +263,8 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
 
       let revoked = false;
       for (const listId of state.lists) {
+        if (this.closing || !socket.connected) return;
+
         try {
           await this.permissions.authorizeList(identity, listId);
         } catch {
@@ -254,7 +296,13 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
     await Promise.all(
       [...this.clients.keys()].map(async (socket) => {
         const current = await this.check(socket);
-        if (!current || current.state.workspaceId !== event.workspaceId) return;
+        if (
+          this.closing ||
+          !socket.connected ||
+          !current ||
+          current.state.workspaceId !== event.workspaceId
+        )
+          return;
 
         if (event.eventType === 'workspace.config.updated' || event.eventType === 'node.updated') {
           this.emit(socket, { kind: 'workspace', eventId: event.id });
@@ -267,6 +315,8 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
           ...('previousListId' in event.payload ? [event.payload.previousListId] : []),
         ]);
         for (const listId of lists) {
+          if (this.closing || !socket.connected) return;
+
           if (!current.state.lists.has(listId)) continue;
 
           // Each final emission gets a current read; adapter messages never contain recipient decisions.
@@ -281,13 +331,18 @@ export class RealtimeService implements OnApplicationBootstrap, OnApplicationShu
       }),
     );
   }
-  async onApplicationShutdown() {
+  async onModuleDestroy() {
     this.closing = true;
+    this.ready = false;
     clearInterval(this.timer);
     for (const socket of this.clients.keys()) {
       this.disconnected(socket);
       socket.disconnect(true);
     }
+    while (this.pending.size) await Promise.allSettled([...this.pending]);
+  }
+  async onApplicationShutdown() {
+    await this.onModuleDestroy();
     for (const connection of this.redis) connection.disconnect();
   }
 }
