@@ -1,16 +1,15 @@
 'use client';
 
-import { ConfirmDialog, ErrorState, FormField } from '@flowboard/ui';
+import { ErrorState } from '@flowboard/ui';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
-import { useSession } from '../../../providers/app-providers';
 import { SessionLoading } from '../../auth/session-gate';
-import { useTree } from '../../tree/use-tree';
+import { ConfigurationSettings } from '../configuration-settings';
 
 import { StatusForm } from './status-form';
 import { StatusPreview } from './status-preview';
@@ -20,8 +19,6 @@ import type { QueryScope } from '../../../lib/query-scope';
 import type { ClientRuntime } from '../../../providers/app-providers';
 import type { StatusScope } from '@flowboard/contracts';
 
-type Editing = { busy: boolean; dirty: boolean };
-
 function ScopeConfiguration({
   active,
   owner,
@@ -30,7 +27,7 @@ function ScopeConfiguration({
   onState,
 }: {
   active: boolean;
-  onState: (state: Editing) => void;
+  onState: (state: { busy: boolean; dirty: boolean }) => void;
   owner: StatusScope;
   runtime: ClientRuntime;
   scope: QueryScope;
@@ -132,114 +129,6 @@ function ScopeConfiguration({
   );
 }
 
-function Settings({
-  runtime,
-  scope,
-  active,
-}: {
-  active: boolean;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-}) {
-  const { session } = useSession();
-  const tree = useTree(runtime, scope);
-  const [owner, setOwner] = useState<StatusScope>({
-    ownerType: 'workspace',
-    ownerId: scope.workspaceId!,
-  });
-  const [pending, setPending] = useState<StatusScope | null>(null);
-  const [editing, setEditing] = useState<Editing>({ busy: false, dirty: false });
-  const [activation, setActivation] = useState(0);
-  const previouslyActive = useRef(active);
-  useEffect(() => {
-    const returning = active && !previouslyActive.current;
-    previouslyActive.current = active;
-    if (returning && !editing.dirty && !editing.busy) setActivation((value) => value + 1);
-  }, [active, editing.dirty, editing.busy]);
-  const nodes = tree.state === 'ready' ? tree.nodes : [];
-  const changeOwner = (next: StatusScope) => {
-    if (editing.busy || next.ownerId === owner.ownerId) return;
-
-    if (editing.dirty) setPending(next);
-    else {
-      setOwner(next);
-      setEditing({ busy: false, dirty: false });
-    }
-  };
-
-  return (
-    <Stack spacing={4}>
-      <Typography component="h1" variant="h1">
-        Status settings
-      </Typography>
-      <Typography>
-        Configure inherited statuses one at a time. Changes can affect descendant lists.
-      </Typography>
-      <FormField
-        label="Configuration scope"
-        value={owner.ownerId}
-        select
-        disabled={editing.busy || tree.state !== 'ready'}
-        slotProps={{ select: { native: true } }}
-        onChange={(event) => {
-          const node = nodes.find((item) => item.id === event.target.value);
-          changeOwner(
-            node
-              ? { ownerType: node.type, ownerId: node.id }
-              : { ownerType: 'workspace', ownerId: scope.workspaceId! },
-          );
-        }}
-      >
-        <option value={scope.workspaceId!}>Workspace: {session?.data.activeWorkspace?.name}</option>
-        {nodes.map((node) => (
-          <option key={node.id} value={node.id}>
-            {node.type[0]!.toUpperCase() + node.type.slice(1)}: {node.name}
-          </option>
-        ))}
-      </FormField>
-      {tree.state === 'error' && (
-        <ErrorState
-          title="Scopes unavailable"
-          description={tree.message}
-          action={<Button onClick={tree.retry}>Retry scopes</Button>}
-        />
-      )}
-      <ScopeConfiguration
-        active={active}
-        key={`${owner.ownerType}:${owner.ownerId}:${activation}`}
-        owner={owner}
-        scope={scope}
-        runtime={runtime}
-        onState={setEditing}
-      />
-      <ConfirmDialog
-        open={active && pending !== null}
-        title="Discard unsaved status changes?"
-        description="Changing scope will discard the current status draft."
-        confirmLabel="Discard and change scope"
-        onCancel={() => setPending(null)}
-        onConfirm={() => {
-          if (pending) setOwner(pending);
-
-          setPending(null);
-          setEditing({ busy: false, dirty: false });
-        }}
-      />
-    </Stack>
-  );
-}
-
 export function StatusSettings({ active = true }: { active?: boolean }) {
-  const { runtime, scope, session } = useSession();
-  if (!runtime || !scope) return <SessionLoading />;
-
-  if (session?.data.activeWorkspace?.role !== 'admin')
-    return (
-      <ErrorState
-        description="Only workspace administrators can configure statuses. Effective statuses remain visible on each list."
-        title="Access denied"
-      />
-    );
-
-  return <Settings runtime={runtime} scope={scope} active={active} />;
+  return <ConfigurationSettings active={active} kind="status" Editor={ScopeConfiguration} />;
 }

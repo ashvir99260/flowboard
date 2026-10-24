@@ -839,13 +839,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: manage inherited status configuration`.
   - **Completion evidence:** [P10-01](evidence/P10-01.md): inherited/local/hidden configuration, shared previews, safety/role denials and retained drafts pass; 863 tests and all root gates pass.
 
-- [ ] **P10-02 — Scoped custom-field editor and preview**
+- [x] **P10-02 — Scoped custom-field editor and preview**
   - **Goal:** Configure all six field types without hiding downstream consequences.
-  - **Files:** `apps/web/src/features/config/fields/**`, field editor tests and examples.
+  - **Requirements:** R12, R13, R41, R67, R68, R70.
+  - **Files:** `apps/web/src/features/config/fields/**`, shared configuration host/scope controls, workspace navigation, field editor tests and playground examples.
   - **Dependencies:** P10-01.
   - **Acceptance:** Workspace/space/folder/list field CRUD, local/inherited nearest-key preview, options with stable IDs and required-state guidance. Failed in-use/type/required mutation preserves editor values.
   - **Validation:** Dynamic option identity on reorder/remove, duplicate keys/options, required promotion rejection, inherited override removal, field-path errors and role restrictions; standard gate.
   - **Commit:** `feat: manage inherited custom field configuration`.
+  - **Completion evidence:** [P10-02](evidence/P10-02.md): all six types, stable option IDs, inherited copies/removal, safety denials and retained drafts pass; 877 tests and all root gates pass.
 
 ## Phase 11 — Durable activity and realtime
 
