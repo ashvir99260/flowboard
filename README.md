@@ -1,8 +1,8 @@
 # Flowboard
 
-A planned self-hosted project management app for learning sound architecture at hobby scale.
+A self-hosted project management app for learning sound architecture at hobby scale.
 
-**Current state:** Phase 0 workspace and application shells. Next.js, NestJS and an explicitly idle worker use shared TypeScript, ESLint and Prettier configuration. Docker runs the five local services; domain features remain in the task backlog.
+**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Next.js still shows the setup page, and the worker remains idle until its activity-processing task. Generated client transport, the product UI and realtime delivery are next in the backlog.
 
 The [system design](docs/SYSTEM_DESIGN.md) covers the UI, backend, database ERD and request/event flows. [ClickUp/Asana/Linear research](docs/REFERENCE_ARCHITECTURES.md) explains the public patterns behind it, with sources and explicit limits on what is known.
 
@@ -31,11 +31,11 @@ pnpm test
 pnpm format:check
 ```
 
-`pnpm format` applies the shared Prettier rules to every workspace plus root configuration and documentation. The original requirements are preserved verbatim. Tests currently verify package boundaries and real application start/stop behavior. Domain integration and browser user-flow suites arrive with their owning tasks. Runtime libraries expose compiled outputs; tool configurations are directly consumable so first-time builds need no generated files.
+`pnpm format` applies the shared Prettier rules to every workspace plus root configuration and documentation. The original requirements are preserved verbatim. Tests cover package boundaries, application start/stop, shared domain rules, and real PostgreSQL/Redis integration for the implemented backend. Browser user-flow suites arrive with their UI tasks. Runtime libraries expose compiled outputs; tool configurations are directly consumable so first-time builds need no generated files.
 
 Run `pnpm hooks:install` once to enable the repository-local commit-message check. [Code-quality conventions](docs/CODE_QUALITY.md) explain the commit policy, manual checks and CI validation.
 
-## Run the application shells
+## Run locally
 
 For the first local setup, create private configuration files from the examples. `cp -n` preserves any files you already have:
 
@@ -52,11 +52,11 @@ The root `.env` configures Compose. The API and worker load their own `.env` whe
 
 Open [the setup page](http://localhost:3000). Next.js reloads page edits; the API and worker compile with TypeScript and restart after successful changes. Stop all three with Ctrl+C. To run one app, use `pnpm dev --filter=@flowboard/web`, `pnpm dev --filter=@flowboard/api` or `pnpm dev --filter=@flowboard/worker`.
 
-| Process | Default address         | Current behavior                                                    |
-| ------- | ----------------------- | ------------------------------------------------------------------- |
-| Web     | `http://localhost:3000` | Static setup page; no login or task data yet.                       |
-| API     | `http://localhost:3001` | Signup/login, JWT guard, health and development Swagger at `/docs`. |
-| Worker  | TCP `localhost:3002`    | Process liveness only; queue processing arrives in P11-02.          |
+| Process | Default address         | Current behavior                                                             |
+| ------- | ----------------------- | ---------------------------------------------------------------------------- |
+| Web     | `http://localhost:3000` | Static setup page; no login or task data yet.                                |
+| API     | `http://localhost:3001` | Auth, workspaces, hierarchy, statuses, fields, tasks and Swagger at `/docs`. |
+| Worker  | TCP `localhost:3002`    | Process liveness only; queue processing arrives in P11-02.                   |
 
 The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; set `HOSTNAME=localhost` to restrict it locally. The API requires `DATABASE_URL` and `REDIS_URL`, migrates before listening and serves `/health/live` and dependency-aware `/health/ready`. `API_DOCS=true` enables `/docs`; it defaults on in development and off in hosted production. Local Compose explicitly enables it.
 
@@ -93,7 +93,7 @@ Compose builds separate web, API and worker images and starts PostgreSQL and Red
 | API Swagger UI | [http://localhost:3001/docs](http://localhost:3001/docs)                 |
 | API readiness  | [http://localhost:3001/health/ready](http://localhost:3001/health/ready) |
 
-The web currently shows the application shell; use Swagger to try the implemented auth endpoints. Application containers run as non-root. Without the development override, PostgreSQL, Redis and the worker are private to the Compose network.
+The web currently shows the application shell; use Swagger to try the implemented backend endpoints. Application containers run as non-root. Without the development override, PostgreSQL, Redis and the worker are private to the Compose network.
 
 Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files are only needed for host development and are excluded from images. Without a root `.env`, Compose uses the development defaults in `compose.yaml`. To use different published ports, set `WEB_PORT` and `API_PORT` in the root file. An explicit `AUTH_ALLOWED_ORIGINS` must list both full browser origins, such as `http://localhost:3100,http://localhost:3101`. Without an explicit allowlist, Compose derives both localhost origins from the published ports. Keep these development credentials local.
 
@@ -213,7 +213,7 @@ OIDC can replace password verification and map the provider's stable subject to 
 
 Hierarchy containers now support `POST /v1/nodes`, `GET/PATCH/DELETE /v1/nodes/{nodeId}` through Swagger and the generated client. Container creation, editing and archival require a workspace administrator. Members can read containers they can see through the full ancestor chain. Create uses `{name,type,parentId,visibility?,expectedConfigVersion}`: spaces have a null parent, folders require a space, and lists require a folder. Responses include the node plus `configVersion` and `dataVersion`. PATCH accepts name/visibility with both `expectedVersion` and `expectedConfigVersion`; unchanged values preserve revisions. Sibling positions are assigned by the server.
 
-DELETE requires both expected versions and soft-deletes the entire live subtree and its tasks using `archivedAt`. History, field/status configuration, grants and assignments remain stored. Normal reads hide archived nodes and nodes beneath archived ancestors; repeated deletion returns404. Stale versions return409 with no partial change. Reparenting and restore remain later tasks.
+DELETE requires both expected versions and soft-deletes the entire live subtree and its tasks using `archivedAt`. History, field/status configuration, grants and assignments remain stored. Normal reads hide archived nodes and nodes beneath archived ancestors; repeated deletion returns404. Stale versions return409 with no partial change. Reparenting is described below; restore remains outside the MVP.
 
 The visible sidebar API is `GET /v1/tree?limit=50`. It returns a flat page of live authorized containers plus the virtual workspace root, configuration revision and data revision. Parents precede children: order is depth, then the full ancestor path using numeric sibling positions and UUID ties. Follow `pageInfo.nextCursor` with the same limit; a changed revision returns `409 CURSOR_STALE` and requires restarting. There are no total counts or hidden-node placeholders. Each page uses one repeatable-read snapshot; the hobby-sized implementation reads the live workspace graph before filtering and paging, so its cost grows with workspace size.
 
@@ -221,7 +221,11 @@ Visibility is inherited along the entire ancestor chain. A deny on any ancestor 
 
 Administrators manage explicit grants using `GET/PUT /v1/nodes/{nodeId}/grants` and `DELETE /v1/nodes/{nodeId}/grants/{userId}`. PUT accepts `{userId, mode: "allow" | "deny", expectedConfigVersion}`; DELETE accepts `{expectedConfigVersion}`. GET uses cursor-only pagination. Grant changes recheck current membership and role after taking the workspace lock, bump configuration once and record an outbox invalidation in the same transaction. Same-value PUT and absent-grant DELETE preserve revisions after validation. Grants control visibility; they do not grant administrative or configuration editing rights.
 
-`POST /v1/nodes/{nodeId}/reorder` accepts `{placement, expectedVersion, expectedConfigVersion}` for administrators. Placement is exactly `{edge:"start"}`, `{edge:"end"}`, `{beforeId:"sibling-uuid"}` or `{afterId:"sibling-uuid"}`. Anchors must be distinct live siblings under the same parent. The server assigns integer positions, increments every changed sibling once and updates workspace revisions atomically. Canonical no-ops preserve timestamps and revisions; legacy ties/gaps normalize to dense positions. Reparenting uses the separate future move endpoint.
+`POST /v1/nodes/{nodeId}/reorder` accepts `{placement, expectedVersion, expectedConfigVersion}` for administrators. Placement is exactly `{edge:"start"}`, `{edge:"end"}`, `{beforeId:"sibling-uuid"}` or `{afterId:"sibling-uuid"}`. Anchors must be distinct live siblings under the same parent. The server assigns integer positions, increments every changed sibling once and updates workspace revisions atomically. Canonical no-ops preserve timestamps and revisions; legacy ties/gaps normalize to dense positions. Reparenting uses the separate move endpoint below.
+
+`POST /v1/nodes/{nodeId}/move` lets administrators reparent a folder to a space or a list to a folder. It requires `{parentId,placement,expectedVersion,expectedConfigVersion}` and uses the same strict sibling placement forms. Spaces retain the workspace root. Missing/foreign/archived parents or anchors return404; wrong types/self anchors return400; stale or incompatible inherited configuration returns409.
+
+The API tentatively applies the new parent inside its transaction, validates every resulting live scope and descendant task, and rolls everything back if any status, field value or retained assignee becomes invalid. It validates empty scopes too. Grants and task data stay attached to their existing resources; visibility follows the new ancestor chain. A successful move updates changed sibling/node versions once and advances both workspace revisions once. Descendant task versions and archived history remain unchanged.
 
 The shared `resolveStatuses` function walks an explicit workspace → space → folder → list path. It merges by immutable key while retaining the canonical status ID/category. A first definition supplies name, color and position; later nonnull values override individual attributes. Null inherits. A hidden status remains in the internal map so a deeper `hidden:false` can restore it; a display-only edit leaves it hidden. Visible results sort by position, key and ID and must include not_started, active and done (closed is optional). The function returns either valid items or typed validation issues. Each item includes the introducing owner and per-attribute override provenance for future configuration previews. Database mutation safety and the status endpoints are the next implementation tasks.
 

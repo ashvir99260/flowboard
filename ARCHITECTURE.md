@@ -1,9 +1,9 @@
 # Flowboard architecture reference
 
-**Status: target architecture; Phase 0 foundation is in progress.** Updated 23 October 2026.
+**Status: backend core through Phase 6 implemented; UI and realtime sections remain target architecture.** Updated 24 October 2026.
 This is a navigation and change-impact reference for the agreed design, not evidence that its controls run today.
 The complete behavior lives in [PLAN.md](docs/PLAN.md), the original brief in [REQUIREMENTS.md](docs/REQUIREMENTS.md), and chosen defaults in [DECISIONS.md](docs/DECISIONS.md).
-Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing; the user has authorized the monorepo and application-shell foundation.
+Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish tested backend behavior from planned client transport, product UI and realtime delivery.
 
 For the dated ClickUp/Asana/Linear research, see [product architecture references](docs/REFERENCE_ARCHITECTURES.md). For the concrete UI composition, tenant-aware ERD, query/index mapping, auth boundary and request/event sequences, see [system design](docs/SYSTEM_DESIGN.md). These describe intended implementation and do not mark domain requirements complete.
 

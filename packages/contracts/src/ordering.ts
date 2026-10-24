@@ -51,3 +51,21 @@ export const ReorderNodeSchema = NodeVersionSchema.extend({ placement: Placement
 export type Placement = z.infer<typeof PlacementSchema>;
 
 export type ReorderNode = z.infer<typeof ReorderNodeSchema>;
+
+export const MoveNodeSchema = ReorderNodeSchema.extend({
+  parentId: UuidSchema.overwrite((value) => value.toLowerCase()).meta({
+    description: 'Live space for a folder, or live folder for a list. Root spaces cannot be moved.',
+    example: '10000000-0000-4000-8000-000000000020',
+    title: 'Destination parent ID',
+  }),
+}).meta({
+  title: 'Move container request',
+  description:
+    'Reparent a folder or list and place it among destination siblings; preserve and validate descendant tasks.',
+  example: {
+    ...(ReorderNodeSchema.meta()?.example as object),
+    parentId: '10000000-0000-4000-8000-000000000020',
+  },
+});
+
+export type MoveNode = z.infer<typeof MoveNodeSchema>;

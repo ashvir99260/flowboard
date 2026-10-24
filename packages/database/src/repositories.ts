@@ -271,6 +271,36 @@ export function repositories(
     access.read,
   );
 
+  const hierarchy = hierarchyRepository(tx, context, assertActive, node, async (moved) => {
+    const owner = { ownerType: moved.type, ownerId: moved.id };
+    await statuses.validate(owner);
+    await fields.validate(owner, false);
+    const paths = await scopes.affectedPaths(owner);
+    const lists = paths.map((path) => path.at(-1)!).filter((scope) => scope.ownerType === 'list');
+    for (const list of lists) {
+      const allowed = new Set(await access.read.assignableMemberIds(list.ownerId));
+      const assigned = await tx.taskAssignee.findMany({
+        where: {
+          workspaceId,
+          task: { workspaceId, primaryListId: list.ownerId, archivedAt: null },
+        },
+        select: { userId: true },
+      });
+      if (assigned.some((assignment) => !allowed.has(assignment.userId)))
+        throw new DatabaseError(
+          'CONFIG_INVALIDATES_TASKS',
+          'Container move would revoke assignee access',
+          [
+            {
+              code: 'forbidden_assignee',
+              path: ['assigneeIds'],
+              message: 'A descendant task is assigned to a member without destination access',
+            },
+          ],
+        );
+    }
+  });
+
   return {
     read: Object.freeze({
       scopes,
@@ -283,7 +313,7 @@ export function repositories(
       members: Object.freeze({ find: member }),
       memberships: membershipRepository(tx, context, assertActive, access.read.assignableMemberIds)
         .read,
-      hierarchy: hierarchyRepository(tx, context, assertActive, node).read,
+      hierarchy: hierarchy.read,
       nodes: Object.freeze({
         children: nodes.children,
         countChildren: nodes.countChildren,
@@ -303,7 +333,7 @@ export function repositories(
       memberships: membershipRepository(tx, context, assertActive, access.read.assignableMemberIds)
         .write,
       nodes,
-      hierarchy: hierarchyRepository(tx, context, assertActive, node).write,
+      hierarchy: hierarchy.write,
     }) satisfies WriteRepositories,
   };
 }
