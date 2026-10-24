@@ -3,7 +3,7 @@
 **Status: backend core through Phase 6 implemented; UI and realtime sections remain target architecture.** Updated 24 October 2026.
 This is a navigation and change-impact reference for the agreed design, not evidence that its controls run today.
 The complete behavior lives in [PLAN.md](docs/PLAN.md), the original brief in [REQUIREMENTS.md](docs/REQUIREMENTS.md), and chosen defaults in [DECISIONS.md](docs/DECISIONS.md).
-Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish tested backend behavior from planned client transport, product UI and realtime delivery.
+Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish tested backend/client transport behavior from planned product UI and realtime delivery.
 
 For the dated ClickUp/Asana/Linear research, see [product architecture references](docs/REFERENCE_ARCHITECTURES.md). For the concrete UI composition, tenant-aware ERD, query/index mapping, auth boundary and request/event sequences, see [system design](docs/SYSTEM_DESIGN.md). These describe intended implementation and do not mark domain requirements complete.
 
@@ -46,9 +46,9 @@ flowchart LR
   Gateway --> Browser
 ```
 
-Five normal Compose services are planned: `web`, `api`, `worker`, `postgres`, `redis`. Web/API publish localhost ports 3000/3001; database and Redis ports remain internal unless a development override exposes them. Deployment, readiness, seed and scaling details are in [PLAN sections 8–9](docs/PLAN.md#8-realtime-and-asynchronous-activity).
+Five normal Compose services run: `web`, `api`, `worker`, `postgres`, `redis`. Web/API publish localhost ports 3000/3001; database and Redis ports remain internal unless a development override exposes them. Deployment, readiness, seed and scaling details are in [PLAN sections 8–9](docs/PLAN.md#8-realtime-and-asynchronous-activity).
 
-For hosted browsers, the planned web-origin `/api/v1` proxy preserves first-party refresh cookies while forwarding to API `/v1` at a fixed server-only runtime origin (D57/P07-04). It forwards HTTP without domain logic. Socket.IO remains a direct JWT-authenticated connection to API. This transport is not implemented in the current shells.
+For hosted browsers, the web-origin `/api/v1` proxy preserves first-party refresh cookies while forwarding to API `/v1` at a fixed server-only runtime origin (D57/D119). It validates Origin, bounds bodies, filters headers/cookies and disables caching without domain logic. Browser clients default to this route; independent SSR instances require explicit origins. Socket.IO remains a planned direct JWT-authenticated connection to API. The product UI/session provider is still pending.
 
 ## Package boundary matrix
 

@@ -70,6 +70,12 @@ export default {
 
     const options = compilerOptions(owner);
     const inSource = /(^|[/\\])(src|app)[/\\]/.test(path.relative(owner.directory, filename));
+    const isApiProxy =
+      path.relative(root, filename).split(path.sep).join('/') ===
+        'apps/web/src/server/api-proxy.ts' &&
+      context.sourceCode.ast.body.some(
+        (node) => node.type === 'ImportDeclaration' && node.source.value === 'server-only',
+      );
     const report = (node, reason) =>
       context.report({ data: { reason }, messageId: 'boundary', node });
 
@@ -226,7 +232,12 @@ export default {
           node.callee.type === 'MemberExpression' &&
           ['window', 'globalThis'].includes(node.callee.object.name) &&
           (node.callee.property.name ?? node.callee.property.value) === 'fetch';
-        if (inSource && ['web', 'ui'].includes(owner.name) && (directFetch || globalFetch)) {
+        if (
+          inSource &&
+          !isApiProxy &&
+          ['web', 'ui'].includes(owner.name) &&
+          (directFetch || globalFetch)
+        ) {
           report(
             node,
             'Use generated API operations; presentation code cannot fetch endpoints directly.',

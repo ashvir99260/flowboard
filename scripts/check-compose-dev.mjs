@@ -24,6 +24,7 @@ const env = {
   POSTGRES_DB: 'flowboard',
   AUTH_SECRET: 'flowboard-dev-check-secret-abcdefghijklmnopqrstuvwxyz',
   AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
+  WEB_ALLOWED_ORIGINS: 'http://localhost:3000',
   AUTH_ALLOW_INSECURE_HTTP: 'true',
   DEMO_SEED: 'true',
   API_DOCS: 'true',
@@ -32,12 +33,18 @@ const prefix = ['compose', '--project-name', project, '-f', 'compose.yaml'];
 if (!control) prefix.push('-f', 'compose.dev.yaml');
 
 async function docker(...args) {
-  const { stdout } = await execute('docker', [...prefix, ...args], {
+  const operation = execute('docker', [...prefix, ...args], {
     cwd: fixture,
     env,
     maxBuffer: 16 * 1024 * 1024,
     timeout: 900_000,
   });
+  if (args.includes('--build')) {
+    operation.child.stdout.on('data', (chunk) => process.stdout.write(chunk));
+    operation.child.stderr.on('data', (chunk) => process.stdout.write(chunk));
+  }
+
+  const { stdout } = await operation;
 
   return stdout.trim();
 }
@@ -221,6 +228,20 @@ try {
   const web = `http://${await docker('port', 'web', '3000')}`;
   const api = `http://${await docker('port', 'api', '3001')}`;
   const containers = await docker('ps', '-q');
+  if (!control) {
+    for (const service of ['api', 'worker']) {
+      await docker(
+        'exec',
+        '-T',
+        service,
+        'node',
+        '--input-type=module',
+        '-e',
+        "import assert from 'node:assert/strict'; import { existsSync } from 'node:fs'; assert.equal(existsSync('/prod'), false, 'Development images must not duplicate production dependencies');",
+      );
+    }
+  }
+
   assert.ok((await body(web)).includes('dev-ui-before'));
   await edit(
     'apps/web/app/page.tsx',
@@ -231,6 +252,26 @@ try {
     (await body(web)).includes('Saved web change is visible.'),
   );
   console.info(`[${project}] Web source reload passed`);
+  await edit(
+    'apps/web/src/server/api-proxy.ts',
+    'Request origin is not allowed',
+    'Development proxy reloaded',
+  );
+  await eventually('web server proxy reload', async () => {
+    try {
+      const response = await fetch(`${web}/api/v1/auth/login`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(3000),
+      });
+
+      return (
+        response.status === 403 && (await response.text()).includes('Development proxy reloaded')
+      );
+    } catch {
+      return false;
+    }
+  });
+  console.info(`[${project}] Web proxy source reload passed`);
 
   await edit('packages/ui/src/index.ts', 'dev-ui-before', 'dev-ui-after');
   await eventually('shared UI rebuild', async () => (await body(web)).includes('dev-ui-after'));

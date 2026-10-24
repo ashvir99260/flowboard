@@ -20,8 +20,6 @@ RUN --mount=type=cache,id=flowboard-pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --store-dir /pnpm/store
 COPY --from=prune /repo/out/full/ .
 RUN pnpm exec turbo run build --filter=@flowboard/api
-RUN --mount=type=cache,id=flowboard-pnpm,target=/pnpm/store \
-    pnpm --filter @flowboard/api deploy --prod --store-dir /pnpm/store /prod/api
 
 FROM build AS development
 ENV CI=false NODE_ENV=development HOST=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
@@ -33,10 +31,14 @@ HEALTHCHECK --interval=5s --timeout=5s --start-period=60s --retries=24 \
     CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/health/ready',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["pnpm", "exec", "turbo", "watch", "dev:docker", "--filter=@flowboard/api", "--ui=stream"]
 
+FROM build AS production
+RUN --mount=type=cache,id=flowboard-pnpm,target=/pnpm/store \
+    pnpm --filter @flowboard/api deploy --prod --store-dir /pnpm/store /prod/api
+
 FROM runtime AS runner
 WORKDIR /app
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3001
-COPY --from=build --chown=node:node /prod/api/ .
+COPY --from=production --chown=node:node /prod/api/ .
 USER node
 EXPOSE 3001
 HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=6 \

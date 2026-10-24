@@ -16,11 +16,11 @@ import type { SessionSync } from './session-sync.js';
 import type { SessionEnvelope } from '@flowboard/contracts';
 
 export interface SetupClientOptions {
-  baseUrl: string;
+  baseUrl?: string;
   fetch?: typeof globalThis.fetch;
   initialSession?: SessionEnvelope;
   onSessionChange?: (session: SessionEnvelope | null, reason: SessionChangeReason) => void;
-  origin: string;
+  origin?: string;
   sync?: SessionSync;
 }
 
@@ -34,7 +34,13 @@ function cancellable<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
   });
 }
 
-export function setupClient(options: SetupClientOptions) {
+export function setupClient(options: SetupClientOptions = {}) {
+  const browserOrigin = typeof window === 'undefined' ? undefined : window.location?.origin;
+  const baseUrl = options.baseUrl ?? (browserOrigin ? `${browserOrigin}/api` : undefined);
+  const origin = options.origin ?? browserOrigin ?? '';
+  if (!baseUrl || !origin)
+    throw new TypeError('Server clients require explicit API and web origins');
+
   const sync = options.sync ?? createSessionSync();
   let pending: Promise<SessionEnvelope> | undefined;
   const state = createSessionState(sync, options.initialSession, (session, reason) => {
@@ -47,7 +53,7 @@ export function setupClient(options: SetupClientOptions) {
     scheme.scheme === 'bearer' ? state.inspect().session?.data.accessToken : undefined;
   const configuration = {
     auth,
-    baseUrl: options.baseUrl,
+    baseUrl,
     credentials: 'include' as const,
     fetch: fetchRequest,
   };
@@ -110,7 +116,7 @@ export function setupClient(options: SetupClientOptions) {
   async function readRefresh() {
     const response = await refreshSession({
       client: raw,
-      headers: { Origin: options.origin },
+      headers: { Origin: origin },
       throwOnError: true,
     });
 
@@ -228,7 +234,7 @@ export function setupClient(options: SetupClientOptions) {
     getSession: state.snapshot,
     login: (body: LogInData['body']) =>
       authenticate(() =>
-        logIn({ body, client: raw, headers: { Origin: options.origin }, throwOnError: true }),
+        logIn({ body, client: raw, headers: { Origin: origin }, throwOnError: true }),
       ),
     async logout() {
       const epoch = state.invalidate('logout');
@@ -236,7 +242,7 @@ export function setupClient(options: SetupClientOptions) {
         state.assertAuthority(epoch);
         if (!sync.available) throw new ClientSessionError('COORDINATION_UNAVAILABLE');
 
-        await logOut({ client: raw, headers: { Origin: options.origin }, throwOnError: true });
+        await logOut({ client: raw, headers: { Origin: origin }, throwOnError: true });
       });
     },
     refresh,
@@ -245,7 +251,7 @@ export function setupClient(options: SetupClientOptions) {
     },
     signup: (body: SignUpData['body']) =>
       authenticate(() =>
-        signUp({ body, client: raw, headers: { Origin: options.origin }, throwOnError: true }),
+        signUp({ body, client: raw, headers: { Origin: origin }, throwOnError: true }),
       ),
     async switchWorkspace(workspaceId: string) {
       workspaceId = workspaceId.toLowerCase();
@@ -264,7 +270,7 @@ export function setupClient(options: SetupClientOptions) {
           let response = await switchWorkspaceRequest({
             body: { workspaceId },
             client: raw,
-            headers: { Origin: options.origin },
+            headers: { Origin: origin },
           });
           if (response.response?.status === 401) {
             const refreshed = await readRefresh();
@@ -280,7 +286,7 @@ export function setupClient(options: SetupClientOptions) {
                 scheme.scheme === 'bearer' ? refreshed.data.accessToken : undefined,
               body: { workspaceId },
               client: raw,
-              headers: { Origin: options.origin },
+              headers: { Origin: origin },
             });
           }
 
