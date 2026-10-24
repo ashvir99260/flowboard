@@ -1,4 +1,9 @@
-import { ExpectedConfigSchema, UpsertGrantSchema, UuidSchema } from '@flowboard/contracts';
+import {
+  ExpectedConfigSchema,
+  resolveVisibleTree,
+  UpsertGrantSchema,
+  UuidSchema,
+} from '@flowboard/contracts';
 
 import { DatabaseError } from './tenant-context.js';
 import { recordWorkspaceChange } from './workspace-events.js';
@@ -46,6 +51,28 @@ export function accessRepository(
   }
   const read = Object.freeze({
     configuration,
+    async assignableMemberIds(resourceId: string) {
+      assertActive();
+      const target = await findNode(resourceId);
+      if (!target || target.type !== 'list') throw new DatabaseError('NOT_FOUND', 'List not found');
+
+      const [nodes, grants, members] = await Promise.all([
+        tx.node.findMany({ where: { workspaceId, archivedAt: null } }),
+        tx.grant.findMany({ where: { workspaceId } }),
+        tx.membership.findMany({ where: { workspaceId }, select: { role: true, userId: true } }),
+      ]);
+
+      return members
+        .filter((member) =>
+          resolveVisibleTree(
+            nodes,
+            grants.filter((grant) => grant.userId === member.userId),
+            workspaceId,
+            member.role,
+          ).some((entry) => entry.node.id === resourceId),
+        )
+        .map((member) => member.userId);
+    },
     async snapshot() {
       assertActive();
       const [nodes, grants, workspace] = await Promise.all([

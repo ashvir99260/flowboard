@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateScopeFieldData, CreateScopeFieldErrors, CreateScopeFieldResponses, CreateScopeStatusData, CreateScopeStatusErrors, CreateScopeStatusResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetListResolvedFieldsData, GetListResolvedFieldsErrors, GetListResolvedFieldsResponses, GetListResolvedStatusesData, GetListResolvedStatusesErrors, GetListResolvedStatusesResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, GetTaskData, GetTaskErrors, GetTaskResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListScopeFieldsData, ListScopeFieldsErrors, ListScopeFieldsResponses, ListScopeStatusesData, ListScopeStatusesErrors, ListScopeStatusesResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveScopeFieldData, RemoveScopeFieldErrors, RemoveScopeFieldResponses, RemoveScopeStatusData, RemoveScopeStatusErrors, RemoveScopeStatusResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateScopeFieldData, UpdateScopeFieldErrors, UpdateScopeFieldResponses, UpdateScopeStatusData, UpdateScopeStatusErrors, UpdateScopeStatusResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateScopeFieldData, CreateScopeFieldErrors, CreateScopeFieldResponses, CreateScopeStatusData, CreateScopeStatusErrors, CreateScopeStatusResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetListResolvedFieldsData, GetListResolvedFieldsErrors, GetListResolvedFieldsResponses, GetListResolvedStatusesData, GetListResolvedStatusesErrors, GetListResolvedStatusesResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, GetTaskData, GetTaskErrors, GetTaskResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListScopeFieldsData, ListScopeFieldsErrors, ListScopeFieldsResponses, ListScopeStatusesData, ListScopeStatusesErrors, ListScopeStatusesResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveScopeFieldData, RemoveScopeFieldErrors, RemoveScopeFieldResponses, RemoveScopeStatusData, RemoveScopeStatusErrors, RemoveScopeStatusResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateScopeFieldData, UpdateScopeFieldErrors, UpdateScopeFieldResponses, UpdateScopeStatusData, UpdateScopeStatusErrors, UpdateScopeStatusResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -163,6 +163,21 @@ export const listTasks = <ThrowOnError extends boolean = false>(options: Options
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/lists/{listId}/tasks',
     ...options
+});
+
+/**
+ * Create a task
+ *
+ * Validate current list status, fields and visible member assignments under the workspace lock; append within the status column and record an outbox event.
+ */
+export const createTask = <ThrowOnError extends boolean = false>(options: Options<CreateTaskData, ThrowOnError>): RequestResult<CreateTaskResponses, CreateTaskErrors, ThrowOnError> => (options.client ?? client).post<CreateTaskResponses, CreateTaskErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/lists/{listId}/tasks',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -401,6 +416,21 @@ export const updateScopeStatus = <ThrowOnError extends boolean = false>(options:
 });
 
 /**
+ * Archive a task
+ *
+ * Soft-delete a live task and atomically record its data revision and event; retained assignments and values remain historical.
+ */
+export const archiveTask = <ThrowOnError extends boolean = false>(options: Options<ArchiveTaskData, ThrowOnError>): RequestResult<ArchiveTaskResponses, ArchiveTaskErrors, ThrowOnError> => (options.client ?? client).delete<ArchiveTaskResponses, ArchiveTaskErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/tasks/{taskId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Read a task
  *
  * Read one live task after checking its current primary list and full ancestor permissions in the same data snapshot.
@@ -409,6 +439,21 @@ export const getTask = <ThrowOnError extends boolean = false>(options: Options<G
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/tasks/{taskId}',
     ...options
+});
+
+/**
+ * Update a task
+ *
+ * Patch supplied fields and revalidate the complete task, current permissions and expected revisions; omitted values are preserved and changed status appends to its column.
+ */
+export const updateTask = <ThrowOnError extends boolean = false>(options: Options<UpdateTaskData, ThrowOnError>): RequestResult<UpdateTaskResponses, UpdateTaskErrors, ThrowOnError> => (options.client ?? client).patch<UpdateTaskResponses, UpdateTaskErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/tasks/{taskId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -451,7 +496,7 @@ export const createWorkspaceInvitation = <ThrowOnError extends boolean = false>(
 /**
  * List members in the active workspace
  *
- * Revision-bound keyset page. Administrators see emails; ordinary members see only their own email. Unknown and offset parameters are rejected.
+ * Revision-bound keyset page. Optional assignableToListId includes only members with full ancestor visibility to that list. Administrators see emails; ordinary members see only their own email.
  */
 export const listWorkspaceMembers = <ThrowOnError extends boolean = false>(options: Options<ListWorkspaceMembersData, ThrowOnError>): RequestResult<ListWorkspaceMembersResponses, ListWorkspaceMembersErrors, ThrowOnError> => (options.client ?? client).get<ListWorkspaceMembersResponses, ListWorkspaceMembersErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

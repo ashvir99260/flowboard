@@ -84,7 +84,7 @@ export interface GrantRecord extends GrantInput {
 }
 
 export interface ReadRepositories {
-  tasks: ReturnType<typeof taskRepository>;
+  tasks: ReturnType<typeof taskRepository>['read'];
   access: ReturnType<typeof accessRepository>['read'];
   context: Readonly<TenantContext>;
   scopes: ReturnType<typeof scopeRepository>;
@@ -98,6 +98,7 @@ export interface ReadRepositories {
 }
 
 export interface WriteRepositories extends ReadRepositories {
+  tasks: ReturnType<typeof taskRepository>['write'];
   fields: ReturnType<typeof fieldRepository>['write'];
   statuses: ReturnType<typeof statusRepository>['write'];
   access: ReturnType<typeof accessRepository>['write'];
@@ -259,19 +260,29 @@ export function repositories(
   const scopes = scopeRepository(tx, context, assertActive, nodePath);
   const fields = fieldRepository(tx, context, scopes);
   const statuses = statusRepository(tx, context, assertActive, nodePath);
-  const tasks = taskRepository(tx, context, scopes, assertActive, statuses.read, fields.read);
+  const access = accessRepository(tx, context, assertActive, node);
+  const tasks = taskRepository(
+    tx,
+    context,
+    scopes,
+    assertActive,
+    statuses.read,
+    fields.read,
+    access.read,
+  );
 
   return {
     read: Object.freeze({
       scopes,
-      tasks,
+      tasks: tasks.read,
       fields: fields.read,
-      access: accessRepository(tx, context, assertActive, node).read,
+      access: access.read,
       context: Object.freeze(context),
       statuses: statuses.read,
       grants: Object.freeze({ find: grants.find }),
       members: Object.freeze({ find: member }),
-      memberships: membershipRepository(tx, context, assertActive).read,
+      memberships: membershipRepository(tx, context, assertActive, access.read.assignableMemberIds)
+        .read,
       hierarchy: hierarchyRepository(tx, context, assertActive, node).read,
       nodes: Object.freeze({
         children: nodes.children,
@@ -282,14 +293,15 @@ export function repositories(
     }) satisfies ReadRepositories,
     write: Object.freeze({
       scopes,
-      tasks,
+      tasks: tasks.write,
       fields: fields.write,
-      access: accessRepository(tx, context, assertActive, node).write,
+      access: access.write,
       context: Object.freeze(context),
       statuses: statuses.write,
       grants,
       members: Object.freeze({ find: member }),
-      memberships: membershipRepository(tx, context, assertActive).write,
+      memberships: membershipRepository(tx, context, assertActive, access.read.assignableMemberIds)
+        .write,
       nodes,
       hierarchy: hierarchyRepository(tx, context, assertActive, node).write,
     }) satisfies WriteRepositories,

@@ -1,6 +1,7 @@
 import {
   AddMemberSchema,
   ExpectedConfigSchema,
+  MemberPageQuerySchema,
   MemberParamsSchema,
   UpdateMemberSchema,
   WorkspacePageQuerySchema,
@@ -24,3 +25,5 @@ export class MemberParamsDto extends createZodDto(MemberParamsSchema) {}
 export class CreateInvitationDto extends createZodDto(CreateInvitationSchema) {}
 
 export class AcceptInvitationDto extends createZodDto(AcceptInvitationSchema) {}
+
+export class MemberPageQueryDto extends createZodDto(MemberPageQuerySchema) {}

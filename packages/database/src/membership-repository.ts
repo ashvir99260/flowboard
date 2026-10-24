@@ -17,7 +17,9 @@ import type { TenantContext } from './tenant-context.js';
 import type { AddMember, UpdateMember } from '@flowboard/contracts';
 
 export function validateMembershipPage(query: MembershipPageQuery) {
-  exactKeys(query, ['after', 'limit']);
+  exactKeys(query, ['after', 'limit', 'assignableToListId']);
+  if (query.assignableToListId !== undefined) UuidSchema.parse(query.assignableToListId);
+
   if (!Number.isInteger(query.limit) || query.limit < 1 || query.limit > 100)
     throw new DatabaseError('VALIDATION_FAILED', 'Invalid page limit');
 
@@ -36,6 +38,7 @@ export function membershipRepository(
   tx: Prisma.TransactionClient,
   context: TenantContext,
   assertActive: () => void,
+  assignableMemberIds: (listId: string) => Promise<string[]>,
 ) {
   const { workspaceId } = context;
   async function profile(userId: string): Promise<MemberProfile> {
@@ -74,9 +77,14 @@ export function membershipRepository(
     async list(query: MembershipPageQuery): Promise<MemberProfile[]> {
       assertActive();
       validateMembershipPage(query);
+      const eligible =
+        query.assignableToListId === undefined
+          ? undefined
+          : await assignableMemberIds(query.assignableToListId);
       const members = await tx.membership.findMany({
         where: {
           workspaceId,
+          ...(eligible === undefined ? {} : { userId: { in: eligible } }),
           ...(query.after
             ? {
                 OR: [

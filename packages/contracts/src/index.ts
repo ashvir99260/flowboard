@@ -41,3 +41,5 @@ export * from './field-values.js';
 export * from './field-configuration.js';
 
 export * from './tasks.js';
+
+export * from './task-mutations.js';

@@ -183,13 +183,13 @@ export class WorkspacesService {
   async listMembers(
     identity: IdentitySession,
     workspaceId: string,
-    query: { cursor?: string; limit: number },
+    query: { assignableToListId?: string; cursor?: string; limit: number },
   ): Promise<MemberPage> {
     const { cursor, database } = this.resources();
     const binding = {
       caller: identity.user.id,
       workspaceId,
-      resource: `members:${workspaceId}`,
+      resource: `members:${workspaceId}${query.assignableToListId ? `:${query.assignableToListId}` : ''}`,
       limit: query.limit,
     };
     const previous = cursor.decode(query.cursor, binding);
@@ -197,12 +197,18 @@ export class WorkspacesService {
     return this.logger.observe('workspace.members.list', () =>
       database.read({ actorUserId: identity.user.id, workspaceId }, async (view) => {
         this.permissions.assert(view.context, 'member.list', workspaceId);
+        if (query.assignableToListId) {
+          await view.scopes.path({ ownerType: 'list', ownerId: query.assignableToListId });
+          await this.permissions.assertNode(view, query.assignableToListId, 'container.read');
+        }
+
         const { configVersion } = await view.memberships.configuration();
         if (previous && previous.configVersion !== configVersion)
           throw new ApiException(409, 'CURSOR_STALE', 'Membership changed; restart pagination');
 
         const rows = await view.memberships.list({
           limit: query.limit,
+          ...(query.assignableToListId ? { assignableToListId: query.assignableToListId } : {}),
           ...(previous
             ? { after: { createdAt: new Date(previous.after.createdAt), id: previous.after.id } }
             : {}),

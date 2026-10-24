@@ -62,6 +62,7 @@ export class PermissionService {
       'member.manage': ['admin'],
       'container.read': ['admin', 'member'],
       'task.read': ['admin', 'member'],
+      'task.write': ['admin', 'member'],
       'container.write': ['admin'],
       'grant.manage': ['admin'],
       'configuration.read': ['admin'],
