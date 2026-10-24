@@ -4,6 +4,8 @@ As-built at `3cc62b0` (P19-01), 25 October 2026. Read [HLD](HLD.md) first. This 
 
 Current UI source links follow the P21-01 camelCase/module refactor, which preserves these public contracts.
 
+The [diagram atlas](DIAGRAMS.md) provides focused rendered views and editable Mermaid sources, separating current implementation from hosting and promotion plans.
+
 ## Source map and dependency direction
 
 | Concern                          | Implementation                                           | Responsibility                                                                                              |

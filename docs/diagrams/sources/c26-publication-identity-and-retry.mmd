@@ -1,0 +1,21 @@
+---
+title: "C26 — Publication identity and retry · Implemented"
+---
+sequenceDiagram
+  participant P as Serialized publisher
+  participant G as Git history and releases
+  participant R as Image registry
+  P->>G: Validate committed source and prior app identity
+  P->>R: Build or verify immutable app image
+  R-->>P: Digest and matching source/version labels
+  P->>G: Ensure application Git tag
+  P->>G: Create or resume draft release
+  P->>G: Upload matching release.json
+  P->>G: Publish release
+  alt Interrupted attempt
+    P->>G: Retry the same source and version
+    P->>R: Verify matching existing image
+    P->>G: Resume incomplete publication
+  else Conflicting identity
+    P-->>P: Fail without overwriting tags or manifests
+  end

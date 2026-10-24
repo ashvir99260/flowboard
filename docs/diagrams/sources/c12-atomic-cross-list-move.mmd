@@ -1,0 +1,21 @@
+---
+title: "C12 — Atomic cross-list move · Implemented"
+---
+flowchart TD
+  Move[Move request] --> Lock[Lock and verify source, destination and anchors]
+  Lock --> Version{Expected versions current?}
+  Version -->|No| Conflict[409; no partial move]
+  Version -->|Yes| Explicit{Explicit destination status supplied?}
+  Explicit -->|Yes| CheckStatus[Require that status in destination]
+  Explicit -->|No| Keep{Current status visible there?}
+  Keep -->|Yes| Fields[Apply destination field corrections]
+  Keep -->|No| Category{Same-category destination status exists?}
+  Category -->|No| Invalid[400; no partial move]
+  Category -->|Yes| First[Choose first by resolved order]
+  First --> Fields
+  CheckStatus -->|Unavailable| Invalid
+  CheckStatus -->|Available| Fields
+  Fields --> Validate[Validate all fields, assignees and placement]
+  Validate -->|Invalid| Invalid
+  Validate -->|Valid| Commit[Write list, status, order, versions and outbox]
+  Clear[Source-only keys need explicit clearing] -. invariant .-> Fields

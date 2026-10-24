@@ -1,0 +1,14 @@
+---
+title: "C30 — Selected-candidate promotion · Planned"
+---
+flowchart TD
+  Release[Select compatible app manifests] -. same digests .-> Dev[dev acceptance]
+  Dev -. pass .-> QA[qa acceptance]
+  QA -. pass and approval .-> Stage[stage acceptance]
+  Stage -. pass and approval .-> Prod[prod acceptance]
+  Dev -. fail .-> Stop[Stop advancement]
+  QA -. fail .-> Stop
+  Stage -. fail .-> Stop
+  NewMain[New main creates a separate candidate] -. does not replace selected candidate .-> Release
+  Previous[Known compatible images and config] -. deliberate rollback .-> Prod
+  Schema[Assess database compatibility separately] -. no automatic reverse migration .-> Previous

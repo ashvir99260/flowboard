@@ -1,0 +1,20 @@
+---
+title: "C20 — Outbox state and lease recovery · Implemented"
+---
+stateDiagram-v2
+  [*] --> pending: Transaction commits event
+  pending --> dispatching: Dispatcher claims due row
+  dispatching --> queued: Queue accepts reference
+  queued --> dispatching: Recheck becomes due
+  pending --> processing: Worker claims event
+  dispatching --> processing: Worker wins before enqueue acknowledgement
+  queued --> processing: Worker claims event
+  dispatching --> pending: Retryable enqueue failure
+  dispatching --> failed: Invalid stored envelope
+  processing --> pending: Retryable processing or publish failure
+  processing --> failed: Invalid persisted relationships
+  processing --> delivered: Persist, publish, then complete
+  dispatching --> dispatching: Expired lease reclaimed
+  processing --> dispatching: Dispatcher reclaims expired lease
+  processing --> processing: Worker reclaims expired lease
+  delivered --> [*]

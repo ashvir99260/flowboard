@@ -1,0 +1,16 @@
+---
+title: "C10 — Field resolution and value validation · Implemented"
+---
+flowchart TD
+  Scopes[Workspace to space to folder to list] --> Merge[Nearest key replaces whole definition]
+  Merge --> Schema[Resolved schema with provenance]
+  Patch[Create, update or move values] --> Apply[Apply patch semantics]
+  Schema --> Apply
+  Apply --> Omitted[Omitted key preserves value]
+  Apply --> Null[Explicit null clears value]
+  Omitted --> Check[Validate final complete value map]
+  Null --> Check
+  Check --> Valid{Types, options, required values and keys valid?}
+  Valid -->|Yes| Save[Continue transaction]
+  Valid -->|No| Error[400 with field paths]
+  Note[Zero and false are real values] -. invariant .-> Check

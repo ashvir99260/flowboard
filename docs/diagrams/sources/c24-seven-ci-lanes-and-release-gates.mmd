@@ -1,0 +1,24 @@
+---
+title: "C24 — Seven CI lanes and release gates · Implemented"
+---
+flowchart TD
+  Trigger[PR, main push or manual workflow] --> Build[Workspace build]
+  Trigger --> Lint[Workspace lint plus commitlint and Actionlint]
+  Trigger --> Test[Workspace test]
+  Trigger --> Types[Workspace typecheck]
+  Trigger --> Format[Workspace format check]
+  Trigger --> Prod[Compose production check]
+  Trigger --> Dev[Compose live-update check]
+  Build --> Join[Both matrices must pass]
+  Lint --> Join
+  Test --> Join
+  Types --> Join
+  Format --> Join
+  Prod --> Join
+  Dev --> Join
+  Join --> MainOnly{Non-PR main run?}
+  MainOnly -->|Yes| Publish[Publish affected apps]
+  MainOnly -->|No| Complete[PR checks complete]
+  Publish --> Enabled{CD_ENABLED true?}
+  Enabled -->|Yes| Legacy[Existing legacy preview adapter]
+  Enabled -->|No| Skip[Deployment skipped]

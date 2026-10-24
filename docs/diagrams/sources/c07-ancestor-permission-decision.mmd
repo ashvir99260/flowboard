@@ -1,0 +1,19 @@
+---
+title: "C07 — Ancestor permission decision · Implemented"
+---
+flowchart TD
+  Request[Requested container] --> Exists{Valid live hierarchy in active tenant?}
+  Exists -->|No| Missing[404]
+  Exists -->|Yes| Member{Current membership valid?}
+  Member -->|No| Denied[403 or authentication failure]
+  Member -->|Yes| Admin{Workspace admin?}
+  Admin -->|Yes| Action[Apply operation policy]
+  Admin -->|No| Ancestors[Walk target and all ancestors]
+  Ancestors --> Deny{Any explicit deny?}
+  Deny -->|Yes| Hidden[Direct access 403; tree prunes subtree]
+  Deny -->|No| Private{Every private ancestor has its own allow?}
+  Private -->|No| Hidden
+  Private -->|Yes| Action
+  Action --> Role{Role may perform this action?}
+  Role -->|Yes| Allowed[Continue]
+  Role -->|No| Denied

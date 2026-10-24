@@ -4,6 +4,8 @@ As-built reference, 25 October 2026. Implementation baseline: `3cc62b0` (P19-01)
 
 Current source links follow the P21-01 UI module layout; the described public behavior is unchanged by that refactor.
 
+The [diagram atlas](DIAGRAMS.md) provides focused rendered views and editable Mermaid sources, separating current implementation from hosting and promotion plans.
+
 ## Purpose and scope
 
 Flowboard is a self-hosted project management application: workspaces contain spaces, folders, lists and tasks. Lists support a board and a table over the same records. Statuses and custom fields inherit through the hierarchy. Users collaborate within workspace and container permissions; edits update other authorized clients and status changes produce a durable activity feed.

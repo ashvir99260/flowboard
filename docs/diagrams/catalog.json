@@ -1,0 +1,395 @@
+{
+  "schemaVersion": 1,
+  "sourceSnapshot": "cc0e3d6",
+  "renderer": "@mermaid-js/mermaid-cli@12.0.0",
+  "mermaidVersion": "12.2.0",
+  "diagrams": [
+    {
+      "id": "C01",
+      "chapter": "01-system",
+      "title": "System context",
+      "status": "Implemented",
+      "description": "The browser uses the web proxy for REST and a direct authenticated socket for realtime. It never connects to Redis or PostgreSQL. The worker stores activity and publishes invalidations through the API.",
+      "references": [
+        ["Architecture", "../../ARCHITECTURE.md"],
+        ["HLD", "../HLD.md"]
+      ],
+      "source": "sources/c01-system-context.mmd",
+      "svg": "svg/c01-system-context.svg"
+    },
+    {
+      "id": "C02",
+      "chapter": "01-system",
+      "title": "Package dependency boundaries",
+      "status": "Implemented",
+      "description": "Solid arrows show permitted runtime imports. The OpenAPI-to-API exception is build-only; apps do not import other apps. The contracts package stays framework-free.",
+      "references": [["Package matrix", "../../ARCHITECTURE.md#package-boundary-matrix"]],
+      "source": "sources/c02-package-dependency-boundaries.mmd",
+      "svg": "svg/c02-package-dependency-boundaries.svg"
+    },
+    {
+      "id": "C03",
+      "chapter": "01-system",
+      "title": "Core data relationships",
+      "status": "Implemented",
+      "description": "This selected relationship map emphasizes tenant keys and task/activity links. It omits refresh sessions, invitations, grants, status overrides and seed metadata; the full schema and all audit timestamps remain in the database reference. Owner references on field definitions are polymorphic, not an implied Node foreign key.",
+      "references": [
+        ["Complete database model", "../DATABASE_DESIGN.md"],
+        ["Prisma schema", "../../packages/database/prisma/schema.prisma"]
+      ],
+      "source": "sources/c03-core-data-relationships.mmd",
+      "svg": "svg/c03-core-data-relationships.svg"
+    },
+    {
+      "id": "C04",
+      "chapter": "01-system",
+      "title": "Contract to generated client",
+      "status": "Implemented",
+      "description": "One contract feeds server DTOs and client generation. Spec export uses isolated providers rather than connecting to production data. Generated transport operations are not handwritten in UI components.",
+      "references": [
+        ["API conventions", "../API_CATALOG.md"],
+        ["API client", "../../packages/api-client/src/setup-client.ts"],
+        ["OpenAPI package", "../../packages/openapi/package.json"]
+      ],
+      "source": "sources/c04-contract-to-generated-client.mmd",
+      "svg": "svg/c04-contract-to-generated-client.svg"
+    },
+    {
+      "id": "C05",
+      "chapter": "02-security",
+      "title": "Login and session issuance",
+      "status": "Implemented",
+      "description": "Passwords are verified server-side. The access token is short-lived and held in memory; the refresh credential is stored as a digest and transported in an HttpOnly cookie.",
+      "references": [
+        ["Auth service", "../../apps/api/src/modules/auth/auth.service.ts"],
+        ["Session transport", "../../packages/api-client/src/setup-client.ts"]
+      ],
+      "source": "sources/c05-login-and-session-issuance.mmd",
+      "svg": "svg/c05-login-and-session-issuance.svg"
+    },
+    {
+      "id": "C06",
+      "chapter": "02-security",
+      "title": "Refresh rotation and replay",
+      "status": "Implemented",
+      "description": "Concurrent requests share refresh coordination. Credential replay revokes the family, and retrying is bounded. Workspace changes use their typed, membership-checked operation and clear old scoped client state.",
+      "references": [
+        ["Identity/session storage", "../../packages/database/src/identity.ts"],
+        ["Session synchronization", "../../packages/api-client/src/session-sync.ts"]
+      ],
+      "source": "sources/c06-refresh-rotation-and-replay.mmd",
+      "svg": "svg/c06-refresh-rotation-and-replay.svg"
+    },
+    {
+      "id": "C07",
+      "chapter": "02-security",
+      "title": "Ancestor permission decision",
+      "status": "Implemented",
+      "description": "A child allow cannot bypass a denied or unallowed private ancestor. Visibility permits member task editing, while container/configuration/grant administration remains admin-only.",
+      "references": [
+        ["Permission service", "../../apps/api/src/modules/permissions/permission.service.ts"],
+        ["Tree policy", "../../packages/contracts/src/tree.ts"]
+      ],
+      "source": "sources/c07-ancestor-permission-decision.mmd",
+      "svg": "svg/c07-ancestor-permission-decision.svg"
+    },
+    {
+      "id": "C08",
+      "chapter": "02-security",
+      "title": "Request and tenant boundary",
+      "status": "Implemented",
+      "description": "Authentication establishes identity; tenant repositories enforce data scoping. Writes recheck mutable authority and configuration under the lock. Foreign-tenant identifiers do not become authority and return not-found behavior.",
+      "references": [
+        ["Tenant database", "../../packages/database/src/tenant-database.ts"],
+        ["Architecture integrity", "../../ARCHITECTURE.md#transaction-and-event-lifecycle"]
+      ],
+      "source": "sources/c08-request-and-tenant-boundary.mmd",
+      "svg": "svg/c08-request-and-tenant-boundary.svg"
+    },
+    {
+      "id": "C09",
+      "chapter": "03-domain",
+      "title": "Scoped status resolution",
+      "status": "Implemented",
+      "description": "Child rows patch display/visibility attributes, not the canonical status identity or category. A nearer explicit visible override can restore a hidden status. Sibling lists can therefore resolve different sets safely.",
+      "references": [
+        ["Status resolver", "../../packages/contracts/src/status-resolution.ts"],
+        ["Status repository", "../../packages/database/src/status-repository.ts"]
+      ],
+      "source": "sources/c09-scoped-status-resolution.mmd",
+      "svg": "svg/c09-scoped-status-resolution.svg"
+    },
+    {
+      "id": "C10",
+      "chapter": "03-domain",
+      "title": "Field resolution and value validation",
+      "status": "Implemented",
+      "description": "Field overrides replace complete definitions, including options and requiredness. Unknown keys and invalid options fail. Clearing a required value still fails final validation.",
+      "references": [
+        ["Field resolver", "../../packages/contracts/src/field-resolution.ts"],
+        ["Field validation", "../../packages/contracts/src/field-values.ts"]
+      ],
+      "source": "sources/c10-field-resolution-and-value-validation.mmd",
+      "svg": "svg/c10-field-resolution-and-value-validation.svg"
+    },
+    {
+      "id": "C11",
+      "chapter": "03-domain",
+      "title": "Safe configuration mutation",
+      "status": "Implemented",
+      "description": "A deletion can reveal inherited configuration, so validation checks the result across descendants. In-use statuses/fields cannot leave tasks with an invalid board or schema.",
+      "references": [
+        ["Status changes", "../../packages/database/src/status-repository.ts"],
+        ["Field changes", "../../packages/database/src/field-repository.ts"]
+      ],
+      "source": "sources/c11-safe-configuration-mutation.mmd",
+      "svg": "svg/c11-safe-configuration-mutation.svg"
+    },
+    {
+      "id": "C12",
+      "chapter": "03-domain",
+      "title": "Atomic cross-list move",
+      "status": "Implemented",
+      "description": "A move either commits completely or leaves the task unchanged. Source-only custom values are not silently discarded; the payload must clear them and supply required destination values.",
+      "references": [
+        ["Move contract", "../../packages/contracts/src/task-moves.ts"],
+        ["Task repository", "../../packages/database/src/task-repository.ts"]
+      ],
+      "source": "sources/c12-atomic-cross-list-move.mmd",
+      "svg": "svg/c12-atomic-cross-list-move.svg"
+    },
+    {
+      "id": "C13",
+      "chapter": "03-domain",
+      "title": "Ordering and no-op handling",
+      "status": "Implemented",
+      "description": "Reordering may change sibling positions as well as the dragged task. Only changed rows receive version updates, and a canonical no-op does not create history.",
+      "references": [
+        ["Ordering helpers", "../../packages/contracts/src/ordering.ts"],
+        ["Task ordering writes", "../../packages/database/src/task-repository.ts"]
+      ],
+      "source": "sources/c13-ordering-and-no-op-handling.mmd",
+      "svg": "svg/c13-ordering-and-no-op-handling.svg"
+    },
+    {
+      "id": "C14",
+      "chapter": "04-frontend",
+      "title": "UI composition ownership",
+      "status": "Implemented",
+      "description": "Reusable presentation stays in the UI package; form bindings stay in forms. Web coordinates generated operations, permissions, URL state and feature interactions.",
+      "references": [
+        ["UI component system", "../UI_COMPONENT_SYSTEM.md"],
+        ["Form system", "../FORM_SYSTEM.md"],
+        ["Frontend guide", "../FRONTEND_GUIDELINES.md"]
+      ],
+      "source": "sources/c14-ui-composition-ownership.mmd",
+      "svg": "svg/c14-ui-composition-ownership.svg"
+    },
+    {
+      "id": "C15",
+      "chapter": "04-frontend",
+      "title": "Load a consistent board",
+      "status": "Implemented",
+      "description": "Statuses and fields begin concurrently; validated statuses determine the first task request for each column. The complete bundle must have compatible versions before rendering, including empty resolved columns.",
+      "references": [
+        ["Board queries", "../../apps/web/src/features/board/use-board.ts"],
+        ["Architecture board flow", "../../ARCHITECTURE.md#load-a-board-then-drag-a-card"]
+      ],
+      "source": "sources/c15-load-a-consistent-board.mmd",
+      "svg": "svg/c15-load-a-consistent-board.svg"
+    },
+    {
+      "id": "C16",
+      "chapter": "04-frontend",
+      "title": "Optimistic drag lifecycle",
+      "status": "Implemented",
+      "description": "Optimistic state is a temporary task/list projection. Settlement removes that projection and refetches authoritative lists; failure repairs its own preview while preserving newer changes. Keyboard and explicit move controls share the server operation.",
+      "references": [
+        ["Mutation coordination", "../../apps/web/src/features/board/use-task-mutation.ts"],
+        ["Board drag adapter", "../../apps/web/src/features/board/board-dnd.tsx"]
+      ],
+      "source": "sources/c16-optimistic-drag-lifecycle.mmd",
+      "svg": "svg/c16-optimistic-drag-lifecycle.svg"
+    },
+    {
+      "id": "C17",
+      "chapter": "04-frontend",
+      "title": "Form submit and recovery",
+      "status": "Implemented",
+      "description": "Local invalid input does not trigger a success request/toast. Server failures preserve the draft, and conflicts never silently replace an edit with another client\u2019s data.",
+      "references": [
+        ["Task form", "../../apps/web/src/features/tasks/task-form.tsx"],
+        ["Task writes", "../../apps/web/src/features/tasks/use-task-write.ts"],
+        ["Form system", "../FORM_SYSTEM.md"]
+      ],
+      "source": "sources/c17-form-submit-and-recovery.mmd",
+      "svg": "svg/c17-form-submit-and-recovery.svg"
+    },
+    {
+      "id": "C18",
+      "chapter": "05-async",
+      "title": "Redis roles",
+      "status": "Implemented",
+      "description": "Redis is not a task or resolved-configuration cache. Its counter, queue, publication and adapter responsibilities are separate; environment isolation must cover all of them.",
+      "references": [
+        ["Redis and jobs", "../REDIS_AND_JOBS.md"],
+        ["Job constants", "../../packages/contracts/src/jobs.ts"]
+      ],
+      "source": "sources/c18-redis-roles.mmd",
+      "svg": "svg/c18-redis-roles.svg"
+    },
+    {
+      "id": "C19",
+      "chapter": "05-async",
+      "title": "Status change to activity and invalidation",
+      "status": "Implemented",
+      "description": "The request succeeds after database commit, independently of asynchronous activity. The worker reaches browsers through the gateway; it never bypasses recipient authorization.",
+      "references": [
+        ["Activity processor", "../../apps/worker/src/activity.processor.ts"],
+        ["Realtime service", "../../apps/api/src/modules/realtime/realtime.service.ts"]
+      ],
+      "source": "sources/c19-status-change-to-activity-and-invalidation.mmd",
+      "svg": "svg/c19-status-change-to-activity-and-invalidation.svg"
+    },
+    {
+      "id": "C20",
+      "chapter": "05-async",
+      "title": "Outbox state and lease recovery",
+      "status": "Implemented",
+      "description": "The worker can claim before the dispatcher marks the event queued, so this is not a strict linear chain. Token-checked updates stop stale claimants from overwriting newer state. Failed means quarantine, not an automatic success.",
+      "references": [
+        ["Outbox repository", "../../packages/database/src/outbox-repository.ts"],
+        ["Event consumer repository", "../../packages/database/src/event-consumer-repository.ts"]
+      ],
+      "source": "sources/c20-outbox-state-and-lease-recovery.mmd",
+      "svg": "svg/c20-outbox-state-and-lease-recovery.svg"
+    },
+    {
+      "id": "C21",
+      "chapter": "05-async",
+      "title": "Retry and duplicate safety",
+      "status": "Implemented",
+      "description": "Stable event IDs and idempotent activity support at-least-once delivery. Repeated publication is possible, and disconnected clients recover by reading current authorized state.",
+      "references": [
+        ["Async recovery", "../REDIS_AND_JOBS.md#duplicates-outages-and-recovery"],
+        ["Processor", "../../apps/worker/src/activity.processor.ts"]
+      ],
+      "source": "sources/c21-retry-and-duplicate-safety.mmd",
+      "svg": "svg/c21-retry-and-duplicate-safety.svg"
+    },
+    {
+      "id": "C22",
+      "chapter": "05-async",
+      "title": "Authorized socket delivery",
+      "status": "Implemented",
+      "description": "Room membership is a routing aid, not durable authorization. Periodic and emission-time checks prevent revoked users from continuing to receive protected updates.",
+      "references": [
+        ["Realtime authorization", "../../apps/api/src/modules/realtime/realtime.service.ts"],
+        ["Event contract", "../api-events.md"]
+      ],
+      "source": "sources/c22-authorized-socket-delivery.mmd",
+      "svg": "svg/c22-authorized-socket-delivery.svg"
+    },
+    {
+      "id": "C23",
+      "chapter": "06-delivery",
+      "title": "Trunk and review flow",
+      "status": "Operating model",
+      "description": "This is the documented operating model. CI runs today; branch protection and merge policy are repository settings that must be configured and verified separately.",
+      "references": [
+        ["Trunk-based guide", "../DELIVERY_OPERATIONS.md#trunk-based-development-in-flowboard"],
+        ["Workflow", "../DEVELOPMENT_WORKFLOW.md"]
+      ],
+      "source": "sources/c23-trunk-and-review-flow.mmd",
+      "svg": "svg/c23-trunk-and-review-flow.svg"
+    },
+    {
+      "id": "C24",
+      "chapter": "06-delivery",
+      "title": "Seven CI lanes and release gates",
+      "status": "Implemented",
+      "description": "In public repositories, all seven check instances start independently; each lane still respects its own build dependencies. Current gated CD targets the legacy providers, not Render.",
+      "references": [
+        ["GitHub workflow", "../../.github/workflows/delivery.yml"],
+        ["CI details", "../CI_CD.md"]
+      ],
+      "source": "sources/c24-seven-ci-lanes-and-release-gates.mmd",
+      "svg": "svg/c24-seven-ci-lanes-and-release-gates.svg"
+    },
+    {
+      "id": "C25",
+      "chapter": "06-delivery",
+      "title": "Independent release decision",
+      "status": "Implemented",
+      "description": "The first published version initializes at 0.1.0. Later release ownership comes from files and dependency fingerprints, not just commit scope text. Complete reverts can produce no release; changing API internals alone need not release the browser.",
+      "references": [
+        ["Release planner", "../../packages/release-tools/src/index.ts"],
+        ["Release examples", "../DELIVERY_OPERATIONS.md#how-independent-releases-work"]
+      ],
+      "source": "sources/c25-independent-release-decision.mmd",
+      "svg": "svg/c25-independent-release-decision.svg"
+    },
+    {
+      "id": "C26",
+      "chapter": "06-delivery",
+      "title": "Publication identity and retry",
+      "status": "Implemented",
+      "description": "Publication checks its committed source and per-app history. It may publish an earlier queued main commit; the deployment layer separately rejects stale workflow-main identities.",
+      "references": [
+        ["Publisher", "../../packages/release-tools/src/publisher.ts"],
+        ["Image publication", "../../packages/release-tools/src/images.ts"]
+      ],
+      "source": "sources/c26-publication-identity-and-retry.mmd",
+      "svg": "svg/c26-publication-identity-and-retry.svg"
+    },
+    {
+      "id": "C27",
+      "chapter": "06-delivery",
+      "title": "One image with different runtime configuration",
+      "status": "Runtime seams implemented; promotion planned",
+      "description": "The runtime seams and image publication exist. End-to-end ordered multi-environment promotion is still planned. Each environment needs isolated data and Redis; config changes restart the same image rather than rebuild it.",
+      "references": [
+        ["Runtime injection", "../DELIVERY_OPERATIONS.md#where-environment-settings-enter"],
+        ["Promotion contract", "../PROMOTION.md"]
+      ],
+      "source": "sources/c27-one-image-with-different-runtime-configuration.mmd",
+      "svg": "svg/c27-one-image-with-different-runtime-configuration.svg"
+    },
+    {
+      "id": "C28",
+      "chapter": "07-hosting",
+      "title": "Planned Render topology",
+      "status": "Planned; not deployed",
+      "description": "This is a target plan, not a deployment record. The current adapter still targets Vercel/Northflank. Worker/persistent-storage capacity and live Render acceptance remain open.",
+      "references": [["Render plan", "../RENDER.md"]],
+      "source": "sources/c28-planned-render-topology.mmd",
+      "svg": "svg/c28-planned-render-topology.svg"
+    },
+    {
+      "id": "C29",
+      "chapter": "07-hosting",
+      "title": "Render activation gates",
+      "status": "Planned",
+      "description": "The plan has explicit infrastructure, implementation and live-verification gates. A successful API trigger or a source diagram cannot substitute for running-digest and product acceptance evidence.",
+      "references": [
+        ["Render rollout", "../RENDER.md#implementation-and-rollout-sequence"],
+        ["Open tasks", "../TASKS.md#phase-22--delivery-operations-and-render-plan"]
+      ],
+      "source": "sources/c29-render-activation-gates.mmd",
+      "svg": "svg/c29-render-activation-gates.svg"
+    },
+    {
+      "id": "C30",
+      "chapter": "07-hosting",
+      "title": "Selected-candidate promotion",
+      "status": "Planned",
+      "description": "The future promoter must select explicit manifests, preserve image identity and record environment/configuration evidence. A new main commit must not silently replace a candidate already in testing.",
+      "references": [
+        ["Build-once contract", "../PROMOTION.md"],
+        ["Runtime operations", "../DELIVERY_OPERATIONS.md#data-promotion-and-rollback"]
+      ],
+      "source": "sources/c30-selected-candidate-promotion.mmd",
+      "svg": "svg/c30-selected-candidate-promotion.svg"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+---
+title: "C11 — Safe configuration mutation · Implemented"
+---
+sequenceDiagram
+  participant C as Admin client
+  participant A as Config service
+  participant D as Database transaction
+  C->>A: Change with expected config version
+  A->>D: Lock workspace and recheck authority/version
+  D->>D: Stage proposed definition change
+  D->>D: Enumerate affected descendant paths
+  D->>D: Resolve resulting statuses and fields
+  D->>D: Validate affected live tasks and references
+  alt Invalid or in-use configuration
+    D-->>A: Roll back
+    A-->>C: Typed conflict or domain error
+  else Valid resulting configuration
+    D->>D: Commit config version and outbox event
+    A-->>C: Authoritative response
+  end

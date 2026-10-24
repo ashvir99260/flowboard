@@ -1,0 +1,22 @@
+---
+title: "C19 — Status change to activity and invalidation · Implemented"
+---
+sequenceDiagram
+  participant U as Client A
+  participant A as API
+  participant D as PostgreSQL
+  participant Q as BullMQ
+  participant W as Worker
+  participant G as Socket gateway
+  participant B as Client B
+  U->>A: Change task status
+  A->>D: Commit task, version and outbox together
+  A-->>U: Authoritative response
+  A->>Q: Enqueue stable event-ID reference
+  Q->>W: Deliver job, possibly repeatedly
+  W->>D: Reload event and persist activity idempotently
+  W->>G: Publish through private Redis channel
+  W->>D: Mark delivered after publication
+  G->>G: Recheck each recipient
+  G-->>B: Content-free invalidation
+  B->>A: Refetch authorized data

@@ -1,0 +1,18 @@
+---
+title: "C08 — Request and tenant boundary · Implemented"
+---
+flowchart TD
+  HTTP[Request] --> Auth[JWT plus live session and DB membership]
+  Auth --> Permission[Central PermissionGuard validates target route IDs]
+  Permission --> DTO[Strict contract validation]
+  DTO --> Service[Feature service]
+  Service --> Mode{Read or write?}
+  Mode -->|Read| Snapshot[Read-only RepeatableRead snapshot]
+  Mode -->|Write| Lock[Lock workspace and reload mutable policy]
+  Lock --> Validate[Validate relations, configuration and versions]
+  Validate --> Write[Write rows and outbox atomically]
+  Snapshot --> Repo[Tenant repositories]
+  Write --> Repo
+  Repo --> Scoped[All tenant data constrained by workspaceId]
+  Scoped --> Response[Typed sanitized response]
+  Body[Body IDs are targets, not acting identity] -. constraint .-> Auth

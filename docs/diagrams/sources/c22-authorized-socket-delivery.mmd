@@ -1,0 +1,16 @@
+---
+title: "C22 — Authorized socket delivery · Implemented"
+---
+flowchart TD
+  Handshake[Socket with JWT] --> Session[Validate live session and membership]
+  Session --> Subscribe[Requested list subscription]
+  Subscribe --> Access{Current list permission?}
+  Access -->|No| Deny[Reject or remove subscription]
+  Access -->|Yes| Room[Workspace and list room]
+  Event[Private validated event] --> Recipients[Find candidate recipients]
+  Room --> Recipients
+  Recipients --> Recheck{Session and permission still valid?}
+  Recheck -->|No| Deny
+  Recheck -->|Yes| Strip[Build content-free public invalidation]
+  Strip --> Emit[Emit to authorized client]
+  Emit --> Refetch[Client fetches current REST state]

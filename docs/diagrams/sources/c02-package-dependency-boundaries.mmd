@@ -1,0 +1,27 @@
+---
+title: "C02 — Package dependency boundaries · Implemented"
+---
+flowchart LR
+  subgraph Apps
+    Web[web]
+    API[api]
+    Worker[worker]
+  end
+  Web --> Client[api-client]
+  Web --> Forms[forms]
+  Web --> UI[ui]
+  Web --> Contracts[contracts]
+  Forms --> UI
+  Forms --> Contracts
+  UI --> Contracts
+  Client --> Contracts
+  API --> Contracts
+  API --> Database[database]
+  API --> Logger[logger]
+  Worker --> Contracts
+  Worker --> Database
+  Worker --> Logger
+  Database --> Contracts
+  Database --> Logger
+  OpenAPI[openapi tooling] -. spec export only .-> API
+  Tooling[TypeScript / ESLint / Prettier / Jest / release tools] -. build and checks .-> Apps

@@ -57,6 +57,8 @@ The subsequent P21 refinement is tracked separately: R142/P21-01 groups UI imple
 
 P22 documents the operating model and new Render/Neon hosting plan: [delivery operations](DELIVERY_OPERATIONS.md), [Redis/BullMQ](REDIS_AND_JOBS.md) and [Render](RENDER.md). It changes documentation only. P22-02/P22-03 own Render implementation/live acceptance; P00-11/P00-12 retain the unimplemented four-environment promotion work.
 
+P23-01/R146 adds the [30-diagram atlas](DIAGRAMS.md): seven chapters with editable Mermaid, rendered SVGs and code/reference links. Its [evidence](evidence/P23-01.md) covers documentation semantics, rendering and navigation; it does not rerun or extend product/runtime acceptance.
+
 - The replacement package specification superseded the original `shared`/`tsconfig`/`eslint-config` layout. Database, logger, forms, formatting and release tooling have their own explicit responsibilities.
 - Prisma was chosen over TypeORM. Public task/configuration operations use tenant repositories; controllers do not own raw queries.
 - Workspace-level custom-field defaults were added to the original space/folder/list scopes. The nearest complete definition still wins.
@@ -108,7 +110,7 @@ Provider accounts, credentials, resources and current free-tier availability are
 
 ## Requirement coverage index
 
-This index makes omissions visible without duplicating 140 detailed matrix rows. Each range refers to the stable IDs in [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md); the tables above give the implementation/evidence context.
+This index makes omissions visible without duplicating the detailed matrix rows. Each range refers to the stable IDs in [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md); the tables above give the implementation/evidence context.
 
 | IDs       | Topic                                                                                      |
 | --------- | ------------------------------------------------------------------------------------------ |
@@ -138,5 +140,6 @@ This index makes omissions visible without duplicating 140 detailed matrix rows.
 | R141      | This reader-facing documentation set.                                                      |
 | R142–R143 | UI module/camelCase organization and the subsequent React readability rules.               |
 | R144–R145 | Delivery/runtime/Redis explanations and the Render hosting plan; no live deployment claim. |
+| R146      | Rendered diagram atlas with editable sources, status labels and source references.         |
 
 When a feature or provider gate changes, update the owning task/evidence and matrix first, then this summary and the relevant HLD/LLD/application section. A document's existence alone is never evidence that a feature works.

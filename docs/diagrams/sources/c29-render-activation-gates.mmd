@@ -1,0 +1,13 @@
+---
+title: "C29 — Render activation gates · Planned"
+---
+flowchart TD
+  Budget[Choose and approve service capacity] --> Identity[Verified published images and manifests]
+  Identity --> Resources[Create isolated preview services and runtime secrets]
+  Resources --> Adapter[Implement and test Render adapter]
+  Adapter --> Enable[Enable the Render deployment path]
+  Enable --> Digest[Verify running image identities and readiness]
+  Digest --> Product[Test auth, tenant access, writes, activity and realtime]
+  Product --> Recovery[Test restart and retry behavior]
+  Recovery --> Evidence[Record live evidence]
+  Legacy[Existing CD_ENABLED gate is not a Render switch] -. constraint .-> Enable
