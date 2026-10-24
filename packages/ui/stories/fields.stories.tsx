@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { CustomFieldInput } from '../src/components/custom-field-input.js';
+import { CustomFieldInput } from '../src/modules/forms/customFieldInput.js';
 import { Stack, Typography } from '../src/primitives.js';
 
 import { approved, area, effort } from './fixtures.js';

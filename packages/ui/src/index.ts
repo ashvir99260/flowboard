@@ -1,61 +1,69 @@
-export { StatusChip } from './components/status-chip.js';
+export { StatusChip } from './modules/tasks/statusChip.js';
 
-export { PriorityBadge } from './components/priority-badge.js';
+export { PriorityBadge } from './modules/tasks/priorityBadge.js';
 
-export { AssigneeAvatarGroup } from './components/assignee-avatar-group.js';
+export { AssigneeAvatarGroup } from './modules/tasks/assigneeAvatarGroup.js';
 
-export { DueDateLabel } from './components/due-date-label.js';
+export { DueDateLabel } from './modules/tasks/dueDateLabel.js';
 
-export { CustomFieldChip } from './components/custom-field-chip.js';
+export { CustomFieldChip } from './modules/forms/customFieldChip.js';
 
-export { EmptyState } from './components/empty-state.js';
+export { EmptyState } from './modules/feedback/emptyState.js';
 
-export { ErrorState } from './components/error-state.js';
+export { ErrorState } from './modules/feedback/errorState.js';
 
-export { theme } from './theme.js';
+export { theme } from './modules/theme/theme.js';
 
-export { ThemeProvider } from './theme-provider.js';
+export { ThemeProvider } from './modules/theme/themeProvider.js';
 
 export { useColorScheme as useThemeMode } from '@mui/material/styles';
 
-export { FormField } from './components/form-field.js';
+export { FormField } from './modules/forms/formField.js';
 
-export { CustomFieldInput } from './components/custom-field-input.js';
+export { CustomFieldInput } from './modules/forms/customFieldInput.js';
 
-export { ConfirmDialog } from './components/confirm-dialog.js';
+export { ConfirmDialog } from './modules/overlays/confirmDialog.js';
 
-export { TreeItem } from './components/tree-item.js';
+export { TreeItem } from './modules/navigation/treeItem.js';
 
-export { KanbanCard } from './components/kanban-card.js';
+export { KanbanCard } from './modules/board/kanbanCard.js';
 
-export { KanbanColumn } from './components/kanban-column.js';
+export { KanbanColumn } from './modules/board/kanbanColumn.js';
 
 export * from './primitives.js';
 
-export { AuthPanel, Surface, Toolbar } from './composition.js';
+export { AuthPanel } from './modules/layout/authPanel.js';
 
-export { designTokens } from './tokens.js';
+export { Surface } from './modules/layout/surface.js';
 
-export { TaskTable } from './components/task-table.js';
+export { Toolbar } from './modules/layout/toolbar.js';
 
-export { DrawerPanel } from './components/drawer-panel.js';
+export { designTokens } from './modules/theme/tokens.js';
 
-export { ActivityPanel, ActivityTimeline } from './components/activity-panel.js';
+export { TaskTable } from './modules/tasks/taskTable.js';
 
-export { FieldPreview } from './components/field-preview.js';
+export { DrawerPanel } from './modules/overlays/drawerPanel.js';
 
-export { StatusPreview } from './components/status-preview.js';
+export { ActivityPanel } from './modules/activity/activityPanel.js';
 
-export { MarkdownContent } from './components/markdown-content.js';
+export { ActivityTimeline } from './modules/activity/activityTimeline.js';
 
-export { LoadingState } from './components/loading-state.js';
+export { FieldPreview } from './modules/configuration/fieldPreview.js';
 
-export { WorkspaceLayout } from './components/workspace-layout.js';
+export { StatusPreview } from './modules/configuration/statusPreview.js';
 
-export { BoardDropzone, BoardGrid, BoardItem, BoardViewport } from './components/board-layout.js';
+export { MarkdownContent } from './modules/content/markdownContent.js';
 
-export { toHslColor } from './color.js';
+export { LoadingState } from './modules/feedback/loadingState.js';
 
-export { ToastHost, ToastRegion } from './components/toast-host.js';
+export { WorkspaceLayout } from './modules/layout/workspaceLayout.js';
 
-export type { ToastMessage, ToastSeverity } from './components/toast-host.js';
+export { BoardDropzone, BoardGrid, BoardItem, BoardViewport } from './modules/board/boardLayout.js';
+
+export { toHslColor } from './utils/color.js';
+
+export { ToastHost } from './modules/notifications/toastHost.js';
+
+export { ToastRegion } from './modules/notifications/toastRegion.js';
+
+export type { ToastMessage, ToastSeverity } from './modules/notifications/toastTypes.js';

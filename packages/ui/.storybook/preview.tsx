@@ -2,7 +2,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, useColorScheme } from '@mui/material/styles';
 import { useEffect } from 'react';
 
-import { theme } from '../src/theme.js';
+import { theme } from '../src/modules/theme/theme.js';
 
 import type { Preview } from '@storybook/react-vite';
 import type { ReactNode } from 'react';

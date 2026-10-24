@@ -20,6 +20,10 @@ flowchart LR
 
 ## Decisions and component contracts
 
+P21-01 organizes UI implementation under camelCase module-owned files. `modules/layout` owns Surface, Toolbar, AuthPanel and the workspace shell; `modules/primitives` owns authored controls; `modules/forms` owns visual field renderers; `modules/tasks`, `board`, `configuration`, `activity`, `notifications`, `overlays`, `feedback`, `navigation`, `content` and `theme` own their related presentation. This use of “modules” is a folder convention, not Nest dependency injection. Generic RHF bindings remain in the separate forms package.
+
+Each independent public component has its own file. Surface and Toolbar retain their small private styled slots as cohesive compound components. Toast host, region, display and context are separated while sharing one context instance. Numeric/select/checkbox renderers keep their value/ref semantics. `src/index.ts` remains the package API; consumers do not import module paths. Stories/tests retain their own top-level directories, and current source links follow the new paths.
+
 - Preserve MUI accessibility, focus trapping, keyboard behavior, refs and standard DOM props. Headless composition separates behavior from styling; it does not rebuild accessible controls by hand.
 - Simple structures use children and named parts. `Surface.Root/Header/Title/Description/Body/Footer` and `Toolbar.Root/Group` let callers arrange their content. Context is used only when parts share real state, such as a controlled overlay; do not add context to static layout.
 - The UI primitive entry point owns the MUI controls used by web. Layout-only primitives can retain MUI's implementation; reusable styling belongs in named styled components and the theme. Web does not import Material controls directly after migration. `sx` remains for genuinely local layout and DnD-provided positioning stays intact.

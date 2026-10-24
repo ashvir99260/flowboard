@@ -1,7 +1,8 @@
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { FormField } from '../src/components/form-field.js';
-import { Surface, Toolbar } from '../src/composition.js';
+import { FormField } from '../src/modules/forms/formField.js';
+import { Surface } from '../src/modules/layout/surface.js';
+import { Toolbar } from '../src/modules/layout/toolbar.js';
 import { Button, Stack } from '../src/primitives.js';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';

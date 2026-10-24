@@ -1059,6 +1059,28 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: explain architecture and delivered scope`.
   - **Evidence:** [P20-01](evidence/P20-01.md).
 
+## Phase 21 — UI modules and React readability
+
+- [x] **P21-01 — Organize UI modules and camelCase source files**
+  - **Goal:** Replace the flat component directory and multi-component implementation files with focused module-owned files while preserving the public UI API.
+  - **Requirements:** R142; preserve R23/R70/R134/R137/R139/R140.
+  - **Files:** `packages/ui/src`, UI stories/tests, current source links in documentation, naming/component/agent guides and evidence.
+  - **Dependencies:** P20-01.
+  - **Acceptance:** UI authored filenames use camelCase with conventional config/test suffixes retained; related components live under `src/modules`. Separate primitive, layout, activity, notification and custom-field renderer responsibilities. A compound component may keep its cohesive styled slots together. Root public exports, types, refs, SSR, form drafts, Data Grid/drag geometry and overlay focus remain compatible. Update internal/story imports and current source links; no new runtime feature or API changes. Repair the notification queue regression found by verification: a replacement message must not wait for a dismissed toast's exit animation.
+  - **Validation:** Observe structural convention failure, then pass source-layout/public-API and existing UI/browser/Storybook tests; root build/lint/typecheck/test/format and React diagnostics.
+  - **Commit:** `refactor: organize shared ui modules`.
+  - **Evidence:** [P21-01](evidence/P21-01.md).
+
+- [ ] **P21-02 — Enforce readable React hook sections and spacing**
+  - **Goal:** Add tested lint rules for hook-block spacing and safe state/effect organization across frontend React code.
+  - **Requirements:** R143; preserve R68/R70/R138.
+  - **Files:** Shared React ESLint rules/fixtures, affected UI/web/forms files, code-style/naming/agent guidance and evidence.
+  - **Dependencies:** P21-01.
+  - **Acceptance:** Hook declarations and effect calls have clear spacing; documented hook/state/derived/effect/render sections are enforced where statically safe. Preserve dependency-sensitive ordering and Rules of Hooks. Never auto-reorder hook calls. Cover TS/TSX, aliases/member calls, callback bodies and safe autofix/idempotence; backend non-React files remain unaffected. Existing return/conditional spacing stays active.
+  - **Validation:** Failing positive/negative ESLint fixtures before rule implementation; root build/lint/typecheck/test/format, React diagnostics and relevant browser interactions.
+  - **Commit:** `style: enforce readable react hook sections`.
+  - **Evidence:** [P21-02](evidence/P21-02.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

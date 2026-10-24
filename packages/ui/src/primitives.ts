@@ -1,37 +1,14 @@
 'use client';
 
-import MuiButton from '@mui/material/Button';
-import MuiChip from '@mui/material/Chip';
-import MuiNativeSelect from '@mui/material/NativeSelect';
-import MuiPaper from '@mui/material/Paper';
-import { styled } from '@mui/material/styles';
-import MuiTextField from '@mui/material/TextField';
+export { Button } from './modules/primitives/button.js';
 
-import { designTokens } from './tokens.js';
+export { Chip } from './modules/primitives/chip.js';
 
-// Keep MUI's polymorphic public signatures, including component-specific refs.
-export const Button = styled(MuiButton, { name: 'FlowboardButton', slot: 'Root' })(({ theme }) => ({
-  minHeight: designTokens.controlHeight,
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: 'none',
-  fontWeight: 500,
-  '&:hover': { boxShadow: 'none' },
-})) as typeof MuiButton;
+export { Paper } from './modules/primitives/paper.js';
 
-export const Chip = styled(MuiChip, { name: 'FlowboardChip', slot: 'Root' })(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
-  fontWeight: 500,
-  maxWidth: '100%',
-})) as typeof MuiChip;
+export { TextField } from './modules/primitives/textField.js';
 
-export const Paper = styled(MuiPaper, { name: 'FlowboardPaper', slot: 'Root' })({
-  backgroundImage: 'none',
-  borderRadius: designTokens.radius.surface,
-}) as typeof MuiPaper;
-
-export const TextField = styled(MuiTextField, { name: 'FlowboardTextField', slot: 'Root' })({
-  minWidth: 0,
-}) as typeof MuiTextField;
+export { NativeSelect } from './modules/primitives/nativeSelect.js';
 
 export { default as Alert } from '@mui/material/Alert';
 
@@ -41,7 +18,7 @@ export { default as Checkbox } from '@mui/material/Checkbox';
 
 export { default as CircularProgress } from '@mui/material/CircularProgress';
 
-export { Dialog } from './components/dialog.js';
+export { Dialog } from './modules/overlays/dialog.js';
 
 export { default as DialogActions } from '@mui/material/DialogActions';
 
@@ -62,26 +39,6 @@ export { default as FormHelperText } from '@mui/material/FormHelperText';
 export { default as InputLabel } from '@mui/material/InputLabel';
 
 export { default as Link } from '@mui/material/Link';
-
-const SelectRoot = styled(MuiNativeSelect, { name: 'FlowboardSelect', slot: 'Root' })(
-  ({ theme }) => ({
-    minHeight: '4.4rem',
-    border: `1px solid ${(theme.vars ?? theme).palette.text.secondary}`,
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: (theme.vars ?? theme).palette.background.paper,
-    '&::before, &::after': { display: 'none' },
-    '& select': { padding: theme.spacing(0.8, 3.2, 0.8, 1.2) },
-    '&.Mui-error': { borderColor: (theme.vars ?? theme).palette.error.main },
-    '&:focus-within': {
-      outline: `2px solid ${(theme.vars ?? theme).palette.primary.main}`,
-      outlineOffset: '0.2rem',
-    },
-  }),
-);
-
-export const NativeSelect = Object.assign(SelectRoot, {
-  muiName: MuiNativeSelect.muiName,
-}) as typeof MuiNativeSelect;
 
 export { default as Stack } from '@mui/material/Stack';
 

@@ -323,3 +323,7 @@ R86 documentation follow-up: [P02-20](evidence/P02-20.md) clarifies the Docker r
 | R140 | E · User refinement | Use MUI Data Grid for the task table view. | UI/web · P19-01 | Community grid semantics, metadata/custom columns, keyboard/focus, loaded-row paging beyond 100, cursor sort/filter preservation and browser checks; [P19-01](evidence/P19-01.md). | Verified |
 
 | R141 | E · User refinement | Improve HLD/LLD; explain application features/packages/flows and summarize how every prompt requirement was delivered. | Documentation · P20-01 | Source-backed designs, package inventory, prompt/task/evidence map, explicit gaps and navigation; [P20-01](evidence/P20-01.md). | Verified |
+
+| R142 | E · User refinement | Separate reusable UI implementations into module-owned files and use camelCase UI filenames. | UI · P21-01 | Structural conventions, compatible public exports, source links, UI/Storybook/SSR and interaction regressions; [P21-01](evidence/P21-01.md). | Verified |
+
+| R143 | E · User refinement | Add frontend ESLint for readable hook/state/effect grouping and spacing around hook/return sections. | React tooling · P21-02 | Positive/negative and autofix fixtures, safe ordering policy and frontend regressions; [P21-02](evidence/P21-02.md). | Planned |
