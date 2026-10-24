@@ -1,5 +1,6 @@
 'use client';
 
+import { Button, useMediaQuery } from '@flowboard/ui';
 import {
   BoardDropzone,
   BoardGrid,
@@ -10,8 +11,6 @@ import {
   KanbanColumn,
 } from '@flowboard/ui';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import Button from '@mui/material/Button';
-import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { useTaskEditor } from '../tasks/task-drawer';
 

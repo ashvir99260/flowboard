@@ -1,10 +1,9 @@
 'use client';
 
 import { FieldKeySchema, FieldValueSchema } from '@flowboard/contracts';
+import { Button, Stack } from '@flowboard/ui';
 import { CustomFieldInput, FormField } from '@flowboard/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 

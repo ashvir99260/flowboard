@@ -1,13 +1,8 @@
 'use client';
 
 import { CustomFieldTypeSchema } from '@flowboard/contracts';
+import { Box, Button, Checkbox, FormControlLabel, Stack, Typography } from '@flowboard/ui';
 import { FormField } from '@flowboard/ui';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 
 import type { FieldDraft } from './field-form-data';

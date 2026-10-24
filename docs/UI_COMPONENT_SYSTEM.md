@@ -1,6 +1,6 @@
 # Composable MUI component system
 
-Source: user refinement, 24 October 2026. Status: implementation in progress (P13-01–03).
+Source: user refinement, 24 October 2026. Status: implemented and verified ([P13-01](evidence/P13-01.md), [P13-02](evidence/P13-02.md), [P13-03](evidence/P13-03.md)).
 
 ## Intent and architecture
 
@@ -38,4 +38,33 @@ flowchart LR
 
 Use existing public seams: Testing Library on UI exports, lint boundary fixtures, and Playwright on the built app/playground. Cover composed children, custom refs/DOM props, keyboard/disabled behavior, labels and descriptions, overlays and focus return, long text, 320/768/1024/1440px, both themes and reduced motion. Preserve existing authentication, custom-field validation, dirty edits, optimistic rollback and DnD tests. Test selectors based on intended appearance change deliberately; do not remove behavior assertions.
 
-Each implementation task runs root build, lint, types and tests. No API contract, database, worker or Docker startup change is planned. Runtime Docker builds are not necessary for this presentation-only refinement.
+Each implementation task runs root build, lint, types and tests. No API contract, database, worker or Docker runtime change was needed; the test fixture now waits for real dependency readiness. Runtime Docker builds are not necessary for this presentation-only refinement.
+
+## Using the public API
+
+Web routes and adapters import controls and views from `@flowboard/ui`. The existing root `ThemeProvider` supplies the MUI/Emotion cache and theme; keep it above the app. Shared components accept values, children and callbacks. They do not fetch data or decide access.
+
+```tsx
+import { Button, Surface, TaskTable, Toolbar } from '@flowboard/ui';
+
+<Surface.Root component="section" aria-label="Project tasks">
+  <Surface.Header>
+    <Toolbar.Root>
+      <Surface.Title component="h2">Tasks</Surface.Title>
+      <Toolbar.Group>
+        <Button onClick={createTask}>New task</Button>
+      </Toolbar.Group>
+    </Toolbar.Root>
+    <Surface.Description>Work planned for this list.</Surface.Description>
+  </Surface.Header>
+  <Surface.Body>
+    <TaskTable items={tasks} statuses={statuses} fields={fields} onOpenTask={openTask} />
+  </Surface.Body>
+</Surface.Root>;
+```
+
+`WorkspaceLayout`, `DrawerPanel`, `ActivityPanel`, `ActivityTimeline`, `StatusPreview`, `FieldPreview`, `MarkdownContent` and the board wrappers follow the same boundary. `FieldPreview` receives its values and change callback. `DrawerPanel` receives visibility and close behavior. Activity times display explicitly in UTC so initial server markup and browser rendering agree. The `dateTime` attribute retains the original event timestamp.
+
+The development-only `/playground` page demonstrates controls, compound parts and domain views without making API calls. Its examples are validated sample props, separate from runtime data. Browser tests exercise both themes, four viewport widths, focus, contrast, reduced motion, callback behavior and safe Markdown. The production build keeps this route unavailable.
+
+The executable ESLint boundary rejects direct `@mui/*` imports/reexports/dynamic imports in web `src` and `app`. MUI imports belong in UI; test fixtures remain allowed. UI also rejects data clients, router hooks and React Hook Form. Existing package-layer checks continue to reject app imports and package source-path shortcuts. Review is still needed for component ownership, visual quality and excessive local layout styles; those cannot be proved by an import rule.

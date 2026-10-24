@@ -1,8 +1,7 @@
 'use client';
 
+import { Button, Stack } from '@flowboard/ui';
 import { FormField, MarkdownContent } from '@flowboard/ui';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useState } from 'react';
 import { useController } from 'react-hook-form';
 

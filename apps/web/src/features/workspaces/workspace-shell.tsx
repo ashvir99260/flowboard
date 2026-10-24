@@ -2,13 +2,8 @@
 
 import { getCurrentUserOptions, getNodeOptions } from '@flowboard/api-client/tanstack-query';
 import { CurrentUserEnvelopeSchema, NodeEnvelopeSchema } from '@flowboard/contracts';
+import { Alert, Box, Button, Divider, Stack, Typography } from '@flowboard/ui';
 import { ErrorState, WorkspaceLayout } from '@flowboard/ui';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import NextLink from 'next/link';
 import { useParams } from 'next/navigation';

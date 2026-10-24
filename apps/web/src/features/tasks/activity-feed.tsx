@@ -2,9 +2,8 @@
 
 import { listTaskActivityInfiniteOptions } from '@flowboard/api-client/tanstack-query';
 import { ActivityPageSchema } from '@flowboard/contracts';
+import { Button, Typography } from '@flowboard/ui';
 import { ActivityPanel, ActivityTimeline, ErrorState } from '@flowboard/ui';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 

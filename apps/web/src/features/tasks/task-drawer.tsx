@@ -1,8 +1,7 @@
 'use client';
 
+import { Button, Typography } from '@flowboard/ui';
 import { ConfirmDialog, DrawerPanel, ErrorState } from '@flowboard/ui';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { createContext, useCallback, useContext, useRef, useState } from 'react';
 
 import { ActivityFeed } from './activity-feed';

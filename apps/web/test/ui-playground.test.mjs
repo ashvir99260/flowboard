@@ -52,6 +52,7 @@ test(
     });
     const response = await page.goto(`${origin}/playground`, { timeout: 60_000 });
     assert.equal(response.status(), 200, runtime.output());
+    assert.match(await response.text(), /2026-01-02 03:04:05 UTC/);
     await page.getByRole('heading', { name: 'Component playground' }).waitFor();
     const directory = new URL('../../../.ai-local/p0801/', import.meta.url);
     await mkdir(directory, { recursive: true });
@@ -81,6 +82,14 @@ test(
         'Reduced motion must suppress button transitions',
       );
       assert.ok(await page.getByText('Due · Jan 1, 2026', { exact: true }).isVisible());
+      const composed = page.getByRole('region', { name: 'Composed workspace panel' });
+      await composed.getByRole('button', { name: 'Open task: Review shared components' }).click();
+      assert.ok(
+        await composed.getByRole('status').filter({ hasText: 'Selected sample-task' }).isVisible(),
+      );
+      assert.ok(await composed.getByText('2026-01-02 03:04:05 UTC', { exact: true }).isVisible());
+      assert.equal(await composed.locator('script').count(), 0);
+      assert.equal(await composed.locator('a').getAttribute('href'), '');
       assert.ok(await page.getByText('Effort: 0', { exact: true }).isVisible());
       assert.ok(await page.getByText('Approved: No', { exact: true }).isVisible());
       const colors = await page.getByText('+2', { exact: true }).evaluate((element) => {
@@ -113,6 +122,13 @@ test(
       }
       for (const width of [320, 768, 1024, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.evaluate(
+          () =>
+            new Promise((resolve) =>
+              window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)),
+            ),
+        );
         await page.screenshot({
           path: fileURLToPath(new URL(`${mode}-${width}.png`, directory)),
           fullPage: true,

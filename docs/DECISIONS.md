@@ -525,3 +525,7 @@ The first clean release attempt passed all 963 tests and production-image accept
 The user requested shadcn/Headless UI-style visuals, shared-package component ownership, composition patterns and styled components. Keep the fixed MUI stack and existing Emotion SSR cache. Use MUI `styled()` for reusable visual slots, shared semantic tokens and controlled composition APIs. Do not introduce Tailwind, Radix, Headless UI or the separate styled-components engine merely to reproduce the appearance. MUI's SSR guidance recommends Emotion.
 
 All reusable presentation belongs to `packages/ui`; web adapters retain generated data fetching, routing, auth/permissions, form control and DnD coordination. Use slots/children for static composition; only shared interaction state justifies context. P13-01–03 stage this refinement and preserve existing behavior/contrast/SSR evidence. See [component system](UI_COMPONENT_SYSTEM.md).
+
+## D138 — Stable shared activity timestamps
+
+Use an explicit UTC display in shared activity presentation while retaining the original `dateTime` value. The earlier drawer used the renderer's default locale/timezone, which becomes ambiguous when the same component renders static server markup. Fixed UTC output avoids hydration differences and gives collaborators the same event clock. Offset inputs normalize to UTC; invalid display values show “Invalid time”. This changes presentation only, not event timestamps or ordering.

@@ -1,11 +1,8 @@
 'use client';
 
 import { PrioritySchema } from '@flowboard/contracts';
+import { FormControl, FormHelperText, InputLabel, NativeSelect } from '@flowboard/ui';
 import { FormField } from '@flowboard/ui';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import InputLabel from '@mui/material/InputLabel';
-import NativeSelect from '@mui/material/NativeSelect';
 import { useId } from 'react';
 import { Controller } from 'react-hook-form';
 

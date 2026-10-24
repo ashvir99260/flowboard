@@ -224,3 +224,45 @@ test('a busy drawer blocks Escape and its close action', () => {
   fireEvent.click(close);
   assert.equal(calls, 0);
 });
+
+test('activity timestamps are deterministic across server and browser locales', () => {
+  render(
+    h(UI.ActivityTimeline, {
+      statuses: [status],
+      items: [
+        {
+          id: '1',
+          actor: { name: 'Alice' },
+          payload: {
+            beforeStatusId: status.id,
+            afterStatusId: status.id,
+            occurredAt: '2026-01-02T03:04:05.000Z',
+          },
+        },
+      ],
+    }),
+  );
+  assert.equal(globalThis.document.querySelector('time').textContent, '2026-01-02 03:04:05 UTC');
+});
+
+test('activity time normalizes offsets and handles an invalid display value safely', () => {
+  for (const [occurredAt, expected] of [
+    ['2026-01-02T08:34:05+05:30', '2026-01-02 03:04:05 UTC'],
+    ['invalid', 'Invalid time'],
+  ]) {
+    render(
+      h(UI.ActivityTimeline, {
+        statuses: [status],
+        items: [
+          {
+            id: '1',
+            actor: { name: 'Alice' },
+            payload: { beforeStatusId: status.id, afterStatusId: status.id, occurredAt },
+          },
+        ],
+      }),
+    );
+    assert.equal(globalThis.document.querySelector('time').textContent, expected);
+    cleanup();
+  }
+});

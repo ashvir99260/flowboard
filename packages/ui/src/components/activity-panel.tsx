@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import { useId } from 'react';
 
 import { Toolbar } from '../composition.js';
+import { formatTimestamp } from '../format-date.js';
 import { Stack, Typography } from '../primitives.js';
 
 import type { Activity, ResolvedStatus } from '@flowboard/contracts';
@@ -57,7 +58,7 @@ export function ActivityTimeline({
             variant="caption"
             color="text.secondary"
           >
-            {new Date(item.payload.occurredAt).toLocaleString()}
+            {formatTimestamp(item.payload.occurredAt)}
           </Typography>
         </Entry>
       ))}
