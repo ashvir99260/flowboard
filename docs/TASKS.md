@@ -265,6 +265,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Completion evidence:** [P00-28 verification](evidence/P00-28.md):135 stored-field rows match the ER/dictionary; typed embedded/request controls, cursor-only policy,43-operation inventory and documentation checks reviewed.
 
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
+  - **Target superseded:** The Vercel/Northflank target below is historical. The 25 October Render plan is tracked by P22-02/P22-03; do not execute this old provider setup or mark it verified from the new plan.
   - **Goal:** Put the implemented local MVP online on the selected preview hosts.
   - **Requirements:** R96–R98.
   - **Files:** `docs/evidence/P00-14.md`, `docs/TASKS.md`, requirement matrix; credentials remain only in provider/GitHub secret settings.
@@ -1080,6 +1081,36 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Failing positive/negative ESLint fixtures before rule implementation; root build/lint/typecheck/test/format, React diagnostics and relevant browser interactions.
   - **Commit:** `style: enforce readable react hook sections`.
   - **Evidence:** [P21-02](evidence/P21-02.md).
+
+## Phase 22 — Delivery operations and Render plan
+
+- [x] **P22-01 — Explain delivery, runtime configuration and Redis operations**
+  - **Goal:** Explain the implemented pipeline and the planned trunk-based promotion/Render setup without claiming unimplemented deployment automation.
+  - **Requirements:** R144–R145; clarify R96–R99 and existing event delivery requirements.
+  - **Files:** `docs/DELIVERY_OPERATIONS.md`, `docs/REDIS_AND_JOBS.md`, `docs/RENDER.md`; current delivery/promotion/CI guides, README/architecture navigation, plan/decisions/matrix and this task's evidence.
+  - **Dependencies:** P21-02; existing release/runtime/outbox implementations are source inputs.
+  - **Acceptance:** Explain short-lived branches/main versus deployment environments; per-app immutable digests and environment-only configuration with a concrete example; actual seven CI lanes and publish/deploy gates; independent release fingerprints/version/retry semantics; actual Redis roles, BullMQ/outbox recovery and isolation; Render image-backed service topology, runtime settings, costs/limits and missing adapter/live promotion work. Mark old Vercel/Northflank setup as legacy and retain historical evidence. No provisioning, billing, workflow or runtime changes.
+  - **Validation:** G01/G02 documentation review; cross-check source/config, official Render docs, local links/anchors, diagrams, requirement coverage, formatting and whitespace. Runtime/build/image checks are not applicable to Markdown-only work.
+  - **Commit:** `docs: explain delivery operations and render plan`.
+  - **Evidence:** [P22-01](evidence/P22-01.md).
+
+- [ ] **P22-02 — Implement Render deployment of published image digests**
+  - **Goal:** Replace the legacy hosted adapter with controlled, independently deployable Render services using existing immutable releases.
+  - **Requirements:** R98–R99; implements the provider plan documented by R145.
+  - **Files:** Release-tool provider/config/CLI/tests, workflow, optional Render Blueprint and deployment docs; choose exact files when implementation is requested.
+  - **Dependencies:** P22-01 and an explicit implementation request; selected service capacity/budget and Render API contract must be confirmed before provisioning.
+  - **Acceptance:** Validate service identities and all settings before writes; deploy only changed released digests, never rebuild; disable competing automatic source deploys; verify provider digest/readiness, bound polling, redact API/deploy-hook secrets, reject stale runs and make retries idempotent. Keep database/Redis/auth secrets in service runtime settings. Test provider failure, digest mismatch, missing config and unchanged apps. Existing CD_ENABLED does not authorize the legacy job to target Render.
+  - **Validation:** Provider fixtures and workflow checks plus normal implementation gates. No live success claim from HTTP fixtures.
+  - **Commit:** `ci: deploy released images to render`.
+
+- [ ] **P22-03 — Activate and verify the Render shared preview**
+  - **Goal:** Record a real Render/Neon rollout after the adapter and appropriately sized services are ready.
+  - **Requirements:** R96–R98.
+  - **Files:** Deployment evidence and environment documentation; credentials stay outside Git.
+  - **Dependencies:** P22-02, published images, authenticated provider access and explicitly approved service plans/capacity. Supersedes the old P00-14 provider target.
+  - **Acceptance:** Isolated preview data and Redis; web/API/worker use recorded digests and runtime config; verify HTTPS auth/refresh, task mutation, async activity, two-client realtime, health, restart and retry behavior. Record actual service costs/limits. Do not provision paid resources or silently replace Neon without authorization.
+  - **Validation:** Real provider deployment records and end-to-end acceptance; fixtures do not satisfy this task.
+  - **Commit:** `docs: verify render preview deployment`.
 
 ## Explicitly deferred work
 

@@ -33,7 +33,7 @@ Implementation snapshot: `3cc62b0` (P19-01), reviewed 25 October 2026. At that s
 | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Shared Node/Next ESLint, TypeScript and Prettier                                                             | Common configs and package scripts across all workspaces.                                                                                             | R93                                   | [P00-01](evidence/P00-01.md), [P00-03](evidence/P00-03.md).                                                                                           |
 | Independent releases and Docker per app                                                                      | Dependency-aware planner/publisher, separate app tags/images/manifests and tests. First real main publication remains open.                           | R94–R95                               | [P00-05](evidence/P00-05.md), [P00-06](evidence/P00-06.md); P00-07 open.                                                                              |
-| Neon plus Vercel/Northflank preview; parallel free-runner CI                                                 | Deployment orchestration and five parallel verification lanes plus Compose lanes. Real provider setup is still required.                              | R96–R98                               | [P00-13](evidence/P00-13.md), [P00-15](evidence/P00-15.md), [CI/CD](CI_CD.md); P00-14 open.                                                           |
+| Earlier Vercel/Northflank preview; current Render plan and parallel free-runner CI                           | Legacy deployment orchestration and seven check instances; Render adapter/live setup remain open, documented in P22.                                  | R96–R98                               | [P00-13](evidence/P00-13.md), [P00-15](evidence/P00-15.md), [CI/CD](CI_CD.md), [Render plan](RENDER.md); P22-02/P22-03 open.                          |
 | Build once, promote dev/qa/stage/prod with runtime configuration                                             | Architecture/acceptance plan exists. Runtime REST and public socket URLs are implemented; full immutable promotion is not.                            | R99                                   | [Promotion design](PROMOTION.md); P00-11/P00-12 open.                                                                                                 |
 | Graphify, additional AI tools and reverse engineering                                                        | Local navigation/tooling guidance; outputs ignored. REA is an optional explicitly invoked artifact tool.                                              | R100–R102                             | [P00-16](evidence/P00-16.md), [P00-17](evidence/P00-17.md), [P00-18](evidence/P00-18.md).                                                             |
 | Research ClickUp/Asana/Linear and design Flowboard from the requirements                                     | Cited public research, system/ER/API/UI design. No claim of access to their private internals.                                                        | R103                                  | [P00-19](evidence/P00-19.md), [references](REFERENCE_ARCHITECTURES.md).                                                                               |
@@ -54,6 +54,8 @@ Implementation snapshot: `3cc62b0` (P19-01), reviewed 25 October 2026. At that s
 ## Choices that superseded earlier wording
 
 The subsequent P21 refinement is tracked separately: R142/P21-01 groups UI implementations into camelCase module-owned files; R143/P21-02 adds React readability enforcement. Its evidence lives in [P21-01](evidence/P21-01.md) and [P21-02](evidence/P21-02.md), with the matrix retaining each task's current status.
+
+P22 documents the operating model and new Render/Neon hosting plan: [delivery operations](DELIVERY_OPERATIONS.md), [Redis/BullMQ](REDIS_AND_JOBS.md) and [Render](RENDER.md). It changes documentation only. P22-02/P22-03 own Render implementation/live acceptance; P00-11/P00-12 retain the unimplemented four-environment promotion work.
 
 - The replacement package specification superseded the original `shared`/`tsconfig`/`eslint-config` layout. Database, logger, forms, formatting and release tooling have their own explicit responsibilities.
 - Prisma was chosen over TypeORM. Public task/configuration operations use tenant repositories; controllers do not own raw queries.
@@ -93,14 +95,14 @@ Latest recorded implementation verification is [P19-01](evidence/P19-01.md): **1
 
 ## Open gates and limits
 
-| Open task | What remains                                                                                                 | Related status                                   |
-| --------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
-| P00-07    | Observe the first real main-branch publication: tags, releases, images, manifests and digests.               | R94–R95 In progress.                             |
-| P00-14    | Configure and verify Vercel/Northflank/Neon shared preview, including auth, activity and realtime.           | R96–R98 In progress where applicable.            |
-| P00-11    | Complete environment-neutral artifact/runtime configuration requirements for the future promotion model.     | R99 Planned.                                     |
-| P00-12    | Promote an explicitly selected unchanged artifact through dev/qa/stage/prod.                                 | R99 Planned.                                     |
-| P00-09    | Later live production activation under the selected promotion/hosting approach.                              | R98 retains a future activation gate.            |
-| NEXT-01   | Replace the explicit search-index stub and design real search/access/filter/reindex behavior when requested. | Deferred scope; no working search is advertised. |
+| Open task     | What remains                                                                                                     | Related status                                   |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| P00-07        | Observe the first real main-branch publication: tags, releases, images, manifests and digests.                   | R94–R95 In progress.                             |
+| P22-02/P22-03 | Implement the Render adapter and verify the Render/Neon shared preview; replaces the old P00-14 provider target. | R96–R98 remain open until live acceptance.       |
+| P00-11        | Complete environment-neutral artifact/runtime configuration requirements for the future promotion model.         | R99 Planned.                                     |
+| P00-12        | Promote an explicitly selected unchanged artifact through dev/qa/stage/prod.                                     | R99 Planned.                                     |
+| P00-09        | Later live production activation under the selected promotion/hosting approach.                                  | R98 retains a future activation gate.            |
+| NEXT-01       | Replace the explicit search-index stub and design real search/access/filter/reindex behavior when requested.     | Deferred scope; no working search is advertised. |
 
 Provider accounts, credentials, resources and current free-tier availability are external prerequisites, not completed product behavior. Ordinary future extensions are separate: OIDC, teams, invitation email/UI, restore, uploads and outbound webhook delivery. Scalability tradeoffs include workspace-wide write locks, dense reordering, graph reads and no universal JSON-field index. See [HLD tradeoffs](HLD.md#scale-reliability-and-tradeoffs).
 
@@ -108,32 +110,33 @@ Provider accounts, credentials, resources and current free-tier availability are
 
 This index makes omissions visible without duplicating 140 detailed matrix rows. Each range refers to the stable IDs in [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md); the tables above give the implementation/evidence context.
 
-| IDs       | Topic                                                                        |
-| --------- | ---------------------------------------------------------------------------- |
-| R01–R07   | Process, tests and honest execution.                                         |
-| R08–R10   | Workspace architecture and boundaries.                                       |
-| R11–R13   | Shared contracts, DTOs and pure algorithms.                                  |
-| R14–R15   | Database and async infrastructure.                                           |
-| R16–R22   | Generated client and OpenAPI pipeline.                                       |
-| R23       | Shared presentational UI.                                                    |
-| R24–R27   | Docker, health and initialization.                                           |
-| R28–R35   | Auth, membership and tenant identity.                                        |
-| R36–R43   | Hierarchy, access and concurrency.                                           |
-| R44–R49   | Task data and operations.                                                    |
-| R50–R55   | Status resolution and safety.                                                |
-| R56–R61   | Custom fields and validation.                                                |
-| R62–R71   | Web views, state and accessibility.                                          |
-| R72–R76   | Realtime, activity and reliable delivery.                                    |
-| R77–R82   | Second channel and seed.                                                     |
-| R83–R90   | Verification, documentation and evidence.                                    |
-| R91–R93   | API standards and shared tooling.                                            |
-| R94–R99   | Releases, hosting and future promotion.                                      |
-| R100–R107 | AI tooling, research and quality.                                            |
-| R108–R115 | Detailed design, field contracts and Swagger.                                |
-| R116–R128 | Backend layout, logging, ESM and style.                                      |
-| R129–R133 | Local environment and development fixes.                                     |
-| R134–R140 | Later UI/form/notification/tooling refinements.                              |
-| R141      | This reader-facing documentation set.                                        |
-| R142–R143 | UI module/camelCase organization and the subsequent React readability rules. |
+| IDs       | Topic                                                                                      |
+| --------- | ------------------------------------------------------------------------------------------ |
+| R01–R07   | Process, tests and honest execution.                                                       |
+| R08–R10   | Workspace architecture and boundaries.                                                     |
+| R11–R13   | Shared contracts, DTOs and pure algorithms.                                                |
+| R14–R15   | Database and async infrastructure.                                                         |
+| R16–R22   | Generated client and OpenAPI pipeline.                                                     |
+| R23       | Shared presentational UI.                                                                  |
+| R24–R27   | Docker, health and initialization.                                                         |
+| R28–R35   | Auth, membership and tenant identity.                                                      |
+| R36–R43   | Hierarchy, access and concurrency.                                                         |
+| R44–R49   | Task data and operations.                                                                  |
+| R50–R55   | Status resolution and safety.                                                              |
+| R56–R61   | Custom fields and validation.                                                              |
+| R62–R71   | Web views, state and accessibility.                                                        |
+| R72–R76   | Realtime, activity and reliable delivery.                                                  |
+| R77–R82   | Second channel and seed.                                                                   |
+| R83–R90   | Verification, documentation and evidence.                                                  |
+| R91–R93   | API standards and shared tooling.                                                          |
+| R94–R99   | Releases, hosting and future promotion.                                                    |
+| R100–R107 | AI tooling, research and quality.                                                          |
+| R108–R115 | Detailed design, field contracts and Swagger.                                              |
+| R116–R128 | Backend layout, logging, ESM and style.                                                    |
+| R129–R133 | Local environment and development fixes.                                                   |
+| R134–R140 | Later UI/form/notification/tooling refinements.                                            |
+| R141      | This reader-facing documentation set.                                                      |
+| R142–R143 | UI module/camelCase organization and the subsequent React readability rules.               |
+| R144–R145 | Delivery/runtime/Redis explanations and the Render hosting plan; no live deployment claim. |
 
 When a feature or provider gate changes, update the owning task/evidence and matrix first, then this summary and the relevant HLD/LLD/application section. A document's existence alone is never evidence that a feature works.

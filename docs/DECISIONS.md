@@ -605,3 +605,11 @@ Date: 2026-10-25. Source: user request for spacing around hooks/returns and grou
 Enable a small shared `flowboard/hook-spacing` rule only in React/Next presets. Separate direct hook statement groups from other statements; keep consecutive value-producing hooks together and separate each effect. Recognize conventional custom hook names and scope-resolved import aliases/React namespace calls. Fix whitespace only; preserve comments, semicolons, arguments, dependency arrays and execution order. Logical state/context/ref, derived value, handler, effect and render organization remains dependency-aware review guidance, not automatic sorting.
 
 Apply the installed React Hooks correctness rules to shared `.ts` hooks as well as JSX/TSX. Keep Node-only presets unchanged. Prefer aliases retaining `use` names: the installed upstream Rules of Hooks is name-based, and our formatting rule's broader alias recognition does not replace its semantic checks.
+
+## D148 — Render target plan and explicit delivery states
+
+Date: 2026-10-25. Source: user request to explain trunk-based development, unchanged-image runtime configuration, CI/CD, independent releases, Redis/BullMQ and the plan to deploy on Render.
+
+Document the current code separately from the target operations model. Use one main trunk with short-lived branches; preview/dev/qa/stage/prod are deployment targets. Current per-app release images and dynamic runtime settings are reusable foundations, but the ordered promotion workflow remains unimplemented. Render becomes the planned host for image-backed web/API/worker and a private Redis-compatible Key Value service. Retain Neon as the existing database choice; the user has not requested a database provider change. Legacy Vercel/Northflank adapters remain accurately labeled until P22-02 replaces them.
+
+Start with one shared preview. Do not assume Render's paid worker or persistent Key Value is free, provision resources, or enable billing in a documentation task. Document the capacity decision and live acceptance as open work. Use isolated Redis instances and PostgreSQL databases/branches for environments because current queue/channel/rate-limit namespaces are fixed. Deploy published digests without source builds; configuration changes restart the same image. Do not invent an implemented APP_ENV switch or a Render adapter.
