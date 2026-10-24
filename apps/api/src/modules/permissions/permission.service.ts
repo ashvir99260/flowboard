@@ -105,7 +105,7 @@ export class PermissionService {
       throw new ApiException(403, 'FORBIDDEN', 'Access denied');
   }
   async assertScope(store: ReadRepositories, owner: StatusScope, action: PermissionAction) {
-    await store.statuses.path(owner);
+    await store.scopes.path(owner);
     if (owner.ownerType === 'workspace') this.assert(store.context, action, owner.ownerId);
     else await this.assertNode(store, owner.ownerId, action);
   }

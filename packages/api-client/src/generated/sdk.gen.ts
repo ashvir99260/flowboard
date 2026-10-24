@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateScopeStatusData, CreateScopeStatusErrors, CreateScopeStatusResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetListResolvedStatusesData, GetListResolvedStatusesErrors, GetListResolvedStatusesResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListScopeStatusesData, ListScopeStatusesErrors, ListScopeStatusesResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveScopeStatusData, RemoveScopeStatusErrors, RemoveScopeStatusResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateScopeStatusData, UpdateScopeStatusErrors, UpdateScopeStatusResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateScopeFieldData, CreateScopeFieldErrors, CreateScopeFieldResponses, CreateScopeStatusData, CreateScopeStatusErrors, CreateScopeStatusResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetListResolvedFieldsData, GetListResolvedFieldsErrors, GetListResolvedFieldsResponses, GetListResolvedStatusesData, GetListResolvedStatusesErrors, GetListResolvedStatusesResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListScopeFieldsData, ListScopeFieldsErrors, ListScopeFieldsResponses, ListScopeStatusesData, ListScopeStatusesErrors, ListScopeStatusesResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveScopeFieldData, RemoveScopeFieldErrors, RemoveScopeFieldResponses, RemoveScopeStatusData, RemoveScopeStatusErrors, RemoveScopeStatusResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateScopeFieldData, UpdateScopeFieldErrors, UpdateScopeFieldResponses, UpdateScopeStatusData, UpdateScopeStatusErrors, UpdateScopeStatusResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -133,6 +133,17 @@ export const acceptWorkspaceInvitation = <ThrowOnError extends boolean = false>(
 });
 
 /**
+ * Resolve visible list fields
+ *
+ * Visible list members read the complete effective field set using the shared nearest-definition resolver and a consistent configuration revision.
+ */
+export const getListResolvedFields = <ThrowOnError extends boolean = false>(options: Options<GetListResolvedFieldsData, ThrowOnError>): RequestResult<GetListResolvedFieldsResponses, GetListResolvedFieldsErrors, ThrowOnError> => (options.client ?? client).get<GetListResolvedFieldsResponses, GetListResolvedFieldsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/lists/{listId}/resolved-fields',
+    ...options
+});
+
+/**
  * Resolve visible list statuses
  *
  * Visible list members read the complete effective status set using the shared root-to-leaf resolver and a consistent configuration revision.
@@ -259,6 +270,62 @@ export const removeNodeGrant = <ThrowOnError extends boolean = false>(options: O
 export const reorderNode = <ThrowOnError extends boolean = false>(options: Options<ReorderNodeData, ThrowOnError>): RequestResult<ReorderNodeResponses, ReorderNodeErrors, ThrowOnError> => (options.client ?? client).post<ReorderNodeResponses, ReorderNodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/nodes/{nodeId}/reorder',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Read local field configuration
+ *
+ * Administrators read the complete bounded local collection and verified ancestor scopes, with its snapshot configuration revision.
+ */
+export const listScopeFields = <ThrowOnError extends boolean = false>(options: Options<ListScopeFieldsData, ThrowOnError>): RequestResult<ListScopeFieldsResponses, ListScopeFieldsErrors, ThrowOnError> => (options.client ?? client).get<ListScopeFieldsResponses, ListScopeFieldsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/scopes/{ownerType}/{ownerId}/fields',
+    ...options
+});
+
+/**
+ * Create local field configuration
+ *
+ * Create a complete local definition after validating the owner, all live descendants and task values under one workspace lock.
+ */
+export const createScopeField = <ThrowOnError extends boolean = false>(options: Options<CreateScopeFieldData, ThrowOnError>): RequestResult<CreateScopeFieldResponses, CreateScopeFieldErrors, ThrowOnError> => (options.client ?? client).post<CreateScopeFieldResponses, CreateScopeFieldErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/scopes/{ownerType}/{ownerId}/fields',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove local field configuration
+ *
+ * Remove a local definition only when the resulting inherited schema remains valid for all live descendant tasks.
+ */
+export const removeScopeField = <ThrowOnError extends boolean = false>(options: Options<RemoveScopeFieldData, ThrowOnError>): RequestResult<RemoveScopeFieldResponses, RemoveScopeFieldErrors, ThrowOnError> => (options.client ?? client).delete<RemoveScopeFieldResponses, RemoveScopeFieldErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/scopes/{ownerType}/{ownerId}/fields/{fieldId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update local field configuration
+ *
+ * Patch a local definition. Omitted attributes are preserved; null is invalid. All effective descendants and live tasks must remain valid.
+ */
+export const updateScopeField = <ThrowOnError extends boolean = false>(options: Options<UpdateScopeFieldData, ThrowOnError>): RequestResult<UpdateScopeFieldResponses, UpdateScopeFieldErrors, ThrowOnError> => (options.client ?? client).patch<UpdateScopeFieldResponses, UpdateScopeFieldErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/scopes/{ownerType}/{ownerId}/fields/{fieldId}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

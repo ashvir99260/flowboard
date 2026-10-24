@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createScopeStatus, createWorkspaceInvitation, getCurrentUser, getListResolvedStatuses, getLiveness, getNode, getReadiness, listNodeGrants, listScopeStatuses, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeScopeStatus, removeWorkspaceMember, reorderNode, signUp, switchWorkspace, updateNode, updateScopeStatus, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, createNode, createScopeField, createScopeStatus, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, listNodeGrants, listScopeFields, listScopeStatuses, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -192,6 +192,26 @@ export const acceptWorkspaceInvitationMutation = (options?: Partial<Options<Acce
     };
     return mutationOptions;
 };
+
+export const getListResolvedFieldsQueryKey = (options: Options<GetListResolvedFieldsData>) => createQueryKey('getListResolvedFields', options);
+
+/**
+ * Resolve visible list fields
+ *
+ * Visible list members read the complete effective field set using the shared nearest-definition resolver and a consistent configuration revision.
+ */
+export const getListResolvedFieldsOptions = (options: Options<GetListResolvedFieldsData>) => queryOptions<GetListResolvedFieldsResponse, GetListResolvedFieldsError, GetListResolvedFieldsResponse, ReturnType<typeof getListResolvedFieldsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getListResolvedFields({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getListResolvedFieldsQueryKey(options)
+});
 
 export const getListResolvedStatusesQueryKey = (options: Options<GetListResolvedStatusesData>) => createQueryKey('getListResolvedStatuses', options);
 
@@ -438,6 +458,83 @@ export const reorderNodeMutation = (options?: Partial<Options<ReorderNodeData>>)
     const mutationOptions: UseMutationOptions<ReorderNodeResponse, ReorderNodeError, Options<ReorderNodeData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await reorderNode({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listScopeFieldsQueryKey = (options: Options<ListScopeFieldsData>) => createQueryKey('listScopeFields', options);
+
+/**
+ * Read local field configuration
+ *
+ * Administrators read the complete bounded local collection and verified ancestor scopes, with its snapshot configuration revision.
+ */
+export const listScopeFieldsOptions = (options: Options<ListScopeFieldsData>) => queryOptions<ListScopeFieldsResponse, ListScopeFieldsError, ListScopeFieldsResponse, ReturnType<typeof listScopeFieldsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listScopeFields({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listScopeFieldsQueryKey(options)
+});
+
+/**
+ * Create local field configuration
+ *
+ * Create a complete local definition after validating the owner, all live descendants and task values under one workspace lock.
+ */
+export const createScopeFieldMutation = (options?: Partial<Options<CreateScopeFieldData>>): UseMutationOptions<CreateScopeFieldResponse, CreateScopeFieldError, Options<CreateScopeFieldData>> => {
+    const mutationOptions: UseMutationOptions<CreateScopeFieldResponse, CreateScopeFieldError, Options<CreateScopeFieldData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createScopeField({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Remove local field configuration
+ *
+ * Remove a local definition only when the resulting inherited schema remains valid for all live descendant tasks.
+ */
+export const removeScopeFieldMutation = (options?: Partial<Options<RemoveScopeFieldData>>): UseMutationOptions<RemoveScopeFieldResponse, RemoveScopeFieldError, Options<RemoveScopeFieldData>> => {
+    const mutationOptions: UseMutationOptions<RemoveScopeFieldResponse, RemoveScopeFieldError, Options<RemoveScopeFieldData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await removeScopeField({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update local field configuration
+ *
+ * Patch a local definition. Omitted attributes are preserved; null is invalid. All effective descendants and live tasks must remain valid.
+ */
+export const updateScopeFieldMutation = (options?: Partial<Options<UpdateScopeFieldData>>): UseMutationOptions<UpdateScopeFieldResponse, UpdateScopeFieldError, Options<UpdateScopeFieldData>> => {
+    const mutationOptions: UseMutationOptions<UpdateScopeFieldResponse, UpdateScopeFieldError, Options<UpdateScopeFieldData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateScopeField({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

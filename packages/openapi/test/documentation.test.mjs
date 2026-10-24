@@ -14,7 +14,7 @@ const hasExample = (schema) =>
   Object.hasOwn(schema, 'example') || Object.hasOwn(schema, 'examples');
 
 test('every Swagger operation and payload has a description and example', () => {
-  assert.equal(operations.length, 29);
+  assert.equal(operations.length, 34);
   for (const operation of operations) {
     meaningful(operation.summary, `${operation.operationId} summary`);
     meaningful(operation.description, `${operation.operationId} description`);
@@ -98,14 +98,17 @@ test('documented success responses retain their concrete DTO schemas', () => {
     acceptWorkspaceInvitation: 'AcceptedInvitationResponseDto_Output',
     addWorkspaceMember: 'MemberMutationResponseDto_Output',
     createNode: 'NodeResponseDto_Output',
+    createScopeField: 'ScopeFieldMutationResponseDto_Output',
     createScopeStatus: 'ScopeStatusMutationResponseDto_Output',
     createWorkspaceInvitation: 'InvitationResponseDto_Output',
     getCurrentUser: 'CurrentUserResponseDto_Output',
+    getListResolvedFields: 'ResolvedFieldResponseDto_Output',
     getListResolvedStatuses: 'ResolvedStatusResponseDto_Output',
     getLiveness: 'LivenessResponseDto_Output',
     getNode: 'NodeResponseDto_Output',
     getReadiness: 'ReadinessResponseDto_Output',
     listNodeGrants: 'GrantPageResponseDto_Output',
+    listScopeFields: 'ScopeFieldResponseDto_Output',
     listScopeStatuses: 'ScopeStatusResponseDto_Output',
     listVisibleTree: 'TreePageResponseDto_Output',
     listWorkspaceMembers: 'MemberPageResponseDto_Output',
@@ -116,6 +119,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
     signUp: 'SessionResponseDto_Output',
     switchWorkspace: 'SessionResponseDto_Output',
     updateNode: 'NodeResponseDto_Output',
+    updateScopeField: 'ScopeFieldMutationResponseDto_Output',
     updateScopeStatus: 'ScopeStatusMutationResponseDto_Output',
     updateWorkspaceMember: 'MemberMutationResponseDto_Output',
     upsertNodeGrant: 'GrantResponseDto_Output',
@@ -128,6 +132,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
         'archiveNode',
         'removeNodeGrant',
         'removeScopeStatus',
+        'removeScopeField',
       ].includes(item.operationId),
   )) {
     const response =
@@ -138,6 +143,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
           'createWorkspaceInvitation',
           'createNode',
           'createScopeStatus',
+          'createScopeField',
         ].includes(operation.operationId)
           ? '201'
           : '200'
