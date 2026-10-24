@@ -14,7 +14,7 @@ const hasExample = (schema) =>
   Object.hasOwn(schema, 'example') || Object.hasOwn(schema, 'examples');
 
 test('every Swagger operation and payload has a description and example', () => {
-  assert.equal(operations.length, 39);
+  assert.equal(operations.length, 41);
   for (const operation of operations) {
     meaningful(operation.summary, `${operation.operationId} summary`);
     meaningful(operation.description, `${operation.operationId} description`);
@@ -117,8 +117,10 @@ test('documented success responses retain their concrete DTO schemas', () => {
     listWorkspaceMembers: 'MemberPageResponseDto_Output',
     listWorkspaces: 'WorkspacePageResponseDto_Output',
     logIn: 'SessionResponseDto_Output',
+    moveTask: 'TaskMutationResponseDto_Output',
     refreshSession: 'SessionResponseDto_Output',
     reorderNode: 'NodeResponseDto_Output',
+    reorderTask: 'TaskMutationResponseDto_Output',
     signUp: 'SessionResponseDto_Output',
     switchWorkspace: 'SessionResponseDto_Output',
     updateNode: 'NodeResponseDto_Output',

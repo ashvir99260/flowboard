@@ -11,6 +11,9 @@ import type {
   ArchiveTask,
   CreateTask,
   ListTasksQuery,
+  MoveTask,
+  Placement,
+  ReorderTask,
   Task,
   TaskPosition,
   UpdateTask,
@@ -71,6 +74,31 @@ export class TasksService {
   }
   archive(identity: IdentitySession, taskId: string, input: ArchiveTask) {
     return this.write(identity, { taskId }, (store) => store.tasks.archive(taskId, input));
+  }
+  private async checkAnchor(store: WriteRepositories, placement: Placement) {
+    const anchorId =
+      'beforeId' in placement
+        ? placement.beforeId
+        : 'afterId' in placement
+          ? placement.afterId
+          : undefined;
+    if (anchorId) await this.permissions.assertTask(store, anchorId, 'task.read');
+  }
+  move(identity: IdentitySession, taskId: string, input: MoveTask) {
+    return this.write(identity, { taskId }, async (store) => {
+      await store.scopes.path({ ownerType: 'list', ownerId: input.destinationListId });
+      await this.permissions.assertNode(store, input.destinationListId, 'task.write');
+      await this.checkAnchor(store, input.placement);
+
+      return store.tasks.move(taskId, input);
+    });
+  }
+  reorder(identity: IdentitySession, taskId: string, input: ReorderTask) {
+    return this.write(identity, { taskId }, async (store) => {
+      await this.checkAnchor(store, input.placement);
+
+      return store.tasks.reorder(taskId, input);
+    });
   }
   detail(identity: IdentitySession, taskId: string) {
     const { database, context } = this.resources(identity);

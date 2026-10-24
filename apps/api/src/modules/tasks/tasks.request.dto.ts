@@ -2,6 +2,8 @@ import {
   ArchiveTaskSchema,
   CreateTaskSchema,
   ListTasksQuerySchema,
+  MoveTaskSchema,
+  ReorderTaskSchema,
   TaskListParamsSchema,
   TaskParamsSchema,
   UpdateTaskSchema,
@@ -19,3 +21,7 @@ export class CreateTaskDto extends createZodDto(CreateTaskSchema) {}
 export class UpdateTaskDto extends createZodDto(UpdateTaskSchema) {}
 
 export class ArchiveTaskDto extends createZodDto(ArchiveTaskSchema) {}
+
+export class MoveTaskDto extends createZodDto(MoveTaskSchema) {}
+
+export class ReorderTaskDto extends createZodDto(ReorderTaskSchema) {}
