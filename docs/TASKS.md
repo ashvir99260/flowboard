@@ -977,14 +977,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add shared schema-driven form controls`.
   - **Evidence:** [P14-01](evidence/P14-01.md).
 
-- [ ] **P14-02 — Adopt shared controls across product forms**
+- [x] **P14-02 — Adopt shared controls across product forms**
   - **Goal:** Remove repeated form wiring from task, move and configuration inputs and expose a JSON-driven playground example.
   - **Requirements:** R23, R69, R134, R135.
-  - **Files:** Web task/config/move forms, playground, related tests, form docs and evidence.
+  - **Files:** Web task/config/move forms, playground, shared descriptor adapter/tests, development source mount, form docs and evidence.
   - **Dependencies:** P14-01.
   - **Acceptance:** Existing schemas, defaults, mutation/dirty/conflict logic stay in web. Preserve numeric drafts, null/false/zero, required validation, unavailable options, server field paths, inherited/local labels, option-array stable IDs and focus after clearing/reorder. Dynamic JSON uses the same shared controls. No new data fetching or business validation in form package.
   - **Validation:** Existing browser task/config/move/field journeys plus JSON example and regression checks; root build/lint/test/type/format; G01–05/G10.
   - **Commit:** `refactor: adopt shared controls in product forms`.
+  - **Evidence:** [P14-02](evidence/P14-02.md).
 
 ## Explicitly deferred work
 

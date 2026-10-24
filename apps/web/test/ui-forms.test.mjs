@@ -20,6 +20,14 @@ test(
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`${origin}/playground`);
+    const jsonForm = page.getByRole('form', { name: 'JSON form example' });
+    await jsonForm.getByRole('button', { name: 'Preview JSON' }).click();
+    await jsonForm.getByText('Enter a label').waitFor();
+    const jsonLabel = jsonForm.getByLabel('Label', { exact: false });
+    assert.ok(await jsonLabel.evaluate((element) => element === document.activeElement));
+    await jsonLabel.fill('Roadmap');
+    await jsonForm.getByRole('button', { name: 'Preview JSON' }).click();
+    await page.getByLabel('JSON result').getByText('Roadmap', { exact: true }).waitFor();
     const form = page.getByRole('form', { name: 'Task field example' });
     await form.waitFor({ timeout: 10_000 });
     const clear = form.getByRole('button', { name: 'Clear Notified' });

@@ -312,3 +312,34 @@ test('custom JSON definitions reject duplicate IDs and options on non-select fie
     ),
   );
 });
+
+test('domain field adapter emits only serializable presentation properties', () => {
+  assert.equal(typeof Forms.customFieldConfig, 'function');
+  const field = {
+    id: 'not-presentation',
+    workspaceId: 'not-presentation',
+    key: 'effort',
+    name: 'Effort',
+    type: 'number',
+    required: false,
+    options: [],
+    isInherited: true,
+  };
+  const config = Forms.customFieldConfig('customFields.effort', field);
+  assert.deepEqual(config, {
+    kind: 'custom',
+    name: 'customFields.effort',
+    label: 'Effort',
+    definition: { key: 'effort', name: 'Effort', type: 'number', required: false, options: [] },
+  });
+  assert.deepEqual(Forms.parseFormFields([config], ['customFields.effort']), [config]);
+});
+
+test('generic select descriptors retain large workspace member lists', () => {
+  const options = Array.from({ length: 5100 }, (_, index) => ({
+    label: `Member ${index}`,
+    value: `member-${index}`,
+  }));
+  const fields = [{ kind: 'multi_select', name: 'assigneeIds', label: 'Assignees', options }];
+  assert.equal(Forms.parseFormFields(fields, ['assigneeIds'])[0].options.length, 5100);
+});

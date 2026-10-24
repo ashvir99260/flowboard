@@ -1,16 +1,14 @@
 'use client';
 
 import { PrioritySchema } from '@flowboard/contracts';
-import { FormControl, FormHelperText, InputLabel, NativeSelect } from '@flowboard/ui';
-import { FormField } from '@flowboard/ui';
-import { useId } from 'react';
-import { Controller } from 'react-hook-form';
+import { FormFields } from '@flowboard/forms';
 
 import { TaskDescription } from './task-description';
 
 import type { assembleTaskDetail } from './task-detail-data';
 import type { TaskDraft } from './task-form-data';
 import type { Task } from '@flowboard/contracts';
+import type { FormFieldConfig } from '@flowboard/forms';
 import type { Control } from 'react-hook-form';
 
 type Detail = Extract<ReturnType<typeof assembleTaskDetail>, { state: 'ready' }>;
@@ -26,127 +24,44 @@ export function TaskBuiltInFields({
   control: Control<TaskDraft>;
   detail: Detail;
 }) {
-  const assigneeId = useId();
+  const fields: FormFieldConfig<TaskDraft>[] = [
+    {
+      kind: 'select',
+      name: 'statusId',
+      label: 'Status',
+      required: true,
+      options: detail.statuses.map((status) => ({ value: status.id, label: status.name })),
+    },
+    {
+      kind: 'select',
+      name: 'priority',
+      label: 'Priority',
+      options: PrioritySchema.options.map((value) => ({ value, label: value })),
+    },
+    { kind: 'date', name: 'dueDate', label: 'Due date', emptyValue: 'null' },
+    {
+      kind: 'multi_select',
+      name: 'assigneeIds',
+      label: 'Assignees',
+      hint: 'Select members who can access this list.',
+      options: [
+        ...(baseline?.assignees ?? [])
+          .filter((member) => !detail.members.some((item) => item.userId === member.id))
+          .map((member) => ({ value: member.id, label: `${member.name} (no longer assignable)` })),
+        ...detail.members.map((member) => ({ value: member.userId, label: member.name })),
+      ],
+    },
+  ];
 
   return (
     <>
-      <Controller
-        name="title"
+      <FormFields
         control={control}
-        render={({ field: { ref, ...input }, fieldState }) => (
-          <FormField
-            {...input}
-            inputRef={ref}
-            label="Title"
-            required
-            disabled={busy}
-            errorMessage={fieldState.error?.message}
-          />
-        )}
+        disabled={busy}
+        fields={[{ kind: 'text', name: 'title', label: 'Title', required: true }]}
       />
       <TaskDescription control={control} busy={busy} />
-      <Controller
-        name="statusId"
-        control={control}
-        render={({ field: { ref, ...input }, fieldState }) => (
-          <FormField
-            {...input}
-            inputRef={ref}
-            label="Status"
-            select
-            required
-            disabled={busy}
-            errorMessage={fieldState.error?.message}
-            slotProps={{ select: { native: true } }}
-          >
-            {detail.statuses.map((status) => (
-              <option key={status.id} value={status.id}>
-                {status.name}
-              </option>
-            ))}
-          </FormField>
-        )}
-      />
-      <Controller
-        name="priority"
-        control={control}
-        render={({ field: { ref, ...input }, fieldState }) => (
-          <FormField
-            {...input}
-            inputRef={ref}
-            label="Priority"
-            select
-            disabled={busy}
-            errorMessage={fieldState.error?.message}
-            slotProps={{ select: { native: true } }}
-          >
-            {PrioritySchema.options.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </FormField>
-        )}
-      />
-      <Controller
-        name="dueDate"
-        control={control}
-        render={({ field, fieldState }) => (
-          <FormField
-            inputRef={field.ref}
-            name={field.name}
-            onBlur={field.onBlur}
-            value={field.value ?? ''}
-            onChange={(event) => field.onChange(event.target.value || null)}
-            label="Due date"
-            type="date"
-            disabled={busy}
-            errorMessage={fieldState.error?.message}
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-        )}
-      />
-      <Controller
-        name="assigneeIds"
-        control={control}
-        render={({ field, fieldState }) => (
-          <FormControl disabled={busy} error={Boolean(fieldState.error)}>
-            <InputLabel shrink htmlFor={assigneeId}>
-              Assignees
-            </InputLabel>
-            <NativeSelect
-              inputRef={field.ref}
-              onBlur={field.onBlur}
-              value={field.value}
-              onChange={(event) =>
-                field.onChange(Array.from(event.target.selectedOptions, (option) => option.value))
-              }
-              inputProps={{
-                id: assigneeId,
-                name: field.name,
-                multiple: true,
-                'aria-describedby': `${assigneeId}-help`,
-              }}
-            >
-              {(baseline?.assignees ?? [])
-                .filter((member) => !detail.members.some((item) => item.userId === member.id))
-                .map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name} (no longer assignable)
-                  </option>
-                ))}
-              {detail.members.map((member) => (
-                <option key={member.userId} value={member.userId}>
-                  {member.name}
-                </option>
-              ))}
-            </NativeSelect>
-            <FormHelperText id={`${assigneeId}-help`}>
-              {fieldState.error?.message ?? 'Select members who can access this list.'}
-            </FormHelperText>
-          </FormControl>
-        )}
-      />
+      <FormFields control={control} disabled={busy} fields={fields} />
     </>
   );
 }

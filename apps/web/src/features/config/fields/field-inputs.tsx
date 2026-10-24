@@ -1,9 +1,9 @@
 'use client';
 
 import { CustomFieldTypeSchema } from '@flowboard/contracts';
-import { Box, Button, Checkbox, FormControlLabel, Stack, Typography } from '@flowboard/ui';
-import { FormField } from '@flowboard/ui';
-import { Controller, useFieldArray, useWatch } from 'react-hook-form';
+import { FormFields } from '@flowboard/forms';
+import { Box, Button, Stack, Typography } from '@flowboard/ui';
+import { useFieldArray, useWatch } from 'react-hook-form';
 
 import type { FieldDraft } from './field-form-data';
 import type { UseFormReturn } from 'react-hook-form';
@@ -19,7 +19,6 @@ export function FieldInputs({
 }) {
   const {
     control,
-    register,
     setValue,
     setFocus,
     formState: { errors },
@@ -29,84 +28,42 @@ export function FieldInputs({
 
   return (
     <Stack spacing={3}>
-      {(['key', 'name', 'position'] as const).map((name) => (
-        <Controller
-          key={name}
-          name={name}
-          control={control}
-          render={({ field: { ref, ...field }, fieldState }) => (
-            <FormField
-              {...field}
-              inputRef={ref}
-              label={{ key: 'Field key', name: 'Field name', position: 'Field position' }[name]}
-              required
-              disabled={busy || (name === 'key' && editing)}
-              type={name === 'position' ? 'number' : 'text'}
-              onChange={(event) =>
-                field.onChange(
-                  name === 'position'
-                    ? event.target.value === ''
-                      ? Number.NaN
-                      : Number(event.target.value)
-                    : event.target.value,
-                )
-              }
-              errorMessage={fieldState.error?.message}
-              hint={
-                name === 'key'
-                  ? 'Stable value key. A local definition replaces the inherited field with this key.'
-                  : undefined
-              }
-              slotProps={name === 'position' ? { htmlInput: { min: 0, step: 1 } } : undefined}
-            />
-          )}
-        />
-      ))}
-      <Controller
-        name="type"
+      <FormFields
         control={control}
-        render={({ field: { ref, ...field }, fieldState }) => (
-          <FormField
-            {...field}
-            inputRef={ref}
-            label="Field type"
-            select
-            required
-            disabled={busy}
-            errorMessage={fieldState.error?.message}
-            slotProps={{ select: { native: true } }}
-            onChange={(event) => {
-              const next = CustomFieldTypeSchema.parse(event.target.value);
-              field.onChange(next);
-              if (!['single_select', 'multi_select'].includes(next))
-                setValue('options', [], { shouldDirty: true, shouldValidate: true });
-            }}
-          >
-            {CustomFieldTypeSchema.options.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </FormField>
-        )}
-      />
-      <Controller
-        name="required"
-        control={control}
-        render={({ field }) => (
-          <FormControlLabel
-            label="Require a value on every task"
-            control={
-              <Checkbox
-                checked={field.value}
-                disabled={busy}
-                onBlur={field.onBlur}
-                onChange={(event) => field.onChange(event.target.checked)}
-                slotProps={{ input: { ref: field.ref, name: field.name } }}
-              />
-            }
-          />
-        )}
+        disabled={busy}
+        fields={[
+          {
+            kind: 'text',
+            name: 'key',
+            label: 'Field key',
+            required: true,
+            disabled: editing,
+            hint: 'Stable value key. A local definition replaces the inherited field with this key.',
+          },
+          { kind: 'text', name: 'name', label: 'Field name', required: true },
+          {
+            kind: 'number',
+            name: 'position',
+            label: 'Field position',
+            required: true,
+            emptyValue: 'nan',
+          },
+          {
+            kind: 'select',
+            name: 'type',
+            label: 'Field type',
+            required: true,
+            options: CustomFieldTypeSchema.options.map((value) => ({ value, label: value })),
+          },
+          { kind: 'checkbox', name: 'required', label: 'Require a value on every task' },
+        ]}
+        onValueChange={(name, value) => {
+          if (name !== 'type') return;
+
+          const next = CustomFieldTypeSchema.parse(value);
+          if (!['single_select', 'multi_select'].includes(next))
+            setValue('options', [], { shouldDirty: true, shouldValidate: true });
+        }}
       />
       <Typography variant="body2">
         Required means present; zero and false are valid. Changing type or options can be blocked by
@@ -118,9 +75,6 @@ export function FieldInputs({
             Options
           </Typography>
           {rows.map((row, index) => {
-            const { ref: labelRef, ...label } = register(`options.${index}.label`);
-            const { ref: colorRef, ...color } = register(`options.${index}.color`);
-
             return (
               <Box
                 component="fieldset"
@@ -129,22 +83,24 @@ export function FieldInputs({
               >
                 <Typography component="legend">Option {index + 1}</Typography>
                 <Stack spacing={2}>
-                  <FormField
-                    {...label}
-                    inputRef={labelRef}
-                    label={`Option ${index + 1} label`}
-                    required
+                  <FormFields
+                    control={control}
                     disabled={busy}
-                    errorMessage={errors.options?.[index]?.label?.message}
-                  />
-                  <FormField
-                    {...color}
-                    inputRef={colorRef}
-                    label={`Option ${index + 1} color`}
-                    required
-                    disabled={busy}
-                    errorMessage={errors.options?.[index]?.color?.message}
-                    hint="Six-digit hex color, for example #334455."
+                    fields={[
+                      {
+                        kind: 'text',
+                        name: `options.${index}.label`,
+                        label: `Option ${index + 1} label`,
+                        required: true,
+                      },
+                      {
+                        kind: 'text',
+                        name: `options.${index}.color`,
+                        label: `Option ${index + 1} color`,
+                        required: true,
+                        hint: 'Six-digit hex color, for example #334455.',
+                      },
+                    ]}
                   />
                   {errors.options?.[index]?.id?.message && (
                     <Typography color="error" role="alert">

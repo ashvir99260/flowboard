@@ -1,10 +1,10 @@
 'use client';
 
+import { useZodForm } from '@flowboard/forms';
 import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 import { ConfirmDialog } from '@flowboard/ui';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useRef, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
 
 import {
   fieldCommand,
@@ -50,9 +50,8 @@ export function FieldForm({
 }) {
   const owner = configuration.input.scopes.at(-1)!;
   const { submit } = useFieldWrite(runtime, scope, owner);
-  const form = useForm<FieldDraft>({
+  const form = useZodForm(fieldDraftSchema(targetKey), {
     defaultValues: fieldDefaults(configuration, targetKey),
-    resolver: zodResolver(fieldDraftSchema(targetKey)),
     mode: 'onBlur',
   });
   const {

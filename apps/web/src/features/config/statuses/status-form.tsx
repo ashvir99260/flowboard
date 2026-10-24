@@ -1,10 +1,10 @@
 'use client';
 
+import { useZodForm } from '@flowboard/forms';
 import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 import { ConfirmDialog } from '@flowboard/ui';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useRef, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
 
 import { StatusFields } from './status-fields';
 import {
@@ -53,9 +53,8 @@ export function StatusForm({
     setFocus,
     reset,
     formState: { isDirty },
-  } = useForm<StatusDraft>({
+  } = useZodForm(statusDraftSchema(configuration, targetId), {
     defaultValues: statusDefaults(configuration, targetId),
-    resolver: zodResolver(statusDraftSchema(configuration, targetId)),
     mode: 'onBlur',
   });
   const draft = { ...statusDefaults(configuration, targetId), ...useWatch({ control }) };

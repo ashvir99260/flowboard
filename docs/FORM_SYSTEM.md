@@ -1,6 +1,6 @@
 # Shared form system
 
-Status: shared controls and auth implemented in P14-01; remaining product adoption is P14-02; D139 records the boundary.
+Status: implemented and verified in [P14-01](evidence/P14-01.md) and [P14-02](evidence/P14-02.md); D139 records the boundary.
 
 Web → `@flowboard/forms` → `@flowboard/ui` → MUI/Emotion. Contracts supply domain types and Zod schemas. Forms supplies accessible RHF bindings and a strict JSON field renderer. Web retains schema selection, complete defaults, asynchronous submission, server-error mapping, reset and conflict decisions. The UI theme/styles stay shared.
 
@@ -33,3 +33,7 @@ Import `useZodForm`, `FormFields`, `ControlledField`, `parseFormFields` and the 
 JSON payloads use the same descriptors, e.g. `[{"kind":"email","name":"email","label":"Email"}]`. Parse external payloads with `parseFormFields<Values>(payload, ['email'])` before rendering. The allowed-name list comes from the trusted form, not the payload. Select values can be strings, finite numbers, booleans or null; multi-select returns an array. Strings stay compatible with native option IDs; ambiguous encoded values are rejected. Text defaults to an empty string, or use `emptyValue: 'null'` for nullable fields. Numeric controls retain unfinished drafts for Zod to reject; blank becomes null, or `emptyValue: 'nan'` for required numeric schemas. A `custom` descriptor wraps the existing domain input and validates its definition with shared option rules. `clearable` exposes explicit null clearing only for optional custom fields.
 
 The schema input type controls defaults and names, while its output type controls submit callbacks. `useZodForm` defaults to blur validation and accepts ordinary RHF options. Supply complete defaults for every field. It does not reset on configuration changes or fetch data. This follows the official [useController contract](https://react-hook-form.com/docs/usecontroller) and [Zod resolver input/output typing](https://github.com/react-hook-form/resolvers#typescript).
+
+## Product integration
+
+Task, status, field-definition and move forms use the same controlled inputs. Domain field definitions become descriptors through `customFieldConfig`, which copies only presentation properties. Inherited/local indicators, conditional anchors, Markdown previews, option arrays and asynchronous saves stay in the owning web feature. The playground includes a real JSON string parsed with an explicit allowlist and validated by a Zod schema. Generic selects allow up to 10,000 choices to preserve the existing paginated member/anchor limits (5,000 records plus retained choices); domain custom-field options retain their stricter contract limit.

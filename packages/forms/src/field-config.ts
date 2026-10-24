@@ -31,7 +31,7 @@ export function optionKey(value: SelectValue): string {
 
 const options = z
   .array(z.strictObject({ label: z.string().min(1), value: optionValue }))
-  .max(200)
+  .max(10_000)
   .superRefine((items, context) => {
     const keys = items.map((item) => optionKey(item.value));
     if (new Set(keys).size !== keys.length)

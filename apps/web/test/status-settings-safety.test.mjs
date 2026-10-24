@@ -10,7 +10,9 @@ test(
   async (t) => {
     const { page } = await openSettings(t);
     await page.getByRole('button', { exact: true, name: 'Edit In progress' }).click();
-    await page.getByLabel('Status visibility', { exact: true }).selectOption('hide');
+    await page
+      .getByLabel('Status visibility', { exact: true })
+      .selectOption({ label: 'Hide status' });
     await expect(
       page.getByRole('region', { exact: true, name: 'Draft status preview' }).getByRole('alert'),
     ).toContainText('active');

@@ -2,11 +2,10 @@
 
 import { getTask } from '@flowboard/api-client/sdk';
 import { TaskEnvelopeSchema } from '@flowboard/contracts';
+import { useZodForm } from '@flowboard/forms';
 import { Alert, Button, Stack } from '@flowboard/ui';
 import { ConfirmDialog } from '@flowboard/ui';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
 
 import { useRealtime } from '../realtime/realtime-provider';
 
@@ -63,9 +62,8 @@ export function TaskForm({
     setError,
     setFocus,
     formState: { isDirty },
-  } = useForm<TaskDraft>({
+  } = useZodForm(taskDraftSchema(detail.fields, detail.statuses), {
     defaultValues: taskDefaults(detail.fields, detail.statuses, baseline),
-    resolver: zodResolver(taskDraftSchema(detail.fields, detail.statuses)),
     mode: 'onBlur',
   });
   useEffect(() => onState({ busy, dirty: isDirty }), [busy, isDirty, onState]);
@@ -239,7 +237,7 @@ export function TaskForm({
         </Button>
       )}
       <TaskBuiltInFields baseline={baseline} busy={busy} control={control} detail={detail} />
-      <TaskCustomFields fields={detail.fields} control={control} busy={busy} setFocus={setFocus} />
+      <TaskCustomFields fields={detail.fields} control={control} busy={busy} />
       <Button type="submit" variant="contained" disabled={busy || conflict}>
         {busy ? 'Saving…' : baseline ? 'Save changes' : 'Create task'}
       </Button>

@@ -116,7 +116,9 @@ test(
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     await expect(preview.getByText(/^Paused ·/)).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit Paused' }).click();
-    await page.getByLabel('Status visibility', { exact: true }).selectOption('hide');
+    await page
+      .getByLabel('Status visibility', { exact: true })
+      .selectOption({ label: 'Hide status' });
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     await expect(preview.getByText(/^Paused ·/)).toHaveCount(0);
     await expect(
@@ -125,7 +127,9 @@ test(
         .getByText('Hidden', { exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit Paused' }).click();
-    await page.getByLabel('Status visibility', { exact: true }).selectOption('show');
+    await page
+      .getByLabel('Status visibility', { exact: true })
+      .selectOption({ label: 'Show status' });
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     await expect(preview.getByText(/^Paused ·/)).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit Paused' }).click();

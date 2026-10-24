@@ -5,11 +5,18 @@ import {
   CreateScopeFieldSchema,
   ResolvedFieldSchema,
 } from '@flowboard/contracts';
+import {
+  ControlledField,
+  customFieldConfig,
+  FormFields,
+  parseFormFields,
+  useZodForm,
+} from '@flowboard/forms';
 import { Box, Button, Paper, Stack, Typography } from '@flowboard/ui';
-import { CustomFieldChip, CustomFieldInput, FormField } from '@flowboard/ui';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { CustomFieldChip } from '@flowboard/ui';
 import { useState } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray } from 'react-hook-form';
+import { z } from 'zod';
 
 import { taskFieldsSchema } from '../../src/forms/task-fields-schema';
 
@@ -41,7 +48,7 @@ const schema = taskFieldsSchema(fields);
 
 function TaskFieldExample() {
   const [saved, setSaved] = useState<FieldValues | null>(null);
-  const { control, handleSubmit } = useForm<TaskFieldsDraft>({
+  const { control, handleSubmit } = useZodForm(schema, {
     defaultValues: {
       customFields: {
         effort: 0,
@@ -54,7 +61,6 @@ function TaskFieldExample() {
       },
     },
     mode: 'onBlur',
-    resolver: zodResolver(schema),
   });
 
   return (
@@ -76,19 +82,12 @@ function TaskFieldExample() {
       >
         <Stack spacing={5}>
           {fields.map((definition) => (
-            <Controller
+            <ControlledField
               key={definition.key}
               control={control}
-              name={`customFields.${definition.key}`}
-              render={({ field, fieldState }) => (
-                <CustomFieldInput
-                  field={definition}
-                  value={field.value ?? null}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  inputRef={field.ref}
-                  error={fieldState.error?.message}
-                />
+              config={customFieldConfig<TaskFieldsDraft>(
+                `customFields.${definition.key}`,
+                definition,
               )}
             />
           ))}
@@ -110,12 +109,7 @@ function TaskFieldExample() {
 
 function OptionEditorExample() {
   const [saved, setSaved] = useState<CreateScopeField | null>(null);
-  const {
-    control,
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CreateScopeField>({
+  const { control, handleSubmit } = useZodForm(CreateScopeFieldSchema, {
     defaultValues: {
       key: 'team',
       name: 'Team',
@@ -126,7 +120,6 @@ function OptionEditorExample() {
       expectedConfigVersion: 1,
     },
     mode: 'onBlur',
-    resolver: zodResolver(CreateScopeFieldSchema),
   });
   const { fields: rows, append, move, remove } = useFieldArray({ control, name: 'options' });
 
@@ -146,8 +139,6 @@ function OptionEditorExample() {
       >
         <Stack spacing={5}>
           {rows.map((row, index) => {
-            const { ref, ...registration } = register(`options.${index}.label`);
-
             return (
               <Box
                 key={row.id}
@@ -155,11 +146,9 @@ function OptionEditorExample() {
                 sx={{ m: 0, p: 3, border: '1px solid', borderColor: 'divider', minWidth: 0 }}
               >
                 <Typography component="legend">Option {index + 1}</Typography>
-                <FormField
-                  label="Option label"
-                  {...registration}
-                  inputRef={ref}
-                  errorMessage={errors.options?.[index]?.label?.message}
+                <ControlledField
+                  control={control}
+                  config={{ kind: 'text', name: `options.${index}.label`, label: 'Option label' }}
                 />
                 <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: 'wrap', mt: 2 }}>
                   <Button
@@ -216,9 +205,49 @@ function OptionEditorExample() {
   );
 }
 
+const JsonSchema = z.object({ label: z.string().trim().min(1, 'Enter a label') });
+const jsonFields = parseFormFields<z.input<typeof JsonSchema>>(
+  JSON.parse(
+    '[{"kind":"text","name":"label","label":"Label","required":true,"hint":"Configured from JSON; validated with Zod."}]',
+  ),
+  ['label'],
+);
+
+function JsonFormExample() {
+  const [saved, setSaved] = useState<string | null>(null);
+  const { control, handleSubmit } = useZodForm(JsonSchema, { defaultValues: { label: '' } });
+
+  return (
+    <Paper component="section" variant="outlined" sx={{ p: 6, minWidth: 0 }}>
+      <Typography component="h2" variant="h3">
+        JSON-driven form
+      </Typography>
+      <Stack
+        component="form"
+        aria-label="JSON form example"
+        noValidate
+        spacing={3}
+        sx={{ mt: 3 }}
+        onSubmit={handleSubmit((value) => setSaved(value.label))}
+      >
+        <FormFields control={control} fields={jsonFields} />
+        <Button type="submit" variant="contained">
+          Preview JSON
+        </Button>
+      </Stack>
+      {saved !== null && (
+        <Typography aria-label="JSON result" component="output">
+          {saved}
+        </Typography>
+      )}
+    </Paper>
+  );
+}
+
 export function FormExamples() {
   return (
     <>
+      <JsonFormExample />
       <TaskFieldExample />
       <OptionEditorExample />
     </>
