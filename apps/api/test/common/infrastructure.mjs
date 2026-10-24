@@ -15,7 +15,7 @@ export async function startInfrastructure() {
   const password = randomUUID();
   const names = [];
   const close = () => {
-    for (const name of names) docker('rm', '--force', name);
+    for (const name of names) docker('rm', '--force', '--volumes', name);
   };
   const stop = (name) => {
     docker('stop', name);
@@ -52,6 +52,7 @@ export async function startInfrastructure() {
     }
 
     return {
+      names: [...names],
       close,
       databaseUrl: `postgresql://postgres:${password}@${docker('port', postgres, '5432/tcp')}/flowboard_api_test`,
       redisUrl: `redis://${docker('port', redis, '6379/tcp')}`,
