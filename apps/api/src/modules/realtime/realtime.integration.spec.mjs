@@ -55,6 +55,7 @@ async function connect(name = 'Alice', server = 0, options = {}) {
     transports: ['websocket'],
     reconnection: false,
     auth: { token: sessions[name].token },
+    query: { notifications: 'v1' },
     extraHeaders: { Origin: AuthTestOrigin },
     ...options,
   });
@@ -188,8 +189,8 @@ test('Redis adapter reaches another API, duplicates are suppressed, payloads are
   await ingress(event, 1);
   await ingress(event);
   await setTimeout(150);
-  expect(a).toEqual([{ kind: 'list', listId: id(221), eventId: event.id }]);
-  expect(b).toEqual(a);
+  expect(a).toEqual([{ kind: 'list', listId: id(221), eventId: event.id, self: true }]);
+  expect(b).toEqual([{ kind: 'list', listId: id(221), eventId: event.id, self: false }]);
   alice.disconnect();
   bob.disconnect();
 });
@@ -260,8 +261,8 @@ test('worker Redis publication reaches both instances once and accepts canonical
   await publisher.publish(EventChannelName, JSON.stringify(event));
   await publisher.publish(EventChannelName, JSON.stringify(event));
   await until(() => a.length === 1 && b.length === 1);
-  expect(a).toEqual(b);
-  expect(a[0]).toEqual({ kind: 'list', listId: id(221), eventId: event.id });
+  expect(b).toEqual([{ kind: 'list', listId: id(221), eventId: event.id, self: false }]);
+  expect(a[0]).toEqual({ kind: 'list', listId: id(221), eventId: event.id, self: true });
   alice.disconnect();
   bob.disconnect();
 });
@@ -295,7 +296,7 @@ test('moving into a private list reveals no destination or contents to a source-
   } = records.find((item) => item.aggregateId === id(702));
   await ingress(event);
   await until(() => events.length === 1);
-  expect(events).toEqual([{ kind: 'list', listId: id(221), eventId: event.id }]);
+  expect(events).toEqual([{ kind: 'list', listId: id(221), eventId: event.id, self: false }]);
   expect(JSON.stringify(events)).not.toContain(id(222));
   expect(JSON.stringify(events)).not.toContain(id(702));
   bob.disconnect();
@@ -313,7 +314,12 @@ test('Redis subscriber loss disconnects live clients and restores fanout after r
   const received = once(recovered, 'invalidate', { signal: AbortSignal.timeout(5000) });
   const event = await update();
   await publisher.publish(EventChannelName, JSON.stringify(event));
-  expect((await received)[0]).toEqual({ kind: 'list', listId: id(221), eventId: event.id });
+  expect((await received)[0]).toEqual({
+    kind: 'list',
+    listId: id(221),
+    eventId: event.id,
+    self: true,
+  });
   recovered.disconnect();
 });
 
@@ -382,7 +388,12 @@ test('API starts unready during a realtime Redis outage and later restores the a
     const { RealtimeService } = await import('../../../dist/modules/realtime/realtime.service.js');
     const event = await update();
     await app.get(RealtimeService).acceptWorkerEvent(event);
-    expect((await received)[0]).toEqual({ kind: 'list', listId: id(221), eventId: event.id });
+    expect((await received)[0]).toEqual({
+      kind: 'list',
+      listId: id(221),
+      eventId: event.id,
+      self: true,
+    });
     peer.disconnect();
   } finally {
     await app.close();
@@ -498,3 +509,13 @@ test('shutdown drains a pending recheck before closing its database and starts n
     socket.disconnect();
   }
 }, 15000);
+
+test('legacy clients keep the original strict invalidation payload', async () => {
+  const socket = await connect('Bob', 0, { query: {} });
+  await subscribe(socket, id(221));
+  const received = once(socket, 'invalidate', { signal: AbortSignal.timeout(5000) });
+  const event = await update();
+  await ingress(event);
+  expect((await received)[0]).toEqual({ kind: 'list', listId: id(221), eventId: event.id });
+  socket.disconnect();
+});

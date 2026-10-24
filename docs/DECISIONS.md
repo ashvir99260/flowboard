@@ -547,3 +547,13 @@ Set root font size 62.5% and MUI typography.htmlFontSize 10, retaining 14px body
 Use comma-form HSL for authored palette values, supported by the installed MUI parser. Stored status/custom-field colors and API validation remain hexadecimal contracts; convert those colors at the presentation boundary. MUI-generated CSS/color channels are library output, not hand-authored tokens.
 
 Use rem media queries at the equivalent initial 16px browser scale: sm 37.5, md 56.25, lg 75, xl 96. Media-query rem is relative to the initial browser font, not the 62.5% document root. This retains current breakpoints and improves reflow with enlarged default fonts.
+
+## D141 — React Toastify with session-scoped action feedback
+
+Date: 2026-10-25. Source: user requests action/API toasts, explicitly selects Toastify, and includes notifications.
+
+Use pinned React Toastify 11.1.0 (React 18/19 support), styled through the shared MUI/HSL/rem theme. UI owns presentation and overlay placement; web owns the bounded notification queue and session generation. A captured action reporter becomes invalid when identity/workspace changes. Success follows validated mutation completion, not an optimistic update or transport status. No-op/local validation stays inline; final API errors also retain repair controls. Background reads, refresh and reconnect resync stay quiet.
+
+Realtime invalidations remain content-free. Add an optional recipient-relative `self` flag, computed by the server from authenticated identity and the trusted outbox actor. Clients opt in with the public `notifications=v1` handshake query capability (the auth payload remains token-only, so older servers also accept new clients); older clients receive the unchanged strict payload, supporting independent releases. New clients notify only for explicit `self: false`, deduplicating event IDs across both move endpoints; legacy messages still invalidate data without toasting. Self means the acting account, including its other browser tabs. No new notification persistence, delivery API or actor information is exposed. Existing permission checks run before each emission.
+
+Show one notification at a time with a bounded queue, success/info auto-dismiss after six seconds, and persistent errors with a close button. Toastify provides timer pause behavior; overlay-aware placement preserves modal accessibility. Inline repair messages remain visible but do not duplicate the toast announcement. No new global mutation/HTTP interceptor or handwritten API calls.

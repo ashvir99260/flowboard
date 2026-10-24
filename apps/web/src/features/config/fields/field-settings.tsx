@@ -46,7 +46,7 @@ function ScopeConfiguration({ active, owner, runtime, scope, onState }: Configur
   return (
     <Stack spacing={1.6}>
       {notice && (
-        <Alert role="status" severity="success">
+        <Alert aria-live="off" role="status" severity="success">
           {notice}
         </Alert>
       )}

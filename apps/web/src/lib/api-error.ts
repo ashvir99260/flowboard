@@ -1,7 +1,13 @@
 import { ClientSessionError } from '@flowboard/api-client/session';
 import { ErrorEnvelopeSchema } from '@flowboard/contracts';
 
-export function apiError(error: unknown) {
+import type { ValidationIssue } from '@flowboard/contracts';
+
+export function apiError(error: unknown): {
+  code: string;
+  details?: ValidationIssue[];
+  message: string;
+} {
   const parsed = ErrorEnvelopeSchema.safeParse(error);
   if (parsed.success) return parsed.data.error;
 

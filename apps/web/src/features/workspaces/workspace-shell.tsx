@@ -248,7 +248,7 @@ export function WorkspaceShell({
   workspaceId: string;
 }) {
   const { listId } = useParams<{ listId?: string }>();
-  const { runtime, scope, status } = useSession();
+  const { runtime, scope, status, switchWorkspace } = useSession();
   const [error, setError] = useState<string | null>(null);
   const pending = useRef<string | null>(null);
   const target = useRef(workspaceId);
@@ -263,10 +263,13 @@ export function WorkspaceShell({
     if (pending.current === key) return;
 
     pending.current = key;
-    void runtime.switchWorkspace(workspaceId).catch((cause: unknown) => {
-      if (target.current === workspaceId) setError(apiError(cause).message);
+    void switchWorkspace(workspaceId).catch((cause: unknown) => {
+      if (target.current === workspaceId) {
+        const failure = apiError(cause);
+        setError(failure.message);
+      }
     });
-  }, [runtime, scope, status, workspaceId]);
+  }, [runtime, scope, status, switchWorkspace, workspaceId]);
 
   if (error)
     return (

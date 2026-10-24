@@ -311,3 +311,7 @@ P00-08 established conditional CD after release publication. The user’s initia
 ### Future build-once promotion (23 October 2026 clarification)
 
 Docker remains the local development/test topology. If four-environment trunk-based delivery is adopted, build a candidate once and promote that exact artifact through `dev → qa → stage → prod`, injecting each target's validated runtime settings. Do not use environment branches, rebuilds or environment-specific public bundle constants. [PROMOTION.md](PROMOTION.md) defines the artifact/runtime contract and identifies the current Vercel source-build gap. P00-10 documents this direction; P00-11/P00-12 remain future implementation tasks.
+
+### Notification refinement (25 October 2026)
+
+P16-01 adds React Toastify action feedback and content-free realtime notifications. UI owns the themed renderer/overlay placement, web owns lifecycle and queue state, and existing mutation adapters report only final validated results. A recipient-relative flag suppresses own realtime echoes without exposing actor/task content. See D141 and the task acceptance record.

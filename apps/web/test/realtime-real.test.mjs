@@ -30,6 +30,10 @@ test(
       await expect(
         page.getByRole('button', { exact: true, name: 'Open task: Build demo workflow 1' }),
       ).toBeVisible();
+      const signInToast = page.getByRole('status', { name: 'Notification: Signed in.' });
+      if (await signInToast.count())
+        await signInToast.getByRole('button', { name: 'Dismiss notification' }).click();
+
       pages.push(page);
     }
     const [editor, viewer] = pages;
@@ -80,12 +84,29 @@ test(
       ).status(),
     ).toBe(200);
     await firstRead;
+    await expect(
+      viewer.getByRole('status', { name: 'Notification: Tasks in this list were updated.' }),
+    ).toBeVisible();
+    await expect(
+      editor.getByRole('status', { name: 'Notification: Tasks in this list were updated.' }),
+    ).toHaveCount(0);
+    await viewer.getByRole('button', { name: 'Dismiss notification' }).click();
     await open(editor, 'Build demo workflow 1');
     await drawer(editor)
       .getByLabel(/^Title/)
       .fill('Remote saved title');
     await drawer(editor).getByRole('button', { exact: true, name: 'Save changes' }).click();
-    await expect(drawer(editor).getByText('Task saved.', { exact: true })).toBeVisible();
+    await expect(
+      drawer(editor)
+        .getByRole('status', { exact: true, name: '' })
+        .filter({ hasText: 'Task saved.' }),
+    ).toBeVisible();
+    await expect(
+      viewer.getByRole('status', { name: 'Notification: Tasks in this list were updated.' }),
+    ).toHaveCount(1);
+    await expect(
+      editor.getByRole('status', { name: 'Notification: Tasks in this list were updated.' }),
+    ).toHaveCount(0);
     await expect(
       drawer(viewer).getByText('This task changed elsewhere. Your unsaved edits are preserved.'),
     ).toBeVisible({ timeout: 15000 });
@@ -108,7 +129,11 @@ test(
       .getByLabel(/^Title/)
       .fill('Updated while offline');
     await drawer(editor).getByRole('button', { exact: true, name: 'Save changes' }).click();
-    await expect(drawer(editor).getByText('Task saved.', { exact: true })).toBeVisible();
+    await expect(
+      drawer(editor)
+        .getByRole('status', { exact: true, name: '' })
+        .filter({ hasText: 'Task saved.' }),
+    ).toBeVisible();
     await viewer.context().setOffline(false);
     await expect(
       viewer.getByRole('button', { exact: true, name: 'Open task: Updated while offline' }),

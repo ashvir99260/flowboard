@@ -59,6 +59,6 @@ test(
     await expect(form.getByRole('button', { exact: true, name: 'Saving…' })).toBeDisabled();
     await expect(page.getByLabel('Configuration scope', { exact: true })).toBeDisabled();
     release();
-    await expect(page.getByRole('status')).toContainText('Field saved');
+    await expect(page.getByRole('status', { exact: true, name: '' })).toContainText('Field saved');
   },
 );

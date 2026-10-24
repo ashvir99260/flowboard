@@ -68,6 +68,10 @@ The Nest Socket.IO gateway uses the Redis adapter to fan out signals between API
 
 A workspace invalidation contains `kind: "workspace"` and `eventId`; a generic resync signal contains only `kind: "resync"`. The browser subscribes with `list.subscribe` and `{listId}`, then refetches using generated REST operations. It does not send an acting tenant, role or user. A viewer of only the source list receives no destination ID or task content. Access changes, JWT expiry and sign-out close invalid subscriptions/connections. Clients deduplicate signals and refetch on reconnect because Redis Pub/Sub has no durable replay guarantee.
 
+Clients may opt into notification metadata with the public Socket.IO handshake query `notifications=v1`. The authentication payload still contains only `token`, so this connection works with older servers. For opted-in clients, list/workspace invalidations additionally carry `self: boolean`, computed from the authenticated recipient and committed event actor. Legacy clients receive the unchanged shapes above. No actor ID, task content or private destination is exposed.
+
+The web app shows a content-free Toastify notification only for `self: false` events affecting its current subscriptions, deduplicating the event ID across move endpoints. Same-account changes in other tabs still refresh data without an extra remote toast. Resync and connection refresh stay quiet. The notification queue is transient; the task activity feed is the durable history.
+
 ## What is shared
 
 | Contract                                          | Owners and use                                                                                                                                        |

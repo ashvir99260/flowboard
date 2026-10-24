@@ -129,6 +129,6 @@ test(
     await expect(page.getByRole('button', { exact: true, name: 'Saving…' })).toBeDisabled();
     await expect(page.getByLabel('Configuration scope', { exact: true })).toBeDisabled();
     release();
-    await expect(page.getByRole('status')).toContainText('Status saved');
+    await expect(page.getByRole('status', { exact: true, name: '' })).toContainText('Status saved');
   },
 );

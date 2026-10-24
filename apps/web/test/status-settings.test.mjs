@@ -50,7 +50,7 @@ test(
     );
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     const mutation = await (await saved).json();
-    await expect(page.getByRole('status')).toContainText('Status saved');
+    await expect(page.getByRole('status', { exact: true, name: '' })).toContainText('Status saved');
     await page
       .getByLabel('Configuration scope', { exact: true })
       .selectOption({ label: 'List: Product backlog' });
@@ -75,7 +75,7 @@ test(
     );
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     const inheritedMutation = await (await inherited).json();
-    await expect(page.getByRole('status')).toContainText('Status saved');
+    await expect(page.getByRole('status', { exact: true, name: '' })).toContainText('Status saved');
     if (mutation.data.identity.id !== inheritedMutation.data.identity.id)
       throw new Error('Rename changed canonical status identity');
 

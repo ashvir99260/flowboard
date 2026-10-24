@@ -51,7 +51,11 @@ test(
     const other = await open();
     await other.drawer.getByLabel(/^Status/).selectOption('f1000000-0000-4000-8000-000000000402');
     await other.drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
-    await expect(other.drawer.getByText('Task saved.', { exact: true })).toBeVisible();
+    await expect(
+      other.drawer
+        .getByRole('status', { exact: true, name: '' })
+        .filter({ hasText: 'Task saved.' }),
+    ).toBeVisible();
     await expect(feed.getByRole('listitem'))
       .toHaveCount(2, { timeout: 15000 })
       .catch(async (error) => {

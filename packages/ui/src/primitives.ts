@@ -41,7 +41,7 @@ export { default as Checkbox } from '@mui/material/Checkbox';
 
 export { default as CircularProgress } from '@mui/material/CircularProgress';
 
-export { default as Dialog } from '@mui/material/Dialog';
+export { Dialog } from './components/dialog.js';
 
 export { default as DialogActions } from '@mui/material/DialogActions';
 

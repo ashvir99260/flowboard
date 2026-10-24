@@ -8,6 +8,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useId, useRef } from 'react';
 
+import { ToastRegion } from './toast-host.js';
+
 export function ConfirmDialog({
   busy = false,
   confirmLabel = 'Confirm',
@@ -40,6 +42,7 @@ export function ConfirmDialog({
       maxWidth="xs"
       slotProps={{ transition: { onEntered: () => cancel.current?.focus() } }}
     >
+      <ToastRegion />
       <DialogTitle id={`${id}-title`}>{title}</DialogTitle>
       <DialogContent>
         <DialogContentText id={`${id}-description`}>{description}</DialogContentText>

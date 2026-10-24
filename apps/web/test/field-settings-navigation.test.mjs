@@ -55,7 +55,9 @@ test(
       await other.getByRole('button', { exact: true, name: 'Edit Effort' }).click();
       await other.getByLabel(/^Field name/).fill('Saved effort');
       await other.getByRole('button', { exact: true, name: 'Save field' }).click();
-      await expect(other.getByRole('status')).toContainText('Field saved');
+      await expect(other.getByRole('status', { exact: true, name: '' })).toContainText(
+        'Field saved',
+      );
       await page.getByRole('button', { exact: true, name: 'Save field' }).click();
       await expect(page.getByRole('button', { exact: true, name: 'Save field' })).toBeDisabled();
       await expect(page.getByLabel(/^Field name/)).toHaveValue('My unsaved effort');

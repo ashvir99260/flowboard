@@ -37,7 +37,7 @@ test(
       copied.options.map(({ id }) => id),
       originalIds.toReversed(),
     );
-    await expect(page.getByRole('status')).toContainText('Field saved');
+    await expect(page.getByRole('status', { exact: true, name: '' })).toContainText('Field saved');
     await page.getByRole('button', { exact: true, name: 'Edit Team' }).click();
     await form.getByRole('button', { exact: true, name: 'Remove option 1' }).click();
     await form.getByRole('button', { exact: true, name: 'Save field' }).click();

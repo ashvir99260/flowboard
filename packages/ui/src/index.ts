@@ -55,3 +55,7 @@ export { WorkspaceLayout } from './components/workspace-layout.js';
 export { BoardDropzone, BoardGrid, BoardItem, BoardViewport } from './components/board-layout.js';
 
 export { toHslColor } from './color.js';
+
+export { ToastHost, ToastRegion } from './components/toast-host.js';
+
+export type { ToastMessage, ToastSeverity } from './components/toast-host.js';

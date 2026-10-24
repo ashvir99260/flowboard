@@ -42,7 +42,9 @@ test(
       await other.getByRole('button', { exact: true, name: 'Edit In progress' }).click();
       await other.getByLabel(/^Status name/).fill('Working');
       await other.getByRole('button', { exact: true, name: 'Save status' }).click();
-      await expect(other.getByRole('status')).toContainText('Status saved');
+      await expect(other.getByRole('status', { exact: true, name: '' })).toContainText(
+        'Status saved',
+      );
       await page.getByRole('link', { exact: true, name: 'Status settings' }).click();
       await expect(page.getByLabel(/^Status name/)).toHaveValue('Keep this conflicting draft');
       await page.getByRole('button', { exact: true, name: 'Save status' }).click();

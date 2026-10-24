@@ -6,6 +6,8 @@ import { useId, useRef } from 'react';
 import { Toolbar } from '../composition.js';
 import { Button, Drawer, Stack, Typography } from '../primitives.js';
 
+import { ToastRegion } from './toast-host.js';
+
 import type { ReactNode } from 'react';
 
 const Panel = styled(Drawer, { name: 'FlowboardDrawer', slot: 'Root' })(({ theme }) => ({
@@ -47,6 +49,7 @@ export function DrawerPanel({
         transition: { onEntered: () => close.current?.focus() },
       }}
     >
+      <ToastRegion />
       <Stack spacing={1.2}>
         <Toolbar.Root>
           <Typography component="h2" variant="h2" id={id}>

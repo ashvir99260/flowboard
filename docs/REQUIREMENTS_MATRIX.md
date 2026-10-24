@@ -313,3 +313,5 @@ R86 documentation follow-up: [P02-20](evidence/P02-20.md) clarifies the Docker r
 | R135 | E · User refinement, 25 October 2026 | Shared React Hook Form controls with Zod validation and JSON-driven fields; reuse control/change/blur/error wiring across forms. | Forms/web · P14-01–02 | Typed bindings, strict serializable descriptors, nested errors/focus, disabled-value retention and real product/browser adoption; [design](FORM_SYSTEM.md), [P14-01](evidence/P14-01.md), [P14-02](evidence/P14-02.md). | Verified |
 
 | R136 | E · User refinement | Use HSL colors, rem sizing, px borders/radii, and a 10px rem/MUI spacing scale. | UI/web · P15-01 | Theme contracts, preserved geometry/colors, larger browser-font reflow, responsive/contrast/interaction evidence; [P15-01](evidence/P15-01.md). | Verified |
+
+| R137 | E · User refinement | React Toastify feedback for explicit action/API success and failures, plus authorized realtime notifications. | UI/web/realtime · P16-01 | Session-scoped/deduplicated feedback, final result validation, inline repair state, overlay accessibility and remote event tests; [P16-01](evidence/P16-01.md). | Verified |

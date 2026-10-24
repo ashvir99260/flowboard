@@ -155,7 +155,11 @@ export function MoveForm({
       onSubmit={(event) => void handleSubmit(save)(event)}
       spacing={1.2}
     >
-      {message && <Alert severity="error">{message}</Alert>}
+      {message && (
+        <Alert aria-live="off" severity="error">
+          {message}
+        </Alert>
+      )}
       <FormFields
         control={control}
         disabled={busy}
@@ -209,7 +213,7 @@ export function MoveForm({
         />
       )}
       {removedKeys.length > 0 && (
-        <Alert severity="info">
+        <Alert aria-live="off" severity="info">
           These fields are unavailable in the destination and will be cleared:{' '}
           {removedKeys.join(', ')}.
         </Alert>
