@@ -319,3 +319,5 @@ R86 documentation follow-up: [P02-20](evidence/P02-20.md) clarifies the Docker r
 | R138 | E · User refinement | Split and improve repository AI guidance with implemented architecture, naming, code patterns and validation conventions. | Repository harness · P17-01 | Scoped instructions, source-linked examples, accurate enforcement labels, corrected stale guidance and documentation checks; [P17-01](evidence/P17-01.md). | Verified |
 
 | R139 | E · User refinement | Add Storybook to the component library. | UI/tooling · P18-01 | Isolated typed stories, shared light/dark theme, controls/accessibility, browser interactions, static build and release isolation; [P18-01](evidence/P18-01.md). | Verified |
+
+| R140 | E · User refinement | Use MUI Data Grid for the task table view. | UI/web · P19-01 | Community grid semantics, metadata/custom columns, keyboard/focus, loaded-row paging beyond 100, cursor sort/filter preservation and browser checks; [P19-01](evidence/P19-01.md). | Verified |

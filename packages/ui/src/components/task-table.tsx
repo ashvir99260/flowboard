@@ -1,18 +1,11 @@
 'use client';
 
 import { styled } from '@mui/material/styles';
+import { DataGrid } from '@mui/x-data-grid';
+import { useCallback, useMemo } from 'react';
 
-import {
-  Box,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from '../primitives.js';
+import { Button, Stack, Typography } from '../primitives.js';
+import { useRemSize } from '../use-rem-size.js';
 
 import { AssigneeAvatarGroup } from './assignee-avatar-group.js';
 import { CustomFieldChip } from './custom-field-chip.js';
@@ -21,28 +14,50 @@ import { PriorityBadge } from './priority-badge.js';
 import { StatusChip } from './status-chip.js';
 
 import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
+import type { GridColDef } from '@mui/x-data-grid';
 
-const Scroll = styled(TableContainer)({
+const Container = styled('div')({
+  height: 'min(64rem, 75dvh)',
+  minHeight: '28rem',
   minWidth: 0,
   maxWidth: '100%',
-  overflowX: 'auto',
-}) as typeof TableContainer;
-const Grid = styled(Table)({
-  minWidth: '96rem',
-  overflowWrap: 'normal',
-  '& td': { whiteSpace: 'nowrap' },
-}) as typeof Table;
-const TitleCell = styled(TableCell)({
-  minWidth: '22rem',
-  maxWidth: '36rem',
-  overflowWrap: 'anywhere',
-}) as typeof TableCell;
+  width: '100%',
+  position: 'relative',
+});
+const RemMeasure = styled('span')({
+  position: 'absolute',
+  width: '1rem',
+  height: '1rem',
+  visibility: 'hidden',
+  pointerEvents: 'none',
+});
+const Grid = styled(DataGrid)(({ theme }) => ({
+  border: 0,
+  fontSize: '1.3rem',
+  '--DataGrid-containerBackground': (theme.vars ?? theme).palette.background.paper,
+  '--DataGrid-rowBorderColor': (theme.vars ?? theme).palette.divider,
+  '& .MuiDataGrid-columnHeader': { paddingInline: theme.spacing(1.2) },
+  '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 600 },
+  '& .MuiDataGrid-cell': {
+    display: 'flex',
+    alignItems: 'center',
+    minHeight: '6.4rem',
+    padding: theme.spacing(0.8, 1.2),
+    lineHeight: 1.5,
+    whiteSpace: 'normal',
+  },
+  '& .MuiDataGrid-footerContainer': { minHeight: '5.6rem' },
+})) as typeof DataGrid;
 const OpenButton = styled(Button)({
   textAlign: 'left',
   justifyContent: 'flex-start',
   overflowWrap: 'anywhere',
+  whiteSpace: 'normal',
+  width: '100%',
 }) as typeof Button;
-const ValueCell = styled(TableCell)({ minWidth: '14rem' }) as typeof TableCell;
+const autoRowHeight = () => 'auto' as const;
+const pageSizeOptions = [25, 50, 100];
+const initialState = { pagination: { paginationModel: { page: 0, pageSize: 50 } } };
 
 export function TaskTable({
   items,
@@ -55,66 +70,104 @@ export function TaskTable({
   onOpenTask: (id: string) => void;
   statuses: readonly ResolvedStatus[];
 }) {
-  const statusById = new Map(statuses.map((status) => [status.id, status]));
+  const { ref: remRef, size: remSize } = useRemSize();
+  const estimateRowHeight = useCallback(() => 6.4 * remSize, [remSize]);
+  const columns = useMemo<GridColDef<Task>[]>(() => {
+    const statusById = new Map(statuses.map((status) => [status.id, status]));
+    const fixed: GridColDef<Task>[] = [
+      {
+        field: 'title',
+        headerName: 'Title',
+        width: 26 * remSize,
+        rowHeader: true,
+        renderCell: (params) => (
+          <OpenButton
+            tabIndex={params.tabIndex}
+            data-open-task={params.row.id}
+            aria-label={`Open task: ${params.row.title}`}
+            onClick={() => onOpenTask(params.row.id)}
+          >
+            {params.row.title}
+          </OpenButton>
+        ),
+      },
+      {
+        field: 'statusId',
+        headerName: 'Status',
+        width: 20 * remSize,
+        renderCell: ({ row }) => {
+          const status = statusById.get(row.statusId);
+
+          return status ? (
+            <StatusChip status={status} />
+          ) : (
+            <Typography color="error">Unavailable status</Typography>
+          );
+        },
+      },
+      {
+        field: 'assignees',
+        headerName: 'Assignees',
+        width: 16 * remSize,
+        renderCell: ({ row }) => <AssigneeAvatarGroup assignees={row.assignees} />,
+      },
+      {
+        field: 'priority',
+        headerName: 'Priority',
+        width: 12 * remSize,
+        renderCell: ({ row }) => <PriorityBadge priority={row.priority} />,
+      },
+      {
+        field: 'dueDate',
+        headerName: 'Due date',
+        width: 18 * remSize,
+        renderCell: ({ row }) => <DueDateLabel date={row.dueDate} />,
+      },
+    ];
+    const custom: GridColDef<Task>[] = fields.map((field) => ({
+      field: `custom:${field.key}`,
+      headerName: field.name,
+      width: 18 * remSize,
+      valueGetter: (_value, row) => row.customFields[field.key],
+      renderHeader: () => (
+        <Stack spacing={0.2}>
+          <Typography sx={{ fontWeight: 600 }} variant="body2">
+            {field.name}
+          </Typography>
+          <Typography color="text.secondary" variant="caption">
+            {field.isInherited ? 'Inherited' : 'Local'}
+          </Typography>
+        </Stack>
+      ),
+      renderCell: ({ row }) => (
+        <CustomFieldChip field={field} value={row.customFields[field.key]} />
+      ),
+    }));
+
+    return [...fixed, ...custom].map((column) => ({
+      ...column,
+      sortable: false,
+      filterable: false,
+    }));
+  }, [fields, onOpenTask, remSize, statuses]);
 
   return (
-    <Scroll component={Box} role="region" aria-label="Scrollable task list" tabIndex={0}>
-      <Grid aria-label="List tasks" size="small">
-        <TableHead>
-          <TableRow>
-            {['Title', 'Status', 'Assignees', 'Priority', 'Due date'].map((label) => (
-              <TableCell key={label} scope="col">
-                {label}
-              </TableCell>
-            ))}
-            {fields.map((field) => (
-              <TableCell key={field.id} scope="col">
-                {field.name}
-                <Typography
-                  color="text.secondary"
-                  component="span"
-                  sx={{ display: 'block' }}
-                  variant="caption"
-                >
-                  {field.isInherited ? 'Inherited' : 'Local'}
-                </Typography>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {items.map((task) => (
-            <TableRow key={task.id}>
-              <TitleCell component="th" aria-label={task.title} scope="row">
-                <OpenButton
-                  data-open-task={task.id}
-                  aria-label={`Open task: ${task.title}`}
-                  onClick={() => onOpenTask(task.id)}
-                >
-                  {task.title}
-                </OpenButton>
-              </TitleCell>
-              <TableCell>
-                <StatusChip status={statusById.get(task.statusId)!} />
-              </TableCell>
-              <TableCell>
-                <AssigneeAvatarGroup assignees={task.assignees} />
-              </TableCell>
-              <TableCell>
-                <PriorityBadge priority={task.priority} />
-              </TableCell>
-              <ValueCell>
-                <DueDateLabel date={task.dueDate} />
-              </ValueCell>
-              {fields.map((field) => (
-                <ValueCell key={field.id}>
-                  <CustomFieldChip field={field} value={task.customFields[field.key]} />
-                </ValueCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Grid>
-    </Scroll>
+    <Container role="region" aria-label="Scrollable task list">
+      <RemMeasure ref={remRef} aria-hidden="true" />
+      <Grid
+        aria-label="List tasks"
+        rows={items}
+        columns={columns}
+        columnHeaderHeight={6.4 * remSize}
+        getRowHeight={autoRowHeight}
+        getEstimatedRowHeight={estimateRowHeight}
+        initialState={initialState}
+        pageSizeOptions={pageSizeOptions}
+        disableColumnFilter
+        disableColumnMenu
+        disableColumnSelector
+        disableRowSelectionOnClick
+      />
+    </Container>
   );
 }
