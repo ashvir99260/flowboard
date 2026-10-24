@@ -2,11 +2,13 @@
 
 A self-hosted project management app for learning sound architecture at hobby scale.
 
-**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Shared MUI display/input components, light/dark themes, typed form examples, tree items, cards and confirmation dialogs are available in the development playground. The web supports signup/login, session restoration, workspace switching and a paginated permission-aware sidebar. Selected lists show a Kanban board with their resolved columns, card metadata, per-column pagination and accessible card moves. The worker remains idle until its activity-processing task. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while task editing, configuration screens and realtime delivery remain in the backlog.
+**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Shared MUI display/input components, light/dark themes, typed form examples, tree items, cards and confirmation dialogs are available in the development playground. The web supports signup/login, session restoration, workspace switching and a paginated permission-aware sidebar. Selected lists offer a Kanban board with accessible card moves and a sortable table with resolved custom-field columns. The worker remains idle until its activity-processing task. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while task editing, configuration screens and realtime delivery remain in the backlog.
 
 Boards display only a consistent set of status, field and task revisions. A concurrent configuration or task change restarts loading, with a visible retry after repeated changes. Refreshing the board, returning to the tab or reconnecting starts again at the first page of every column. Use each column's **Load more** button to load additional cards; column counts describe loaded cards. Wider boards scroll inside their own region on small screens.
 
 Use a card's **Drag** handle to change status or order. Keyboard users can pick up with Space or Enter, move with arrow keys, drop with Space or Enter, and cancel with Escape. Dropping outside the columns cancels. The **Move** button provides the same operations plus another visible destination list, placement controls and required custom-field corrections. Fields unavailable in the destination are explicitly listed before clearing. Saving disables repeat actions for that task; rejected moves roll back their own preview and show the error without discarding the form. Every completed save refreshes affected open boards. Moving to the end of a partially loaded column may put the card on a later page.
+
+Choose **List** to see built-in fields and the list's actual resolved custom fields, labeled **Inherited** or **Local**. Sort by due date, priority or board order; empty due dates stay last. Apply one typed custom-field filter, or clear it to see all tasks. Multi-select filters match one selected option. View, sort and filter stay in the URL for sharing and browser history; cursors remain internal. **Load more tasks** adds the next server page. Changing lists or filters, refreshing, returning to the tab and completed moves start a new consistent page chain. On narrow screens, focus the table region and scroll horizontally to reach every column.
 
 The [system design](docs/SYSTEM_DESIGN.md) covers the UI, backend, database ERD and request/event flows. [ClickUp/Asana/Linear research](docs/REFERENCE_ARCHITECTURES.md) explains the public patterns behind it, with sources and explicit limits on what is known.
 
@@ -61,11 +63,11 @@ Open [Flowboard](http://localhost:3000). Next.js reloads page edits; the API and
 
 The development-only [component playground](http://localhost:3000/playground) demonstrates shared statuses, priorities, assignees, dates, custom fields and empty/error states in light and dark themes. It uses local sample props and makes no API requests. Production returns 404 for this route.
 
-| Process | Default address         | Current behavior                                                             |
-| ------- | ----------------------- | ---------------------------------------------------------------------------- |
-| Web     | `http://localhost:3000` | Login/signup, workspace picker and visible list navigation.                  |
-| API     | `http://localhost:3001` | Auth, workspaces, hierarchy, statuses, fields, tasks and Swagger at `/docs`. |
-| Worker  | TCP `localhost:3002`    | Process liveness only; queue processing arrives in P11-02.                   |
+| Process | Default address         | Current behavior                                                              |
+| ------- | ----------------------- | ----------------------------------------------------------------------------- |
+| Web     | `http://localhost:3000` | Login/signup, workspace picker, visible tree, Kanban and sortable task table. |
+| API     | `http://localhost:3001` | Auth, workspaces, hierarchy, statuses, fields, tasks and Swagger at `/docs`.  |
+| Worker  | TCP `localhost:3002`    | Process liveness only; queue processing arrives in P11-02.                    |
 
 The API and worker accept `HOST` and `PORT`; each app accepts its own `PORT`. Use a filtered command when overriding a port, so the three processes do not contend for it. For a production-mode shell, run `pnpm build`, then `pnpm --filter @flowboard/web start` (or `api`/`worker`). The Next production server binds all interfaces by default; set `HOSTNAME=localhost` to restrict it locally. The API requires `DATABASE_URL` and `REDIS_URL`, migrates before listening and serves `/health/live` and dependency-aware `/health/ready`. `API_DOCS=true` enables `/docs`; it defaults on in development and off in hosted production. Local Compose explicitly enables it.
 
@@ -102,7 +104,7 @@ Compose builds separate web, API and worker images and starts PostgreSQL and Red
 | API Swagger UI  | [http://localhost:3001/docs](http://localhost:3001/docs)                 |
 | API readiness   | [http://localhost:3001/health/ready](http://localhost:3001/health/ready) |
 
-Sign in to the web with a demo account, choose a workspace, then select a list. The sidebar includes only containers visible to that account. Selected lists currently show their real metadata; boards, task editing and configuration screens follow in Phases 9–10. Swagger exposes all implemented backend endpoints. Application containers run as non-root. Without the development override, PostgreSQL, Redis and the worker are private to the Compose network.
+Sign in to the web with a demo account, choose a workspace, then select a list. The sidebar includes only containers visible to that account. Use **Board** for status columns or **List** for the task table; task editing and configuration screens follow in Phases 9–10. Swagger exposes all implemented backend endpoints. Application containers run as non-root. Without the development override, PostgreSQL, Redis and the worker are private to the Compose network.
 
 Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files are only needed for host development and are excluded from images. Without a root `.env`, Compose uses the development defaults in `compose.yaml`. To use different published ports, set `WEB_PORT` and `API_PORT` in the root file. An explicit `AUTH_ALLOWED_ORIGINS` must list both full browser origins, such as `http://localhost:3100,http://localhost:3101`. Without an explicit allowlist, Compose derives both localhost origins from the published ports. Keep these development credentials local.
 

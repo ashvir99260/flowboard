@@ -807,13 +807,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add optimistic accessible card moves`.
   - **Completion evidence:** [P09-02](evidence/P09-02.md): pointer/keyboard/button moves, cross-list field corrections, duplicate-save safety, concurrent rollback and navigation settlement pass; all 801 tests, root checks and both Docker checks pass.
 
-- [ ] **P09-03 — Sortable list view with custom columns**
+- [x] **P09-03 — Sortable list view with custom columns**
   - **Goal:** Offer a second view of the same scoped tasks and filters.
-  - **Files:** `apps/web/src/features/list/{task-table,list-toolbar,use-list-query}.tsx`, list tests, view route/search-param schema.
+  - **Requirements:** R65, R69, R70.
+  - **Files:** `apps/web/src/features/list/*`, selected-list view composition, list tests/HTTP fixture, scoped web TypeScript source-import support, decisions/matrix/README/evidence.
   - **Dependencies:** P09-02.
   - **Acceptance:** Title/status/assignees/priority/due date plus at least two effective custom columns; server due/priority sort, typed field filter, cursor pages, URL state and responsive overflow.
   - **Validation:** Priority order/null dates, custom select filter, reset cursor on sort/filter/list change, inherited column labels and unknown URL values; standard gate.
   - **Commit:** `feat: add task table sorting and field filters`.
+  - **Completion evidence:** [P09-03](evidence/P09-03.md): typed filters, server sorting, URL/history/cursor safety and responsive table pass; 826 tests, root gates and both Docker checks pass.
 
 - [ ] **P09-04 — Task drawer and early browser acceptance path**
   - **Goal:** Edit task built-ins/custom fields through the same shared contracts.

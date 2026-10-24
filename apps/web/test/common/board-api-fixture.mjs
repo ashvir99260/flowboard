@@ -1,6 +1,7 @@
 // Isolated HTTP fixture for generated-client browser tests; runtime authorization lives in the API.
 import {
   applyTaskFieldPatch,
+  ListTasksQuerySchema,
   MoveTaskSchema,
   ReorderTaskSchema,
   ResolvedFieldCollectionSchema,
@@ -10,11 +11,13 @@ import {
 } from '@flowboard/contracts';
 
 import { boardFixture, field, ids, status, task } from './board-fixture.mjs';
+import { sortedTableRows, tableFields, tableTasks } from './table-fixture.mjs';
 
 export function createBoardApi(nodes) {
   let cursorSequence = 0;
   let dataVersion = 1;
   const issuedCursors = new Map();
+  const tableCursors = new Map();
   const overrides = new Map();
   const controls = {
     driftRounds: 0,
@@ -28,6 +31,7 @@ export function createBoardApi(nodes) {
     sourceFieldList: null,
     moveGates: new Map(),
     requiredDestination: null,
+    tableMode: false,
   };
   const send = (response, statusCode, data) =>
     response
@@ -40,6 +44,8 @@ export function createBoardApi(nodes) {
     node.workspaceId === session.data.activeWorkspace.id &&
     !(node.visibility === 'private' && session.data.user.name === 'Bob');
   const fieldsFor = (node) => {
+    if (controls.tableMode) return tableFields(node);
+
     const fields = boardFixture().fields.items.map((item) => ({
       ...item,
       workspaceId: node.workspaceId,
@@ -69,19 +75,21 @@ export function createBoardApi(nodes) {
     const privateList = node.visibility === 'private';
     const offset = privateList ? 100 : 0;
     const scope = { workspaceId: node.workspaceId, primaryListId: node.id };
-    const original = [
-      task(offset + 1, ids.todo, 0, {
-        ...scope,
-        title: privateList ? 'Private board task' : 'Public board task'.padEnd(500, 'x'),
-        priority: 'urgent',
-        dueDate: '2026-11-01',
-        assigneeIds: [session.data.user.id],
-        assignees: [{ id: session.data.user.id, name: session.data.user.name }],
-      }),
-      task(offset + 2, ids.todo, 7, { ...scope, title: 'Review navigation' }),
-      task(offset + 4, ids.todo, 90, { ...scope, title: 'Next page task' }),
-      task(offset + 3, ids.active, 0, { ...scope, title: 'Active task' }),
-    ];
+    const original = controls.tableMode
+      ? tableTasks(node, session)
+      : [
+          task(offset + 1, ids.todo, 0, {
+            ...scope,
+            title: privateList ? 'Private board task' : 'Public board task'.padEnd(500, 'x'),
+            priority: 'urgent',
+            dueDate: '2026-11-01',
+            assigneeIds: [session.data.user.id],
+            assignees: [{ id: session.data.user.id, name: session.data.user.name }],
+          }),
+          task(offset + 2, ids.todo, 7, { ...scope, title: 'Review navigation' }),
+          task(offset + 4, ids.todo, 90, { ...scope, title: 'Next page task' }),
+          task(offset + 3, ids.active, 0, { ...scope, title: 'Active task' }),
+        ];
 
     return [
       ...original
@@ -250,6 +258,58 @@ export function createBoardApi(nodes) {
     }
 
     const statusId = url.searchParams.get('statusId');
+    if (controls.tableMode && !statusId) {
+      const parsed = ListTasksQuerySchema.safeParse(Object.fromEntries(url.searchParams));
+      if (!parsed.success) {
+        error(response, 'VALIDATION_FAILED', 'Invalid table query');
+
+        return true;
+      }
+
+      const query = parsed.data;
+      const owner = JSON.stringify([
+        node.id,
+        [...url.searchParams].filter(([key]) => key !== 'cursor'),
+      ]);
+      const cursor = query.cursor ? tableCursors.get(query.cursor) : undefined;
+      if (query.cursor && (!cursor || cursor.owner !== owner)) {
+        error(response, 'INVALID_CURSOR', 'Table cursor crossed a query');
+
+        return true;
+      }
+
+      if (query.cursor && (cursor.version !== dataVersion || controls.staleCursorOnce)) {
+        controls.staleCursorOnce = false;
+        error(response, 'CURSOR_STALE', 'Table changed', 409);
+
+        return true;
+      }
+
+      const rows = controls.empty
+        ? []
+        : sortedTableRows(tasksFor(node, session), query, statusesFor(node));
+      const start = cursor?.offset ?? 0;
+      const nextCursor = rows.length > start + 2 ? `table:${++cursorSequence}` : null;
+      if (nextCursor)
+        tableCursors.set(nextCursor, { owner, offset: start + 2, version: dataVersion });
+
+      const configVersion = controls.driftRounds > 0 ? 2 : 1;
+      if (controls.driftRounds > 0) controls.driftRounds--;
+
+      send(
+        response,
+        200,
+        TaskPageSchema.parse({
+          items: rows.slice(start, start + 2),
+          configVersion,
+          dataVersion,
+          pageInfo: { hasNextPage: nextCursor !== null, nextCursor },
+        }),
+      );
+
+      return true;
+    }
+
     if (
       !statusId ||
       url.searchParams.get('sort') !== 'manual' ||
