@@ -2,15 +2,8 @@
 
 import { getCurrentUserOptions, getNodeOptions } from '@flowboard/api-client/tanstack-query';
 import { CurrentUserEnvelopeSchema, NodeEnvelopeSchema } from '@flowboard/contracts';
-import { ErrorState } from '@flowboard/ui';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { Alert, Box, Button, Divider, Stack, Typography } from '@flowboard/ui';
+import { ErrorState, WorkspaceLayout } from '@flowboard/ui';
 import { useQuery } from '@tanstack/react-query';
 import NextLink from 'next/link';
 import { useParams } from 'next/navigation';
@@ -126,7 +119,6 @@ function VerifiedWorkspace({
 }) {
   const { logout } = useSession();
   const [open, setOpen] = useState(false);
-  const desktop = useMediaQuery((theme) => theme.breakpoints.up('md'));
   const query = useQuery(withQueryScope(getCurrentUserOptions({ client: runtime.client }), scope));
   if (query.isPending) return <SessionLoading />;
 
@@ -190,27 +182,12 @@ function VerifiedWorkspace({
           Workspace details could not refresh. Your draft is kept.
         </Alert>
       )}
-      <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-        <Drawer
-          open={desktop || open}
-          variant={desktop ? 'permanent' : 'temporary'}
-          onClose={() => setOpen(false)}
-          sx={{
-            width: desktop ? 272 : 0,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': {
-              width: 272,
-              maxWidth: 'calc(100vw - 32px)',
-              boxSizing: 'border-box',
-            },
-          }}
-        >
-          <Box
-            component="nav"
-            aria-label="Workspace navigation"
-            sx={{ p: 3, display: 'flex', flexDirection: 'column', minHeight: '100%' }}
-          >
-            {!desktop && <Button onClick={() => setOpen(false)}>Close navigation</Button>}
+      <WorkspaceLayout
+        open={open}
+        onOpen={() => setOpen(true)}
+        onClose={() => setOpen(false)}
+        navigation={
+          <>
             <Typography variant="h3" component="h2" sx={{ p: 2, overflowWrap: 'anywhere' }}>
               {activeWorkspace.name}
             </Typography>
@@ -254,19 +231,11 @@ function VerifiedWorkspace({
                 Sign out
               </Button>
             </Box>
-          </Box>
-        </Drawer>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          {!desktop && (
-            <Box sx={{ p: 3 }}>
-              <Button onClick={() => setOpen(true)}>Open navigation</Button>
-            </Box>
-          )}
-          <Box component="main" sx={{ p: { xs: 4, md: 8 } }}>
-            <ConfigurationSettingsHost>{children}</ConfigurationSettingsHost>
-          </Box>
-        </Box>
-      </Box>
+          </>
+        }
+      >
+        <ConfigurationSettingsHost>{children}</ConfigurationSettingsHost>
+      </WorkspaceLayout>
     </TaskEditorProvider>
   );
 }

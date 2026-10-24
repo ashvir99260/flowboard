@@ -1,9 +1,8 @@
 'use client';
 
 import { StatusCategorySchema } from '@flowboard/contracts';
+import { Stack, Typography } from '@flowboard/ui';
 import { FormField } from '@flowboard/ui';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { Controller } from 'react-hook-form';
 
 import type { StatusDraft } from './status-form-data';

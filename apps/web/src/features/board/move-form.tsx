@@ -6,11 +6,9 @@ import {
   selectTaskStatus,
   UuidSchema,
 } from '@flowboard/contracts';
+import { Alert, Stack, Typography } from '@flowboard/ui';
 import { CustomFieldInput, FormField } from '@flowboard/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useRef, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';

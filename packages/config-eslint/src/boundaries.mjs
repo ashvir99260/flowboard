@@ -82,6 +82,17 @@ export default {
     function check(node, specifier) {
       if (typeof specifier !== 'string') return;
 
+      if (
+        owner.group === 'apps' &&
+        owner.name === 'web' &&
+        ['src', 'app'].includes(path.relative(owner.directory, filename).split(path.sep)[0]) &&
+        /^@mui(?:\/|$)/.test(specifier)
+      ) {
+        report(node, 'Import presentation from @flowboard/ui; Material belongs in packages/ui.');
+
+        return;
+      }
+
       if (owner.name === 'contracts' && inSource && !specifier.startsWith('.')) {
         if (specifier !== 'zod' && !specifier.startsWith('zod/')) {
           report(node, 'Contracts runtime code may import only Zod and its own files.');
@@ -109,7 +120,9 @@ export default {
       if (
         inSource &&
         owner.name === 'ui' &&
-        /^(socket\.io-client|@tanstack\/|@hey-api\/)/.test(specifier)
+        /^(socket\.io-client|@tanstack\/|@hey-api\/|react-hook-form(?:\/|$)|next\/(?:navigation|(?:compat\/)?router)(?:\.js)?(?:\/|$))/.test(
+          specifier,
+        )
       ) {
         report(node, 'Shared UI components are presentational; data clients belong in apps/web.');
 

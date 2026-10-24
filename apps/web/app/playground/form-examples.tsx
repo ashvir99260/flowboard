@@ -5,13 +5,9 @@ import {
   CreateScopeFieldSchema,
   ResolvedFieldSchema,
 } from '@flowboard/contracts';
+import { Box, Button, Paper, Stack, Typography } from '@flowboard/ui';
 import { CustomFieldChip, CustomFieldInput, FormField } from '@flowboard/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 

@@ -1,10 +1,7 @@
 'use client';
 
+import { Button, CircularProgress, Stack, Typography } from '@flowboard/ui';
 import { EmptyState, ErrorState } from '@flowboard/ui';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 
 import { TaskTable } from './task-table';
 

@@ -2,6 +2,7 @@
 
 import MuiButton from '@mui/material/Button';
 import MuiChip from '@mui/material/Chip';
+import MuiNativeSelect from '@mui/material/NativeSelect';
 import MuiPaper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import MuiTextField from '@mui/material/TextField';
@@ -62,7 +63,25 @@ export { default as InputLabel } from '@mui/material/InputLabel';
 
 export { default as Link } from '@mui/material/Link';
 
-export { default as NativeSelect } from '@mui/material/NativeSelect';
+const SelectRoot = styled(MuiNativeSelect, { name: 'FlowboardSelect', slot: 'Root' })(
+  ({ theme }) => ({
+    minHeight: 44,
+    border: `1px solid ${(theme.vars ?? theme).palette.text.secondary}`,
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: (theme.vars ?? theme).palette.background.paper,
+    '&::before, &::after': { display: 'none' },
+    '& select': { padding: theme.spacing(2, 8, 2, 3) },
+    '&.Mui-error': { borderColor: (theme.vars ?? theme).palette.error.main },
+    '&:focus-within': {
+      outline: `2px solid ${(theme.vars ?? theme).palette.primary.main}`,
+      outlineOffset: 2,
+    },
+  }),
+);
+
+export const NativeSelect = Object.assign(SelectRoot, {
+  muiName: MuiNativeSelect.muiName,
+}) as typeof MuiNativeSelect;
 
 export { default as Stack } from '@mui/material/Stack';
 

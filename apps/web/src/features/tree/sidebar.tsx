@@ -1,8 +1,7 @@
 'use client';
 
+import { Box, Button } from '@flowboard/ui';
 import { EmptyState, ErrorState, TreeItem } from '@flowboard/ui';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 

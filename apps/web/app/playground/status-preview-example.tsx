@@ -1,7 +1,7 @@
 'use client';
 
 import { ResolvedStatusSchema } from '@flowboard/contracts';
-import Stack from '@mui/material/Stack';
+import { Stack } from '@flowboard/ui';
 
 import { StatusPreview } from '../../src/features/config/statuses/status-preview';
 

@@ -1,6 +1,15 @@
 'use client';
 
 import {
+  Box,
+  Button,
+  Paper,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@flowboard/ui';
+import {
   AssigneeAvatarGroup,
   CustomFieldChip,
   DueDateLabel,
@@ -10,15 +19,9 @@ import {
   StatusChip,
   useThemeMode,
 } from '@flowboard/ui';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
+import { CompositionExamples } from './composition-examples';
 import { FieldPreviewExample } from './field-preview-example';
 import { FormExamples } from './form-examples';
 import { InteractionExamples } from './interaction-examples';
@@ -209,6 +212,7 @@ export function Playground() {
             )}
           </Stack>
         </Section>
+        <CompositionExamples />
         <FormExamples />
         <InteractionExamples />
       </Box>

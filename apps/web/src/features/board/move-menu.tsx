@@ -1,14 +1,16 @@
 'use client';
 
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from '@flowboard/ui';
 import { FormField } from '@flowboard/ui';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useId, useState } from 'react';
 
 import { useTree } from '../tree/use-tree';

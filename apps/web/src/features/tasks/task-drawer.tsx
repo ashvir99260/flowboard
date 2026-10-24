@@ -1,11 +1,8 @@
 'use client';
 
-import { ConfirmDialog, ErrorState } from '@flowboard/ui';
-import Button from '@mui/material/Button';
-import Drawer from '@mui/material/Drawer';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { createContext, useCallback, useContext, useId, useRef, useState } from 'react';
+import { Button, Typography } from '@flowboard/ui';
+import { ConfirmDialog, DrawerPanel, ErrorState } from '@flowboard/ui';
+import { createContext, useCallback, useContext, useRef, useState } from 'react';
 
 import { ActivityFeed } from './activity-feed';
 import { TaskForm } from './task-form';
@@ -37,7 +34,6 @@ function TaskDrawer({
   scope: QueryScope;
   taskId?: string;
 }) {
-  const id = useId();
   const [lookupTaskId, setLookupTaskId] = useState(taskId);
   const persistedId = useRef(taskId);
   const [activityTaskId, setActivityTaskId] = useState(taskId);
@@ -61,62 +57,47 @@ function TaskDrawer({
   };
 
   return (
-    <Drawer
+    <DrawerPanel
       open
-      anchor="right"
+      title="Task details"
+      closeLabel="Close task"
+      closeDisabled={editing.busy}
       onClose={() => request('close')}
-      slotProps={{
-        paper: {
-          role: 'dialog',
-          'aria-labelledby': id,
-          sx: { width: { xs: '100%', sm: 560 }, maxWidth: '100%', p: 3 },
-        },
-      }}
     >
-      <Stack spacing={3}>
-        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography component="h2" variant="h2" id={id}>
-            Task details
-          </Typography>
-          <Button autoFocus disabled={editing.busy} onClick={() => request('close')}>
-            Close task
-          </Button>
-        </Stack>
-        {error || result.state === 'invalid' || result.state === 'stale' ? (
-          <ErrorState
-            title="Task unavailable"
-            description={error?.message ?? 'The task changed or could not be displayed. Try again.'}
-            action={<Button onClick={retry}>Retry task</Button>}
+      {error || result.state === 'invalid' || result.state === 'stale' ? (
+        <ErrorState
+          title="Task unavailable"
+          description={error?.message ?? 'The task changed or could not be displayed. Try again.'}
+          action={<Button onClick={retry}>Retry task</Button>}
+        />
+      ) : result.state !== 'ready' ? (
+        <Typography role="status">Loading task…</Typography>
+      ) : (
+        <>
+          <TaskForm
+            detail={result}
+            listId={listId}
+            runtime={runtime}
+            scope={scope}
+            onState={setEditing}
+            reload={() => request('reload')}
+            onArchived={close}
+            onPersisted={(id) => {
+              persistedId.current = id;
+              setActivityTaskId(id);
+            }}
           />
-        ) : result.state !== 'ready' ? (
-          <Typography role="status">Loading task…</Typography>
-        ) : (
-          <>
-            <TaskForm
-              detail={result}
-              listId={listId}
+          {activityTaskId && (
+            <ActivityFeed
+              key={activityTaskId}
+              taskId={activityTaskId}
               runtime={runtime}
               scope={scope}
-              onState={setEditing}
-              reload={() => request('reload')}
-              onArchived={close}
-              onPersisted={(id) => {
-                persistedId.current = id;
-                setActivityTaskId(id);
-              }}
+              statuses={result.statuses}
             />
-            {activityTaskId && (
-              <ActivityFeed
-                key={activityTaskId}
-                taskId={activityTaskId}
-                runtime={runtime}
-                scope={scope}
-                statuses={result.statuses}
-              />
-            )}
-          </>
-        )}
-      </Stack>
+          )}
+        </>
+      )}
       <ConfirmDialog
         open={confirmation !== null}
         title="Discard unsaved changes?"
@@ -131,7 +112,7 @@ function TaskDrawer({
           if (confirmation) perform(confirmation);
         }}
       />
-    </Drawer>
+    </DrawerPanel>
   );
 }
 

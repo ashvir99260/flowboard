@@ -329,9 +329,6 @@ importers:
       react-hook-form:
         specifier: 7.90.0
         version: 7.90.0(@types/react@19.3.0)(react@19.3.1)
-      react-markdown:
-        specifier: 10.1.0
-        version: 10.1.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0)
       server-only:
         specifier: 0.0.1
         version: 0.0.1
@@ -781,6 +778,9 @@ importers:
       '@mui/material-nextjs':
         specifier: 9.5.0
         version: 9.5.0(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(next@16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.64.1)(@types/node@22.20.5)(babel-plugin-macros@3.1.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
+      react-markdown:
+        specifier: 10.1.0
+        version: 10.1.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0)
     devDependencies:
       '@flowboard/config-eslint':
         specifier: workspace:*

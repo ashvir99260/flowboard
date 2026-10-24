@@ -1,8 +1,6 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
+import { LoadingState } from '@flowboard/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -11,12 +9,7 @@ import { useSession } from '../../providers/app-providers';
 import type { ReactNode } from 'react';
 
 export function SessionLoading() {
-  return (
-    <Box role="status" sx={{ display: 'flex', alignItems: 'center', gap: 3, p: 6 }}>
-      <CircularProgress aria-hidden="true" size={20} />
-      <Typography>Opening Flowboard…</Typography>
-    </Box>
-  );
+  return <LoadingState>Opening Flowboard…</LoadingState>;
 }
 
 export function SessionGate({ children }: Readonly<{ children: ReactNode }>) {

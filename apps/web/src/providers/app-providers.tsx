@@ -1,8 +1,7 @@
 'use client';
 
 import { setupClient } from '@flowboard/api-client/session';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
+import { Alert, Button } from '@flowboard/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 

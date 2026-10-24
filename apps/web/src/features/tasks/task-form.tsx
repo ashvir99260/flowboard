@@ -2,11 +2,9 @@
 
 import { getTask } from '@flowboard/api-client/sdk';
 import { TaskEnvelopeSchema } from '@flowboard/contracts';
+import { Alert, Button, Stack } from '@flowboard/ui';
 import { ConfirmDialog } from '@flowboard/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 

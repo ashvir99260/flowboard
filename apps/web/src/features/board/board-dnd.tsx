@@ -1,10 +1,16 @@
 'use client';
 
-import { CustomFieldChip, EmptyState, KanbanCard, KanbanColumn } from '@flowboard/ui';
+import { Button, useMediaQuery } from '@flowboard/ui';
+import {
+  BoardDropzone,
+  BoardGrid,
+  BoardItem,
+  CustomFieldChip,
+  EmptyState,
+  KanbanCard,
+  KanbanColumn,
+} from '@flowboard/ui';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { useTaskEditor } from '../tasks/task-drawer';
 
@@ -54,10 +60,9 @@ function Card({
       disableInteractiveElementBlocking
     >
       {(provided, snapshot) => (
-        <Box
+        <BoardItem
           ref={provided.innerRef}
           {...provided.draggableProps}
-          sx={{ mb: 3 }}
           style={{
             ...provided.draggableProps.style,
             ...(reduced
@@ -105,7 +110,7 @@ function Card({
               </>
             }
           />
-        </Box>
+        </BoardItem>
       )}
     </Draggable>
   );
@@ -172,15 +177,7 @@ export function BoardDnd({ columns, fields, move, open, pending, action }: Props
       }
       dragHandleUsageInstructions="Press Space to pick up a task. Use arrow keys to move. Press Space to drop, or Escape to cancel. The Move button offers the same actions without dragging."
     >
-      <Box
-        sx={{
-          display: 'grid',
-          gridAutoFlow: 'column',
-          gridAutoColumns: 'minmax(260px, 320px)',
-          alignItems: 'start',
-          gap: 3,
-        }}
-      >
+      <BoardGrid>
         {columns.map((column) => (
           <KanbanColumn
             key={column.status.id}
@@ -190,17 +187,10 @@ export function BoardDnd({ columns, fields, move, open, pending, action }: Props
           >
             <Droppable droppableId={column.status.id}>
               {(provided, snapshot) => (
-                <Box
+                <BoardDropzone
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    minHeight: 160,
-                    borderRadius: 2,
-                    outline: snapshot.isDraggingOver ? '2px solid' : undefined,
-                    outlineColor: 'primary.main',
-                  }}
+                  data-highlighted={snapshot.isDraggingOver}
                 >
                   {column.tasks.length ? (
                     column.tasks.map((task, index) => (
@@ -218,12 +208,12 @@ export function BoardDnd({ columns, fields, move, open, pending, action }: Props
                     <EmptyState description="Tasks in this status appear here." title="No tasks" />
                   ) : null}
                   {provided.placeholder}
-                </Box>
+                </BoardDropzone>
               )}
             </Droppable>
           </KanbanColumn>
         ))}
-      </Box>
+      </BoardGrid>
     </DragDropContext>
   );
 }
