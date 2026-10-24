@@ -1,4 +1,4 @@
-import { StatusScopeSchema, UuidSchema } from '@flowboard/contracts';
+import { ListSubscriptionSchema, StatusScopeSchema, UuidSchema } from '@flowboard/contracts';
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -24,6 +24,19 @@ export class PermissionGuard implements CanActivate {
     private readonly permissions: PermissionService,
   ) {}
   async canActivate(context: ExecutionContext) {
+    if (context.getType?.() === 'ws') {
+      const identity = context.switchToWs().getClient<{ identity?: IdentitySession }>().identity;
+      if (!identity) throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
+
+      const input = ListSubscriptionSchema.safeParse(context.switchToWs().getData<unknown>());
+      if (!input.success)
+        throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid list subscription');
+
+      await this.permissions.authorizeList(identity, input.data.listId);
+
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest<{
       identity?: IdentitySession;
       params: Record<string, string | undefined>;

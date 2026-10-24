@@ -34,6 +34,7 @@ async function bootstrap(): Promise<void> {
     auth: createAuthRuntime(databaseUrl, redisUrl, authSettings, logger),
     database: createDatabase(databaseUrl, logger),
     exposeDocs: config.exposeDocs,
+    realtime: { redisUrl },
     outbox: createOutboxRuntime(databaseUrl, redisUrl, logger),
     logger,
   });

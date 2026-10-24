@@ -17,6 +17,20 @@ export class AuthGuard implements CanActivate {
     private readonly auth: AuthService,
   ) {}
   async canActivate(context: ExecutionContext) {
+    if (context.getType?.() === 'ws') {
+      const socket = context.switchToWs().getClient<{
+        handshake: { auth: { token?: string }; headers: { origin?: string } };
+        identity?: Awaited<ReturnType<AuthService['authenticate']>>;
+      }>();
+      this.auth.assertOrigin(socket.handshake.headers.origin);
+      const token = socket.handshake.auth.token;
+      socket.identity = await this.auth.authenticate(
+        typeof token === 'string' ? `Bearer ${token}` : undefined,
+      );
+
+      return true;
+    }
+
     const policy = this.reflector.getAllAndOverride<string>(PublicRouteKey, [
       context.getHandler(),
       context.getClass(),

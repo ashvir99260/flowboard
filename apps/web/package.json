@@ -34,7 +34,8 @@
     "react-hook-form": "7.90.0",
     "react-markdown": "10.1.0",
     "server-only": "0.0.1",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "socket.io-client": "4.8.4"
   },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",

@@ -130,6 +130,14 @@ export class PermissionService {
       this.assertScope(store, owner, action),
     );
   }
+  async authorizeList(identity: IdentitySession, listId: string) {
+    await this.storage().read(this.context(identity), async (store) => {
+      await this.assertNode(store, listId, 'container.read');
+      const node = await store.nodes.find(listId);
+      if (node?.type !== 'list')
+        throw new ApiException(400, 'VALIDATION_FAILED', 'Expected a list');
+    });
+  }
   async authorizeNode(identity: IdentitySession, nodeId: string, action: PermissionAction) {
     await this.storage().read(this.context(identity), (store) =>
       this.assertNode(store, nodeId, action),

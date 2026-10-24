@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
+import { RealtimeProvider } from '../features/realtime/realtime-provider';
 import { apiError } from '../lib/api-error';
 
 import type { QueryScope } from '../lib/query-scope';
@@ -26,7 +27,10 @@ interface SessionContextValue extends SessionState {
 }
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
+export function AppProviders({
+  children,
+  realtimeUrl,
+}: Readonly<{ children: ReactNode; realtimeUrl: string | null }>) {
   const [queryClient] = useState(
     () => new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 15000 } } }),
   );
@@ -142,7 +146,9 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
             {notice.message}
           </Alert>
         )}
-        {children}
+        <RealtimeProvider runtime={runtime} session={state.session} url={realtimeUrl}>
+          {children}
+        </RealtimeProvider>
       </SessionContext.Provider>
     </QueryClientProvider>
   );

@@ -881,13 +881,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: use maintained beautiful dnd for boards`.
   - **Completion evidence:** [P11-04 verification](evidence/P11-04.md): maintained fork, pointer/keyboard order, cancellation/focus, unloaded suffix and rollback pass; 932 tests and all workspace gates pass.
 
-- [ ] **P11-03 — Permission-safe Socket.IO collaboration**
+- [x] **P11-03 — Permission-safe Socket.IO collaboration**
   - **Goal:** Update other clients while preserving tenant and resource access.
-  - **Files:** `apps/api/src/modules/realtime/**`, `apps/api/test/integration/realtime.integration.test.ts`, `apps/web/src/features/realtime/**`, realtime browser tests.
+  - **Requirements:** R15, R69, R72, R73, R76.
+  - **Files:** `apps/api/src/modules/realtime/**`, `apps/api/src/modules/realtime/*.spec.mjs`, `apps/web/src/features/realtime/**`, realtime browser tests.
   - **Dependencies:** P11-04.
   - **Acceptance:** Redis adapter, verified JWT handshake, guarded list subscriptions and safe source/destination invalidations. Revoke rooms on access changes, disconnect at token expiry, refetch on reconnect. Dirty forms preserve local edits and report conflicts; duplicate/stale events ignored.
   - **Validation:** Two clients update; two API instances fan out; Bob cannot subscribe to private list; foreign room blocked; grant revocation stops next event; move does not reveal hidden target; reconnect catches missed changes. Standard gate.
   - **Commit:** `feat: synchronize authorized clients in realtime`.
+  - **Completion evidence:** [P11-03 verification](evidence/P11-03.md): 951 tests pass, including two-instance fanout, access/expiry/recovery and independent-browser draft/permission flows; all workspace gates pass.
 
 ## Phase 12 — Release verification and documentation
 

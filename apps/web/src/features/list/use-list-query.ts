@@ -19,6 +19,7 @@ import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
 import { readBoardStatuses } from '../board/board-data';
 import { configurationChanged } from '../config/configuration-events';
+import { useRealtime } from '../realtime/realtime-provider';
 import { taskMutationAffectsList } from '../tasks/task-events';
 
 import { assembleTaskList, readListFields } from './list-data';
@@ -87,6 +88,9 @@ export function useListQuery({
   const client = useQueryClient();
   const signature = writeListLocation(query);
   const [attempt, setAttempt] = useState({ signature, generation: 0, restarts: 0 });
+  useRealtime(listId, () =>
+    setAttempt((current) => ({ signature, generation: current.generation + 1, restarts: 0 })),
+  );
   const changed = attempt.signature !== signature;
   const retry = () =>
     setAttempt((current) => ({ signature, generation: current.generation + 1, restarts: 0 }));

@@ -9,7 +9,7 @@ import { startProcess } from '@flowboard/config-jest/process';
 
 import { startWeb } from './proxy-fixture.mjs';
 
-export async function startRealApp(t, { activityWorker = false } = {}) {
+export async function startRealApp(t, { activityWorker = false, realtime = false } = {}) {
   const cleanups = [];
   t.after(async () => {
     const errors = [];
@@ -41,6 +41,7 @@ export async function startRealApp(t, { activityWorker = false } = {}) {
     apiOrigin,
     'localhost',
     process.env.FLOWBOARD_WEB_DEV_TEST === '1',
+    realtime ? apiOrigin : '',
   );
   await new Promise((resolve, reject) =>
     reservation.close((error) => (error ? reject(error) : resolve())),

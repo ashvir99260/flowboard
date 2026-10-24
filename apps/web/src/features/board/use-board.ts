@@ -17,6 +17,7 @@ import { useEffect, useId, useState } from 'react';
 import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
 import { configurationChanged } from '../config/configuration-events';
+import { useRealtime } from '../realtime/realtime-provider';
 import { taskMutationAffectsList } from '../tasks/task-events';
 
 import { assembleBoard, readBoardStatuses } from './board-data';
@@ -87,6 +88,9 @@ export function useBoard({
     pages: BoardPageRequest[];
     restarts: number;
   }>({ generation: 0, restarts: 0, pages: [] });
+  useRealtime(listId, () =>
+    setAttempt((current) => ({ generation: current.generation + 1, restarts: 0, pages: [] })),
+  );
   useEffect(() => {
     const refresh = () =>
       setAttempt((current) => ({ generation: current.generation + 1, restarts: 0, pages: [] }));
