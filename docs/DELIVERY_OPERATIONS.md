@@ -20,7 +20,7 @@ Do not create permanent `dev`, `qa`, `stage` and `prod` source branches. They ar
 
 ```mermaid
 flowchart LR
-  Branch[Small feature branch] --> PR[PR and seven parallel checks]
+  Branch[Small feature branch] --> PR[PR and parallel checks]
   PR --> Main[Merge to main]
   Main --> Gates[All verification passes]
   Gates --> Releases[Publish affected app images and manifests]

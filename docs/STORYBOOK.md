@@ -21,6 +21,8 @@ pnpm storybook:test
 
 The static build is written to ignored `packages/ui/storybook-static/`. Storybook's Vitest integration runs the stories and their `play` functions in Chromium, failing on configured accessibility violations. The root `pnpm test` includes story checks and the static build alongside existing UI tests. CI uses the same Chromium version as web tests. No paid visual-testing service is configured.
 
+Story files run sequentially to bound browser contexts. CI runs the UI package in its own parallel job using `pnpm test --filter=@flowboard/ui`, separate from the other workspace suites. Publication waits for both jobs. `VITEST_PW_DEBUG=1` is forwarded to the UI test process in CI so failed browser requests appear in the job log.
+
 ## Add a component example
 
 Put typed `*.stories.tsx` files in `packages/ui/stories/`. Use `Meta<typeof Component>` with `satisfies` and `StoryObj<typeof meta>`. Import UI source within its owning package; never import app fixtures or API/session clients. The initial groups cover:

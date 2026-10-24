@@ -304,13 +304,34 @@ try {
   const imageIds = await Promise.all(
     ['api', 'web', 'worker'].map((service) => run('images', '-q', service)),
   );
+  const containerIds = await Promise.all(
+    ['api', 'web', 'worker'].map((service) => run('ps', '-q', service)),
+  );
   await run('exec', '-T', 'redis', 'redis-cli', 'SET', 'delivery-probe', 'retained');
-  await run('restart', 'postgres', 'redis', 'api', 'worker', 'web');
-  await run('up', '--detach', '--wait', '--wait-timeout', '180');
+  await run('stop', 'web', 'worker', 'api');
+  const shutdownLogs = await run('logs', '--no-color', '--no-log-prefix', 'api', 'worker');
+  const events = new Set(
+    [...shutdownLogs.matchAll(/"event":"([\w.-]+)"/g)].map((match) => match[1]),
+  );
+  assert.ok(
+    events.has('api.stopped'),
+    `API shutdown event missing; events: ${[...events].join(', ')}`,
+  );
+  assert.ok(
+    events.has('worker.stopped'),
+    `Worker shutdown event missing; events: ${[...events].join(', ')}`,
+  );
+  await run('restart', 'postgres', 'redis');
+  await run('up', '--no-build', '--no-recreate', '--detach', '--wait', '--wait-timeout', '180');
   assert.deepEqual(
     await Promise.all(['api', 'web', 'worker'].map((service) => run('images', '-q', service))),
     imageIds,
     'Restart must reuse the built images',
+  );
+  assert.deepEqual(
+    await Promise.all(['api', 'web', 'worker'].map((service) => run('ps', '-q', service))),
+    containerIds,
+    'Restart must preserve the existing containers',
   );
   task = await apiRequest(`/v1/tasks/${task.data.id}`);
   assert.equal(task.data.title, 'Preserve this API edit');
@@ -359,16 +380,6 @@ try {
 
     return activity.items.some((entry) => entry.payload.taskVersion === expectedVersion);
   });
-  const restartLogs = await run('logs', '--no-color', '--no-log-prefix', 'api', 'worker');
-  const events = [...restartLogs.matchAll(/"event":"([\w.-]+)"/g)].map((match) => match[1]);
-  assert.ok(
-    events.includes('api.stopped'),
-    `API shutdown event missing; events: ${events.join(', ')}`,
-  );
-  assert.ok(
-    events.includes('worker.stopped'),
-    `Worker shutdown event missing; events: ${events.join(', ')}`,
-  );
   console.info(`[${project}] All Docker acceptance checks passed`);
 } finally {
   // The random project name isolates this run from the user's development stack.
