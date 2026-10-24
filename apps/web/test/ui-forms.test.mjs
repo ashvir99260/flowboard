@@ -15,6 +15,8 @@ test(
     const { origin } = await startWeb(t, api, 'localhost', true);
     const page = await browser.newPage();
     page.setDefaultTimeout(5000);
+    // A cold Next development route compiles on its first navigation.
+    page.setDefaultNavigationTimeout(30000);
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`${origin}/playground`);

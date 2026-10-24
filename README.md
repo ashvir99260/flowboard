@@ -2,7 +2,7 @@
 
 A self-hosted project management app for learning sound architecture at hobby scale.
 
-**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Shared MUI display/input components, light/dark themes, typed form examples, tree items, cards and confirmation dialogs are available in the development playground. Next.js still shows the setup page, and the worker remains idle until its activity-processing task. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while the product UI and realtime delivery remain in the backlog.
+**Current state:** Backend features through Phase 6 are implemented and tested: authentication, workspace membership, tenant isolation, container permissions, inherited statuses and custom fields, and task creation, editing and moves. Shared MUI display/input components, light/dark themes, typed form examples, tree items, cards and confirmation dialogs are available in the development playground. The web supports signup/login, session restoration, workspace switching and a paginated permission-aware sidebar with selected-list details. The worker remains idle until its activity-processing task. The generated client includes isolated session and refresh handling; the same-origin browser proxy is implemented, while boards, task editing, configuration screens and realtime delivery remain in the backlog.
 
 The [system design](docs/SYSTEM_DESIGN.md) covers the UI, backend, database ERD and request/event flows. [ClickUp/Asana/Linear research](docs/REFERENCE_ARCHITECTURES.md) explains the public patterns behind it, with sources and explicit limits on what is known.
 
@@ -32,7 +32,7 @@ pnpm test
 pnpm format:check
 ```
 
-`pnpm format` applies the shared Prettier rules to every workspace plus root configuration and documentation. The original requirements are preserved verbatim. Tests cover package boundaries, application start/stop, shared domain rules, and real PostgreSQL/Redis integration for the implemented backend. Browser user-flow suites arrive with their UI tasks. Runtime libraries expose compiled outputs; tool configurations are directly consumable so first-time builds need no generated files.
+`pnpm format` applies the shared Prettier rules to every workspace plus root configuration and documentation. The original requirements are preserved verbatim. Tests cover package boundaries, application start/stop, shared domain rules, and real PostgreSQL/Redis integration for the implemented backend. Browser user-flow suites cover authentication, workspace/list navigation, session expiry and responsive keyboard controls. Runtime libraries expose compiled outputs; tool configurations are directly consumable so first-time builds need no generated files.
 
 Run `pnpm hooks:install` once to enable the repository-local commit-message check. [Code-quality conventions](docs/CODE_QUALITY.md) explain the commit policy, manual checks and CI validation.
 
@@ -51,13 +51,13 @@ pnpm dev
 
 The root `.env` configures Compose. The API and worker load their own `.env` when launched with their `dev` or `start` scripts; Next.js loads `.env.local`. Existing process environment variables override file values. The Node services also work without a file when their environment is supplied externally. Restart Node development processes after editing their env files. These private files are ignored by Git and excluded from Docker images. Keep database credentials/ports consistent between root and app files if you customize them, and never put server secrets in the web file. The local API example enables migrations, demo seeding and Swagger; hosted deployments use injected secrets and disable local-only settings.
 
-Open [the setup page](http://localhost:3000). Next.js reloads page edits; the API and worker compile with TypeScript and restart after successful changes. Stop all three with Ctrl+C. To run one app, use `pnpm dev --filter=@flowboard/web`, `pnpm dev --filter=@flowboard/api` or `pnpm dev --filter=@flowboard/worker`.
+Open [Flowboard](http://localhost:3000). Next.js reloads page edits; the API and worker compile with TypeScript and restart after successful changes. Stop all three with Ctrl+C. To run one app, use `pnpm dev --filter=@flowboard/web`, `pnpm dev --filter=@flowboard/api` or `pnpm dev --filter=@flowboard/worker`.
 
 The development-only [component playground](http://localhost:3000/playground) demonstrates shared statuses, priorities, assignees, dates, custom fields and empty/error states in light and dark themes. It uses local sample props and makes no API requests. Production returns 404 for this route.
 
 | Process | Default address         | Current behavior                                                             |
 | ------- | ----------------------- | ---------------------------------------------------------------------------- |
-| Web     | `http://localhost:3000` | Static setup page; no login or task data yet.                                |
+| Web     | `http://localhost:3000` | Login/signup, workspace picker and visible list navigation.                  |
 | API     | `http://localhost:3001` | Auth, workspaces, hierarchy, statuses, fields, tasks and Swagger at `/docs`. |
 | Worker  | TCP `localhost:3002`    | Process liveness only; queue processing arrives in P11-02.                   |
 
@@ -90,13 +90,13 @@ docker compose up --build -d --wait
 
 Compose builds separate web, API and worker images and starts PostgreSQL and Redis. The first build can take a few minutes. Once the services are healthy, open:
 
-| Service        | Local URL                                                                |
-| -------------- | ------------------------------------------------------------------------ |
-| Web setup page | [http://localhost:3000](http://localhost:3000)                           |
-| API Swagger UI | [http://localhost:3001/docs](http://localhost:3001/docs)                 |
-| API readiness  | [http://localhost:3001/health/ready](http://localhost:3001/health/ready) |
+| Service         | Local URL                                                                |
+| --------------- | ------------------------------------------------------------------------ |
+| Web application | [http://localhost:3000](http://localhost:3000)                           |
+| API Swagger UI  | [http://localhost:3001/docs](http://localhost:3001/docs)                 |
+| API readiness   | [http://localhost:3001/health/ready](http://localhost:3001/health/ready) |
 
-The web currently shows the application shell; use Swagger to try the implemented backend endpoints. Application containers run as non-root. Without the development override, PostgreSQL, Redis and the worker are private to the Compose network.
+Sign in to the web with a demo account, choose a workspace, then select a list. The sidebar includes only containers visible to that account. Selected lists currently show their real metadata; boards, task editing and configuration screens follow in Phases 9–10. Swagger exposes all implemented backend endpoints. Application containers run as non-root. Without the development override, PostgreSQL, Redis and the worker are private to the Compose network.
 
 Docker Compose reads the root `.env`; the per-app `.env` and `.env.local` files are only needed for host development and are excluded from images. Without a root `.env`, Compose uses the development defaults in `compose.yaml`. To use different published ports, set `WEB_PORT` and `API_PORT` in the root file. An explicit `AUTH_ALLOWED_ORIGINS` must list both full browser origins, such as `http://localhost:3100,http://localhost:3101`. Without an explicit allowlist, Compose derives both localhost origins from the published ports. Keep these development credentials local.
 
@@ -151,7 +151,7 @@ Use `localhost` in local browser URLs and host-side connection settings. Compose
 
 ### Initialization and demo accounts
 
-The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API health checks PostgreSQL and Redis with bounded timeouts; worker health remains process liveness until queue processing in P11-02. Task-management endpoints are available through the API; their product UI remains in the backlog.
+The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API health checks PostgreSQL and Redis with bounded timeouts; worker health remains process liveness until queue processing in P11-02. Task-management endpoints are available through the API; task boards/editing remain in the backlog.
 
 Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `carol@example.com` (members), plus `dan@example.com` in a second tenant. Their development-only password is `FlowboardDemo123!`, stored as individually salted Argon2id hashes. Alice is also a member of the second tenant. The main tenant contains 24 tasks across three lists, four field definitions across all four scopes, inherited/overridden statuses, one private list and one list denying Bob. The second tenant has three tasks. Use `POST /v1/auth/login` with `{ "email": "alice@example.com", "password": "FlowboardDemo123!" }` and an allowed `Origin` header (for example `http://localhost:3000`). `POST /v1/auth/signup` also accepts `name` and `workspaceName`; it creates a separate workspace/admin/default statuses. Both return a 15-minute access token and set an httpOnly refresh cookie. Use `POST /v1/auth/refresh` with the refresh cookie and allowed Origin to rotate it; use `POST /v1/auth/logout` to revoke the family and expire the cookie. Both accept an empty body. A reused refresh cookie revokes the whole family, so the client session transport coordinates concurrent refresh requests.
 
