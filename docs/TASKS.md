@@ -871,7 +871,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: persist and display task activity`.
   - **Completion evidence:** [P11-02 verification](evidence/P11-02.md): 930 tests, including 136 web cases, pass; idempotent worker delivery, authorized cursor feed and dirty-draft refresh are verified.
 
-- [ ] **P11-04 — Adopt the maintained beautiful-dnd fork for the board**
+- [x] **P11-04 — Adopt the maintained beautiful-dnd fork for the board**
   - **Goal:** Apply the user's confirmed `@hello-pangea/dnd` choice without losing board behavior.
   - **Requirements:** R64, R70.
   - **Files:** `apps/web/src/features/board/board-dnd.tsx`, affected board composition, app dependency/lockfile, pointer/keyboard/browser tests and decision/evidence records.
@@ -879,6 +879,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Replace the board's dnd-kit integration with the maintained React 19-compatible fork; preserve cross-column moves, within-column order, button alternatives, focus, optimistic rollback and list-switch safety. Remove unused dnd-kit dependencies after verifying there are no remaining consumers.
   - **Validation:** Existing pointer/keyboard/button move and rejection cases, cancellation, empty columns and multiple viewport sizes; root gates and generated-contract checks.
   - **Commit:** `feat: use maintained beautiful dnd for boards`.
+  - **Completion evidence:** [P11-04 verification](evidence/P11-04.md): maintained fork, pointer/keyboard order, cancellation/focus, unloaded suffix and rollback pass; 932 tests and all workspace gates pass.
 
 - [ ] **P11-03 — Permission-safe Socket.IO collaboration**
   - **Goal:** Update other clients while preserving tenant and resource access.

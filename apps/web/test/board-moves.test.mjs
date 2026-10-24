@@ -64,6 +64,23 @@ test('button moves are optimistic, persist, and roll back rejected saves without
   await expect(active.getByRole('heading', { name: title, exact: true })).toBeVisible();
 });
 
+test('drag instructions describe Space, arrows and Escape without promising Enter support', async (t) => {
+  const { board } = await openBoard(t);
+  const instructions = await board
+    .getByRole('button', { name: /^Drag task/ })
+    .first()
+    .evaluate((element) =>
+      (element.getAttribute('aria-describedby') ?? '')
+        .split(' ')
+        .map((id) => document.getElementById(id)?.textContent ?? '')
+        .join(' '),
+    );
+  assert.match(instructions, /Space/);
+  assert.match(instructions, /arrow/i);
+  assert.match(instructions, /Escape/);
+  assert.doesNotMatch(instructions, /Enter/);
+});
+
 test('pointer dragging changes status and keyboard dragging reorders with focus and cancellation', async (t) => {
   const { page, board } = await openBoard(t);
   await page.setViewportSize({ height: 1600, width: 1440 });
@@ -78,11 +95,15 @@ test('pointer dragging changes status and keyboard dragging reorders with focus 
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
   await page.mouse.down();
   await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2, { steps: 3 });
-  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 15 });
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height - 1, { steps: 15 });
   await page.mouse.up();
   await expect(
     active.getByRole('heading', { exact: true, name: 'Review navigation' }),
   ).toBeVisible();
+  await expect(active.getByRole('heading', { level: 3 })).toHaveText([
+    'Active task',
+    'Review navigation',
+  ]);
   const moved = active
     .getByRole('article')
     .filter({ has: page.getByRole('heading', { exact: true, name: 'Review navigation' }) })
@@ -90,21 +111,76 @@ test('pointer dragging changes status and keyboard dragging reorders with focus 
   await expect(moved).toBeEnabled();
   await moved.focus();
   await page.keyboard.press('Space');
-  // KeyboardSensor registers its document listener on the next browser task.
-  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
-  await expect(moved).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText(/^Picked up Review navigation, In progress/)).toBeAttached();
   await page.keyboard.press('Escape');
   await expect(page.getByText('Move cancelled.', { exact: true })).toBeAttached();
   await expect(moved).toBeFocused();
   await page.keyboard.press('Space');
-  // KeyboardSensor registers its document listener on the next browser task.
-  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
-  await expect(moved).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText(/^Picked up Review navigation, In progress/)).toBeAttached();
   await page.keyboard.press('ArrowUp');
-  await expect(page.getByText(/^Over Active task, In progress, position 1/)).toBeAttached();
+  await expect(page.getByText(/^Over In progress, position 1/)).toBeAttached();
   await page.keyboard.press('Space');
   await expect(active.getByRole('heading', { level: 3 }).first()).toHaveText('Review navigation');
   await expect(moved).toBeFocused();
+  await page.keyboard.press('Space');
+  await expect(page.getByText(/^Picked up Review navigation, In progress/)).toBeAttached();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByText(/^Over In progress, position 2/)).toBeAttached();
+  await page.keyboard.press('Space');
+  await expect(active.getByRole('heading', { level: 3 })).toHaveText([
+    'Active task',
+    'Review navigation',
+  ]);
+  await page.reload();
+  await expect(active.getByRole('heading', { level: 3 })).toHaveText([
+    'Active task',
+    'Review navigation',
+  ]);
+});
+
+test('keyboard ordering preserves the unloaded suffix and an unchanged drop sends no request', async (t) => {
+  const { page, board, api } = await openBoard(t);
+  const todo = board.getByRole('region', { exact: true, name: 'To do column' });
+  const firstTitle = await todo.getByRole('heading', { level: 3 }).first().textContent();
+  const handle = todo
+    .getByRole('article')
+    .first()
+    .getByRole('button', { name: /^Drag task/ });
+  await handle.focus();
+  await page.keyboard.press('Space');
+  await expect(page.getByText(/^Picked up Public board task/)).toBeAttached();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByText(/^Over To do, position 2/)).toBeAttached();
+  const saved = page.waitForResponse(
+    (response) => response.url().endsWith('/reorder') && response.request().method() === 'POST',
+  );
+  await page.keyboard.press('Space');
+  assert.equal((await saved).status(), 200);
+  await expect(todo.getByRole('heading', { level: 3 })).toHaveText([
+    'Review navigation',
+    firstTitle,
+  ]);
+  assert.deepEqual(
+    api.requests.findLast((request) => request.path.endsWith('/reorder')).body.placement,
+    { afterId: '50000000-0000-4000-8000-000000000002' },
+  );
+  await board.getByRole('button', { name: 'Load more To do tasks' }).click();
+  await expect(todo.getByRole('heading', { level: 3 })).toHaveText([
+    'Review navigation',
+    firstTitle,
+    'Next page task',
+  ]);
+  const before = api.requests.filter((request) => request.path.endsWith('/reorder')).length;
+  await todo
+    .getByRole('article')
+    .first()
+    .getByRole('button', { name: /^Drag task/ })
+    .focus();
+  await page.keyboard.press('Space');
+  await expect(page.getByText(/^Picked up Review navigation/)).toBeAttached();
+  await page.keyboard.press('Space');
+  await expect(page.getByText('No move requested.', { exact: true })).toBeAttached();
+  assert.equal(api.requests.filter((request) => request.path.endsWith('/reorder')).length, before);
 });
 
 test('destination board refreshes when a move settles after navigating away from its source', async (t) => {
@@ -249,17 +325,14 @@ test('dropping a pointer drag outside the board cancels without a mutation', asy
     .filter({ has: page.getByRole('heading', { exact: true, name: 'Review navigation' }) });
   const handle = card.getByRole('button', { name: /^Drag task/ });
   const from = await handle.boundingBox();
-  const outside = await page.getByRole('heading', { exact: true, name: 'Board' }).boundingBox();
-  assert.ok(from && outside);
+  assert.ok(from);
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
   await page.mouse.down();
   await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2, { steps: 3 });
-  await expect(handle).toHaveAttribute('aria-pressed', 'true');
-  await page.mouse.move(outside.x + outside.width / 2, outside.y + outside.height / 2, {
-    steps: 12,
-  });
+  await expect(page.getByText(/^Picked up Review navigation, To do/)).toBeAttached();
+  await page.mouse.move(5, 5, { steps: 12 });
   await page.mouse.up();
-  await expect(handle).not.toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText('Move cancelled.', { exact: true })).toBeAttached();
   await expect(handle).toBeFocused();
   assert.deepEqual(await todo.getByRole('heading', { level: 3 }).allTextContents(), originalOrder);
   assert.equal(
@@ -310,16 +383,25 @@ test('rejection of one pending drag cannot undo another task saved in the meanti
 
 test('keyboard dragging can enter an empty status column', async (t) => {
   const { page, board } = await openBoard(t);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   const card = board
     .getByRole('article')
     .filter({ has: page.getByRole('heading', { exact: true, name: 'Active task' }) });
   const handle = card.getByRole('button', { name: /^Drag task/ });
   await handle.focus();
   await page.keyboard.press('Space');
-  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
-  await expect(handle).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText(/^Picked up Active task, In progress/)).toBeAttached();
   await page.keyboard.press('ArrowRight');
-  await expect(page.getByText(/^Over Done column/)).toBeAttached();
+  await expect(page.getByText(/^Over Done, position 1/)).toBeAttached();
+  assert.ok(
+    await board.getByRole('article').evaluateAll((cards) =>
+      cards.every((card) =>
+        getComputedStyle(card.parentElement)
+          .transitionDuration.split(',')
+          .every((value) => Number.parseFloat(value) <= 0.001),
+      ),
+    ),
+  );
   await page.keyboard.press('Space');
   await expect(
     board
