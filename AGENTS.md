@@ -67,3 +67,7 @@ Shared lint checks enforce imports and layer boundaries; OpenAPI/client checks e
 Do not mark a product requirement verified because a document, interface, test file or implementation exists. Require its observable acceptance evidence. Distinguish `pass`, `fail`, `not_run` and `not_applicable`; skipped or unavailable checks are not passes. If a later change invalidates evidence, reopen the affected verification status. Before a phase/release claim, reconcile the entire relevant matrix slice, not only the latest task.
 
 Use selected skills only within their purpose. Banner assets require a banner task; Vercel cost audits require a deployed, identified project and metrics. Neither authorizes accounts, deployments or unrelated changes.
+
+## Composable UI refinement
+
+Follow [UI_COMPONENT_SYSTEM.md](docs/UI_COMPONENT_SYSTEM.md) and D137 for UI work: use the shared neutral tokens, MUI `styled()` components and composable parts from `packages/ui`. Reusable presentation belongs there; data/session/permission/form orchestration stays in web. Keep MUI/Emotion SSR, native control semantics, refs, DnD positioning and focus behavior. New duplicate presentation or styling engines require an explicit product reason. Phase 13 adds the corresponding executable checks.

@@ -13,6 +13,21 @@ test(
     const app = await startRealApp(t, { activityWorker: true });
     async function open() {
       const page = await browser.newPage();
+      const activityReads = [];
+      page.on('response', (response) => {
+        if (!new URL(response.url()).pathname.endsWith('/activity')) return;
+
+        void response
+          .json()
+          .then((body) => {
+            activityReads.push({
+              status: response.status(),
+              count: body.items?.length,
+              time: Date.now(),
+            });
+          })
+          .catch(() => undefined);
+      });
       await page.goto(`${app.origin}/login`);
       await page.getByLabel(/^Email/).fill('alice@example.com');
       await page.getByLabel(/^Password/).fill('FlowboardDemo123!');
@@ -23,9 +38,9 @@ test(
         .getByRole('button', { exact: true, name: 'Open task: Build demo workflow 1' })
         .click();
 
-      return { page, drawer: page.getByRole('dialog', { name: 'Task details' }) };
+      return { page, drawer: page.getByRole('dialog', { name: 'Task details' }), activityReads };
     }
-    const { page, drawer } = await open();
+    const { page, drawer, activityReads } = await open();
     const feed = drawer.getByRole('region', { exact: true, name: 'Activity' });
     await expect(feed.getByText('No status changes yet.')).toBeVisible();
     await drawer.getByLabel(/^Status/).selectOption('f1000000-0000-4000-8000-000000000401');
@@ -36,7 +51,18 @@ test(
     const other = await open();
     await other.drawer.getByLabel(/^Status/).selectOption('f1000000-0000-4000-8000-000000000402');
     await other.drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
-    await expect(feed.getByRole('listitem')).toHaveCount(2, { timeout: 15000 });
+    await expect(other.drawer.getByText('Task saved.', { exact: true })).toBeVisible();
+    await expect(feed.getByRole('listitem'))
+      .toHaveCount(2, { timeout: 15000 })
+      .catch(async (error) => {
+        t.diagnostic(
+          JSON.stringify({
+            visibility: await page.evaluate(() => document.visibilityState),
+            activityReads,
+          }),
+        );
+        throw error;
+      });
     await expect(drawer.getByLabel(/^Title/)).toHaveValue('Preserved activity draft');
     await page.setViewportSize({ height: 900, width: 320 });
     const bounds = () =>

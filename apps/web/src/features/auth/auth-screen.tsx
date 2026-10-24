@@ -1,15 +1,8 @@
 'use client';
 
 import { LogInSchema, SignUpSchema } from '@flowboard/contracts';
-import { FormField } from '@flowboard/ui';
+import { Alert, AuthPanel, Box, Button, FormField, Link, Stack } from '@flowboard/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -22,7 +15,6 @@ import { SessionLoading } from './session-gate';
 
 import type { ClientRuntime } from '../../providers/app-providers';
 import type { LogIn, SignUp } from '@flowboard/contracts';
-import type { ReactNode } from 'react';
 import type { Control, FieldValues, Path } from 'react-hook-form';
 
 function AuthField<T extends FieldValues>({
@@ -59,21 +51,6 @@ function AuthField<T extends FieldValues>({
     />
   );
 }
-function AuthFrame({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
-  return (
-    <Box component="main" sx={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', p: 4 }}>
-      <Paper variant="outlined" sx={{ width: '100%', maxWidth: 420, p: { xs: 5, sm: 8 } }}>
-        <Typography color="primary" variant="body2" sx={{ mb: 3, fontWeight: 700 }}>
-          FLOWBOARD
-        </Typography>
-        <Typography component="h1" variant="h1" sx={{ mb: 6 }}>
-          {title}
-        </Typography>
-        {children}
-      </Paper>
-    </Box>
-  );
-}
 function LoginForm({ runtime }: { runtime: ClientRuntime }) {
   const [error, setError] = useState<string | null>(null);
   const {
@@ -87,7 +64,7 @@ function LoginForm({ runtime }: { runtime: ClientRuntime }) {
   });
 
   return (
-    <AuthFrame title="Sign in to Flowboard">
+    <AuthPanel title="Sign in to Flowboard">
       <Box
         component="form"
         noValidate
@@ -124,7 +101,7 @@ function LoginForm({ runtime }: { runtime: ClientRuntime }) {
           </Link>
         </Stack>
       </Box>
-    </AuthFrame>
+    </AuthPanel>
   );
 }
 function SignupForm({ runtime }: { runtime: ClientRuntime }) {
@@ -140,7 +117,7 @@ function SignupForm({ runtime }: { runtime: ClientRuntime }) {
   });
 
   return (
-    <AuthFrame title="Create your workspace">
+    <AuthPanel title="Create your workspace">
       <Box
         component="form"
         noValidate
@@ -184,7 +161,7 @@ function SignupForm({ runtime }: { runtime: ClientRuntime }) {
           </Link>
         </Stack>
       </Box>
-    </AuthFrame>
+    </AuthPanel>
   );
 }
 

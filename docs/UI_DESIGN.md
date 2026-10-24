@@ -198,3 +198,7 @@ After P11, Socket.IO authenticates with the access token and subscribes only to 
 Follow each existing task's full definition of done and commit separately. Do not jump directly from docs to a broad UI implementation. At P09-04, Playwright logs in → selects a list → verifies exact column labels → opens a task → edits a custom field → saves → reloads and verifies persistence. Add Alice→Bob private-list absence; P11 adds the two-client update path. Screenshots at all four sizes supplement behavioral checks; screenshots alone do not prove permissions or persistence.
 
 Defer personalized navigation, saved/shared views, cycles, triage, bulk editing, a universal command palette, offline replication, AI features, swimlanes and drag-only hidden columns. They are not required to deliver the current Flowboard task workflow. Future additions need a real task and acceptance criteria, not a decorative disabled control.
+
+## Composable component system refinement
+
+The user-requested Phase 13 refinement is specified in [UI_COMPONENT_SYSTEM.md](UI_COMPONENT_SYSTEM.md). Keep MUI/Emotion and its App Router cache; use neutral shadcn/Headless UI-inspired presentation, styled shared components, children and explicit composition slots. Reusable visuals belong in `packages/ui`; web owns the generated-query, permission, routing and form adapters. This refinement is implemented and verified in P13-01–03 rather than implied by this guide alone.

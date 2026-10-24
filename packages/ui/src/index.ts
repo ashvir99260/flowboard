@@ -29,3 +29,9 @@ export { TreeItem } from './components/tree-item.js';
 export { KanbanCard } from './components/kanban-card.js';
 
 export { KanbanColumn } from './components/kanban-column.js';
+
+export * from './primitives.js';
+
+export { AuthPanel, Surface, Toolbar } from './composition.js';
+
+export { designTokens } from './tokens.js';
