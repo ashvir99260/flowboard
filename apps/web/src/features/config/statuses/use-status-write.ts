@@ -8,6 +8,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { apiError } from '../../../lib/api-error';
+import { useNotifications } from '../../notifications/notification-provider';
 import { configurationChanged } from '../configuration-events';
 
 import { readStatusWriteResponse } from './status-write-data';
@@ -23,6 +24,7 @@ type Command =
 class InvalidStatusResponse extends Error {}
 
 export function useStatusWrite(runtime: ClientRuntime, scope: QueryScope, owner: StatusScope) {
+  const notifications = useNotifications();
   const client = useQueryClient();
   const create = createScopeStatusMutation({ client: runtime.client });
   const update = updateScopeStatusMutation({ client: runtime.client });
@@ -62,6 +64,7 @@ export function useStatusWrite(runtime: ClientRuntime, scope: QueryScope, owner:
     },
   });
   const submit = async (command: Command) => {
+    const report = notifications.capture();
     if (
       client.isMutating({
         predicate: (entry) => configurationChanged(entry.options.mutationKey, 'success', scope),
@@ -73,15 +76,23 @@ export function useStatusWrite(runtime: ClientRuntime, scope: QueryScope, owner:
       };
 
     try {
-      return { success: true as const, response: await mutation.mutateAsync(command) };
-    } catch (error) {
-      if (error instanceof InvalidStatusResponse)
-        return {
-          success: false as const,
-          error: { code: 'INVALID_RESPONSE', message: error.message },
-        };
+      const response = await mutation.mutateAsync(command);
+      report(
+        { create: 'Status created.', remove: 'Status removed.', update: 'Status saved.' }[
+          command.kind
+        ],
+        'success',
+      );
 
-      return { success: false as const, error: apiError(error) };
+      return { success: true as const, response };
+    } catch (error) {
+      const failure: ReturnType<typeof apiError> =
+        error instanceof InvalidStatusResponse
+          ? { code: 'INVALID_RESPONSE', message: error.message }
+          : apiError(error);
+      report(failure.message, 'error');
+
+      return { success: false as const, error: failure };
     }
   };
 

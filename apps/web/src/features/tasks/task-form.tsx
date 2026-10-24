@@ -23,6 +23,21 @@ import type { FieldPath } from 'react-hook-form';
 
 type Detail = Extract<ReturnType<typeof assembleTaskDetail>, { state: 'ready' }>;
 
+function taskNoticeProps(message: string) {
+  const saved = message === 'Task saved.' || message === 'Task created.';
+  const local = [
+    'No changes to save.',
+    'This task changed elsewhere. Your unsaved edits are preserved.',
+    'Task access or connection changed. Reload to check the latest task.',
+  ].includes(message);
+
+  return {
+    'aria-live': local ? 'polite' : 'off',
+    role: saved ? 'status' : 'alert',
+    severity: saved || message === 'No changes to save.' ? 'success' : 'error',
+  } as const;
+}
+
 export function TaskForm({
   detail,
   listId,
@@ -217,20 +232,7 @@ export function TaskForm({
 
   return (
     <Stack component="form" noValidate onSubmit={save} spacing={1.2} aria-busy={busy}>
-      {notice && (
-        <Alert
-          severity={
-            notice === 'Task saved.' ||
-            notice === 'Task created.' ||
-            notice === 'No changes to save.'
-              ? 'success'
-              : 'error'
-          }
-          role={notice === 'Task saved.' || notice === 'Task created.' ? 'status' : 'alert'}
-        >
-          {notice}
-        </Alert>
-      )}
+      {notice && <Alert {...taskNoticeProps(notice)}>{notice}</Alert>}
       {conflict && (
         <Button disabled={busy} onClick={reload}>
           {baseline ? 'Reload latest task' : 'Close and refresh list'}

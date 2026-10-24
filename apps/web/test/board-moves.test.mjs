@@ -375,7 +375,7 @@ test('rejection of one pending drag cannot undo another task saved in the meanti
   await expect(done.getByRole('heading', { exact: true, name: 'Review navigation' })).toBeVisible();
   release();
   await page
-    .getByRole('status')
+    .getByRole('status', { exact: true, name: '' })
     .filter({ hasText: 'Task changed. Refresh before retrying.' })
     .waitFor();
   await expect(todo.getByRole('heading', { name: firstTitle, exact: true })).toBeVisible();

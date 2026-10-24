@@ -68,7 +68,9 @@ test('a second client sees keyboard moves and a stale optimistic move rolls back
     const drawer = bob.getByRole('dialog', { name: 'Task details' });
     await drawer.getByLabel(/^Title/).fill('Concurrent saved task');
     await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
-    await expect(drawer.getByText('Task saved.', { exact: true })).toBeVisible();
+    await expect(
+      drawer.getByRole('status', { exact: true, name: '' }).filter({ hasText: 'Task saved.' }),
+    ).toBeVisible();
     release?.();
     const rejected = await staleResponse;
     expect(rejected.status()).toBe(409);

@@ -166,13 +166,18 @@ export function FieldForm({
         {targetKey ? (local ? 'Edit field' : 'Override inherited field') : 'Add field'}
       </Typography>
       {targetKey && !local && (
-        <Alert severity="info">
+        <Alert aria-live="off" severity="info">
           Saving creates a complete local definition. Later ancestor edits will not change this
           field at this scope.
         </Alert>
       )}
       {notice && (
-        <Alert severity={notice === 'No changes to save.' ? 'info' : 'error'}>{notice}</Alert>
+        <Alert
+          aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
+          severity={notice === 'No changes to save.' ? 'info' : 'error'}
+        >
+          {notice}
+        </Alert>
       )}
       {conflict && (
         <Button onClick={() => request('reload')} disabled={busy}>

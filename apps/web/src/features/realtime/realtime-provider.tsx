@@ -4,6 +4,8 @@ import { SocketEvents } from '@flowboard/contracts';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
+import { useNotifications } from '../notifications/notification-provider';
+
 import { createInvalidationTracker, createRealtimeBus } from './realtime-events';
 
 import type { ClientRuntime } from '../../providers/app-providers';
@@ -24,6 +26,7 @@ export function RealtimeProvider({
   url: string | null;
 }) {
   const [bus] = useState(createRealtimeBus);
+  const notifications = useNotifications();
   useEffect(() => {
     if (!runtime || !session?.data.activeWorkspace || !url) return;
 
@@ -33,6 +36,7 @@ export function RealtimeProvider({
     const socket = io(url, {
       autoConnect: false,
       transports: ['websocket'],
+      query: { notifications: 'v1' },
       auth: (done) => done({ token: runtime.getSession()?.data.accessToken }),
     });
     let subscribed = new Set<string>();
@@ -60,11 +64,23 @@ export function RealtimeProvider({
     });
     socket.on(SocketEvents.invalidate, (input: unknown) => {
       const event = accept(input);
-      if (active && event) {
+      if (active && event && runtime.getSession()?.data.accessToken === session.data.accessToken) {
         if (event.kind === 'workspace') {
           subscribed = new Set();
           subscriptions();
         }
+
+        if (
+          event.kind !== 'resync' &&
+          event.self === false &&
+          (event.kind !== 'list' || bus.lists().includes(event.listId))
+        )
+          notifications.remote(
+            event.eventId,
+            event.kind === 'list'
+              ? 'Tasks in this list were updated.'
+              : 'Workspace settings were updated.',
+          );
 
         bus.dispatch(event);
       }
@@ -92,7 +108,7 @@ export function RealtimeProvider({
       socket.removeAllListeners();
       socket.disconnect();
     };
-  }, [bus, runtime, session, url]);
+  }, [bus, notifications, runtime, session, url]);
 
   return <RealtimeContext.Provider value={bus}>{children}</RealtimeContext.Provider>;
 }

@@ -67,7 +67,7 @@ test('saving task fields persists, refreshes the board and resets the dirty base
   await drawer.getByLabel(/^Effort/).fill('0');
   await drawer.getByLabel(/^Approved/).uncheck();
   await save.click();
-  await expect(drawer.getByRole('status')).toContainText('Task saved');
+  await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
   const request = api.requests.find(
     (item) => item.method === 'PATCH' && item.path.includes('/tasks/'),
   );
@@ -121,7 +121,7 @@ test('create validates required fields and stores explicit zero and false values
   await drawer.getByLabel(/^Approved/).check();
   await drawer.getByLabel(/^Approved/).uncheck();
   await drawer.getByRole('button', { exact: true, name: 'Create task' }).click();
-  await expect(drawer.getByRole('status')).toContainText('Task created');
+  await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task created');
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await page.getByRole('button', { exact: true, name: 'Open task: Created in drawer' }).click();
   await expect(drawer.getByLabel(/^Effort/)).toHaveValue('0');
@@ -220,7 +220,7 @@ test('a newly created task reloads its saved identity after an editing conflict'
   await drawer.getByLabel(/^Title/).fill('Created before conflict');
   await drawer.getByLabel(/^Area/).selectOption(ids.option);
   await drawer.getByRole('button', { exact: true, name: 'Create task' }).click();
-  await expect(drawer.getByRole('status')).toContainText('Task created');
+  await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task created');
   await drawer.getByLabel(/^Title/).fill('Uncommitted title');
   api.controls.board.rejectNextWrite = {
     code: 'VERSION_CONFLICT',
@@ -249,7 +249,7 @@ test('all custom-field inputs save and optional fields can be explicitly cleared
   await drawer.getByLabel('Notes', { exact: true }).fill('Ready for review');
   await drawer.getByLabel('Milestone', { exact: true }).fill('2026-12-02');
   await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
-  await expect(drawer.getByRole('status')).toContainText('Task saved');
+  await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
   assert.deepEqual(
     api.requests.filter((item) => item.method === 'PATCH').at(-1).body.customFields,
     {
@@ -288,7 +288,7 @@ test('duplicate submission keeps the pending save and close controls disabled', 
   await expect(drawer.getByRole('button', { exact: true, name: 'Saving…' })).toBeDisabled();
   await expect(drawer.getByRole('button', { exact: true, name: 'Close task' })).toBeDisabled();
   release();
-  await expect(drawer.getByRole('status')).toContainText('Task saved');
+  await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
   assert.equal(api.requests.filter((request) => request.method === 'PATCH').length, 1);
 });
 

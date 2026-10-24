@@ -305,7 +305,13 @@ export class RealtimeService
           return;
 
         if (event.eventType === 'workspace.config.updated' || event.eventType === 'node.updated') {
-          this.emit(socket, { kind: 'workspace', eventId: event.id });
+          this.emit(socket, {
+            kind: 'workspace',
+            eventId: event.id,
+            ...(socket.handshake.query.notifications === 'v1'
+              ? { self: event.payload.actorId === current.identity.user.id }
+              : {}),
+          });
 
           return;
         }
@@ -326,7 +332,14 @@ export class RealtimeService
             await this.check(socket);
             continue;
           }
-          this.emit(socket, { kind: 'list', listId, eventId: event.id });
+          this.emit(socket, {
+            kind: 'list',
+            listId,
+            eventId: event.id,
+            ...(socket.handshake.query.notifications === 'v1'
+              ? { self: event.payload.actorId === current.identity.user.id }
+              : {}),
+          });
         }
       }),
     );

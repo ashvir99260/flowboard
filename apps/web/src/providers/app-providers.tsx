@@ -5,6 +5,10 @@ import { Alert, Button } from '@flowboard/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
+import {
+  NotificationProvider,
+  useNotifications,
+} from '../features/notifications/notification-provider';
 import { RealtimeProvider } from '../features/realtime/realtime-provider';
 import { apiError } from '../lib/api-error';
 
@@ -20,16 +24,20 @@ type SessionState = {
   status: 'booting' | 'changing' | 'authenticated' | 'anonymous';
 };
 interface SessionContextValue extends SessionState {
+  login: ClientRuntime['login'];
   logout: () => Promise<void>;
   runtime: ClientRuntime | null;
   scope: QueryScope | null;
+  signup: ClientRuntime['signup'];
+  switchWorkspace: ClientRuntime['switchWorkspace'];
 }
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-export function AppProviders({
+function RuntimeProviders({
   children,
   realtimeUrl,
 }: Readonly<{ children: ReactNode; realtimeUrl: string | null }>) {
+  const notifications = useNotifications();
   const [queryClient] = useState(
     () => new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 15000 } } }),
   );
@@ -41,6 +49,7 @@ export function AppProviders({
   });
   const [notice, setNotice] = useState<{ message: string; retryLogout: boolean } | null>(null);
   const revision = useRef(0);
+  const lastChange = useRef('initial');
 
   useEffect(() => {
     let active = true;
@@ -51,6 +60,8 @@ export function AppProviders({
         if (!active) return;
 
         if (reason !== 'refresh') {
+          lastChange.current = reason;
+          notifications.clear();
           revision.current++;
           void queryClient.cancelQueries();
           queryClient.clear();
@@ -62,7 +73,10 @@ export function AppProviders({
             retryLogout: false,
           });
 
-        if (session && (reason === 'login' || reason === 'switch')) setNotice(null);
+        if (session && (reason === 'login' || reason === 'switch')) {
+          setNotice(null);
+          notifications.show(reason === 'login' ? 'Signed in.' : 'Workspace switched.', 'success');
+        }
 
         authenticated = Boolean(session);
 
@@ -98,7 +112,21 @@ export function AppProviders({
       void queryClient.cancelQueries();
       queryClient.clear();
     };
-  }, [queryClient]);
+  }, [notifications, queryClient]);
+
+  const sessionAction = async <T,>(action: () => Promise<T>): Promise<T> => {
+    const request = action();
+    const started = revision.current;
+    try {
+      return await request;
+    } catch (cause) {
+      const ownExpiry = revision.current === started + 1 && lastChange.current === 'expired';
+      if (revision.current === started || ownExpiry)
+        notifications.show(apiError(cause).message, 'error');
+
+      throw cause;
+    }
+  };
 
   const logout = async () => {
     if (!runtime) return;
@@ -106,14 +134,18 @@ export function AppProviders({
     setNotice(null);
     const request = runtime.logout();
     const expectedRevision = revision.current;
+    const report = notifications.capture();
     try {
       await request;
+      report('Signed out.', 'success');
     } catch {
-      if (revision.current === expectedRevision)
+      if (revision.current === expectedRevision) {
+        report('Sign out could not reach the server. Retry to clear the server session.', 'error');
         setNotice({
           message: 'Sign out could not reach the server. Retry to clear the server session.',
           retryLogout: true,
         });
+      }
     }
   };
   const scope = state.session
@@ -126,7 +158,17 @@ export function AppProviders({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContext.Provider value={{ ...state, runtime, scope, logout }}>
+      <SessionContext.Provider
+        value={{
+          ...state,
+          runtime,
+          scope,
+          logout,
+          login: (body) => sessionAction(() => runtime!.login(body)),
+          signup: (body) => sessionAction(() => runtime!.signup(body)),
+          switchWorkspace: (id) => sessionAction(() => runtime!.switchWorkspace(id)),
+        }}
+      >
         {notice && (
           <Alert
             severity="warning"
@@ -158,4 +200,12 @@ export function useSession() {
   if (!value) throw new Error('Session components require AppProviders');
 
   return value;
+}
+
+export function AppProviders(props: Readonly<{ children: ReactNode; realtimeUrl: string | null }>) {
+  return (
+    <NotificationProvider>
+      <RuntimeProviders {...props} />
+    </NotificationProvider>
+  );
 }

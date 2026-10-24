@@ -76,3 +76,11 @@ The later [P14 form system](FORM_SYSTEM.md) puts reusable React Hook Form bindin
 ## Color and unit refinement
 
 [P15-01 and D140](STYLE_TOKENS.md) refine the original 4px/16px scale: palette declarations use HSL, fixed dimensions use rem, and 1rem/one MUI spacing unit is 10px at the normal browser default. Existing spacing multipliers were adjusted to preserve layout. Borders/radii stay px, and larger browser font preferences remain effective. This supersedes earlier source-unit examples without changing component ownership or interaction behavior.
+
+## Action and live notifications
+
+`ToastHost` wraps the application with one React Toastify renderer. Web passes a plain message and dismissal callback; UI owns themed styling and registers the innermost drawer/dialog as the toast's accessible region. Arrival never moves focus. Alt+T focuses the notification; its Dismiss button or Escape closes it. Escape from a focused toast leaves the underlying dialog open. Errors remain until dismissed; success/info use six seconds with hover/window-focus pause and reduced-motion styling.
+
+Web's notification store accepts one result per captured action, keeps at most five messages, and invalidates captured reporters on session changes. Existing form errors and conflict/retry controls remain visible. HTTP success alone does not produce a toast: task/config response validation must finish first. Ordinary reads, session refreshes and reconnect resync remain quiet.
+
+Realtime clients opt into a recipient-relative `self` flag with the public `notifications=v1` handshake query. The token-only auth payload remains compatible with older servers. Only authorized, subscribed changes marked `self: false` produce a content-free notification, deduplicated across move endpoints. The flag refers to the acting account, including other tabs. Legacy clients receive the original payload so independent API/web releases remain compatible. Toasts are transient UI feedback; the activity feed remains the durable task history.

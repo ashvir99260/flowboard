@@ -161,7 +161,12 @@ export function StatusForm({
         {targetId ? 'Edit status' : 'Add status'}
       </Typography>
       {notice && (
-        <Alert severity={notice === 'No changes to save.' ? 'info' : 'error'}>{notice}</Alert>
+        <Alert
+          aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
+          severity={notice === 'No changes to save.' ? 'info' : 'error'}
+        >
+          {notice}
+        </Alert>
       )}
       {conflict && (
         <Button onClick={() => request('reload')} disabled={busy}>
@@ -193,7 +198,7 @@ export function StatusForm({
         )}
       </Stack>
       {local && removePreview && !removePreview.success && (
-        <Alert severity="info">
+        <Alert aria-live="off" severity="info">
           This status cannot be removed:{' '}
           {removePreview.issues.map((issue) => issue.message).join(' ')}
         </Alert>

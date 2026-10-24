@@ -17,7 +17,7 @@ test('login, select a list, edit a custom field and reload persisted data', asyn
   const drawer = page.getByRole('dialog', { name: 'Task details' });
   await drawer.getByLabel(/^Effort/).fill('7');
   await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
-  await expect(drawer.getByRole('status')).toContainText('Task saved');
+  await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await page.reload();
   await page.getByRole('button', { exact: true, name: 'Open task: Build demo workflow 1' }).click();
@@ -46,7 +46,9 @@ test('login, select a list, edit a custom field and reload persisted data', asyn
     await drawer.getByLabel(/^Effort/).fill('8');
     await bobDrawer.getByLabel(/^Effort/).fill('9');
     await bobDrawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
-    await expect(bobDrawer.getByRole('status')).toContainText('Task saved');
+    await expect(bobDrawer.getByRole('status', { exact: true, name: '' })).toContainText(
+      'Task saved',
+    );
 
     await expect(drawer.getByRole('alert')).toBeVisible();
     await expect(drawer.getByLabel(/^Effort/)).toHaveValue('8');

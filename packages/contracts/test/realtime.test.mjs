@@ -31,3 +31,20 @@ test('public invalidations cannot contain task contents or hidden move destinati
     kind: 'resync',
   });
 });
+
+test('notification origin is an optional boolean and never admits actor metadata', () => {
+  for (const kind of ['list', 'workspace']) {
+    const input = { kind, eventId: id, ...(kind === 'list' ? { listId: id } : {}) };
+    for (const self of [true, false])
+      expect(contracts.RealtimeInvalidationSchema.parse({ ...input, self })).toEqual({
+        ...input,
+        self,
+      });
+    expect(
+      contracts.RealtimeInvalidationSchema.safeParse({ ...input, self: 'false' }).success,
+    ).toBe(false);
+    expect(contracts.RealtimeInvalidationSchema.safeParse({ ...input, actorId: id }).success).toBe(
+      false,
+    );
+  }
+});

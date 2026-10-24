@@ -999,6 +999,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor: adopt hsl and rem design tokens`.
   - **Evidence:** [P15-01](evidence/P15-01.md).
 
+## Phase 16 — Action and realtime notifications
+
+- [x] **P16-01 — React Toastify action results and live notifications**
+  - **Goal:** Give consistent, accessible feedback for explicit actions and authorized realtime changes.
+  - **Requirements:** R23, R69, R71, R137.
+  - **Files:** UI toast host/overlay slots and tests; web notification store/provider, auth/workspace and task/config write adapters, realtime adapter/tests; shared realtime contract and gateway self-origin flag; manifests/lockfile and harness documentation.
+  - **Dependencies:** P15-01.
+  - **Acceptance:** Use React Toastify through UI presentation; announce validated success/final failures once, retain inline repair/validation state, and keep GET/refresh/resync quiet. Clear queue on identity/workspace changes and ignore stale action completions. Authorized remote events show content-free notifications once, with own changes suppressed. Toasts remain accessible inside overlays, never take focus on arrival, and support dismissal, paused timers, both themes, reduced motion and mobile widths.
+  - **Validation:** Failing then passing notification lifecycle/UI/browser tests, real two-client realtime checks, root build/lint/typecheck/test/format, generated contract drift checks and G01–05/G07/G09/G10.
+  - **Commit:** `feat: add action and realtime toast notifications`.
+  - **Evidence:** [P16-01](evidence/P16-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

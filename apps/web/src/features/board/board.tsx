@@ -134,7 +134,7 @@ function ConnectedBoard({
   return (
     <>
       {notice && (
-        <Typography role="status" sx={{ my: 0.8 }}>
+        <Typography aria-live="off" role="status" sx={{ my: 0.8 }}>
           {notice}
         </Typography>
       )}

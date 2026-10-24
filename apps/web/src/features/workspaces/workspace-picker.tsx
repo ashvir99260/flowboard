@@ -26,7 +26,7 @@ import type { ClientRuntime } from '../../providers/app-providers';
 
 function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryScope }) {
   const router = useRouter();
-  const { logout } = useSession();
+  const { logout, switchWorkspace } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [changing, setChanging] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -102,11 +102,12 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
                   setError(null);
                   try {
                     if (runtime.getSession()?.data.activeWorkspace?.id !== workspace.id)
-                      await runtime.switchWorkspace(workspace.id);
+                      await switchWorkspace(workspace.id);
 
                     router.push(`/w/${workspace.id}`);
                   } catch (cause) {
-                    setError(apiError(cause).message);
+                    const failure = apiError(cause);
+                    setError(failure.message);
                     setChanging(false);
                   }
                 }}

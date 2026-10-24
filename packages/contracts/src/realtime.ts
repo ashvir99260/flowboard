@@ -14,8 +14,17 @@ export const ListSubscriptionSchema = z.strictObject({
 
 // Public messages deliberately contain no task identity, body, or move destination.
 export const RealtimeInvalidationSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('list'), listId: UuidSchema, eventId: UuidSchema }),
-  z.strictObject({ kind: z.literal('workspace'), eventId: UuidSchema }),
+  z.strictObject({
+    kind: z.literal('list'),
+    listId: UuidSchema,
+    eventId: UuidSchema,
+    self: z.boolean().optional(),
+  }),
+  z.strictObject({
+    kind: z.literal('workspace'),
+    eventId: UuidSchema,
+    self: z.boolean().optional(),
+  }),
   z.strictObject({ kind: z.literal('resync') }),
 ]);
 

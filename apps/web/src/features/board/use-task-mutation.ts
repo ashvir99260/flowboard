@@ -10,6 +10,7 @@ import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-q
 import { useState } from 'react';
 
 import { apiError } from '../../lib/api-error';
+import { useNotifications } from '../notifications/notification-provider';
 import { isTaskBusy } from '../tasks/task-events';
 
 import type { TaskPlacement } from './task-placement';
@@ -18,6 +19,7 @@ import type { ClientRuntime } from '../../providers/app-providers';
 import type { MoveTaskResponse } from '@flowboard/api-client/types';
 
 export function useTaskMutation(runtime: ClientRuntime, scope: QueryScope) {
+  const notifications = useNotifications();
   const client = useQueryClient();
   const mutationKey = ['task-placement', scope.revision, scope.userId, scope.workspaceId];
   const [notice, setNotice] = useState<string | null>(null);
@@ -64,6 +66,7 @@ export function useTaskMutation(runtime: ClientRuntime, scope: QueryScope) {
     select: (entry) => entry.state.variables as TaskPlacement,
   });
   const submit = async (command: TaskPlacement) => {
+    const report = notifications.capture();
     if (isTaskBusy(client, scope, command.taskId))
       return {
         success: false as const,
@@ -74,11 +77,13 @@ export function useTaskMutation(runtime: ClientRuntime, scope: QueryScope) {
     try {
       await mutation.mutateAsync(command);
       setNotice('Task moved.');
+      report('Task moved.', 'success');
 
       return { success: true as const };
     } catch (failure) {
       const error = apiError(failure);
       setNotice(error.message);
+      report(error.message, 'error');
 
       return { success: false as const, error };
     }

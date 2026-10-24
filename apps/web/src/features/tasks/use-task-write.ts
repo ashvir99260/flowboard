@@ -9,6 +9,7 @@ import { ArchiveTaskSchema, CreateTaskSchema, UpdateTaskSchema } from '@flowboar
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { apiError } from '../../lib/api-error';
+import { useNotifications } from '../notifications/notification-provider';
 
 import { isTaskBusy } from './task-events';
 import { readTaskWriteResponse } from './task-write-data';
@@ -36,6 +37,7 @@ export function useTaskWrite(
   scope: QueryScope,
   configuration: { fields: readonly ResolvedField[]; statuses: readonly ResolvedStatus[] },
 ) {
+  const notifications = useNotifications();
   const client = useQueryClient();
   const create = createTaskMutation({ client: runtime.client });
   const update = updateTaskMutation({ client: runtime.client });
@@ -82,6 +84,7 @@ export function useTaskWrite(
   });
 
   const submit = async (command: TaskWrite) => {
+    const report = notifications.capture();
     if (isTaskBusy(client, scope, command.taskId))
       return {
         success: false as const,
@@ -89,15 +92,21 @@ export function useTaskWrite(
       };
 
     try {
-      return { success: true as const, response: await mutation.mutateAsync(command) };
-    } catch (error) {
-      if (error instanceof TaskResponseError)
-        return {
-          success: false as const,
-          error: { code: 'INVALID_RESPONSE', message: error.message },
-        };
+      const response = await mutation.mutateAsync(command);
+      report(
+        { archive: 'Task archived.', create: 'Task created.', update: 'Task saved.' }[command.kind],
+        'success',
+      );
 
-      return { success: false as const, error: apiError(error) };
+      return { success: true as const, response };
+    } catch (error) {
+      const failure: ReturnType<typeof apiError> =
+        error instanceof TaskResponseError
+          ? { code: 'INVALID_RESPONSE', message: error.message }
+          : apiError(error);
+      report(failure.message, 'error');
+
+      return { success: false as const, error: failure };
     }
   };
 

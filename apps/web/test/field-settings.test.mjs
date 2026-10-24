@@ -30,7 +30,9 @@ test(
       }
 
       await editor.getByRole('button', { exact: true, name: 'Save field' }).click();
-      await expect(page.getByRole('status')).toContainText('Field saved');
+      await expect(page.getByRole('status', { exact: true, name: '' })).toContainText(
+        'Field saved',
+      );
       await expect(
         page.getByRole('region', { exact: true, name: `Field test_${type}` }),
       ).toBeVisible();

@@ -12,7 +12,6 @@ import { useSession } from '../../providers/app-providers';
 
 import { SessionLoading } from './session-gate';
 
-import type { ClientRuntime } from '../../providers/app-providers';
 import type { LogIn, SignUp } from '@flowboard/contracts';
 import type { FormFieldConfig } from '@flowboard/forms';
 
@@ -45,7 +44,8 @@ const signupFields = [
   },
 ] satisfies FormFieldConfig<SignUp>[];
 
-function LoginForm({ runtime }: { runtime: ClientRuntime }) {
+function LoginForm() {
+  const { login } = useSession();
   const [error, setError] = useState<string | null>(null);
   const {
     control,
@@ -64,14 +64,19 @@ function LoginForm({ runtime }: { runtime: ClientRuntime }) {
         onSubmit={handleSubmit(async (data) => {
           setError(null);
           try {
-            await runtime.login(data);
+            await login(data);
           } catch (cause) {
-            setError(apiError(cause).message);
+            const failure = apiError(cause);
+            setError(failure.message);
           }
         })}
       >
         <Stack spacing={2}>
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Alert aria-live="off" severity="error">
+              {error}
+            </Alert>
+          )}
           <FormFields control={control} fields={loginFields} disabled={isSubmitting} />
           <Button type="submit" variant="contained" disabled={isSubmitting}>
             Sign in
@@ -84,7 +89,8 @@ function LoginForm({ runtime }: { runtime: ClientRuntime }) {
     </AuthPanel>
   );
 }
-function SignupForm({ runtime }: { runtime: ClientRuntime }) {
+function SignupForm() {
+  const { signup } = useSession();
   const [error, setError] = useState<string | null>(null);
   const {
     control,
@@ -103,14 +109,19 @@ function SignupForm({ runtime }: { runtime: ClientRuntime }) {
         onSubmit={handleSubmit(async (data) => {
           setError(null);
           try {
-            await runtime.signup(data);
+            await signup(data);
           } catch (cause) {
-            setError(apiError(cause).message);
+            const failure = apiError(cause);
+            setError(failure.message);
           }
         })}
       >
         <Stack spacing={2}>
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Alert aria-live="off" severity="error">
+              {error}
+            </Alert>
+          )}
           <FormFields control={control} fields={signupFields} disabled={isSubmitting} />
           <Button type="submit" variant="contained" disabled={isSubmitting}>
             Create account
@@ -132,5 +143,5 @@ export function AuthScreen({ mode }: Readonly<{ mode: 'login' | 'signup' }>) {
   }, [router, status]);
   if (!runtime || status === 'booting' || status === 'authenticated') return <SessionLoading />;
 
-  return mode === 'login' ? <LoginForm runtime={runtime} /> : <SignupForm runtime={runtime} />;
+  return mode === 'login' ? <LoginForm /> : <SignupForm />;
 }
