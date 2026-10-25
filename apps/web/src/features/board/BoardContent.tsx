@@ -1,10 +1,12 @@
 'use client';
 
-import type { Placement, Task } from '@flowboard/contracts';
 import { BoardViewport, Button, ErrorState, LoadingState, Stack, Typography } from '@flowboard/ui';
+
 import { BoardDnd } from './BoardDnd';
-import type { Selection } from './boardTypes';
 import { useBoard } from './useBoard';
+
+import type { Selection } from './boardTypes';
+import type { Placement, Task } from '@flowboard/contracts';
 
 export function BoardContent({
   board,
@@ -37,7 +39,9 @@ export function BoardContent({
         <Typography component="h2" variant="h2">
           Board
         </Typography>
-        <Button onClick={board.retry}>Refresh board</Button>
+        <Button disabled={board.refreshing} onClick={board.retry}>
+          Refresh board
+        </Button>
       </Stack>
       <BoardViewport role="region" aria-label="Task board" tabIndex={0}>
         <BoardDnd
@@ -52,7 +56,9 @@ export function BoardContent({
           action={({ status, nextCursor }) =>
             nextCursor ? (
               <Button
-                disabled={board.loading.has(status.id) || board.atLimit.has(status.id)}
+                disabled={
+                  board.refreshing || board.loading.has(status.id) || board.atLimit.has(status.id)
+                }
                 aria-label={`Load more ${status.name} tasks`}
                 onClick={() => board.loadMore(status.id)}
               >

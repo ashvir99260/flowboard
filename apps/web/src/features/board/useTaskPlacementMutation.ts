@@ -14,18 +14,17 @@ import { useApiMutation } from '../../lib/useApiMutation';
 import { useNotifications } from '../notifications/useNotifications';
 import { isTaskBusy } from '../tasks/taskEvents';
 
-import type { MoveTaskResponse } from '@flowboard/api-client/types';
+import type { TaskPlacement } from './taskPlacement';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { TaskPlacement } from './taskPlacement';
+import type { MoveTaskResponse } from '@flowboard/api-client/types';
 
 export function useTaskPlacementMutation(runtime: ClientRuntime, scope: QueryScope) {
   const notifications = useNotifications();
   const client = useQueryClient();
+  const [immediate, setImmediate] = useState<TaskPlacement[]>([]);
 
   const mutationKey = ['task-placement', scope.revision, scope.userId, scope.workspaceId];
-
-  const [notice, setNotice] = useState<string | null>(null);
 
   const move = moveTaskMutation({ client: runtime.client });
   const reorder = reorderTaskMutation({ client: runtime.client });
@@ -77,21 +76,35 @@ export function useTaskPlacementMutation(runtime: ClientRuntime, scope: QuerySco
         error: { code: 'BUSY', message: 'This task is already saving.' },
       };
 
-    setNotice('Saving task move…');
+    // DnD needs its projection in the drop render, before cache subscribers are notified.
+    setImmediate((current) => [...current, command]);
     try {
       await mutation.mutateAsync(command);
-      setNotice('Task moved.');
-      report('Task moved.', 'success');
+      report(
+        command.request.destinationListId === command.sourceListId &&
+          command.request.statusId === command.sourceStatusId &&
+          Object.keys(command.request.customFields ?? {}).length === 0
+          ? 'Task reordered.'
+          : 'Task moved.',
+        'success',
+      );
 
       return { success: true as const };
     } catch (failure) {
       const error = apiError(failure);
-      setNotice(error.message);
       report(error.message, 'error');
 
       return { success: false as const, error };
+    } finally {
+      setImmediate((current) => current.filter((item) => item !== command));
     }
   };
 
-  return { pending, submit, notice };
+  return {
+    pending: [
+      ...pending.filter((command) => !immediate.some((item) => item.taskId === command.taskId)),
+      ...immediate,
+    ],
+    submit,
+  };
 }

@@ -12,7 +12,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
@@ -21,10 +21,14 @@ import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
 
 import { assembleBoard, readBoardStatuses } from './boardData';
+import { projectPlacements } from './taskPlacement';
 
+import type { BoardPageRequest, BoardResult } from './boardData';
+import type { TaskPlacement } from './taskPlacement';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { BoardPageRequest, BoardResult } from './boardData';
+
+type ReadyBoard = Extract<BoardResult, { state: 'ready' }>;
 
 const maxPagesPerColumn = 100;
 const pagePolicy = {
@@ -34,18 +38,12 @@ const pagePolicy = {
   staleTime: Infinity,
 } as const;
 
-function boardView(
-  result: BoardResult,
-  error: ReturnType<typeof apiError> | null,
-  stale: boolean,
-  retry: () => void,
-) {
+function boardView(result: BoardResult, error: ReturnType<typeof apiError> | null, stale: boolean) {
   if (stale)
     return {
       state: 'error' as const,
       title: 'Board changed while loading',
       message: 'Updates arrived while the board was loading. Try again.',
-      retry,
     };
 
   if (error)
@@ -58,7 +56,6 @@ function boardView(
             ? 'List unavailable'
             : 'Unable to load board',
       message: error.message,
-      retry,
     };
 
   if (result.state === 'invalid')
@@ -66,10 +63,9 @@ function boardView(
       state: 'error' as const,
       title: 'Board data unavailable',
       message: 'The board response could not be displayed. Try again.',
-      retry,
     };
 
-  return result.state === 'ready' ? result : { state: 'loading' as const, retry };
+  return result.state === 'ready' ? result : { state: 'loading' as const };
 }
 
 export function useBoard({
@@ -83,19 +79,37 @@ export function useBoard({
 }) {
   const instance = useId();
   const queryClient = useQueryClient();
+  const latest = useRef<{ generation: number; value: ReadyBoard } | null>(null);
   const [attempt, setAttempt] = useState<{
     generation: number;
     pages: BoardPageRequest[];
     restarts: number;
-  }>({ generation: 0, restarts: 0, pages: [] });
+    snapshot: ReadyBoard | null;
+  }>({ generation: 0, restarts: 0, pages: [], snapshot: null });
 
-  useRealtime(listId, () =>
-    setAttempt((current) => ({ generation: current.generation + 1, restarts: 0, pages: [] })),
+  const refresh = useCallback(
+    (retain = false, command?: TaskPlacement) => {
+      if (!retain) latest.current = null;
+
+      setAttempt((current) => {
+        const previous = retain
+          ? (current.snapshot ??
+            (latest.current?.generation === current.generation ? latest.current.value : null))
+          : null;
+        const snapshot =
+          previous && command
+            ? { ...previous, columns: projectPlacements(previous.columns, listId, [command]) }
+            : previous;
+
+        return { generation: current.generation + 1, restarts: 0, pages: [], snapshot };
+      });
+    },
+    [listId],
   );
 
+  useRealtime(listId, (event) => refresh(event.kind === 'list'));
+
   useEffect(() => {
-    const refresh = () =>
-      setAttempt((current) => ({ generation: current.generation + 1, restarts: 0, pages: [] }));
     const unfocus = focusManager.subscribe((focused) => {
       if (focused) refresh();
     });
@@ -106,16 +120,28 @@ export function useBoard({
     const unmutate = queryClient.getMutationCache().subscribe((event) => {
       if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
 
-      if (
-        configurationChanged(event.mutation.options.mutationKey, event.action.type, scope) ||
-        taskMutationAffectsList(
-          event.mutation.options.mutationKey,
-          event.mutation.state.variables,
-          scope,
-          listId,
-        )
-      )
+      const key = event.mutation.options.mutationKey;
+      if (configurationChanged(key, event.action.type, scope)) {
         refresh();
+
+        return;
+      }
+
+      if (!taskMutationAffectsList(key, event.mutation.state.variables, scope, listId)) return;
+
+      const code = event.action.type === 'error' ? apiError(event.mutation.state.error).code : null;
+      const retain =
+        key?.[0] === 'task-placement' &&
+        (!code ||
+          ['INTERNAL_ERROR', 'SERVICE_UNAVAILABLE', 'NETWORK_ERROR', 'RATE_LIMITED'].includes(
+            code,
+          ));
+      refresh(
+        retain,
+        retain && event.action.type === 'success'
+          ? (event.mutation.state.variables as TaskPlacement)
+          : undefined,
+      );
     });
 
     return () => {
@@ -123,7 +149,7 @@ export function useBoard({
       unfocus();
       unonline();
     };
-  }, [queryClient, listId, scope]);
+  }, [queryClient, listId, refresh, scope]);
 
   const tags = [`board:${instance}:${attempt.generation}`];
 
@@ -178,23 +204,39 @@ export function useBoard({
     pages,
   });
   const stale = error ? error.code === 'CURSOR_STALE' : result.state === 'stale';
-  const retry = () =>
-    setAttempt((current) => ({ generation: current.generation + 1, restarts: 0, pages: [] }));
+  const retry = () => refresh();
+  const view = boardView(result, error, stale);
+  const retrying = stale && attempt.restarts < 2;
 
-  if (stale && attempt.restarts < 2) {
-    setAttempt({ generation: attempt.generation + 1, restarts: attempt.restarts + 1, pages: [] });
+  useEffect(() => {
+    if (view.state === 'ready') latest.current = { generation: attempt.generation, value: view };
 
-    return { state: 'loading' as const, retry };
+    if (view.state === 'error' && !retrying) latest.current = null;
+  }, [view, attempt.generation, retrying]);
+
+  if (attempt.snapshot && (view.state === 'ready' || (view.state === 'error' && !retrying)))
+    setAttempt({ ...attempt, snapshot: null });
+
+  if (retrying) {
+    setAttempt({
+      ...attempt,
+      generation: attempt.generation + 1,
+      restarts: attempt.restarts + 1,
+      pages: [],
+    });
   }
 
-  const view = boardView(result, error, stale, retry);
-  if (view.state !== 'ready') return view;
+  const retained = attempt.snapshot && (view.state === 'loading' || retrying);
+  const visible = retained ? attempt.snapshot! : view;
+  if (visible.state !== 'ready') return { ...visible, retry };
+
+  const refreshing = Boolean(retained);
 
   const loading = new Set(
     requests.filter((_, index) => taskQueries[index]?.isFetching).map(({ statusId }) => statusId),
   );
   const atLimit = new Set(
-    view.columns
+    visible.columns
       .filter(
         ({ status }) =>
           requests.filter(({ statusId }) => statusId === status.id).length >= maxPagesPerColumn,
@@ -202,7 +244,9 @@ export function useBoard({
       .map(({ status }) => status.id),
   );
   const loadMore = (statusId: string) => {
-    const cursor = view.columns.find(({ status }) => status.id === statusId)?.nextCursor;
+    if (refreshing) return;
+
+    const cursor = visible.columns.find(({ status }) => status.id === statusId)?.nextCursor;
     if (!cursor || loading.has(statusId) || atLimit.has(statusId)) return;
 
     setAttempt((current) =>
@@ -212,5 +256,5 @@ export function useBoard({
     );
   };
 
-  return { ...view, loading, atLimit, loadMore, retry };
+  return { ...visible, loading, atLimit, loadMore, retry, refreshing };
 }

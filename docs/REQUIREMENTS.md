@@ -233,3 +233,7 @@ R166: Drag tasks from the full card surface in both workspace-list and per-list 
 
 - **R170:** Use MUI Autocomplete for single/multiple field selections, assignees, direct dropdown fields and global search suggestions, preserving validation and stable values.
 - **R171:** Use MUI X DatePicker/DateTimePicker for date fields, preserving date-only and UTC due-date semantics, clearing, invalid drafts and accessible keyboard operation.
+
+## Stable drag feedback follow-up
+
+- **R172:** Dragging a task to a new position or column keeps the board stable through saving and refresh, preserves rollback on failure, and shows a completion toast only after the server confirms the move/reorder.

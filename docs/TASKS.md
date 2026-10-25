@@ -1526,3 +1526,13 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** No native value dropdown remains in app flows; global suggestions use server search and preserve permissions, pagination/refresh and task/list navigation; action menus remain correct.
   - **Validation:** Focused web selection/search/date editing, source inventory, typecheck and scoped lint.
   - **Commit:** `feat(web): adopt autocomplete search and dropdowns`.
+
+- [ ] **P37-01 — Keep drag placement stable until refresh completes**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P37-01.md).
+  - **Goal:** Remove post-drop board/card flicker and provide one confirmed completion toast.
+  - **Requirements:** R172; preserve R64, R162 and R166.
+  - **Files:** Board/workspace query snapshots and connected views, placement mutation feedback, shared toast renderer, browser tests, requirement/evidence docs.
+  - **Dependencies:** P34-01/P35-04/P36-03 implemented slices.
+  - **Acceptance:** Card position and board geometry remain stable during a delayed successful save/refresh; no early success toast; errors roll back safely; access/configuration invalidation clears retained content; unchanged/cancelled drags stay quiet.
+  - **Validation:** Failing browser continuity test, focused drag/rollback/realtime regressions, web typecheck and scoped lint/format.
+  - **Commit:** `fix(web): keep drag placement stable through refresh`.

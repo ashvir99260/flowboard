@@ -7,6 +7,8 @@ import { ToastCloseButton } from './ToastCloseButton.js';
 
 import type { ToastMessage } from './toastTypes.js';
 
+const successDurationMs = 6000;
+
 const Container = styled(ToastContainer)(({ theme }) => ({
   '--toastify-color-light': (theme.vars ?? theme).palette.background.paper,
   '--toastify-text-color-light': (theme.vars ?? theme).palette.text.primary,
@@ -37,6 +39,10 @@ const Container = styled(ToastContainer)(({ theme }) => ({
   '& .Toastify__toast-icon': { width: '2rem', marginInlineEnd: 0 },
   '@media (prefers-reduced-motion: reduce)': {
     '& *, & *::before, & *::after': { animationDuration: '0.01ms', transitionDuration: '0.01ms' },
+    // This hidden animation is the dismissal timer, not visible motion.
+    '& .Toastify__progress-bar--animated': {
+      animationDuration: `${successDurationMs}ms !important`,
+    },
   },
 }));
 
@@ -69,16 +75,24 @@ export function ToastDisplay({
     };
     element?.addEventListener('keydown', onKeyDown);
     origin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    toast(message.message, {
-      toastId: message.id,
-      containerId: 'flowboard',
-      type: message.severity,
-      ariaLabel: `Notification: ${message.message}`,
-      role: 'status',
-      autoClose: message.severity === 'error' || message.severity === 'warning' ? false : 6000,
-      onClose: () => {
-        if (active) dismiss();
-      },
+    // Let container subscriptions settle, including StrictMode teardown/replay.
+    queueMicrotask(() => {
+      if (!active) return;
+
+      toast(message.message, {
+        toastId: message.id,
+        containerId: 'flowboard',
+        type: message.severity,
+        ariaLabel: `Notification: ${message.message}`,
+        role: 'status',
+        autoClose:
+          message.severity === 'error' || message.severity === 'warning'
+            ? false
+            : successDurationMs,
+        onClose: () => {
+          if (active) dismiss();
+        },
+      });
     });
 
     return () => {

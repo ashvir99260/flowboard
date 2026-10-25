@@ -45,7 +45,9 @@ test('API errors persist, preserve inline repair state, and remain accessible in
   const { page, api } = await openApp(t);
   api.controls.board.tableMode = true;
   await page.getByRole('button', { exact: true, name: 'Sign in' }).click();
-  await page.getByRole('button', { name: 'Dismiss notification' }).click();
+  await expect(page.getByRole('button', { name: 'Dismiss notification' })).toBeVisible();
+  await page.keyboard.press('Alt+t');
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { name: /Engineering/ }).click();
   await page.getByRole('button', { exact: true, name: 'Public list' }).click();
   await page.getByRole('button', { exact: true, name: 'Open task: Fix login' }).click();
@@ -116,11 +118,14 @@ test('local validation and background reads stay quiet, and session changes clea
   await expect(
     page.getByRole('status', { name: 'Notification: Invalid email or password' }),
   ).toHaveCount(0);
-  await page.getByRole('button', { name: 'Dismiss notification' }).click();
+  await expect(page.getByRole('button', { name: 'Dismiss notification' })).toBeVisible();
+  await page.keyboard.press('Alt+t');
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { name: /Engineering/ }).click();
   await page.getByRole('button', { exact: true, name: 'Public list' }).click();
   await expect(page.getByRole('heading', { exact: true, name: 'Public list' })).toBeVisible();
   assert.equal(await page.getByRole('status', { name: /^Notification:/ }).count(), 0);
+  await page.getByRole('region', { exact: true, name: 'Task board' }).waitFor();
   await page.getByRole('button', { exact: true, name: 'New task' }).click();
   await page.getByRole('button', { exact: true, name: 'Create task' }).click();
   assert.equal(await page.getByRole('status', { name: /^Notification:/ }).count(), 0);
