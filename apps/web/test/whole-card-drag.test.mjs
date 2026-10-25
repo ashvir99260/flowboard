@@ -13,14 +13,20 @@ async function cardInteractions(page, card, title) {
   await card.getByRole('button', { name: `Open task: ${title}`, exact: true }).click();
   const drawer = page.getByRole('dialog', { name: 'Task details' });
   await expect(drawer).toBeVisible();
-  await drawer.getByRole('button', { name: 'Close task', exact: true }).click();
+  await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
+  await expect(drawer).not.toBeVisible();
+  await card.getByRole('article').click({ position: { x: 4, y: 24 } });
+  await expect(drawer).toBeVisible();
+  await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
+  await expect(drawer).not.toBeVisible();
 
   const move = card.getByRole('button', { name: `Move task: ${title}`, exact: true });
   await move.focus();
   await page.keyboard.press('Space');
-  const dialog = page.getByRole('dialog', { name: 'Move task', exact: true });
+  const dialog = page.getByRole('dialog', { exact: true, name: 'Move task' });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(drawer).not.toBeVisible();
+  await dialog.getByRole('button', { exact: true, name: 'Cancel' }).click();
   await expect(move).toBeFocused();
 
   await card.focus();
@@ -28,6 +34,7 @@ async function cardInteractions(page, card, title) {
   await expect(page.getByText(/^Picked up/)).toBeAttached();
   await page.keyboard.press('Escape');
   await expect(card).toBeFocused();
+  await expect(drawer).not.toBeVisible();
 }
 
 async function dragCardBody(page, card, destination) {
@@ -66,16 +73,16 @@ test(
     await page.goto(`${origin}/login`);
     await page.getByLabel(/^Email/).fill('alice@example.test');
     await page.getByLabel(/^Password/).fill('browser-test-password');
-    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await page.getByRole('button', { exact: true, name: 'Sign in' }).click();
     await page.getByRole('button', { name: /Engineering/ }).click();
-    const workspace = page.getByRole('region', { name: 'Workspace lists board', exact: true });
+    const workspace = page.getByRole('region', { exact: true, name: 'Workspace lists board' });
     const publicList = workspace.getByRole('region', {
-      name: 'Public list list column',
       exact: true,
+      name: 'Public list list column',
     });
     const privateList = workspace.getByRole('region', {
-      name: 'Private list list column',
       exact: true,
+      name: 'Private list list column',
     });
     await publicList.getByRole('article').first().waitFor();
     await privateList.getByRole('article').first().waitFor();
@@ -110,21 +117,22 @@ test(
           await saved;
         }
         assert.equal((await saved).status(), 200);
+        await expect(page.getByRole('dialog', { name: 'Task details' })).not.toBeVisible();
         await expect(pending).toHaveAttribute('data-rfd-drag-handle-draggable-id', taskId);
         await expect(publicList.locator(`[data-drag-task="${taskId}"]`)).toHaveCount(0);
       },
     );
 
-    await page.getByRole('button', { name: 'Public list', exact: true }).click();
-    const board = page.getByRole('region', { name: 'Task board', exact: true });
+    await page.getByRole('button', { exact: true, name: 'Public list' }).click();
+    const board = page.getByRole('region', { exact: true, name: 'Task board' });
     await board.waitFor();
     await t.test(
       'status card body changes status and keeps title, Move and keyboard controls usable',
       async () => {
         const title = 'Public board task'.padEnd(500, 'x');
         const taskId = '50000000-0000-4000-8000-000000000001';
-        const todo = board.getByRole('region', { name: 'To do column', exact: true });
-        const done = board.getByRole('region', { name: 'Done column', exact: true });
+        const todo = board.getByRole('region', { exact: true, name: 'To do column' });
+        const done = board.getByRole('region', { exact: true, name: 'Done column' });
         const card = todo.getByRole('group', { name: `Drag task: ${title}`, exact: true });
         await cardInteractions(page, card, title);
         const saved = page.waitForResponse((response) =>
@@ -132,6 +140,7 @@ test(
         );
         const [response] = await Promise.all([saved, dragCardBody(page, card, done)]);
         assert.equal(response.status(), 200);
+        await expect(page.getByRole('dialog', { name: 'Task details' })).not.toBeVisible();
         await expect(
           done.getByRole('group', { name: `Drag task: ${title}`, exact: true }),
         ).toBeVisible();

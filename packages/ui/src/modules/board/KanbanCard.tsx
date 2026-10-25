@@ -1,10 +1,10 @@
 'use client';
 
 import ButtonBase from '@mui/material/ButtonBase';
-import { styled } from '@mui/material/styles';
-
 import { default as Stack } from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
 import { default as Typography } from '@mui/material/Typography';
+
 import { Paper } from '../primitives/Paper.js';
 import { AssigneeAvatarGroup } from '../tasks/AssigneeAvatarGroup.js';
 import { DueDateLabel } from '../tasks/DueDateLabel.js';
@@ -61,10 +61,14 @@ const Title = styled(Typography)({
 const Summary = styled(Stack)(({ theme }) => ({
   flexWrap: 'wrap',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  justifyContent: 'flex-start',
   marginTop: theme.spacing(0.4),
 }));
-const Metadata = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(0.6), minWidth: 0 }));
+const Metadata = styled(Stack)(({ theme }) => ({
+  alignItems: 'flex-start',
+  marginTop: theme.spacing(0.6),
+  minWidth: 0,
+}));
 const Actions = styled(Stack)(({ theme }) => ({
   marginTop: theme.spacing(0.4),
   flexWrap: 'wrap',
@@ -84,7 +88,23 @@ export function KanbanCard({
   task: Pick<Task, 'id' | 'title' | 'priority' | 'dueDate' | 'assignees'>;
 }>) {
   return (
-    <Card component="article" aria-label={task.title} variant="outlined">
+    <Card
+      component="article"
+      aria-label={task.title}
+      variant="outlined"
+      onClick={(event) => {
+        if (
+          event.defaultPrevented ||
+          (event.target instanceof Element &&
+            event.target.closest(
+              'button,a,input,textarea,select,label,summary,[role="button"],[role="link"],[contenteditable="true"]',
+            ))
+        )
+          return;
+
+        onOpen?.();
+      }}
+    >
       <Header>
         {onOpen ? (
           <ActionHeading aria-label={task.title}>

@@ -1449,6 +1449,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Focused browser regression for both boards plus compatible existing drag selectors; report full suites separately.
   - **Commit:** `feat(web): drag tasks from the whole card`.
 - [ ] **P34-02 — Open task details from the card body**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P34-02.md).
   - **Goal:** Open the existing detail drawer from a normal card click on both boards.
   - **Requirements:** R167; preserve R166.
   - **Files:** Shared KanbanCard, interaction tests, task-card browser regression.

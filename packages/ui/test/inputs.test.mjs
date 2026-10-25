@@ -343,6 +343,14 @@ test('board primitives expose status and task metadata without nesting action bu
   assert.deepEqual([opened, moved, added], [0, 1, 1]);
   fireEvent.click(screen.getByRole('button', { name: 'Open task: A long title to review' }));
   assert.equal(opened, 1);
+  fireEvent.click(screen.getByRole('article', { name: 'A long title to review' }));
+  assert.equal(opened, 2, 'card body opens task details');
+  fireEvent.click(screen.getByText('Team: Platform'));
+  assert.equal(opened, 3, 'non-interactive metadata opens task details');
+  const prevented = new globalThis.window.MouseEvent('click', { bubbles: true, cancelable: true });
+  prevented.preventDefault();
+  fireEvent(screen.getByRole('article'), prevented);
+  assert.equal(opened, 3, 'a suppressed drag click does not open task details');
   assert.equal(globalThis.document.querySelector('button button'), null);
 });
 
