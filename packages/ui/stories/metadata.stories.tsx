@@ -1,9 +1,10 @@
-import { CustomFieldChip } from '../src/modules/forms/customFieldChip.js';
-import { AssigneeAvatarGroup } from '../src/modules/tasks/assigneeAvatarGroup.js';
-import { DueDateLabel } from '../src/modules/tasks/dueDateLabel.js';
-import { PriorityBadge } from '../src/modules/tasks/priorityBadge.js';
-import { StatusChip } from '../src/modules/tasks/statusChip.js';
-import { Stack, Typography } from '../src/primitives.js';
+import { CustomFieldChip } from '../src/modules/forms/CustomFieldChip.js';
+import { AssigneeAvatarGroup } from '../src/modules/tasks/AssigneeAvatarGroup.js';
+import { DueDateLabel } from '../src/modules/tasks/DueDateLabel.js';
+import { PriorityBadge } from '../src/modules/tasks/PriorityBadge.js';
+import { StatusChip } from '../src/modules/tasks/StatusChip.js';
+import { default as Stack } from '@mui/material/Stack';
+import { default as Typography } from '@mui/material/Typography';
 
 import { approved, area, effort, statuses } from './fixtures.js';
 

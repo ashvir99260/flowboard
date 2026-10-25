@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { prepareMoveFields, projectPlacements } from '../src/features/board/task-placement.ts';
+import { prepareMoveFields, projectPlacements } from '../src/features/board/taskPlacement.ts';
 
 import { boardFixture, field, ids, listId, task } from './common/board-fixture.mjs';
 

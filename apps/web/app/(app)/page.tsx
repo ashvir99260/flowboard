@@ -1,4 +1,4 @@
-import { HomeRedirect } from '../../src/features/auth/session-gate';
+import { HomeRedirect } from '../../src/features/auth/HomeRedirect';
 
 export default function HomePage() {
   return (

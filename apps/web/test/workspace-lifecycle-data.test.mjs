@@ -7,7 +7,7 @@ import {
   archiveStateChanged,
   readWorkspaceWrite,
   WorkspaceDraftSchema,
-} from '../src/features/workspaces/workspace-lifecycle.ts';
+} from '../src/features/workspaces/workspaceLifecycle.ts';
 
 const { role: _role, ...workspace } = AuthExamples.session.data.activeWorkspace;
 const envelope = { data: workspace, configVersion: 2, dataVersion: 2 };

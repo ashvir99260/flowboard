@@ -7,7 +7,7 @@ import {
   planWorkspaceMove,
   projectWorkspaceMoves,
   workspaceSnapshotState,
-} from '../src/features/workspace-board/workspace-board-data.ts';
+} from '../src/features/workspace-board/workspaceBoardData.ts';
 
 import {
   boardFixture,

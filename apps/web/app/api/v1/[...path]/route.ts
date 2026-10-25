@@ -1,4 +1,4 @@
-import { forwardApi } from '../../../../src/server/api-proxy';
+import { forwardApi } from '../../../../src/server/apiProxy';
 
 export const runtime = 'nodejs';
 

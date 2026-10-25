@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { QueryClient } from '@tanstack/react-query';
 
-import { isTaskBusy, taskMutationAffectsList } from '../src/features/tasks/task-events.ts';
+import { isTaskBusy, taskMutationAffectsList } from '../src/features/tasks/taskEvents.ts';
 
 test('bulk task writes lock every selected task only in the same session and refresh its list', async () => {
   const client = new QueryClient();

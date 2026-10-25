@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
-import { BoardGrid, BoardViewport } from '../src/modules/board/boardLayout.js';
-import { KanbanCard } from '../src/modules/board/kanbanCard.js';
-import { WorkspaceColumn } from '../src/modules/board/workspaceColumn.js';
-import { FlowboardLogo } from '../src/modules/layout/flowboardLogo.js';
-import { WorkspaceLayout } from '../src/modules/layout/workspaceLayout.js';
-import { TreeItem } from '../src/modules/navigation/treeItem.js';
-import { WorkspaceIcon } from '../src/modules/navigation/workspaceIcon.js';
-import { Box, Button, IconButton, Stack, Typography } from '../src/primitives.js';
+import { BoardGrid } from '../src/modules/board/BoardGrid.js';
+import { BoardViewport } from '../src/modules/board/BoardViewport.js';
+import { KanbanCard } from '../src/modules/board/KanbanCard.js';
+import { WorkspaceColumn } from '../src/modules/board/WorkspaceColumn.js';
+import { FlowboardLogo } from '../src/modules/layout/FlowboardLogo.js';
+import { WorkspaceLayout } from '../src/modules/layout/WorkspaceLayout.js';
+import { TreeItem } from '../src/modules/navigation/TreeItem.js';
+import { WorkspaceIcon } from '../src/modules/navigation/WorkspaceIcon.js';
+import { default as Box } from '@mui/material/Box';
+import { Button } from '../src/modules/primitives/Button.js';
+import { default as IconButton } from '@mui/material/IconButton';
+import { default as Stack } from '@mui/material/Stack';
+import { default as Typography } from '@mui/material/Typography';
 
 import { task } from './fixtures.js';
 

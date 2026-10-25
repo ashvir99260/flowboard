@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { readFieldConfiguration } from '../src/features/config/fields/field-configuration.ts';
+import { readFieldConfiguration } from '../src/features/config/fields/fieldConfiguration.ts';
 import {
   fieldCommand,
   fieldDefaults,
   previewFieldEdit,
   previewFieldRemoval,
-} from '../src/features/config/fields/field-form-data.ts';
+} from '../src/features/config/fields/fieldFormData.ts';
 
 import { fieldConfigurationFixture } from './common/field-config-fixture.mjs';
 

@@ -7,7 +7,7 @@ import {
   bulkTaskInput,
   readBulkTaskResponse,
   selectBulkTasks,
-} from '../src/features/list/bulk-task-data.ts';
+} from '../src/features/list/bulkTaskData.ts';
 
 import { boardFixture, field, task } from './common/board-fixture.mjs';
 

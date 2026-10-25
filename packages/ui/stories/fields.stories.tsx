@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { CustomFieldInput } from '../src/modules/forms/customFieldInput.js';
-import { Stack, Typography } from '../src/primitives.js';
+import { CustomFieldInput } from '../src/modules/forms/CustomFieldInput.js';
+import { default as Stack } from '@mui/material/Stack';
+import { default as Typography } from '@mui/material/Typography';
 
 import { approved, area, effort } from './fixtures.js';
 

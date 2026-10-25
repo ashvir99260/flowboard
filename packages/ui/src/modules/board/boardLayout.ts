@@ -1,7 +1,7 @@
-export { BoardViewport } from './boardViewport.js';
+export { BoardViewport } from './BoardViewport.js';
 
-export { BoardGrid } from './boardGrid.js';
+export { BoardGrid } from './BoardGrid.js';
 
-export { BoardItem } from './boardItem.js';
+export { BoardItem } from './BoardItem.js';
 
-export { BoardDropzone } from './boardDropzone.js';
+export { BoardDropzone } from './BoardDropzone.js';

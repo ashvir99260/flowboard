@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { NodeExamples, NodeSchema } from '@flowboard/contracts';
 
-import { assembleTree } from '../src/features/tree/assemble-tree.ts';
+import { assembleTree } from '../src/features/tree/assembleTree.ts';
 
 const workspaceId = NodeExamples.node.workspaceId;
 const node = (id, type, parentId, position = 0) =>

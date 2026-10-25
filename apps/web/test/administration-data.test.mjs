@@ -7,13 +7,13 @@ import {
   administrationCommand,
   administrationDefaults,
   administrationDraftSchema,
-} from '../src/features/administration/administration-commands.ts';
+} from '../src/features/administration/administrationCommands.ts';
 import {
   containerLabel,
   readAdministration,
   readContainerWrite,
   readGrantWrite,
-} from '../src/features/administration/administration-data.ts';
+} from '../src/features/administration/administrationData.ts';
 
 const workspaceId = NodeExamples.node.workspaceId;
 const space = NodeSchema.parse(NodeExamples.node);

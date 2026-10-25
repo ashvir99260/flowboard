@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { readStatusConfiguration } from '../src/features/config/statuses/status-configuration.ts';
+import { readStatusConfiguration } from '../src/features/config/statuses/statusConfiguration.ts';
 import {
   previewStatusEdit,
   previewStatusRemoval,
   statusCommand,
   statusDefaults,
   statusDraftSchema,
-} from '../src/features/config/statuses/status-form-data.ts';
+} from '../src/features/config/statuses/statusFormData.ts';
 
 import { statusConfigId, statusConfigurationFixture } from './common/status-config-fixture.mjs';
 

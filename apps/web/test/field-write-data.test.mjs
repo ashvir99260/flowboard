@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { readFieldConfiguration } from '../src/features/config/fields/field-configuration.ts';
-import { fieldCommand, fieldDefaults } from '../src/features/config/fields/field-form-data.ts';
-import { readFieldWriteResponse } from '../src/features/config/fields/field-write-data.ts';
+import { readFieldConfiguration } from '../src/features/config/fields/fieldConfiguration.ts';
+import { fieldCommand, fieldDefaults } from '../src/features/config/fields/fieldFormData.ts';
+import { readFieldWriteResponse } from '../src/features/config/fields/fieldWriteData.ts';
 
 import { fieldConfigurationFixture } from './common/field-config-fixture.mjs';
 

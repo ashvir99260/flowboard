@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { readListFilter } from '../src/features/list/list-filter.ts';
+import { readListFilter } from '../src/features/list/listFilter.ts';
 
 import { field, ids } from './common/board-fixture.mjs';
 

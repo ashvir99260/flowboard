@@ -3,7 +3,7 @@ import { once } from 'node:events';
 import { createServer } from 'node:http';
 import test from 'node:test';
 
-import { forwardApi } from '../src/server/api-proxy.ts';
+import { forwardApi } from '../src/server/apiProxy.ts';
 
 async function upstream(t, handler) {
   const server = createServer(handler);

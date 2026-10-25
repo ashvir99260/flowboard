@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
-import { ToastHost } from '../src/modules/notifications/toastHost.js';
-import { ConfirmDialog } from '../src/modules/overlays/confirmDialog.js';
-import { DrawerPanel } from '../src/modules/overlays/drawerPanel.js';
-import { Button, Stack } from '../src/primitives.js';
+import { ToastHost } from '../src/modules/notifications/ToastHost.js';
+import { ConfirmDialog } from '../src/modules/overlays/ConfirmDialog.js';
+import { DrawerPanel } from '../src/modules/overlays/DrawerPanel.js';
+import { Button } from '../src/modules/primitives/Button.js';
+import { default as Stack } from '@mui/material/Stack';
 
 import type { ToastMessage } from '../src/modules/notifications/toastTypes.js';
 import type { Meta, StoryObj } from '@storybook/react-vite';

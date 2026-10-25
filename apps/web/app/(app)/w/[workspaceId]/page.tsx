@@ -1,4 +1,4 @@
-import { WorkspaceBoard } from '../../../../src/features/workspace-board/workspace-board';
+import { WorkspaceBoard } from '../../../../src/features/workspace-board/WorkspaceBoard';
 
 export default function WorkspacePage() {
   return <WorkspaceBoard />;

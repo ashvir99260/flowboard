@@ -1,7 +1,7 @@
 import { UuidSchema } from '@flowboard/contracts';
 import { notFound } from 'next/navigation';
 
-import { WorkspaceShell } from '../../../../src/features/workspaces/workspace-shell';
+import { WorkspaceShell } from '../../../../src/features/workspaces/WorkspaceShell';
 
 export default async function WorkspaceLayout({
   params,

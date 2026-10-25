@@ -1,0 +1,64 @@
+'use client';
+
+import { listScopeFieldsOptions } from '@flowboard/api-client/tanstack-query';
+import { ScopeFieldCollectionSchema } from '@flowboard/contracts';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import { useId, useState } from 'react';
+
+import { apiError } from '../../../lib/apiError';
+import { withQueryScope } from '../../../lib/queryScope';
+
+import { readFieldConfiguration } from './fieldConfiguration';
+
+import type { FieldScope } from '@flowboard/contracts';
+import type { QueryScope } from '../../../lib/queryScope';
+import type { ClientRuntime } from '../../../providers/sessionContext';
+
+const policy = {
+  staleTime: Infinity,
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+} as const;
+export function useFieldConfiguration(
+  runtime: ClientRuntime,
+  scope: QueryScope,
+  owner: FieldScope,
+) {
+  const id = useId();
+  const [attempt, setAttempt] = useState({ generation: 0, restarts: 0 });
+
+  const options = (target: FieldScope) => ({
+    ...withQueryScope(listScopeFieldsOptions({ client: runtime.client, path: target }), scope, [
+      `field-config:${id}:${attempt.generation}`,
+    ]),
+    ...policy,
+  });
+
+  const selected = useQuery(options(owner));
+
+  const parsed = ScopeFieldCollectionSchema.safeParse(selected.data);
+  const ancestors = parsed.success ? parsed.data.ancestorScopes : [];
+
+  const queries = useQueries({ queries: ancestors.map(options) });
+
+  const result = readFieldConfiguration({
+    workspaceId: scope.workspaceId!,
+    scope: owner,
+    collections: [
+      { scope: owner, data: selected.data },
+      ...ancestors.map((target, index) => ({ scope: target, data: queries[index]?.data })),
+    ],
+  });
+  const failed = [selected, ...queries].find((query) => query.isError);
+  const error = failed ? apiError(failed.error) : null;
+  const retry = () =>
+    setAttempt((current) => ({ generation: current.generation + 1, restarts: 0 }));
+  if (result.state === 'stale' && attempt.restarts < 2) {
+    setAttempt({ generation: attempt.generation + 1, restarts: attempt.restarts + 1 });
+
+    return { result: { state: 'pending' as const }, error: null, retry };
+  }
+
+  return { result, error, retry };
+}

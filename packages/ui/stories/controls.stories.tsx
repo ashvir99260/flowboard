@@ -1,9 +1,10 @@
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { FormField } from '../src/modules/forms/formField.js';
-import { Surface } from '../src/modules/layout/surface.js';
-import { Toolbar } from '../src/modules/layout/toolbar.js';
-import { Button, Stack } from '../src/primitives.js';
+import { FormField } from '../src/modules/forms/FormField.js';
+import { Surface } from '../src/modules/layout/Surface.js';
+import { Toolbar } from '../src/modules/layout/Toolbar.js';
+import { Button } from '../src/modules/primitives/Button.js';
+import { default as Stack } from '@mui/material/Stack';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

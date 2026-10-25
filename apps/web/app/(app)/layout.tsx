@@ -1,7 +1,7 @@
 import { connection } from 'next/server';
 
-import { AppProviders } from '../../src/providers/app-providers';
-import { readRealtimeUrl } from '../../src/server/realtime-config';
+import { AppProviders } from '../../src/providers/AppProviders';
+import { readRealtimeUrl } from '../../src/server/realtimeConfig';
 
 import type { ReactNode } from 'react';
 

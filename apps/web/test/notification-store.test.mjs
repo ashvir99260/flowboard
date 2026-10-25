@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createNotificationStore } from '../src/features/notifications/notification-store.ts';
+import { createNotificationStore } from '../src/features/notifications/notificationStore.ts';
 
 test('an action reports one result but independent repeated saves remain visible', () => {
   const store = createNotificationStore();

@@ -1,4 +1,4 @@
-import { AcceptInvitation } from '../../../../src/features/workspaces/accept-invitation';
+import { AcceptInvitation } from '../../../../src/features/workspaces/AcceptInvitation';
 
 export default function InvitationPage() {
   return <AcceptInvitation />;
