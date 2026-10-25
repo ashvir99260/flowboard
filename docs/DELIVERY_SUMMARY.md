@@ -61,6 +61,8 @@ P23-01/R146 adds the [30-diagram atlas](DIAGRAMS.md): seven chapters with editab
 
 P24-01/R147 records and verifies the [setup-free Docker preview](../README.md#preview-with-one-command), including clean configuration defaults, automatic data initialization and the real browser/restart checks. Its [evidence](evidence/P24-01.md) retains the distinction between configuration and runtime acceptance.
 
+P25-01/R148 tracks the [named frontend query hooks](FRONTEND_GUIDELINES.md#data-and-session-flow), separating workspace/activity query setup from views while preserving generated transport and cache policy. Its current implementation and validation state is recorded in [P25-01](evidence/P25-01.md).
+
 - The replacement package specification superseded the original `shared`/`tsconfig`/`eslint-config` layout. Database, logger, forms, formatting and release tooling have their own explicit responsibilities.
 - Prisma was chosen over TypeORM. Public task/configuration operations use tenant repositories; controllers do not own raw queries.
 - Workspace-level custom-field defaults were added to the original space/folder/list scopes. The nearest complete definition still wins.
@@ -144,5 +146,6 @@ This index makes omissions visible without duplicating the detailed matrix rows.
 | R144–R145 | Delivery/runtime/Redis explanations and the Render hosting plan; no live deployment claim. |
 | R146      | Rendered diagram atlas with editable sources, status labels and source references.         |
 | R147      | One-command local Docker preview without env files or manual data initialization.          |
+| R148      | Named feature query hooks separated from frontend view components.                         |
 
 When a feature or provider gate changes, update the owning task/evidence and matrix first, then this summary and the relevant HLD/LLD/application section. A document's existence alone is never evidence that a feature works.

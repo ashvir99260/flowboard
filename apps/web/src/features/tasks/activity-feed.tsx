@@ -1,16 +1,13 @@
 'use client';
 
-import { listTaskActivityInfiniteOptions } from '@flowboard/api-client/tanstack-query';
-import { ActivityPageSchema } from '@flowboard/contracts';
 import { Button, Typography } from '@flowboard/ui';
 import { ActivityPanel, ActivityTimeline, ErrorState } from '@flowboard/ui';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { apiError } from '../../lib/api-error';
-import { withQueryScope } from '../../lib/query-scope';
 
 import { assembleActivity } from './activity-data';
+import { useListTaskActivityInfiniteQuery } from './use-list-task-activity-infinite-query';
 
 import type { QueryScope } from '../../lib/query-scope';
 import type { ClientRuntime } from '../../providers/app-providers';
@@ -28,26 +25,11 @@ export function ActivityFeed({
   taskId: string;
 }) {
   const [cycle, setCycle] = useState({ generation: 0, restarts: 0 });
-  const query = useInfiniteQuery({
-    ...withQueryScope(
-      listTaskActivityInfiniteOptions({
-        client: runtime.client,
-        path: { taskId },
-        query: { limit: '20' },
-      }),
-      scope,
-      [`activity:${cycle.generation}`],
-    ),
-    initialPageParam: { path: { taskId }, query: {} },
-    getNextPageParam: (page) => {
-      const parsed = ActivityPageSchema.safeParse(page);
-
-      return parsed.success ? (parsed.data.pageInfo.nextCursor ?? undefined) : undefined;
-    },
-    retry: false,
-    refetchInterval: (query) => (query.state.error ? false : 3000),
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: false,
+  const query = useListTaskActivityInfiniteQuery({
+    generation: cycle.generation,
+    runtime,
+    scope,
+    taskId,
   });
 
   const error = query.isError ? apiError(query.error) : null;
