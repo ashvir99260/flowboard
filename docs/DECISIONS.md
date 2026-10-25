@@ -739,3 +739,9 @@ Deploy the validated current main SHA once for all services, after independent a
 Move normal outbox dispatch to the worker daemon. A Vercel API function must not own a background loop whose progress depends on its request lifetime. Keep the existing transactional outbox, leases, retries and event contracts, sharing the implementation through a jobs package. Optional API injection remains an integration-test compatibility seam.
 
 Free plans are bounded, not an unlimited uptime promise. Upstash Free currently includes 500,000 commands/month; idle BullMQ activity also consumes commands. Neon Free currently includes 100 CU-hours/project/month: a continuously polled 0.25 CU database would use about 180 CU-hours in 30 days. Treat this as a limited-use demo, monitor quotas and pause the daemon when the demo is not needed. Do not claim that these limits support uninterrupted month-long operation. Live deployment and a future idle-efficient delivery design remain distinct from configuration/build success.
+
+## D170 — Canonical root Dockerfiles for Vercel containers
+
+Live Vercel builds use the Dockerfile directory as context, even when the service root is the repository root. Nested app Dockerfiles therefore omit the other workspaces. The live API and daemon builders also reject the documented `#stage` suffix as a literal filename.
+
+Move the existing API and worker build definitions unchanged to `Dockerfile.api` and `Dockerfile.worker` at the repository root. Vercel, Compose and independent image publication all use these same canonical files; do not maintain duplicate provider-specific definitions. Map each root file to only its owning app in release fingerprints. Keep the web Dockerfile in its app because Vercel builds web through the native Next.js service. Source/schema checks do not replace the live deployment evidence in P38-03.
