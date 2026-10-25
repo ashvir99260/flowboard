@@ -27,6 +27,7 @@ test('task form defaults preserve zero and false and explicitly represent unset 
     priority: 'none',
     assigneeIds: [],
     dueDate: null,
+    parentTaskId: null,
     customFields: { approved: null, effort: null, note: null },
   });
 });
@@ -117,4 +118,28 @@ test('UTC datetime drafts preserve milliseconds and only send real due-time chan
   );
   assert.equal(updateTaskInput({ ...draft, dueDate: null }, task, 7).dueDate, null);
   assert.throws(() => createTaskInput({ ...draft, dueDate: '2026-06-10' }, 7));
+});
+
+test('subtask drafts preserve, attach and explicitly clear the parent without copying parent fields', () => {
+  const fixture = boardFixture();
+  const parent = fixture.pages[0].response.items[0];
+  const initial = taskDefaults([], fixture.statuses.items, undefined, parent.id);
+  assert.equal(initial.parentTaskId, parent.id);
+  assert.equal(initial.title, '');
+  assert.deepEqual(initial.customFields, {});
+  assert.equal(createTaskInput({ ...initial, title: 'Child' }, 7).parentTaskId, parent.id);
+  const child = { ...parent, id: '10000000-0000-4000-8000-000000000999', parentTaskId: parent.id };
+  const draft = taskDefaults([], fixture.statuses.items, child);
+  assert.equal(updateTaskInput(draft, child, 7), null);
+  assert.equal('parentTaskId' in updateTaskInput({ ...draft, title: 'Edited' }, child, 7), false);
+  assert.deepEqual(updateTaskInput({ ...draft, parentTaskId: null }, child, 7), {
+    parentTaskId: null,
+    expectedConfigVersion: 7,
+    expectedVersion: child.version,
+  });
+  assert.equal(
+    taskDraftSchema([], fixture.statuses.items).safeParse({ ...draft, parentTaskId: 'invalid' })
+      .success,
+    false,
+  );
 });

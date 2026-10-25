@@ -1,6 +1,6 @@
 # One-level subtasks design and implementation plan
 
-R157 is selected by D155. NEXT-03 records this design; [P30-01](evidence/P30-01.md) verifies the API/persistence implementation. P30-02 still owns the drawer controls and browser acceptance; the complete feature remains in progress.
+R157 is selected by D155. NEXT-03 records this design; [P30-01](evidence/P30-01.md) verifies the API/persistence implementation. [P30-02](evidence/P30-02.md) verifies the drawer controls and real-client acceptance. Both implementation slices are complete.
 
 ## Goal and approach
 
@@ -75,12 +75,12 @@ Opening a related task uses the existing dirty-draft confirmation. Do not infer 
 
 Files: `packages/contracts/src/{tasks,task-mutations,events,errors}.ts`; `packages/database/prisma/schema.prisma` and migration `202610250003_task_parent`; task/event repositories; `apps/api/src/modules/tasks/` and typed error mapping; generated OpenAPI/client; strict task fixtures and focused tests.
 
-- [ ] Add failing contract tests for nullable output, create/update omission/null, parent UUID validation, query filter and old/new event compatibility.
-- [ ] Add migration/schema tests proving existing rows remain unchanged except for the null column, and foreign list/tenant/self references fail.
-- [ ] Add real database/API cases for create, attach, detach, no-op, invalid depth, inaccessible/archived parents, required fields, filtered cursor pages and cross-filter cursor rejection.
-- [ ] Test task-only versus container archive, archived-child move restrictions, failed outbox rollback, and parent move/archive racing child creation. Serialized competing attachments must not create depth two or a cycle.
-- [ ] Implement the nullable relation, repository checks and PermissionService calls inside existing transaction boundaries. Include the filter in task query SQL and cursor binding; extend historical event-reference validation.
-- [ ] Update source-backed field/API notes and affected strict fixtures. Regenerate spec/client; run focused tests, root build/lint/type/format/test and contract drift checks; record actual outcomes and commit.
+- [x] Add failing contract tests for nullable output, create/update omission/null, parent UUID validation, query filter and old/new event compatibility.
+- [x] Add migration/schema tests proving existing rows remain unchanged except for the null column, and foreign list/tenant/self references fail.
+- [x] Add real database/API cases for create, attach, detach, no-op, invalid depth, inaccessible/archived parents, required fields, filtered cursor pages and cross-filter cursor rejection.
+- [x] Test task-only versus container archive, archived-child move restrictions, failed outbox rollback, and parent move/archive racing child creation. Serialized competing attachments must not create depth two or a cycle.
+- [x] Implement the nullable relation, repository checks and PermissionService calls inside existing transaction boundaries. Include the filter in task query SQL and cursor binding; extend historical event-reference validation.
+- [x] Update source-backed field/API notes and affected strict fixtures. Regenerate spec/client; run focused tests, root build/lint/type/format/test and contract drift checks; record actual outcomes and commit.
 
 Primary test files: new `packages/database/test/subtasks.integration.test.mjs`, migration preservation test, `apps/api/src/modules/tasks/subtasks.integration.spec.mjs`; extend schema/event tests and contract task/query/job tests. Use existing isolated PostgreSQL and Supertest harnesses. Tests must observe expected red behavior before implementation.
 
@@ -88,11 +88,11 @@ Primary test files: new `packages/database/test/subtasks.integration.test.mjs`, 
 
 Files: `apps/web/src/features/tasks/`, generated-query hooks, existing shared task presentation/form controls as needed, browser fixtures/tests and application documentation.
 
-- [ ] Add a failing browser flow: create a child with required values, reload, open its parent, navigate back and detach explicitly.
-- [ ] Add negative paths: required field missing, stale parent/configuration, rejected depth/move, pending duplicate submission and dirty related-task navigation. Load multiple child/parent pages without false completeness claims.
-- [ ] Implement relation controls using existing form and editor patterns, generated operations and scoped query keys. Keep flat board/table ownership and independent child status/order.
-- [ ] Verify another open client observes attachment/detachment through existing invalidation. Check keyboard interaction and narrow/wide layouts.
-- [ ] Run root gates and React review, update evidence and commit. Mark R157 verified only when both implementation tasks pass.
+- [x] Add a failing browser flow: create a child with required values, reload, open its parent, navigate back and detach explicitly.
+- [x] Add negative paths: required field missing, stale parent/configuration, rejected depth/move, pending duplicate submission and dirty related-task navigation. Load multiple child/parent pages without false completeness claims.
+- [x] Implement relation controls using existing form and editor patterns, generated operations and scoped query keys. Keep flat board/table ownership and independent child status/order.
+- [x] Verify another open client observes attachment/detachment through existing invalidation. Check keyboard interaction and narrow/wide layouts.
+- [x] Run root gates and React review, update evidence and commit. Mark R157 verified only when both implementation tasks pass.
 
 ## Review focus and handoff
 

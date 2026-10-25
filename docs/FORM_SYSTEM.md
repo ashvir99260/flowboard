@@ -43,3 +43,7 @@ Task, status, field-definition and move forms use the same controlled inputs. Do
 Task due dates use the generic datetime-local widget with millisecond step precision. Web owns the UTC adapter, label and validation: existing instants become suffix-free UTC control values, and submitted values become canonical UTC instants. A native minute-only control value gains zero seconds; existing seconds/milliseconds are preserved. Blank input clears to null. Custom fields of type date continue using calendar-day controls.
 
 The UTC adapter is owned by the web task form; custom date fields retain calendar-day validation. See [D156](DECISIONS.md#d156--task-due-instants-and-utc-editing) and [P28-06 evidence](evidence/P28-06.md).
+
+## Task relationships
+
+Web's task draft includes nullable `parentTaskId`. Create-child defaults set only that relationship; required custom values remain for the user to supply. Unrelated updates omit the parent, while selecting No parent sends null. Parent choices use the existing generic select and generated cursor queries. Keep a selected ID represented while it is outside the loaded pages or a query restarts; never clear it because a partial response omits it. Eligibility remains an API validation, with `parentTaskId` issues mapped back to the control. See [subtasks](SUBTASKS.md).

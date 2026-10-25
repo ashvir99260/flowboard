@@ -1318,7 +1318,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `fix(ci): harden browser test execution`.
   - **Evidence:** [P30-03](evidence/P30-03.md); implementation and local gates complete; hosted verification pending.
 
-- [ ] **P30-02 — Add subtask creation and navigation to the drawer**
+- [x] **P30-02 — Add subtask creation and navigation to the drawer**
   - **Goal:** Create, attach/detach and navigate related tasks while retaining flat board/list behavior and dirty drafts.
   - **Requirements:** R157; preserve R70/R76/R80/R134/R137/R140.
   - **Files:** Web task features/hooks, shared task presentation/forms where needed, browser fixtures/tests and application docs/evidence.

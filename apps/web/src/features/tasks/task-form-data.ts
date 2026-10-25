@@ -17,6 +17,7 @@ const DraftSchema = TaskSchema.pick({
   assigneeIds: true,
   description: true,
   dueDate: true,
+  parentTaskId: true,
   priority: true,
   statusId: true,
   title: true,
@@ -63,6 +64,7 @@ export function taskDefaults(
   fields: readonly ResolvedField[],
   statuses: readonly ResolvedStatus[],
   task?: Task,
+  parentTaskId: string | null = null,
 ): TaskDraft {
   return {
     title: task?.title ?? '',
@@ -71,6 +73,7 @@ export function taskDefaults(
       task?.statusId ?? statuses.find((status) => status.category === 'not_started')?.id ?? '',
     priority: task?.priority ?? 'none',
     assigneeIds: [...(task?.assigneeIds ?? [])],
+    parentTaskId: task ? task.parentTaskId : parentTaskId,
     dueDate: task?.dueDate ? TaskDueDateSchema.parse(task.dueDate).slice(0, -1) : null,
     customFields: Object.fromEntries(
       fields.map(({ key }) => [key, task?.customFields[key] ?? null]),
@@ -104,7 +107,15 @@ export function createTaskInput(draft: TaskDraft, configVersion: number) {
 export function updateTaskInput(draft: TaskDraft, task: Task, configVersion: number) {
   const parsed = parseTaskDraft(draft);
   const builtins = (
-    ['title', 'description', 'statusId', 'priority', 'dueDate', 'assigneeIds'] as const
+    [
+      'title',
+      'description',
+      'statusId',
+      'priority',
+      'dueDate',
+      'assigneeIds',
+      'parentTaskId',
+    ] as const
   )
     .filter((key) => !sameValue(parsed[key], task[key]))
     .map((key) => [key, parsed[key]]);
