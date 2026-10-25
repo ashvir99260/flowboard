@@ -136,10 +136,10 @@ test('a foreign job reference cannot claim or mutate an event in another workspa
   ).toEqual({ attempts: 0, state: 'pending' });
 });
 
-test.each(['envelope', 'task', 'list', 'status', 'move'])(
+test.each(['envelope', 'task', 'list', 'status', 'move', 'parent'])(
   'quarantines an invalid %s without creating activity',
   async (kind) => {
-    const version = { envelope: 5, list: 7, move: 11, status: 8, task: 6 }[kind];
+    const version = { envelope: 5, list: 7, move: 11, parent: 12, status: 8, task: 6 }[kind];
     const { row, reference } = await statusEvent(version);
     const payload = { ...row.payload };
     let aggregateId = data.a.task.id;
@@ -157,6 +157,8 @@ test.each(['envelope', 'task', 'list', 'status', 'move'])(
     if (kind === 'move')
       payload.changes.primaryListId = { before: data.a.list.id, after: data.b.list.id };
 
+    if (kind === 'parent') payload.changes.parentTaskId = { before: null, after: data.b.task.id };
+
     await postgres.client.query('UPDATE outbox_events SET payload=$2,aggregate_id=$3 WHERE id=$1', [
       row.id,
       JSON.stringify(payload),
@@ -171,6 +173,39 @@ test.each(['envelope', 'task', 'list', 'status', 'move'])(
     expect(await repository.claim(reference, 10000)).toBeNull();
   },
 );
+
+test('historical detached parents may move or archive before their event is consumed', async () => {
+  const list = await insert(postgres.client, 'nodes', {
+    id: randomUUID(),
+    workspace_id: data.a.workspace.id,
+    parent_id: data.a.folder.id,
+    type: 'list',
+    name: 'Historical parent list',
+  });
+  const parent = await insert(postgres.client, 'tasks', {
+    id: randomUUID(),
+    workspace_id: data.a.workspace.id,
+    primary_list_id: list.id,
+    status_id: data.a.status.id,
+    title: 'Historical parent',
+  });
+  await postgres.client.query('UPDATE tasks SET archived_at=clock_timestamp() WHERE id=$1', [
+    parent.id,
+  ]);
+  const { row, reference } = await statusEvent(13);
+  await postgres.client.query('UPDATE outbox_events SET payload=$2 WHERE id=$1', [
+    row.id,
+    JSON.stringify({
+      ...row.payload,
+      changes: { parentTaskId: { before: parent.id, after: null } },
+    }),
+  ]);
+  const claim = await repository.claim(reference, 10000);
+  expect((await repository.persist(claim)).state).toBe('ready');
+  expect(
+    (await postgres.client.query('SELECT id FROM activities WHERE event_id=$1', [row.id])).rows,
+  ).toEqual([]);
+});
 
 test('non-status changes can be published without inventing a status activity', async () => {
   const { row, reference } = await statusEvent(9);

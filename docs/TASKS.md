@@ -1298,7 +1298,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `docs: define one-level subtask behavior`.
   - **Evidence:** [NEXT-03](evidence/NEXT-03.md).
 
-- [ ] **P30-01 — Implement subtask relations and guarded task operations**
+- [x] **P30-01 — Implement subtask relations and guarded task operations**
   - **Goal:** Persist one-level task relationships through existing APIs without invalid links, data loss or unscoped events.
   - **Requirements:** R157; preserve tenant/permission/task/configuration/cursor contracts.
   - **Files:** Task/query/event/error contracts; Prisma migration/schema and task/event repositories; API task service/Swagger/error mapping; generated spec/client, strict fixtures, database/API/contract tests and field documentation.
@@ -1306,6 +1306,17 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Acceptance:** Nullable same-list parent, maximum depth one, omission/clear semantics, guarded parent-filtered pagination, documented move/archive restrictions, no-op and historical event compatibility; failed/racing commands cannot leave partial state.
   - **Validation:** G01–G08/G11; failure-first contracts, real PostgreSQL/REST migration/FK/denial/rollback/race tests, root gates and generated drift checks.
   - **Commit:** `feat(tasks): add one-level subtask relations`.
+  - **Evidence:** [P30-01](evidence/P30-01.md).
+
+- [x] **P30-03 — Repair browser CI execution and assertions**
+  - **Goal:** Run every browser journey reliably without hiding application failures or broadening ordinary test timeouts.
+  - **Requirements:** R76/R84/R85; preserve all existing behavioral assertions.
+  - **Files:** Web package test scripts, realtime provider, browser test helpers/cases and documentation/evidence.
+  - **Dependencies:** P30-01; diagnosed PR #75 CI failures.
+  - **Acceptance:** Every discovered test runs once; ordinary files retain their 60-second budget while the multi-journey E2E file has a bounded aggregate budget. Initial navigation retries only ERR_NETWORK_CHANGED, with a fixed attempt limit and all other failures preserved. The configuration-conflict assertion selects the expected message and still requires disabled save/explicit reload. A successful list subscription catches up writes missed during asynchronous authorization/join, while stale or rejected acknowledgements cannot refresh a departed view.
+  - **Validation:** Failure-first helper/runner tests, focused transport/navigation and real E2E checks, root gates and the repaired CI run.
+  - **Commit:** `fix(ci): harden browser test execution`.
+  - **Evidence:** [P30-03](evidence/P30-03.md); implementation and local gates complete; hosted verification pending.
 
 - [ ] **P30-02 — Add subtask creation and navigation to the drawer**
   - **Goal:** Create, attach/detach and navigate related tasks while retaining flat board/list behavior and dirty drafts.

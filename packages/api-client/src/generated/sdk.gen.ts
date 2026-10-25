@@ -157,7 +157,7 @@ export const getListResolvedStatuses = <ThrowOnError extends boolean = false>(op
 /**
  * Read a page of list tasks
  *
- * Read authorized live tasks using typed filters, stable sort and a cursor bound to the query and both workspace revisions.
+ * Read authorized live tasks using typed filters, including an optional visible parent task, stable sort and a cursor bound to every filter and both workspace revisions.
  */
 export const listTasks = <ThrowOnError extends boolean = false>(options: Options<ListTasksData, ThrowOnError>): RequestResult<ListTasksResponses, ListTasksErrors, ThrowOnError> => (options.client ?? client).get<ListTasksResponses, ListTasksErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -168,7 +168,7 @@ export const listTasks = <ThrowOnError extends boolean = false>(options: Options
 /**
  * Create a task
  *
- * Validate current list status, fields and visible member assignments under the workspace lock; append within the status column and record an outbox event.
+ * Validate current list status, fields, visible assignments and an optional top-level parent in the same list under the workspace lock; append within the status column and record an outbox event.
  */
 export const createTask = <ThrowOnError extends boolean = false>(options: Options<CreateTaskData, ThrowOnError>): RequestResult<CreateTaskResponses, CreateTaskErrors, ThrowOnError> => (options.client ?? client).post<CreateTaskResponses, CreateTaskErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -433,7 +433,7 @@ export const updateScopeStatus = <ThrowOnError extends boolean = false>(options:
 /**
  * Archive a task
  *
- * Soft-delete a live task and atomically record its data revision and event; retained assignments and values remain historical.
+ * Soft-delete a live task and atomically record its data revision and event. A parent with live children is rejected with TASK_RELATION_IN_USE; archived child links and other retained values remain historical.
  */
 export const archiveTask = <ThrowOnError extends boolean = false>(options: Options<ArchiveTaskData, ThrowOnError>): RequestResult<ArchiveTaskResponses, ArchiveTaskErrors, ThrowOnError> => (options.client ?? client).delete<ArchiveTaskResponses, ArchiveTaskErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -459,7 +459,7 @@ export const getTask = <ThrowOnError extends boolean = false>(options: Options<G
 /**
  * Update a task
  *
- * Patch supplied fields and revalidate the complete task, current permissions and expected revisions; omitted values are preserved and changed status appends to its column.
+ * Patch supplied fields and revalidate the complete task, parent relation, permissions and expected revisions. Omitted values are preserved; parentTaskId null explicitly detaches. Subtasks cannot have children.
  */
 export const updateTask = <ThrowOnError extends boolean = false>(options: Options<UpdateTaskData, ThrowOnError>): RequestResult<UpdateTaskResponses, UpdateTaskErrors, ThrowOnError> => (options.client ?? client).patch<UpdateTaskResponses, UpdateTaskErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -485,7 +485,7 @@ export const listTaskActivity = <ThrowOnError extends boolean = false>(options: 
 /**
  * Move a task
  *
- * Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.
+ * Validate permissions, configuration and column placement under the workspace lock; update positions and events atomically. Cross-list moves reject linked children and parents with any children, including archived references.
  */
 export const moveTask = <ThrowOnError extends boolean = false>(options: Options<MoveTaskData, ThrowOnError>): RequestResult<MoveTaskResponses, MoveTaskErrors, ThrowOnError> => (options.client ?? client).post<MoveTaskResponses, MoveTaskErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

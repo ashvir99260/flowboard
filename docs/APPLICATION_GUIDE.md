@@ -18,6 +18,8 @@ Source snapshot: `3cc62b0`, 25 October 2026. This guide explains what the applic
 
 The web app does not expose a dedicated screen for every API operation. Workspace read/rename/archive/restore are available through the API and management UI; see [workspace lifecycle](WORKSPACE_LIFECYCLE.md). Member/invitation/grant/container administration is available through the API where implemented; do not infer management screens from endpoint availability. Invitations are manually shared and accepted through the API: there is no email sender or invitation-acceptance web form. Search is a tracked stub, not a usable feature.
 
+The task API supports [one-level subtasks](SUBTASKS.md) through nullable parentTaskId and parent-filtered cursor reads. Parent/child drawer controls remain the separate P30-02 UI task; API availability does not imply those controls are already visible.
+
 ## A normal working session
 
 1. Sign in and select a workspace. The browser restores a short-lived access credential through its refresh cookie; account/workspace changes clear the prior cache, drafts and subscriptions.

@@ -1,6 +1,6 @@
 # One-level subtasks design and implementation plan
 
-R157 is selected by D155. NEXT-03 records this design; P30-01 and P30-02 own implementation evidence. This document does not claim subtasks already work.
+R157 is selected by D155. NEXT-03 records this design; [P30-01](evidence/P30-01.md) verifies the API/persistence implementation. P30-02 still owns the drawer controls and browser acceptance; the complete feature remains in progress.
 
 ## Goal and approach
 
@@ -63,7 +63,7 @@ The example detaches a child; unrelated edits omit the property. Create-child in
 
 Extend the optional `task.updated.changes` vocabulary with `parentTaskId: {before: UUID|null, after: UUID|null}`. Reject equal before/after values. Existing created/list invalidations already refresh a new child's list. Keep old persisted events readable; no event backfill is needed. Consumers validate non-null historical parent IDs against the event workspace, without requiring them to remain live or in the historical list. A detached parent can move before queued work is consumed. The status-only activity feed does not invent a status event for a relationship edit.
 
-Deploy compatible contract readers in API/worker before enabling new writes. Shared strict task response schemas and all test fixtures gain the nullable field; do not silently default a missing server response field. Regenerate Swagger and Hey API from the schemas.
+Deploy compatible contract readers in API/worker before enabling new writes. Ship matching API/web contracts together: older strict clients can reject the added response field. Shared strict task response schemas and all test fixtures gain the nullable field; do not silently default a missing server response field. Regenerate Swagger and Hey API from the schemas.
 
 ## Browser behavior
 

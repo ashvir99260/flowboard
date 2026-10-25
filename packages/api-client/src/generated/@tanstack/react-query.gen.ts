@@ -238,7 +238,7 @@ export const listTasksQueryKey = (options: Options<ListTasksData>) => createQuer
 /**
  * Read a page of list tasks
  *
- * Read authorized live tasks using typed filters, stable sort and a cursor bound to the query and both workspace revisions.
+ * Read authorized live tasks using typed filters, including an optional visible parent task, stable sort and a cursor bound to every filter and both workspace revisions.
  */
 export const listTasksOptions = (options: Options<ListTasksData>) => queryOptions<ListTasksResponse, ListTasksError, ListTasksResponse, ReturnType<typeof listTasksQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -287,7 +287,7 @@ export const listTasksInfiniteQueryKey = (options: Options<ListTasksData>): Quer
 /**
  * Read a page of list tasks
  *
- * Read authorized live tasks using typed filters, stable sort and a cursor bound to the query and both workspace revisions.
+ * Read authorized live tasks using typed filters, including an optional visible parent task, stable sort and a cursor bound to every filter and both workspace revisions.
  */
 export const listTasksInfiniteOptions = (options: Options<ListTasksData>) => {
     const opts = infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, string | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
@@ -317,7 +317,7 @@ export const listTasksInfiniteOptions = (options: Options<ListTasksData>) => {
 /**
  * Create a task
  *
- * Validate current list status, fields and visible member assignments under the workspace lock; append within the status column and record an outbox event.
+ * Validate current list status, fields, visible assignments and an optional top-level parent in the same list under the workspace lock; append within the status column and record an outbox event.
  */
 export const createTaskMutation = (options?: Partial<Options<CreateTaskData>>): UseMutationOptions<CreateTaskResponse, CreateTaskError, Options<CreateTaskData>> => {
     const mutationOptions: UseMutationOptions<CreateTaskResponse, CreateTaskError, Options<CreateTaskData>> = {
@@ -715,7 +715,7 @@ export const updateScopeStatusMutation = (options?: Partial<Options<UpdateScopeS
 /**
  * Archive a task
  *
- * Soft-delete a live task and atomically record its data revision and event; retained assignments and values remain historical.
+ * Soft-delete a live task and atomically record its data revision and event. A parent with live children is rejected with TASK_RELATION_IN_USE; archived child links and other retained values remain historical.
  */
 export const archiveTaskMutation = (options?: Partial<Options<ArchiveTaskData>>): UseMutationOptions<ArchiveTaskResponse, ArchiveTaskError, Options<ArchiveTaskData>> => {
     const mutationOptions: UseMutationOptions<ArchiveTaskResponse, ArchiveTaskError, Options<ArchiveTaskData>> = {
@@ -754,7 +754,7 @@ export const getTaskOptions = (options: Options<GetTaskData>) => queryOptions<Ge
 /**
  * Update a task
  *
- * Patch supplied fields and revalidate the complete task, current permissions and expected revisions; omitted values are preserved and changed status appends to its column.
+ * Patch supplied fields and revalidate the complete task, parent relation, permissions and expected revisions. Omitted values are preserved; parentTaskId null explicitly detaches. Subtasks cannot have children.
  */
 export const updateTaskMutation = (options?: Partial<Options<UpdateTaskData>>): UseMutationOptions<UpdateTaskResponse, UpdateTaskError, Options<UpdateTaskData>> => {
     const mutationOptions: UseMutationOptions<UpdateTaskResponse, UpdateTaskError, Options<UpdateTaskData>> = {
@@ -825,7 +825,7 @@ export const listTaskActivityInfiniteOptions = (options: Options<ListTaskActivit
 /**
  * Move a task
  *
- * Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.
+ * Validate permissions, configuration and column placement under the workspace lock; update positions and events atomically. Cross-list moves reject linked children and parents with any children, including archived references.
  */
 export const moveTaskMutation = (options?: Partial<Options<MoveTaskData>>): UseMutationOptions<MoveTaskResponse, MoveTaskError, Options<MoveTaskData>> => {
     const mutationOptions: UseMutationOptions<MoveTaskResponse, MoveTaskError, Options<MoveTaskData>> = {

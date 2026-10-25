@@ -72,7 +72,7 @@ export class ListTasksController {
   @NodePermission('task.read', 'listId')
   @ApiOperation({
     description:
-      'Read authorized live tasks using typed filters, stable sort and a cursor bound to the query and both workspace revisions.',
+      'Read authorized live tasks using typed filters, including an optional visible parent task, stable sort and a cursor bound to every filter and both workspace revisions.',
     operationId: 'listTasks',
     summary: 'Read a page of list tasks',
   })
@@ -97,14 +97,23 @@ export class ListTasksController {
   @NodePermission('task.write', 'listId')
   @ApiOperation({
     description:
-      'Validate current list status, fields and visible member assignments under the workspace lock; append within the status column and record an outbox event.',
+      'Validate current list status, fields, visible assignments and an optional top-level parent in the same list under the workspace lock; append within the status column and record an outbox event.',
     operationId: 'createTask',
     summary: 'Create a task',
   })
   @ApiBody({
     type: CreateTaskDto,
     description: 'Task inputs and expected configuration revision.',
-    examples: { create: { summary: 'Create a task', value: CreateTaskSchema.meta()?.example } },
+    examples: {
+      create: { summary: 'Create a task', value: CreateTaskSchema.meta()?.example },
+      subtask: {
+        summary: 'Create a child in the same list',
+        value: {
+          ...(CreateTaskSchema.meta()?.example as object),
+          parentTaskId: '10000000-0000-4000-8000-000000000100',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 201,
@@ -167,14 +176,20 @@ export class TasksController {
   @TaskPermission('task.write')
   @ApiOperation({
     description:
-      'Patch supplied fields and revalidate the complete task, current permissions and expected revisions; omitted values are preserved and changed status appends to its column.',
+      'Patch supplied fields and revalidate the complete task, parent relation, permissions and expected revisions. Omitted values are preserved; parentTaskId null explicitly detaches. Subtasks cannot have children.',
     operationId: 'updateTask',
     summary: 'Update a task',
   })
   @ApiBody({
     type: UpdateTaskDto,
     description: 'Task patch and both expected revisions.',
-    examples: { update: { summary: 'Rename a task', value: UpdateTaskSchema.meta()?.example } },
+    examples: {
+      update: { summary: 'Rename a task', value: UpdateTaskSchema.meta()?.example },
+      detach: {
+        summary: 'Detach a child from its parent',
+        value: { expectedConfigVersion: 1, expectedVersion: 1, parentTaskId: null },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -199,7 +214,7 @@ export class TasksController {
   @TaskPermission('task.write')
   @ApiOperation({
     description:
-      'Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.',
+      'Validate permissions, configuration and column placement under the workspace lock; update positions and events atomically. Cross-list moves reject linked children and parents with any children, including archived references.',
     operationId: 'moveTask',
     summary: 'Move a task',
   })
@@ -263,7 +278,7 @@ export class TasksController {
   @TaskPermission('task.write')
   @ApiOperation({
     description:
-      'Soft-delete a live task and atomically record its data revision and event; retained assignments and values remain historical.',
+      'Soft-delete a live task and atomically record its data revision and event. A parent with live children is rejected with TASK_RELATION_IN_USE; archived child links and other retained values remain historical.',
     operationId: 'archiveTask',
     summary: 'Archive a task',
   })

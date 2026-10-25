@@ -40,6 +40,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         'CONFIG_INVALIDATES_TASKS',
         'STATUS_IN_USE',
         'FIELD_IN_USE',
+        'TASK_RELATION_IN_USE',
         'VERSION_CONFLICT',
         'CURSOR_STALE',
         'INVITATION_UNAVAILABLE',

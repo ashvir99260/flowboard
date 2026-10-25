@@ -59,7 +59,23 @@ export function RealtimeProvider({
       for (const listId of subscribed)
         if (!lists.has(listId)) socket.emit(SocketEvents.unsubscribe, { listId });
       for (const listId of lists)
-        if (!subscribed.has(listId)) socket.emit(SocketEvents.subscribe, { listId });
+        if (!subscribed.has(listId)) {
+          const connectionId = socket.id;
+          socket.emit(SocketEvents.subscribe, { listId }, (response: unknown) => {
+            if (
+              active &&
+              socket.connected &&
+              socket.id === connectionId &&
+              subscribed.has(listId) &&
+              typeof response === 'object' &&
+              response !== null &&
+              'ok' in response &&
+              response.ok === true
+            )
+              // Catch writes committed while the server authorized and joined the list.
+              bus.dispatch({ kind: 'resync' });
+          });
+        }
       subscribed = lists;
     };
     const reconnect = () => {

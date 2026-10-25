@@ -103,7 +103,7 @@ export async function startRealApp(t, { activityWorker = false, realtime = false
         await worker.waitFor(/"event":"worker.ready"/, 30000);
       }
 
-      return { origin: web.origin };
+      return { origin: web.origin, apiOrigin };
     }
 
     await setTimeout(100);

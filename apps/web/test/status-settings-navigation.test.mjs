@@ -49,7 +49,10 @@ test(
       await expect(page.getByLabel(/^Status name/)).toHaveValue('Keep this conflicting draft');
       await page.getByRole('button', { exact: true, name: 'Save status' }).click();
       await expect(
-        page.getByRole('form', { name: 'Status editor' }).getByRole('alert'),
+        page
+          .getByRole('form', { name: 'Status editor' })
+          .getByRole('alert')
+          .filter({ hasText: 'Workspace configuration changed' }),
       ).toBeVisible();
       await expect(page.getByRole('button', { exact: true, name: 'Save status' })).toBeDisabled();
       await page.getByRole('button', { exact: true, name: 'Reload configuration' }).click();

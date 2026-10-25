@@ -62,6 +62,7 @@ test('task requests omit unchanged fields, explicitly clear removed values and n
       priority: task.priority,
       assigneeIds: task.assigneeIds,
       dueDate: task.dueDate,
+      parentTaskId: null,
       customFields: { approved: false },
       expectedConfigVersion: 7,
     },

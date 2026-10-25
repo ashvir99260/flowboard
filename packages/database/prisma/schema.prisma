@@ -91,12 +91,12 @@ model User {
 
 model Workspace {
   archivedAt    DateTime? @map("archived_at") @db.Timestamptz(3)
-  id            String   @id @default(uuid()) @db.Uuid
+  id            String    @id @default(uuid()) @db.Uuid
   name          String
-  configVersion Int      @default(1) @map("config_version")
-  dataVersion   Int      @default(1) @map("data_version")
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  configVersion Int       @default(1) @map("config_version")
+  dataVersion   Int       @default(1) @map("data_version")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamptz(3)
 
   memberships Membership[]
   sessions    RefreshSession[]
@@ -288,6 +288,7 @@ model Task {
   customFields  Json      @default("{}") @map("custom_fields") @db.JsonB
   position      Int       @default(0)
   primaryListId String    @map("primary_list_id") @db.Uuid
+  parentTaskId  String?   @map("parent_task_id") @db.Uuid
   version       Int       @default(1)
   archivedAt    DateTime? @map("archived_at") @db.Timestamptz(3)
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -298,8 +299,12 @@ model Task {
   status     StatusIdentity @relation(fields: [workspaceId, statusId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
   assignees  TaskAssignee[]
   activities Activity[]
+  parentTask Task?          @relation("TaskChildren", fields: [workspaceId, primaryListId, parentTaskId], references: [workspaceId, primaryListId, id], onDelete: Restrict, onUpdate: Restrict)
+  children   Task[]         @relation("TaskChildren")
 
   @@unique([workspaceId, id])
+  @@unique([workspaceId, primaryListId, id])
+  @@index([workspaceId, parentTaskId, archivedAt])
   @@index([workspaceId, primaryListId, archivedAt, statusId, position, id])
   @@index([workspaceId, primaryListId, archivedAt, dueDate, id])
   @@index([workspaceId, primaryListId, archivedAt, priority, id])

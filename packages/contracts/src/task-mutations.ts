@@ -18,6 +18,7 @@ const writable = z.strictObject({
   assigneeIds: assignees,
   dueDate: TaskSchema.shape.dueDate,
   customFields: FieldValuesSchema,
+  parentTaskId: TaskSchema.shape.parentTaskId,
 });
 
 export const CreateTaskSchema = writable
@@ -27,6 +28,7 @@ export const CreateTaskSchema = writable
     assigneeIds: assignees.default([]),
     dueDate: writable.shape.dueDate.default(null),
     customFields: FieldValuesSchema.default({}),
+    parentTaskId: writable.shape.parentTaskId.default(null),
     expectedConfigVersion: ConfigVersionSchema,
   })
   .meta({

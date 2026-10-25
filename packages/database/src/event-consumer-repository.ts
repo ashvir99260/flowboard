@@ -44,6 +44,16 @@ async function validRelations(tx: Prisma.TransactionClient, event: OutboxRecord)
   )
     return false;
 
+  if (event.eventType === 'task.updated' && event.payload.changes.parentTaskId) {
+    const parentIds = [
+      ...new Set(Object.values(event.payload.changes.parentTaskId).filter((id) => id !== null)),
+    ];
+    if (
+      (await tx.task.count({ where: { workspaceId, id: { in: parentIds } } })) !== parentIds.length
+    )
+      return false;
+  }
+
   const statusIds =
     event.eventType === 'task.created'
       ? [event.payload.statusId]

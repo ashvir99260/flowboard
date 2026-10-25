@@ -127,6 +127,8 @@ pnpm format:check
 
 On resource-constrained laptops, `pnpm test --concurrency=2` runs the same complete suite with fewer simultaneous Turbo tasks. Run Docker checks afterward. CI keeps its parallel build, lint, type and test jobs.
 
+The web test launcher discovers every `test/*.test.mjs` file. Ordinary files retain a 60-second file budget; the real E2E wrapper runs separately with 180 seconds per discovered journey plus a 30-second aggregate margin. Each journey keeps its own deadline. Both groups run even if one fails, and either failure fails the command. Initial proxy-browser navigation retries only `ERR_NETWORK_CHANGED`, at most three attempts; application errors and auth assertions are unchanged.
+
 ### Tests using Docker
 
 Start Docker Engine/Desktop, install the pinned Node/pnpm toolchain and Chromium as above, then run `pnpm test`. Tests automatically create uniquely named PostgreSQL/Redis containers; Node, the API, worker and Chromium run on the host. No manually created test database or running development stack is required. Fixtures clean up only their own containers and use separate data, never the development database. Docker unavailability fails the suites rather than silently skipping them.
@@ -321,7 +323,7 @@ The [AI coding tool guide](docs/AI_TOOLS.md) adds Serena symbol navigation, pinn
 
 Set `REALTIME_PUBLIC_URL` on the web server to the browser-reachable API origin, for example `http://localhost:3001`. It is read at request time, separately from server-only `API_INTERNAL_URL`. Compose supplies the local default; hosted preview uses its public HTTPS API URL. Add the exact web origin to the API's `AUTH_ALLOWED_ORIGINS` and the web's `WEB_ALLOWED_ORIGINS`. An empty realtime URL deliberately disables sockets.
 
-Sockets use WebSocket transport with an in-memory JWT in the handshake, never the URL. The API checks current session/membership and list permissions, expires connections with the JWT, and rechecks access before delivery. Signals contain no task content or hidden destination. The browser refetches authorized state, deduplicates repeated events and catches up after reconnect; dirty editors preserve input and require explicit conflict resolution. Redis loss affects readiness and sockets, while committed task changes remain in PostgreSQL's retryable outbox.
+Sockets use WebSocket transport with an in-memory JWT in the handshake, never the URL. The API checks current session/membership and list permissions, expires connections with the JWT, and rechecks access before delivery. Signals contain no task content or hidden destination. The browser refetches authorized state, deduplicates repeated events and catches up after reconnect and confirmed list subscription; dirty editors preserve input and require explicit conflict resolution. Redis loss affects readiness and sockets, while committed task changes remain in PostgreSQL's retryable outbox.
 
 ## Verify a committed checkout
 
