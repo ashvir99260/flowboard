@@ -18,6 +18,7 @@ function ScopeConfiguration({ active, owner, runtime, scope, onState }: Configur
   const [editing, setEditing] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const origin = useRef<HTMLElement | null>(null);
+
   const open = (key: string) => {
     origin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setEditing(key);

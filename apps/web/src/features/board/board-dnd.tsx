@@ -50,6 +50,7 @@ function Card({
   task: Task;
 }) {
   const openTask = useTaskEditor();
+
   const field = fields.find(({ key }) => Object.hasOwn(task.customFields, key));
 
   return (
@@ -118,6 +119,7 @@ function Card({
 
 export function BoardDnd({ columns, fields, move, open, pending, action }: Props) {
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
+
   const tasks = columns.flatMap((column) => column.tasks);
   const title = (id: string) => tasks.find((task) => task.id === id)?.title ?? 'Task';
   const restoreFocus = (id: string) => {

@@ -49,11 +49,13 @@ export function FieldForm({
   targetKey?: string;
 }) {
   const owner = configuration.input.scopes.at(-1)!;
+
   const { submit } = useFieldWrite(runtime, scope, owner);
   const form = useZodForm(fieldDraftSchema(targetKey), {
     defaultValues: fieldDefaults(configuration, targetKey),
     mode: 'onBlur',
   });
+
   const {
     control,
     handleSubmit,
@@ -62,28 +64,36 @@ export function FieldForm({
     setFocus,
     formState: { isDirty },
   } = form;
+
   const draft = useWatch({ control });
+
   const preview = previewFieldEdit(configuration, draft, targetKey);
+
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
   const [confirmation, setConfirmation] = useState<'close' | 'reload' | 'remove' | null>(null);
   const inFlight = useRef(false);
   const focus = useRef<FieldPath<FieldDraft> | null>(null);
+
   const local = configuration.local.find((item) => item.key === targetKey);
   const canInherit = configuration.input.definitions.some(
     (row) => row.key === targetKey && row.ownerId !== owner.ownerId,
   );
+
   useEffect(() => {
     setFocus(targetKey ? 'name' : 'key');
   }, [setFocus, targetKey]);
+
   useEffect(() => onState({ busy, dirty: isDirty }), [busy, isDirty, onState]);
+
   useEffect(() => {
     if (!busy && focus.current) {
       setFocus(focus.current);
       focus.current = null;
     }
   }, [busy, setFocus]);
+
   useEffect(() => {
     if (!isDirty) return;
 
@@ -95,6 +105,7 @@ export function FieldForm({
 
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
+
   const saveCommand = async (command: Command) => {
     setBusy(true);
     setNotice(null);

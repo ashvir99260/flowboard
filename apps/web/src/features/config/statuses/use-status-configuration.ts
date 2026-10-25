@@ -27,16 +27,21 @@ export function useStatusConfiguration(
 ) {
   const id = useId();
   const [attempt, setAttempt] = useState({ generation: 0, restarts: 0 });
+
   const options = (target: StatusScope) => ({
     ...withQueryScope(listScopeStatusesOptions({ client: runtime.client, path: target }), scope, [
       `status-config:${id}:${attempt.generation}`,
     ]),
     ...policy,
   });
+
   const selected = useQuery(options(owner));
+
   const parsed = ScopeStatusCollectionSchema.safeParse(selected.data);
   const ancestors = parsed.success ? parsed.data.ancestorScopes : [];
+
   const queries = useQueries({ queries: ancestors.map(options) });
+
   const result = readStatusConfiguration({
     workspaceId: scope.workspaceId!,
     scope: owner,

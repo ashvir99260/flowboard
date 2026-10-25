@@ -597,3 +597,11 @@ Use `packages/ui/src/modules/<area>` for reusable presentation. Keep theme/found
 Split distinct component implementations from shared multi-component files. A cohesive compound component such as Surface can keep its small styled slots in one file; do not create a folder or abstraction for each CSS rule. Keep one root public export surface and a pure primitive facade, use leaf imports internally, and preserve refs, polymorphic signatures, context identity, SSR and all interaction contracts. Current source links move with code; historical evidence still describes its original revision. React readability enforcement follows in the next task rather than being mixed into this structural refactor.
 
 Regression verification exposed an existing double-queue seam: Toastify's `limit={1}` could retain the next message behind a dismissed toast until its exit animation ended. Flowboard already owns notification sequencing, so remove the redundant Toastify limit and reset its renderer on controlled-message changes. A deterministic test holds the old animation open and requires the next message to be accessible immediately, with Alt+T targeting it rather than the stale element. Preserve dismissal, focus restoration and stale-callback protection.
+
+## D147 — Readable React sections without reordering hooks
+
+Date: 2026-10-25. Source: user request for spacing around hooks/returns and grouped state/effect code.
+
+Enable a small shared `flowboard/hook-spacing` rule only in React/Next presets. Separate direct hook statement groups from other statements; keep consecutive value-producing hooks together and separate each effect. Recognize conventional custom hook names and scope-resolved import aliases/React namespace calls. Fix whitespace only; preserve comments, semicolons, arguments, dependency arrays and execution order. Logical state/context/ref, derived value, handler, effect and render organization remains dependency-aware review guidance, not automatic sorting.
+
+Apply the installed React Hooks correctness rules to shared `.ts` hooks as well as JSX/TSX. Keep Node-only presets unchanged. Prefer aliases retaining `use` names: the installed upstream Rules of Hooks is name-based, and our formatting rule's broader alias recognition does not replace its semantic checks.

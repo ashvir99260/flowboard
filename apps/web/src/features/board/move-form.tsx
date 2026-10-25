@@ -57,6 +57,7 @@ export function MoveForm({
 }) {
   const inFlight = useRef(false);
   const [message, setMessage] = useState<string | null>(null);
+
   const sameList = destinationListId === task.primaryListId;
   const schema = DraftSchema.superRefine((draft, context) => {
     const prepared = prepareMoveFields(task.customFields, fields, draft.customFields);
@@ -84,6 +85,7 @@ export function MoveForm({
     }
   });
   const selected = selectTaskStatus(sourceStatus, statuses);
+
   const { control, handleSubmit, setError } = useZodForm(schema, {
     mode: 'onBlur',
     defaultValues: {
@@ -98,6 +100,7 @@ export function MoveForm({
   const statusId = useWatch({ control, name: 'statusId' });
   const placementKind = useWatch({ control, name: 'placementKind' });
   const corrections = useWatch({ control, name: 'customFields' });
+
   const anchors =
     columns
       .find((column) => column.status.id === statusId)

@@ -26,9 +26,11 @@ class InvalidStatusResponse extends Error {}
 export function useStatusWrite(runtime: ClientRuntime, scope: QueryScope, owner: StatusScope) {
   const notifications = useNotifications();
   const client = useQueryClient();
+
   const create = createScopeStatusMutation({ client: runtime.client });
   const update = updateScopeStatusMutation({ client: runtime.client });
   const remove = removeScopeStatusMutation({ client: runtime.client });
+
   const mutation = useMutation({
     mutationKey: ['configuration-write', scope.revision, scope.userId, scope.workspaceId],
     retry: false,
@@ -63,6 +65,7 @@ export function useStatusWrite(runtime: ClientRuntime, scope: QueryScope, owner:
       return parsed.response;
     },
   });
+
   const submit = async (command: Command) => {
     const report = notifications.capture();
     if (

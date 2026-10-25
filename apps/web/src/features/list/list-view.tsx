@@ -138,6 +138,7 @@ function Views({ listId }: { listId: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const { runtime, scope } = useSession();
+
   const location = readListLocation(search.toString());
   const listQuery = location.ok
     ? location.query

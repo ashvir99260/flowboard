@@ -34,6 +34,7 @@ function SelectedList({
   const query = useQuery(
     withQueryScope(getNodeOptions({ client: runtime.client, path: { nodeId: listId } }), scope),
   );
+
   if (query.isPending) return <SessionLoading />;
 
   if (query.isError) {
@@ -120,6 +121,7 @@ function VerifiedWorkspace({
   const { logout } = useSession();
   const [open, setOpen] = useState(false);
   const query = useQuery(withQueryScope(getCurrentUserOptions({ client: runtime.client }), scope));
+
   if (query.isPending) return <SessionLoading />;
 
   const refreshError = query.isError ? apiError(query.error) : null;
@@ -252,9 +254,11 @@ export function WorkspaceShell({
   const [error, setError] = useState<string | null>(null);
   const pending = useRef<string | null>(null);
   const target = useRef(workspaceId);
+
   useEffect(() => {
     target.current = workspaceId;
   }, [workspaceId]);
+
   useEffect(() => {
     if (!runtime || !scope || status !== 'authenticated' || scope.workspaceId === workspaceId)
       return;

@@ -27,6 +27,7 @@ export function ControlledField<T extends FieldValues, Output extends FieldValue
   // Visual disabling must not omit a registered value from a submitted draft.
   const { field, fieldState } = useController({ control, name: config.name });
   const input = useRef<HTMLInputElement | HTMLSelectElement | null>(null);
+
   const inputRef = (element: HTMLInputElement | HTMLSelectElement | null) => {
     input.current = element;
     field.ref(element);

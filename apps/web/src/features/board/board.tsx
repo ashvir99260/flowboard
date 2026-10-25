@@ -96,10 +96,12 @@ function ConnectedBoard({
   const [selection, setSelection] = useState<Selection | null>(null);
   const [focusTick, setFocusTick] = useState(0);
   const focusTask = useRef<{ id: string; kind: 'drag' | 'move' } | null>(null);
+
   const requestFocus = (id: string, kind: 'drag' | 'move') => {
     focusTask.current = { id, kind };
     setFocusTick((value) => value + 1);
   };
+
   useEffect(() => {
     if (board.state !== 'ready' || selection || !focusTask.current) return;
 
@@ -110,6 +112,7 @@ function ConnectedBoard({
     element?.focus();
     focusTask.current = null;
   }, [board.state, focusTick, selection]);
+
   const projected =
     board.state === 'ready'
       ? { ...board, columns: projectPlacements(board.columns, listId, pending) }

@@ -23,6 +23,7 @@ function Branches({
   selectedId?: string;
 }) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
+
   const toggle = (id: string) =>
     setCollapsed((current) => {
       const next = new Set(current);
@@ -67,6 +68,7 @@ export function Sidebar({
 }) {
   const router = useRouter();
   const tree = useTree(runtime, scope);
+
   if (tree.state === 'loading') return <SessionLoading />;
 
   if (tree.state === 'error')

@@ -15,6 +15,7 @@ export function SessionLoading() {
 export function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
   const { status } = useSession();
   const router = useRouter();
+
   useEffect(() => {
     if (status === 'anonymous') router.replace('/login');
   }, [router, status]);
@@ -25,6 +26,7 @@ export function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
 export function HomeRedirect() {
   const { status } = useSession();
   const router = useRouter();
+
   useEffect(() => {
     if (status === 'authenticated') router.replace('/workspaces');
 

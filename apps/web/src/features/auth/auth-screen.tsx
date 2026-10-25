@@ -138,9 +138,11 @@ function SignupForm() {
 export function AuthScreen({ mode }: Readonly<{ mode: 'login' | 'signup' }>) {
   const { runtime, status } = useSession();
   const router = useRouter();
+
   useEffect(() => {
     if (status === 'authenticated') router.replace('/workspaces');
   }, [router, status]);
+
   if (!runtime || status === 'booting' || status === 'authenticated') return <SessionLoading />;
 
   return mode === 'login' ? <LoginForm /> : <SignupForm />;

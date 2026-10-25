@@ -64,9 +64,11 @@ export function TaskForm({
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [remoteChange, setRemoteChange] = useState(0);
   const [checkedChange, setCheckedChange] = useState(0);
+
   useRealtime(listId, () => {
     if (baseline) setRemoteChange((value) => value + 1);
   });
+
   const inFlight = useRef(false);
   const errorFocus = useRef<FieldPath<TaskDraft> | null>(null);
   const { submit } = useTaskWrite(runtime, scope, detail);
@@ -81,13 +83,16 @@ export function TaskForm({
     defaultValues: taskDefaults(detail.fields, detail.statuses, baseline),
     mode: 'onBlur',
   });
+
   useEffect(() => onState({ busy, dirty: isDirty }), [busy, isDirty, onState]);
+
   useEffect(() => {
     if (!busy && errorFocus.current) {
       setFocus(errorFocus.current);
       errorFocus.current = null;
     }
   }, [busy, setFocus]);
+
   useEffect(() => {
     if (!isDirty) return;
 

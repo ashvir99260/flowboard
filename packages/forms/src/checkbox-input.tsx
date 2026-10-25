@@ -27,6 +27,7 @@ export function CheckboxInput({
   required?: boolean;
 }) {
   const id = useId();
+
   const message = error ?? hint;
 
   return (

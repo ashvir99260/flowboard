@@ -43,6 +43,7 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
       return parsed.success ? (parsed.data.pageInfo.nextCursor ?? undefined) : undefined;
     },
   });
+
   const pages = WorkspacePageSchema.array().safeParse(query.data?.pages ?? []);
   const cursors = pages.success ? pages.data.flatMap((page) => page.pageInfo.nextCursor ?? []) : [];
   const repeated = new Set(cursors).size !== cursors.length;
@@ -53,6 +54,7 @@ function Memberships({ runtime, scope }: { runtime: ClientRuntime; scope: QueryS
     new Set(items.map((item) => item.id)).size !== items.length ||
     (query.hasNextPage && (query.data?.pages.length ?? 0) >= 100);
   const { hasNextPage, isFetching, isError, fetchNextPage } = query;
+
   useEffect(() => {
     if (hasNextPage && !isFetching && !isError && !invalid) void fetchNextPage();
   }, [hasNextPage, isFetching, isError, invalid, fetchNextPage]);

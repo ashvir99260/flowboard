@@ -88,9 +88,11 @@ export function useBoard({
     pages: BoardPageRequest[];
     restarts: number;
   }>({ generation: 0, restarts: 0, pages: [] });
+
   useRealtime(listId, () =>
     setAttempt((current) => ({ generation: current.generation + 1, restarts: 0, pages: [] })),
   );
+
   useEffect(() => {
     const refresh = () =>
       setAttempt((current) => ({ generation: current.generation + 1, restarts: 0, pages: [] }));
@@ -122,7 +124,9 @@ export function useBoard({
       unonline();
     };
   }, [queryClient, listId, scope]);
+
   const tags = [`board:${instance}:${attempt.generation}`];
+
   const statusesQuery = useQuery({
     ...withQueryScope(
       getListResolvedStatusesOptions({ client: runtime.client, path: { listId } }),
@@ -139,11 +143,13 @@ export function useBoard({
     ),
     ...pagePolicy,
   });
+
   const statuses = readBoardStatuses(statusesQuery.data, scope.workspaceId ?? '');
   const requests: BoardPageRequest[] =
     statuses.state === 'ready'
       ? [...statuses.items.map(({ id }) => ({ statusId: id })), ...attempt.pages]
       : [];
+
   const taskQueries = useQueries({
     queries: requests.map(({ statusId, cursor }) => ({
       ...withQueryScope(
@@ -158,6 +164,7 @@ export function useBoard({
       ...pagePolicy,
     })),
   });
+
   const failure = [statusesQuery, fieldsQuery, ...taskQueries].find((query) => query.isError);
   const error = failure ? apiError(failure.error) : null;
   const pages = taskQueries.flatMap((query, index) =>

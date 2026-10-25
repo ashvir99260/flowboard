@@ -49,6 +49,7 @@ export function ToastDisplay({
 }) {
   const root = useRef<HTMLDivElement>(null);
   const origin = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!message) return;
 

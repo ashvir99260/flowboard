@@ -49,6 +49,7 @@ export function ActivityFeed({
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
   });
+
   const error = query.isError ? apiError(query.error) : null;
   if (error?.code === 'INVALID_CURSOR' && cycle.restarts < 1) {
     setCycle({ generation: cycle.generation + 1, restarts: cycle.restarts + 1 });

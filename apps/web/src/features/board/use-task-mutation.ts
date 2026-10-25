@@ -21,10 +21,14 @@ import type { MoveTaskResponse } from '@flowboard/api-client/types';
 export function useTaskMutation(runtime: ClientRuntime, scope: QueryScope) {
   const notifications = useNotifications();
   const client = useQueryClient();
+
   const mutationKey = ['task-placement', scope.revision, scope.userId, scope.workspaceId];
+
   const [notice, setNotice] = useState<string | null>(null);
+
   const move = moveTaskMutation({ client: runtime.client });
   const reorder = reorderTaskMutation({ client: runtime.client });
+
   const mutation = useMutation<MoveTaskResponse, unknown, TaskPlacement>({
     mutationKey,
     networkMode: 'always',
@@ -65,6 +69,7 @@ export function useTaskMutation(runtime: ClientRuntime, scope: QueryScope) {
     filters: { mutationKey, exact: true, status: 'pending' },
     select: (entry) => entry.state.variables as TaskPlacement,
   });
+
   const submit = async (command: TaskPlacement) => {
     const report = notifications.capture();
     if (isTaskBusy(client, scope, command.taskId))

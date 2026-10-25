@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 export function useRemSize() {
   const ref = useRef<HTMLSpanElement>(null);
   const [size, setSize] = useState(10);
+
   useEffect(() => {
     const element = ref.current;
     if (!element) return;

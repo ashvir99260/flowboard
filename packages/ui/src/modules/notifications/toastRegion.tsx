@@ -7,6 +7,7 @@ import { RegionContext } from './toastContext.js';
 export function ToastRegion() {
   const register = useContext(RegionContext);
   const ref = useRef<HTMLSpanElement>(null);
+
   useEffect(() => {
     if (register && ref.current?.parentElement) return register(ref.current.parentElement);
   }, [register]);

@@ -18,3 +18,5 @@ Read the [root instructions](../../AGENTS.md), [frontend guide](../../docs/FRONT
 - Read the [component](../../docs/UI_COMPONENT_SYSTEM.md), [form](../../docs/FORM_SYSTEM.md) and [token](../../docs/STYLE_TOKENS.md) guides before adding reusable UI. Preserve MUI/Emotion SSR, HSL/rem conventions, native semantics and keyboard alternatives.
 - Action feedback uses the notification provider and shared ToastHost. Capture final results once, clear on session changes, keep background reads quiet, and use shared overlays for accessible placement.
 - Browser fixtures are test-only. Verify meaningful user behavior and failure/recovery paths; real-service E2E remains the acceptance boundary for cross-layer features.
+
+Follow [React section conventions](../../docs/CODE_STYLE.md#react-hooks-and-component-sections): separate hook groups, effects and returns, group related state/refs when dependency order allows, and never mechanically reorder hooks.

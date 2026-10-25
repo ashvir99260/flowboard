@@ -16,6 +16,7 @@ const TaskEditorContext = createContext<((taskId: string | null) => void) | null
 
 export function useTaskEditor() {
   const open = useContext(TaskEditorContext);
+
   if (!open) throw new Error('Task controls require TaskEditorProvider');
 
   return open;
@@ -40,6 +41,7 @@ function TaskDrawer({
   const { result, error, retry } = useTaskDetail(runtime, scope, listId, lookupTaskId);
   const [editing, setEditing] = useState({ dirty: false, busy: false });
   const [confirmation, setConfirmation] = useState<'close' | 'reload' | null>(null);
+
   const perform = (action: 'close' | 'reload') => {
     setConfirmation(null);
     setEditing({ dirty: false, busy: false });
@@ -139,6 +141,7 @@ export function TaskEditorProvider({
     },
     [listId],
   );
+
   const close = () => {
     const target = selection?.taskId;
     setSelection(null);

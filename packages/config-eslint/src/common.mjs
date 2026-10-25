@@ -1,6 +1,7 @@
 import importX from 'eslint-plugin-import-x';
 
 import boundaries from './boundaries.mjs';
+import hookSpacing from './hook-spacing.mjs';
 
 export const ignoredFiles = [
   '**/node_modules/**',
@@ -19,7 +20,10 @@ export const ignoredFiles = [
 ];
 
 export const commonRules = {
-  plugins: { flowboard: { rules: { boundaries } }, 'import-x': importX },
+  plugins: {
+    flowboard: { rules: { boundaries, 'hook-spacing': hookSpacing } },
+    'import-x': importX,
+  },
   rules: {
     'flowboard/boundaries': 'error',
     'import-x/no-commonjs': 'error',
