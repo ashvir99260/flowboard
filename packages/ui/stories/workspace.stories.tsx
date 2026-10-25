@@ -1,3 +1,7 @@
+import { default as Box } from '@mui/material/Box';
+import { default as IconButton } from '@mui/material/IconButton';
+import { default as Stack } from '@mui/material/Stack';
+import { default as Typography } from '@mui/material/Typography';
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
@@ -9,11 +13,8 @@ import { FlowboardLogo } from '../src/modules/layout/FlowboardLogo.js';
 import { WorkspaceLayout } from '../src/modules/layout/WorkspaceLayout.js';
 import { TreeItem } from '../src/modules/navigation/TreeItem.js';
 import { WorkspaceIcon } from '../src/modules/navigation/WorkspaceIcon.js';
-import { default as Box } from '@mui/material/Box';
 import { Button } from '../src/modules/primitives/Button.js';
-import { default as IconButton } from '@mui/material/IconButton';
-import { default as Stack } from '@mui/material/Stack';
-import { default as Typography } from '@mui/material/Typography';
+
 
 import { task } from './fixtures.js';
 
@@ -121,7 +122,7 @@ function WorkspaceDemo() {
                 task={task}
                 onOpen={fn()}
                 metadata={
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography color="text.secondary" variant="body2">
                     Platform
                   </Typography>
                 }
@@ -151,7 +152,7 @@ export const Desktop: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole('banner')).toBeVisible();
     await expect(canvas.getByRole('img', { name: 'Flowboard' })).toBeVisible();
-    const roadmap = canvas.getByRole('button', { name: 'Roadmap', exact: true });
+    const roadmap = canvas.getByRole('button', { name: 'Roadmap' });
     roadmap.focus();
     await userEvent.keyboard('{Enter}');
     await expect(roadmap).toHaveAttribute('aria-current', 'page');
@@ -171,7 +172,7 @@ export const Narrow: Story = {
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.click(page.getByRole('button', { name: 'Open navigation' }));
     await expect(page.getByRole('navigation', { name: 'Workspace navigation' })).toBeVisible();
-    await userEvent.click(page.getByRole('button', { name: 'Roadmap', exact: true }));
+    await userEvent.click(page.getByRole('button', { name: 'Roadmap' }));
     await waitFor(() =>
       expect(
         page.queryByRole('navigation', { name: 'Workspace navigation' }),

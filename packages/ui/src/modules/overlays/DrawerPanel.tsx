@@ -1,14 +1,16 @@
 'use client';
 
+import { default as Drawer } from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import { default as Stack } from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
+import { default as Typography } from '@mui/material/Typography';
 import { useId, useRef } from 'react';
 
-import { default as Drawer } from '@mui/material/Drawer';
-import { default as Stack } from '@mui/material/Stack';
-import { default as Typography } from '@mui/material/Typography';
+
 import { Toolbar } from '../layout/Toolbar.js';
+import { WorkspaceIcon } from '../navigation/WorkspaceIcon.js';
 import { ToastRegion } from '../notifications/ToastRegion.js';
-import { Button } from '../primitives/Button.js';
 
 import type { ReactNode } from 'react';
 
@@ -57,9 +59,14 @@ export function DrawerPanel({
           <Typography component="h2" variant="h2" id={id}>
             {title}
           </Typography>
-          <Button ref={close} disabled={closeDisabled} onClick={onClose}>
-            {closeLabel}
-          </Button>
+          <IconButton
+            ref={close}
+            disabled={closeDisabled}
+            onClick={onClose}
+            aria-label={closeLabel}
+          >
+            <WorkspaceIcon name="close" />
+          </IconButton>
         </Toolbar.Root>
         {children}
       </Stack>

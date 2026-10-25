@@ -1,10 +1,11 @@
 'use client';
 
-import { styled } from '@mui/material/styles';
 
 import { default as Box } from '@mui/material/Box';
 import { default as Stack } from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
 import { default as Typography } from '@mui/material/Typography';
+
 import { Paper } from '../primitives/Paper.js';
 
 import type { ReactNode } from 'react';
@@ -17,17 +18,20 @@ export type WorkspaceColumnProps = {
 };
 
 const Column = styled(Paper)(({ theme }) => ({
-  backgroundColor: 'transparent',
+  backgroundColor: (theme.vars ?? theme).palette.background.default,
+  border: `1px solid ${(theme.vars ?? theme).palette.divider}`,
+  borderRadius: 8,
+  height: '100%',
   minWidth: 0,
-  padding: theme.spacing(0.4),
+  padding: theme.spacing(1),
   width: '100%',
 })) as typeof Paper;
 const Header = styled(Stack)(({ theme }) => ({
   alignItems: 'center',
-  borderBottom: `2px solid ${(theme.vars ?? theme).palette.divider}`,
+  borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
   justifyContent: 'space-between',
-  marginBottom: theme.spacing(1.6),
-  minHeight: '4.4rem',
+  marginBottom: theme.spacing(1.2),
+  minHeight: '5.2rem',
   paddingBottom: theme.spacing(0.8),
 }));
 const Title = styled(Typography)({

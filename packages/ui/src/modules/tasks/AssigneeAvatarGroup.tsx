@@ -4,7 +4,6 @@ import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
 
 import type { Task } from '@flowboard/contracts';
 
@@ -12,6 +11,13 @@ const Group = styled(AvatarGroup)({
   justifyContent: 'flex-end',
   '& .MuiAvatar-root': { width: '2.8rem', height: '2.8rem', fontSize: '1.2rem' },
 });
+const Unassigned = styled(Avatar)(({ theme }) => ({
+  backgroundColor: (theme.vars ?? theme).palette.action.selected,
+  color: (theme.vars ?? theme).palette.text.secondary,
+  width: '2.8rem',
+  height: '2.8rem',
+  fontSize: '1.1rem',
+}));
 const Person = styled(Avatar)(({ theme }) => ({
   backgroundColor: (theme.vars ?? theme).palette.primary.main,
   color: (theme.vars ?? theme).palette.primary.contrastText,
@@ -30,9 +36,9 @@ export function AssigneeAvatarGroup({
 }: Readonly<{ assignees: ReadonlyArray<Task['assignees'][number]> }>) {
   if (!assignees.length)
     return (
-      <Typography color="text.secondary" component="span" variant="body2">
-        Unassigned
-      </Typography>
+      <Unassigned aria-label="Unassigned" role="img" title="Unassigned">
+        UN
+      </Unassigned>
     );
 
   return (

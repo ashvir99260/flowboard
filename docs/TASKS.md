@@ -1459,6 +1459,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `feat(ui): open task details from card clicks`.
 
 - [ ] **P35-01 — Refine shared board and overlay presentation**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P35-01.md).
   - **Goal:** Make shared task/board/overlay presentation compact and consistent.
   - **Requirements:** R168.
   - **Files:** UI board, task avatar, close controls, icons, relevant tests/stories.

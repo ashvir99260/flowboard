@@ -87,7 +87,8 @@ test('all status categories and priority levels have visible text', () => {
 
 test('assignees expose every full name even when avatars overflow, and empty tasks say unassigned', () => {
   render(createElement(UI.AssigneeAvatarGroup, { assignees: [] }));
-  assert.ok(screen.getByText('Unassigned'));
+  assert.ok(screen.getByRole('img', { name: 'Unassigned' }));
+  assert.ok(screen.getByText('UN'));
   cleanup();
   const assignees = ['Élodie Rivera', 'Bob Jones', 'Carol Wu', 'Dana Kim', 'Evan Li'].map(
     (name, id) => ({ id: String(id), name }),

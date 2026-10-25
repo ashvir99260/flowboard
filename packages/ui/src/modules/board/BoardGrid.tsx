@@ -8,7 +8,7 @@ export const BoardGrid: BoardPart = styled('div', { name: 'FlowboardBoard', slot
     display: 'grid',
     gridAutoFlow: 'column',
     gridAutoColumns: 'minmax(26rem, 32rem)',
-    alignItems: 'start',
+    alignItems: 'stretch',
     gap: theme.spacing(1.2),
   }),
 );
