@@ -1035,6 +1035,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat: add ui component storybook`.
   - **Evidence:** [P18-01](evidence/P18-01.md).
 
+## Phase 19 — MUI Data Grid task view
+
+- [x] **P19-01 — Render the task list with MUI Data Grid Community**
+  - **Goal:** Use the shared MUI Data Grid for task rows without changing API/query ownership.
+  - **Requirements:** R23, R69, R70, R134, R139, R140.
+  - **Files:** UI TaskTable/rem measurements, library manifests/lockfile, UI/Storybook/browser tests, list adapter if reset identity is needed, component/style/Storybook guides and evidence.
+  - **Dependencies:** P18-01.
+  - **Acceptance:** Use free Community Data Grid with real grid/row-header semantics, keyboard task actions, stable IDs and existing metadata/custom columns. Preserve server/URL sort and filters and cursor Load More. A visible local paginator keeps every loaded row reachable beyond 100, without offset API requests. Keep inherited/local labels, zero/false values, dark/light appearance, rem/font scaling, virtualized scrolling and task drawer focus return. Stories and production SSR work; no Pro dependency or license key.
+  - **Validation:** Red/green grid behavior, loaded-row pagination and keyboard tests; existing list/browser regressions and Storybook; root build/lint/typecheck/test/format, G01–05/G09/G10.
+  - **Commit:** `feat: use mui data grid for task lists`.
+  - **Evidence:** [P19-01](evidence/P19-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

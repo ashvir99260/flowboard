@@ -29,7 +29,7 @@ const fields = [
   },
 ];
 
-test('shared table preserves caller order, zero/false values and task callbacks', () => {
+test('shared data grid preserves caller order, zero/false values and task callbacks', async () => {
   const opened = [];
   const tasks = ['Second', 'First'].map((title, index) => ({
     id: String(index),
@@ -49,6 +49,7 @@ test('shared table preserves caller order, zero/false values and task callbacks'
     }),
   );
   assert.ok(screen.getByRole('region', { name: 'Scrollable task list' }));
+  assert.ok(await screen.findByRole('grid', { name: 'List tasks' }));
   assert.deepEqual(
     screen.getAllByRole('rowheader').map((item) => item.textContent),
     ['Second', 'First'],

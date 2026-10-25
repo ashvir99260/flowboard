@@ -573,3 +573,11 @@ Date: 2026-10-25. Source: user request to add Storybook to the component library
 Use Storybook's React/Vite framework in `packages/ui`, with pinned development dependencies, typed CSF stories, documentation, accessibility inspection and Vitest browser interactions. Its preview uses the shared theme through MUI's browser provider; the application provider retains its Next SSR cache integration. Local fixtures and controlled state demonstrate presentation only, without API calls, RHF adapters or app imports. Keep the existing web playground and real application tests.
 
 Expose localhost development, cached static build and browser test commands through Turbo. Keep stories/configuration outside `src`, type-check them separately and exclude generated output from Git/format/lint/image contexts. Story-only files and tooling do not change application release fingerprints; production source/compiler/build changes still do. No external Storybook hosting or paid service is part of this task.
+
+## D144 — Community Data Grid over cursor-loaded task rows
+
+Date: 2026-10-25. Source: user request to use MUI Data Grid for the table view.
+
+Use the MIT Community package in UI and preserve the TaskTable public props. Web continues to own URL-backed sort/filter and cursor loading. Disable competing grid-local sort/filter controls; a visible Community paginator pages only the rows already loaded, with page sizes at most 100. Retain Load More for fetching additional cursor pages. No API offsets, paid features or license keys are introduced.
+
+Keep stable task IDs, title row headers and task-button callbacks/focus attributes. Reuse metadata renderers and inherited/local custom headers. Use virtualized rows in a bounded rem-sized container; convert the widget's required numeric geometry from a measured rem unit and allow content-height rows. Test beyond 100 loaded rows, keyboard navigation and font scaling. Browser/Next bundlers own real grid CSS; Node tests import the installed package without a CSS shim.

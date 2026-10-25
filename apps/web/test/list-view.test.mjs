@@ -24,7 +24,7 @@ async function openList(t) {
   await page.getByRole('button', { name: /Engineering/ }).click();
   await page.getByRole('button', { exact: true, name: 'Public list' }).click();
   await page.getByRole('link', { exact: true, name: 'List' }).click();
-  const table = page.getByRole('table', { name: 'List tasks' });
+  const table = page.getByRole('grid', { name: 'List tasks' });
   await table.waitFor();
   await expect(page.getByRole('button', { exact: true, name: 'Apply filter' })).toBeEnabled();
 
@@ -239,9 +239,12 @@ test('table controls fit all target widths and the table remains keyboard-scroll
         0,
       );
 
-    const region = page.getByRole('region', { exact: true, name: 'Scrollable task list' });
-    await region.focus();
-    await expect(region).toBeFocused();
+    const titleHeader = table.getByRole('columnheader', { exact: true, name: 'Title' });
+    await titleHeader.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(
+      table.getByRole('button', { exact: true, name: 'Open task: Fix login' }),
+    ).toBeFocused();
     const row = await table.getByRole('row').nth(1).boundingBox();
     assert.ok(
       row && row.height < 96,
@@ -326,7 +329,7 @@ test('a board mutation settling after view navigation refreshes the task table',
   await page.goBack();
   const row = table
     .getByRole('row')
-    .filter({ has: page.getByRole('rowheader', { exact: true, name: 'Fix login' }) });
+    .filter({ has: page.getByRole('button', { exact: true, name: 'Open task: Fix login' }) });
   await expect(row).toContainText('In progress');
   release();
   await expect(row).toContainText('Done');

@@ -32,7 +32,9 @@
     "@mui/material": "9.5.0",
     "@mui/material-nextjs": "9.5.0",
     "react-markdown": "10.1.0",
-    "react-toastify": "11.1.0"
+    "react-toastify": "11.1.0",
+    "@mui/x-data-grid": "9.16.0",
+    "@mui/system": "9.5.0"
   },
   "devDependencies": {
     "@flowboard/config-eslint": "workspace:*",

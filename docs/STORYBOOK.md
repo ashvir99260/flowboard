@@ -29,7 +29,7 @@ Put typed `*.stories.tsx` files in `packages/ui/stories/`. Use `Meta<typeof Comp
 - Data display: statuses, priorities, assignees, dates and custom-field chips.
 - Forms: six field types, numeric drafts, required false and unavailable options.
 - Navigation and board: card callbacks, columns and independent tree expansion/selection.
-- Composed views: custom table columns, configuration previews, safe Markdown and loading/empty/error states.
+- Composed views: Data Grid custom columns, keyboard task opening, font scaling, appended/reset loaded pages beyond 100 rows, configuration previews, safe Markdown and loading/empty/error states.
 - Overlays: confirmation/cancellation, busy controls, focus restoration and notifications in a drawer.
 
 Use controlled local state and `fn()` from `storybook/test` for observable callbacks. Preserve incoming Controls values and forward changes to their action callback. Add `play` functions with role/label queries, `userEvent`, `expect` and condition-based `waitFor` for important interactions. Wait for actual visible modal/toast state; do not add arbitrary sleeps or disable checks to pass a story.
