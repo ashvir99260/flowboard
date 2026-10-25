@@ -7,6 +7,7 @@ import { chromium, expect } from '@playwright/test';
 import { startAppApi } from './common/app-api-fixture.mjs';
 import { ids, task } from './common/board-fixture.mjs';
 import { startWeb } from './common/proxy-fixture.mjs';
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 
 async function openParent(t) {
   const browser = await chromium.launch({ headless: true });
@@ -39,7 +40,7 @@ test('create a child with required values, navigate its saved parent and detach 
   await drawer.getByLabel(/^Title/).fill('Child from drawer');
   await drawer.getByRole('button', { exact: true, name: 'Create task' }).click();
   await expect(drawer.getByLabel(/^Area/)).toBeFocused();
-  await drawer.getByLabel(/^Area/).selectOption(ids.option);
+  await selectAutocomplete(drawer.getByLabel(/^Area/), 'Web');
   const created = page.waitForResponse(
     (response) =>
       response.request().method() === 'POST' &&
@@ -55,8 +56,8 @@ test('create a child with required values, navigate its saved parent and detach 
     .getByRole('region', { exact: true, name: 'Subtasks' })
     .getByRole('button', { exact: true, name: 'Child from drawer' })
     .click();
-  await expect(drawer.getByLabel(/^Parent task/)).toHaveValue(parentId);
-  await drawer.getByLabel(/^Parent task/).selectOption({ label: 'No parent (top-level task)' });
+  await expect(drawer.getByLabel(/^Parent task/)).toHaveValue('Fix login');
+  await selectAutocomplete(drawer.getByLabel(/^Parent task/), 'No parent (top-level task)');
   const detached = page.waitForResponse(
     (response) =>
       response.request().method() === 'PATCH' &&
@@ -86,17 +87,17 @@ test('create a child with required values, navigate its saved parent and detach 
 test('later-page parent choices and server errors preserve selection and pending changes', async (t) => {
   const { page, api, drawer } = await openParent(t);
   const parent = drawer.getByLabel(/^Parent task/);
-  await expect(parent.getByRole('option', { exact: true, name: 'Archive notes' })).toHaveCount(0);
+  await parent.click();
+  await parent.fill('Archive notes');
+  await expect(page.getByRole('option', { exact: true, name: 'Archive notes' })).toHaveCount(0);
+  await parent.press('Escape');
   await drawer.getByRole('button', { exact: true, name: 'Load more parent choices' }).click();
-  await expect(parent.getByRole('option', { exact: true, name: 'Archive notes' })).toBeAttached();
-  await parent.selectOption({ label: 'Archive notes' });
-  const selected = await parent.inputValue();
+  await selectAutocomplete(parent, 'Archive notes');
+  await expect(parent).toHaveValue('Archive notes');
+  const selected = task(5).id;
   api.controls.board.staleCursorOnce = true;
   await drawer.getByRole('button', { exact: true, name: 'Load more parent choices' }).click();
-  await expect(
-    parent.getByRole('option', { exact: true, name: 'Selected parent (outside loaded choices)' }),
-  ).toBeAttached();
-  await expect(parent).toHaveValue(selected);
+  await expect(parent).toHaveValue('Selected parent (outside loaded choices)');
   api.controls.board.rejectNextWrite = {
     status: 400,
     code: 'INVALID_PARENT',
@@ -111,7 +112,11 @@ test('later-page parent choices and server errors preserve selection and pending
   };
   await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
   await expect(parent).toBeFocused();
-  await expect(parent).toHaveValue(selected);
+  await expect(parent).toHaveValue('Selected parent (outside loaded choices)');
+  assert.equal(
+    api.requests.filter((request) => request.method === 'PATCH').at(-1).body.parentTaskId,
+    selected,
+  );
   await expect(
     drawer.getByText('This parent cannot contain subtasks.', { exact: true }),
   ).toBeVisible();

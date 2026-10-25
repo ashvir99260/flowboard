@@ -2,6 +2,7 @@ import test from 'node:test';
 
 import { expect } from '@playwright/test';
 
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 import { openSettings } from './common/status-settings-fixture.mjs';
 
 test(
@@ -10,9 +11,7 @@ test(
   async (t) => {
     const { page } = await openSettings(t);
     await page.getByRole('button', { exact: true, name: 'Edit In progress' }).click();
-    await page
-      .getByLabel('Status visibility', { exact: true })
-      .selectOption({ label: 'Hide status' });
+    await selectAutocomplete(page.getByLabel('Status visibility', { exact: true }), 'Hide status');
     await expect(
       page.getByRole('region', { exact: true, name: 'Draft status preview' }).getByRole('alert'),
     ).toContainText('active');
@@ -53,15 +52,17 @@ test(
     const { page, browser, app } = await openSettings(t);
     await page.getByRole('button', { exact: true, name: 'Edit In progress' }).click();
     await page.getByLabel(/^Status name/).fill('Do not discard');
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'Space: Engineering' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'Space: Engineering',
+    );
     const confirm = page.getByRole('dialog', { name: 'Discard unsaved status changes?' });
     await confirm.getByRole('button', { exact: true, name: 'Cancel' }).click();
     await expect(page.getByLabel(/^Status name/)).toHaveValue('Do not discard');
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'Space: Engineering' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'Space: Engineering',
+    );
     await confirm.getByRole('button', { exact: true, name: 'Discard and change scope' }).click();
     await expect(page.getByRole('form', { name: 'Status editor' })).toHaveCount(0);
     const context = await browser.newContext();

@@ -7,7 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormField,
+  SelectionInput,
   Stack,
   Typography,
 } from '@flowboard/ui';
@@ -69,26 +69,21 @@ export function MoveMenu({
               {tree.message}
             </Alert>
           )}
-          <FormField
+          <SelectionInput
             label="Destination list"
             value={destinationListId}
-            select
-            slotProps={{ select: { native: true } }}
             disabled={busy || tree.state !== 'ready'}
-            onChange={(event) => setDestinationListId(event.target.value)}
-          >
-            {tree.state === 'ready' ? (
-              tree.nodes
-                .filter((node) => node.type === 'list')
-                .map((node) => (
-                  <option key={node.id} value={node.id}>
-                    {node.name}
-                  </option>
-                ))
-            ) : (
-              <option value={task.primaryListId}>Loading lists…</option>
-            )}
-          </FormField>
+            options={
+              tree.state === 'ready'
+                ? tree.nodes
+                    .filter((node) => node.type === 'list')
+                    .map((node) => ({ value: node.id, label: node.name }))
+                : [{ value: task.primaryListId, label: 'Loading lists…' }]
+            }
+            onChange={(value) => {
+              if (typeof value === 'string') setDestinationListId(value);
+            }}
+          />
           {destination.state === 'loading' && (
             <Typography role="status">Loading destination…</Typography>
           )}

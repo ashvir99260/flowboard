@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { login, openBacklog } from './helpers';
+import { login, openBacklog, selectAutocomplete } from './helpers';
 
 test('search composes with sorting and filters and survives reload and navigation', async ({
   page,
@@ -14,9 +14,9 @@ test('search composes with sorting and filters and survives reload and navigatio
   await expect(
     page.getByRole('gridcell', { exact: true, name: 'Build demo workflow 1' }),
   ).toBeVisible();
-  await page.getByLabel(/^Sort by/).selectOption('priority');
+  await selectAutocomplete(page.getByLabel(/^Sort by/), 'Priority');
   expect(new URL(page.url()).searchParams.get('q')).toBe('"Build demo workflow 1"');
-  await page.getByLabel(/^Filter field/).selectOption('effort');
+  await selectAutocomplete(page.getByLabel(/^Filter field/), 'Effort');
   await page.getByLabel(/^Effort/).fill('1');
   await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
   await page.reload();

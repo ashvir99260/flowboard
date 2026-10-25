@@ -6,6 +6,7 @@ import { chromium, expect } from '@playwright/test';
 import { startAppApi } from './common/app-api-fixture.mjs';
 import { ids } from './common/board-fixture.mjs';
 import { startWeb } from './common/proxy-fixture.mjs';
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 
 async function openWorkspace(t, { user = 'alice', configure = () => {} } = {}) {
   const browser = await chromium.launch({ headless: true });
@@ -13,7 +14,7 @@ async function openWorkspace(t, { user = 'alice', configure = () => {} } = {}) {
   const api = await startAppApi(t);
   configure(api);
   const { origin } = await startWeb(t, api.origin);
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } });
+  const page = await browser.newPage({ viewport: { height: 1200, width: 1440 } });
   page.setDefaultTimeout(10000);
   await page.goto(`${origin}/login`);
   await page.getByLabel(/^Email/).fill(`${user}@example.test`);
@@ -40,8 +41,8 @@ test('workspace columns load visible lists with pagination and open tasks in the
   await drawer.getByRole('button', { name: 'Close task' }).click();
   await privateList.getByRole('link', { name: 'Open Private list status board' }).click();
   await page
-    .getByRole('region', { name: 'Task board', exact: true })
-    .getByRole('region', { name: 'Released column', exact: true })
+    .getByRole('region', { exact: true, name: 'Task board' })
+    .getByRole('region', { exact: true, name: 'Released column' })
     .waitFor();
 });
 
@@ -59,8 +60,8 @@ test('keyboard drag moves across lists and a rejected move rolls back without lo
   const { api, page, publicList, privateList } = await openWorkspace(t);
   const movingId = '50000000-0000-4000-8000-000000000002';
   const handle = publicList.getByRole('group', {
-    name: 'Drag task: Review navigation',
     exact: true,
+    name: 'Drag task: Review navigation',
   });
   const saved = page.waitForResponse(
     (response) =>
@@ -99,7 +100,7 @@ test('a cross-list drop opens field correction, keeps the draft on denial, and s
   const movingId = '50000000-0000-4000-8000-000000000002';
   const before = api.requests.filter((entry) => entry.path.endsWith('/move')).length;
   await publicList
-    .getByRole('group', { name: 'Drag task: Review navigation', exact: true })
+    .getByRole('group', { exact: true, name: 'Drag task: Review navigation' })
     .focus();
   await page.keyboard.press('Space');
   await page.keyboard.press('ArrowRight');
@@ -107,16 +108,16 @@ test('a cross-list drop opens field correction, keeps the draft on denial, and s
   const dialog = page.getByRole('dialog', { name: 'Complete move to Private list' });
   await dialog.waitFor();
   assert.equal(api.requests.filter((entry) => entry.path.endsWith('/move')).length, before);
-  await dialog.getByRole('button', { name: 'Save move', exact: true }).click();
+  await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   const note = dialog.getByLabel('release_note', { exact: true });
   await expect(note).toBeFocused();
   await note.fill('Keep this draft');
-  await dialog.getByLabel('Placement', { exact: true }).selectOption('start');
+  await selectAutocomplete(dialog.getByLabel('Placement', { exact: true }), 'Start of column');
   api.controls.board.rejectNextMove = 'FORBIDDEN';
-  await dialog.getByRole('button', { name: 'Save move', exact: true }).click();
+  await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await dialog.getByText('Access denied', { exact: true }).waitFor();
   await expect(note).toHaveValue('Keep this draft');
-  await dialog.getByRole('button', { name: 'Save move', exact: true }).click();
+  await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(privateList.locator(`[data-open-task="${movingId}"]`)).toBeVisible();
   assert.equal(

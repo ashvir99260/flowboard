@@ -58,7 +58,9 @@ test(
     assert.equal(await effort.getAttribute('aria-invalid'), 'true');
     assert.equal(await effort.inputValue(), '-');
     await effort.fill('0');
-    await form.getByRole('combobox', { name: /^Team\b/ }).selectOption('');
+    const team = form.getByRole('combobox', { name: /^Team\b/ });
+    await team.hover();
+    await team.locator('..').getByRole('button', { exact: true, name: 'Clear' }).click();
     await form.getByRole('button', { name: 'Preview fields' }).click();
     assert.equal(
       await form.getByRole('combobox', { name: /^Team\b/ }).getAttribute('aria-invalid'),

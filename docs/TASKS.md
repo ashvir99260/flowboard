@@ -1518,6 +1518,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `feat(forms): use MUI X date pickers`.
 
 - [ ] **P36-03 — Migrate web dropdowns and search suggestions**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P36-03.md).
   - **Goal:** Apply the shared controls to direct web selectors and global search.
   - **Requirements:** R170; preserve R169.
   - **Files:** Web scope/list/filter/move/admin dropdowns, global search, browser tests and input guides.

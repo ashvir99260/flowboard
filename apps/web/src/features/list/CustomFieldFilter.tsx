@@ -1,15 +1,15 @@
 'use client';
 
 import { FieldKeySchema, FieldValueSchema } from '@flowboard/contracts';
-import { Button, CustomFieldInput, FormField, Stack } from '@flowboard/ui';
+import { Button, CustomFieldInput, SelectionInput, Stack } from '@flowboard/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { readListFilter } from './listFilter';
 
-import type { ResolvedField } from '@flowboard/contracts';
 import type { TaskTableQuery } from './listLocation';
+import type { ResolvedField } from '@flowboard/contracts';
 
 const DraftSchema = z.strictObject({
   fieldKey: FieldKeySchema.or(z.literal('')),
@@ -96,32 +96,27 @@ export function CustomFieldFilter({
         name="fieldKey"
         control={control}
         render={({ field: { ref, ...input }, fieldState }) => (
-          <FormField
+          <SelectionInput
             {...input}
             inputRef={ref}
             label="Filter field"
-            select
-            slotProps={{ inputLabel: { shrink: true }, select: { native: true } }}
             disabled={!configured}
-            errorMessage={fieldState.error?.message}
-            onChange={(event) => {
-              input.onChange(event);
+            error={fieldState.error?.message}
+            options={[
+              { value: '', label: 'No filter' },
+              ...fields.map((item) => ({ value: item.key, label: item.name })),
+            ]}
+            onChange={(value) => {
+              if (typeof value !== 'string') return;
+
+              input.onChange(value);
               setValue(
                 'value',
-                fields.find((item) => item.key === event.target.value)?.type === 'checkbox'
-                  ? false
-                  : null,
+                fields.find((item) => item.key === value)?.type === 'checkbox' ? false : null,
                 { shouldDirty: true },
               );
             }}
-          >
-            <option value="">No filter</option>
-            {fields.map((item) => (
-              <option key={item.key} value={item.key}>
-                {item.name}
-              </option>
-            ))}
-          </FormField>
+          />
         )}
       />
       {inputField && (

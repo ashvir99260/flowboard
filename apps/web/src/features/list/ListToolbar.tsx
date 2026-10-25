@@ -1,12 +1,12 @@
 'use client';
 
-import { FormField, Stack } from '@flowboard/ui';
+import { SelectionInput, Stack } from '@flowboard/ui';
 
 import { CustomFieldFilter } from './CustomFieldFilter';
 import { TaskSearch } from './TaskSearch';
 
-import type { ResolvedField } from '@flowboard/contracts';
 import type { TaskTableQuery } from './listLocation';
+import type { ResolvedField } from '@flowboard/contracts';
 
 export function ListToolbar({
   fields,
@@ -25,37 +25,39 @@ export function ListToolbar({
     <Stack aria-busy={pending} spacing={1.2}>
       <TaskSearch key={query.q ?? ''} query={query} onChange={onChange} pending={pending} />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={0.8}>
-        <FormField
+        <SelectionInput
           label="Sort by"
           value={query.sort}
           disabled={pending}
-          select
-          slotProps={{ select: { native: true } }}
-          onChange={(event) =>
+          options={[
+            { value: 'dueDate', label: 'Due date' },
+            { value: 'priority', label: 'Priority' },
+            { value: 'manual', label: 'Board order' },
+          ]}
+          onChange={(value) => {
+            if (value !== 'dueDate' && value !== 'priority' && value !== 'manual') return;
+
             onChange({
               ...query,
-              sort: event.target.value as TaskTableQuery['sort'],
-              direction: event.target.value === 'manual' ? 'asc' : query.direction,
-            })
-          }
-        >
-          <option value="dueDate">Due date</option>
-          <option value="priority">Priority</option>
-          <option value="manual">Board order</option>
-        </FormField>
-        <FormField
+              sort: value,
+              direction: value === 'manual' ? 'asc' : query.direction,
+            });
+          }}
+        />
+        <SelectionInput
           label="Direction"
           value={query.direction}
-          select
-          slotProps={{ select: { native: true } }}
           disabled={pending || query.sort === 'manual'}
-          onChange={(event) =>
-            onChange({ ...query, direction: event.target.value as TaskTableQuery['direction'] })
-          }
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </FormField>
+          options={[
+            { value: 'asc', label: 'Ascending' },
+            { value: 'desc', label: 'Descending' },
+          ]}
+          onChange={(value) => {
+            if (value !== 'asc' && value !== 'desc') return;
+
+            onChange({ ...query, direction: value });
+          }}
+        />
       </Stack>
       <CustomFieldFilter
         key={`${query.fieldKey ?? ''}:${query.fieldOperator ?? ''}:${query.fieldValue ?? ''}`}

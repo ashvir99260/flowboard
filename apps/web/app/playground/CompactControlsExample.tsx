@@ -1,8 +1,11 @@
 'use client';
 
-import { FormField, Stack, Surface } from '@flowboard/ui';
+import { FormField, SelectionInput, Stack, Surface } from '@flowboard/ui';
+import { useState } from 'react';
 
 export function CompactControlsExample() {
+  const [order, setOrder] = useState('manual');
+
   return (
     <Surface.Root component="section">
       <Surface.Header>
@@ -13,15 +16,17 @@ export function CompactControlsExample() {
       </Surface.Header>
       <Surface.Body>
         <Stack spacing={1.6}>
-          <FormField
+          <SelectionInput
             label="Compact menu"
-            select
-            defaultValue="manual"
-            slotProps={{ select: { native: true } }}
-          >
-            <option value="manual">Manual order</option>
-            <option value="due">Due date</option>
-          </FormField>
+            value={order}
+            options={[
+              { value: 'manual', label: 'Manual order' },
+              { value: 'due', label: 'Due date' },
+            ]}
+            onChange={(value) => {
+              if (typeof value === 'string') setOrder(value);
+            }}
+          />
           <FormField
             defaultValue={'First line\nSecond line'}
             label="Expanding notes"

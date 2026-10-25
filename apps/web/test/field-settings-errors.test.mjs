@@ -2,6 +2,7 @@ import test from 'node:test';
 
 import { expect } from '@playwright/test';
 
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 import { openSettings } from './common/status-settings-fixture.mjs';
 
 test(
@@ -9,9 +10,10 @@ test(
   { timeout: 120000 },
   async (t) => {
     const { page } = await openSettings(t, 'Field');
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'Space: Engineering' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'Space: Engineering',
+    );
     await page.getByRole('button', { exact: true, name: 'Edit Team' }).click();
     const form = page.getByRole('form', { name: 'Field editor' });
     await form.getByLabel(/^Option 2 label/).fill('Server rejected name');

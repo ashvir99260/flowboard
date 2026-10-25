@@ -5,8 +5,8 @@ import test from 'node:test';
 import { chromium, expect } from '@playwright/test';
 
 import { startAppApi } from './common/app-api-fixture.mjs';
-import { ids } from './common/board-fixture.mjs';
 import { startWeb } from './common/proxy-fixture.mjs';
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 
 async function openBoard(t, configure = () => {}) {
   const browser = await chromium.launch({ headless: true });
@@ -39,7 +39,7 @@ test('button moves are optimistic, persist, and roll back rejected saves without
     .getByRole('button', { name: /^Move task/ })
     .click();
   const dialog = page.getByRole('dialog', { name: 'Move task' });
-  await dialog.getByLabel('Status', { exact: true }).selectOption(ids.active);
+  await selectAutocomplete(dialog.getByLabel('Status', { exact: true }), 'In progress');
   const replyPromise = page.waitForResponse(
     (response) => response.url().endsWith('/move') && response.request().method() === 'POST',
   );
@@ -56,10 +56,10 @@ test('button moves are optimistic, persist, and roll back rejected saves without
     .filter({ has: page.getByRole('heading', { name: title, exact: true }) })
     .getByRole('button', { name: /^Move task/ })
     .click();
-  await dialog.getByLabel('Status', { exact: true }).selectOption(ids.done);
+  await selectAutocomplete(dialog.getByLabel('Status', { exact: true }), 'Done');
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await dialog.getByText('Access denied', { exact: true }).waitFor();
-  assert.equal(await dialog.getByLabel('Status', { exact: true }).inputValue(), ids.done);
+  assert.equal(await dialog.getByLabel('Status', { exact: true }).inputValue(), 'Done');
   await dialog.getByRole('button', { exact: true, name: 'Cancel' }).click();
   await expect(active.getByRole('heading', { name: title, exact: true })).toBeVisible();
 });
@@ -198,11 +198,9 @@ test('destination board refreshes when a move settles after navigating away from
     .getByRole('button', { name: /^Move task/ })
     .click();
   const dialog = page.getByRole('dialog', { name: 'Move task' });
-  await dialog
-    .getByLabel('Destination list', { exact: true })
-    .selectOption('20000000-0000-4000-8000-000000000014');
+  await selectAutocomplete(dialog.getByLabel('Destination list', { exact: true }), 'Private list');
   await expect(dialog.getByRole('button', { exact: true, name: 'Save move' })).toBeEnabled();
-  await dialog.getByLabel('Placement', { exact: true }).selectOption('start');
+  await selectAutocomplete(dialog.getByLabel('Placement', { exact: true }), 'Start of column');
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await expect
     .poll(() => api.requests.filter((request) => request.path.endsWith('/move')).length)
@@ -222,10 +220,10 @@ test('cross-list move requires destination fields, focuses the error and persist
     .getByRole('button', { name: /^Move task/ })
     .click();
   const dialog = page.getByRole('dialog', { name: 'Move task' });
-  await dialog.getByLabel('Destination list', { exact: true }).selectOption(api.privateList.id);
+  await selectAutocomplete(dialog.getByLabel('Destination list', { exact: true }), 'Private list');
   const note = dialog.getByLabel('release_note');
   await note.waitFor();
-  await dialog.getByLabel('Placement', { exact: true }).selectOption('start');
+  await selectAutocomplete(dialog.getByLabel('Placement', { exact: true }), 'Start of column');
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await expect(note).toBeFocused();
   await note.fill('Preview ready');
@@ -250,9 +248,9 @@ test('cross-list move explicitly clears source-only fields', async (t) => {
     .getByRole('button', { name: /^Move task/ })
     .click();
   const dialog = page.getByRole('dialog', { name: 'Move task' });
-  await dialog.getByLabel('Destination list', { exact: true }).selectOption(api.privateList.id);
+  await selectAutocomplete(dialog.getByLabel('Destination list', { exact: true }), 'Private list');
   await dialog.getByText(/will be cleared: legacy/).waitFor();
-  await dialog.getByLabel('Placement', { exact: true }).selectOption('start');
+  await selectAutocomplete(dialog.getByLabel('Placement', { exact: true }), 'Start of column');
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await expect(dialog).toHaveCount(0);
   assert.equal(
@@ -277,7 +275,7 @@ test('duplicate submissions for one pending task issue only one mutation', async
     .getByRole('button', { name: /^Move task/ })
     .click();
   const dialog = page.getByRole('dialog', { name: 'Move task' });
-  await dialog.getByLabel('Status', { exact: true }).selectOption(ids.done);
+  await selectAutocomplete(dialog.getByLabel('Status', { exact: true }), 'Done');
   await dialog.locator('form').evaluate((form) => {
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
@@ -425,7 +423,7 @@ test('move controls fit a 320px viewport, preserve focus and support reduced mot
   await dialog.getByRole('button', { exact: true, name: 'Cancel' }).click();
   await expect(button).toBeFocused();
   await button.click();
-  await dialog.getByLabel('Status', { exact: true }).selectOption(ids.done);
+  await selectAutocomplete(dialog.getByLabel('Status', { exact: true }), 'Done');
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(

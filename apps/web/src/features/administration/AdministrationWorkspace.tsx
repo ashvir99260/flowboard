@@ -5,8 +5,8 @@ import {
   Button,
   ConfirmDialog,
   ErrorState,
-  FormField,
   MemberAccess,
+  SelectionInput,
   Stack,
   Typography,
 } from '@flowboard/ui';
@@ -19,16 +19,16 @@ import { AdministrationForm } from './AdministrationForm';
 import { useAdministration } from './useAdministration';
 import { useAdministrationMutation } from './useAdministrationMutation';
 
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import type { AdministrationSelection } from './administrationCommands';
 import type { AdministrationSnapshot } from './administrationData';
 import type { AdministrationCommand } from './useAdministrationMutation';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 
 type PendingAction =
   | { kind: 'select'; selection: AdministrationSelection }
   | { kind: 'reload' }
-  | { kind: 'command'; command: AdministrationCommand };
+  | { command: AdministrationCommand; kind: 'command' };
 
 export function AdministrationWorkspace({
   runtime,
@@ -49,7 +49,9 @@ export function AdministrationWorkspace({
   const [blocked, setBlocked] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const locked = useRef(false);
+
   const nodeId = 'nodeId' in selection ? selection.nodeId : undefined;
+
   const data = useAdministration(runtime, scope, nodeId);
   const { submit } = useAdministrationMutation(runtime, scope);
 
@@ -190,28 +192,26 @@ export function AdministrationWorkspace({
         )
       ) : (
         <>
-          <FormField
-            select
+          <SelectionInput
             label="Selected container"
             value={nodeId ?? ''}
             disabled={disabled}
-            slotProps={{ select: { native: true } }}
-            onChange={(event) =>
+            options={[
+              { value: '', label: 'New container' },
+              ...snapshot.nodes.map((item) => ({
+                value: item.id,
+                label: containerLabel(item, snapshot.nodes),
+              })),
+            ]}
+            onChange={(value) => {
+              if (typeof value !== 'string') return;
+
               request({
                 kind: 'select',
-                selection: event.target.value
-                  ? { kind: 'details', nodeId: event.target.value }
-                  : { kind: 'create' },
-              })
-            }
-          >
-            <option value="">New container</option>
-            {snapshot.nodes.map((item) => (
-              <option key={item.id} value={item.id}>
-                {containerLabel(item, snapshot.nodes)}
-              </option>
-            ))}
-          </FormField>
+                selection: value ? { kind: 'details', nodeId: value } : { kind: 'create' },
+              });
+            }}
+          />
           <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
             <Button
               disabled={disabled}

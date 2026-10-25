@@ -3,6 +3,7 @@ import test from 'node:test';
 import { chromium, expect } from '@playwright/test';
 
 import { startRealApp } from './common/real-app-fixture.mjs';
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 
 test(
   'a real status save reaches the worker and drawer feed while later activity preserves a draft',
@@ -43,13 +44,13 @@ test(
     const { page, drawer, activityReads } = await open();
     const feed = drawer.getByRole('region', { exact: true, name: 'Activity' });
     await expect(feed.getByText('No status changes yet.')).toBeVisible();
-    await drawer.getByLabel(/^Status/).selectOption('f1000000-0000-4000-8000-000000000401');
+    await selectAutocomplete(drawer.getByLabel(/^Status/), 'In progress');
     await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(feed.getByRole('listitem')).toHaveCount(1, { timeout: 15000 });
     await expect(feed).toContainText('Alice changed status from To do to In progress');
     await drawer.getByLabel(/^Title/).fill('Preserved activity draft');
     const other = await open();
-    await other.drawer.getByLabel(/^Status/).selectOption('f1000000-0000-4000-8000-000000000402');
+    await selectAutocomplete(other.drawer.getByLabel(/^Status/), 'Done');
     await other.drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(
       other.drawer

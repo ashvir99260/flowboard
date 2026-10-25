@@ -19,9 +19,11 @@ import type { ClientRuntime } from '../../providers/sessionContext';
 
 export function useSearchWorkspaceInfiniteQuery({
   q,
+  attempt = 0,
   runtime,
   scope,
 }: {
+  attempt?: number;
   q: string;
   runtime: ClientRuntime;
   scope: QueryScope;
@@ -63,8 +65,9 @@ export function useSearchWorkspaceInfiniteQuery({
     ...withQueryScope(
       searchWorkspaceInfiniteOptions({ client: runtime.client, query: { q, limit: '20' } }),
       scope,
-      [`search-generation:${generation}`],
+      [`search-generation:${generation}`, `search-attempt:${attempt}`],
     ),
+    enabled: Boolean(q),
     initialPageParam: { query: { q } },
     getNextPageParam: (page) => {
       const parsed = SearchPageSchema.safeParse(page);

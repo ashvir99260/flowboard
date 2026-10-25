@@ -2,6 +2,7 @@ import test from 'node:test';
 
 import { expect } from '@playwright/test';
 
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 import { openSettings } from './common/status-settings-fixture.mjs';
 
 test(
@@ -13,13 +14,15 @@ test(
     const preview = page.getByRole('region', { exact: true, name: 'Effective status preview' });
     await expect(preview.getByText(/^To do ·/)).toBeVisible();
     await expect(preview.getByText(/^In progress ·/)).toBeVisible();
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'Folder: Delivery' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'Folder: Delivery',
+    );
     await expect(preview.getByText(/^In progress ·/)).toBeVisible();
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'List: Private launch' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'List: Private launch',
+    );
     await expect(preview.getByText(/^In review ·/)).toBeVisible();
     await expect(preview.getByText(/^Blocked ·/)).toBeVisible();
     await expect(
@@ -35,9 +38,10 @@ test(
   { timeout: 120000 },
   async (t) => {
     const { page } = await openSettings(t);
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'Space: Engineering' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'Space: Engineering',
+    );
     await page.getByRole('button', { exact: true, name: 'Edit In progress' }).click();
     await page.getByLabel(/^Status name/).fill('Building');
     await expect(
@@ -51,17 +55,19 @@ test(
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     const mutation = await (await saved).json();
     await expect(page.getByRole('status', { exact: true, name: '' })).toContainText('Status saved');
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'List: Product backlog' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'List: Product backlog',
+    );
     await expect(
       page
         .getByRole('region', { exact: true, name: 'Effective status preview' })
         .getByText(/^Building ·/),
     ).toBeVisible();
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'List: Private launch' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'List: Private launch',
+    );
     await expect(
       page
         .getByRole('region', { exact: true, name: 'Effective status preview' })
@@ -104,21 +110,20 @@ test(
   async (t) => {
     const { page } = await openSettings(t);
     const preview = page.getByRole('region', { exact: true, name: 'Effective status preview' });
-    await page
-      .getByLabel('Configuration scope', { exact: true })
-      .selectOption({ label: 'List: Product backlog' });
+    await selectAutocomplete(
+      page.getByLabel('Configuration scope', { exact: true }),
+      'List: Product backlog',
+    );
     await page.getByRole('button', { exact: true, name: 'Add status' }).click();
     await page.getByLabel(/^Status key/).fill('paused');
-    await page.getByLabel(/^Status category/).selectOption('closed');
+    await selectAutocomplete(page.getByLabel(/^Status category/), 'closed');
     await page.getByLabel(/^Status name/).fill('Paused');
     await page.getByLabel(/^Status color/).fill('#334455');
     await page.getByLabel(/^Status position/).fill('5');
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     await expect(preview.getByText(/^Paused ·/)).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit Paused' }).click();
-    await page
-      .getByLabel('Status visibility', { exact: true })
-      .selectOption({ label: 'Hide status' });
+    await selectAutocomplete(page.getByLabel('Status visibility', { exact: true }), 'Hide status');
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     await expect(preview.getByText(/^Paused ·/)).toHaveCount(0);
     await expect(
@@ -127,9 +132,7 @@ test(
         .getByText('Hidden', { exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit Paused' }).click();
-    await page
-      .getByLabel('Status visibility', { exact: true })
-      .selectOption({ label: 'Show status' });
+    await selectAutocomplete(page.getByLabel('Status visibility', { exact: true }), 'Show status');
     await page.getByRole('button', { exact: true, name: 'Save status' }).click();
     await expect(preview.getByText(/^Paused ·/)).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit Paused' }).click();

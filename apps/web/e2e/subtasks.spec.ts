@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { login, openBacklog } from './helpers';
+import { login, openBacklog, selectAutocomplete } from './helpers';
 
 test('subtasks persist, navigate safely and refresh another client on create and detach', async ({
   page,
@@ -38,7 +38,7 @@ test('subtasks persist, navigate safely and refresh another client on create and
       .getByRole('region', { exact: true, name: 'Subtasks' })
       .getByRole('button', { exact: true, name: 'Browser verified subtask' })
       .click();
-    await drawer.getByLabel(/^Parent task/).selectOption({ label: 'Build demo workflow 5' });
+    await selectAutocomplete(drawer.getByLabel(/^Parent task/), 'Build demo workflow 5');
     await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(drawer.getByText('Task saved.', { exact: true })).toBeVisible();
     await expect(children.getByText('No subtasks yet.', { exact: true })).toBeVisible({
@@ -50,7 +50,7 @@ test('subtasks persist, navigate safely and refresh another client on create and
       .click();
     await children.getByRole('button', { exact: true, name: 'Browser verified subtask' }).click();
     await viewerDrawer.getByLabel(/^Title/).fill('Keep this remote draft');
-    await drawer.getByLabel(/^Parent task/).selectOption({ label: 'Build demo workflow 1' });
+    await selectAutocomplete(drawer.getByLabel(/^Parent task/), 'Build demo workflow 1');
     await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(
       viewerDrawer.getByText('This task changed elsewhere. Your unsaved edits are preserved.', {
@@ -66,9 +66,7 @@ test('subtasks persist, navigate safely and refresh another client on create and
       .getByRole('dialog', { name: 'Discard unsaved changes?' })
       .getByRole('button', { exact: true, name: 'Discard and reload' })
       .click();
-    await expect(viewerDrawer.getByLabel(/^Parent task/).locator('option:checked')).toHaveText(
-      'Build demo workflow 1',
-    );
+    await expect(viewerDrawer.getByLabel(/^Parent task/)).toHaveValue('Build demo workflow 1');
     await viewerDrawer.getByRole('button', { exact: true, name: 'Open parent task' }).click();
     await expect(
       children.getByRole('button', { exact: true, name: 'Browser verified subtask' }),
@@ -90,7 +88,7 @@ test('subtasks persist, navigate safely and refresh another client on create and
       .getByRole('region', { exact: true, name: 'Subtasks' })
       .getByRole('button', { exact: true, name: 'Browser verified subtask' })
       .click();
-    await drawer.getByLabel(/^Parent task/).selectOption({ label: 'No parent (top-level task)' });
+    await selectAutocomplete(drawer.getByLabel(/^Parent task/), 'No parent (top-level task)');
     await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(drawer.getByText('Task saved.', { exact: true })).toBeVisible();
     await expect(children.getByText('No subtasks yet.', { exact: true })).toBeVisible({
