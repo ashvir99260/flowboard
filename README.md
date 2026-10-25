@@ -323,7 +323,7 @@ The [AI coding tool guide](docs/AI_TOOLS.md) adds Serena symbol navigation, pinn
 
 Set `REALTIME_PUBLIC_URL` on the web server to the browser-reachable API origin, for example `http://localhost:3001`. It is read at request time, separately from server-only `API_INTERNAL_URL`. Compose supplies the local default; hosted preview uses its public HTTPS API URL. Add the exact web origin to the API's `AUTH_ALLOWED_ORIGINS` and the web's `WEB_ALLOWED_ORIGINS`. An empty realtime URL deliberately disables sockets.
 
-Sockets use WebSocket transport with an in-memory JWT in the handshake, never the URL. The API checks current session/membership and list permissions, expires connections with the JWT, and rechecks access before delivery. Signals contain no task content or hidden destination. The browser refetches authorized state, deduplicates repeated events and catches up after reconnect; dirty editors preserve input and require explicit conflict resolution. Redis loss affects readiness and sockets, while committed task changes remain in PostgreSQL's retryable outbox.
+Sockets use WebSocket transport with an in-memory JWT in the handshake, never the URL. The API checks current session/membership and list permissions, expires connections with the JWT, and rechecks access before delivery. Signals contain no task content or hidden destination. The browser refetches authorized state, deduplicates repeated events and catches up after reconnect and confirmed list subscription; dirty editors preserve input and require explicit conflict resolution. Redis loss affects readiness and sockets, while committed task changes remain in PostgreSQL's retryable outbox.
 
 ## Verify a committed checkout
 

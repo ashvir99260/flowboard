@@ -1308,15 +1308,15 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `feat(tasks): add one-level subtask relations`.
   - **Evidence:** [P30-01](evidence/P30-01.md).
 
-- [ ] **P30-03 — Repair browser CI execution and assertions**
+- [x] **P30-03 — Repair browser CI execution and assertions**
   - **Goal:** Run every browser journey reliably without hiding application failures or broadening ordinary test timeouts.
-  - **Requirements:** R84/R85; preserve all existing behavioral assertions.
-  - **Files:** Web package test scripts, browser test helpers/cases and documentation/evidence.
+  - **Requirements:** R76/R84/R85; preserve all existing behavioral assertions.
+  - **Files:** Web package test scripts, realtime provider, browser test helpers/cases and documentation/evidence.
   - **Dependencies:** P30-01; diagnosed PR #75 CI failures.
-  - **Acceptance:** Every discovered test runs once; ordinary files retain their 60-second budget while the multi-journey E2E file has a bounded aggregate budget. Initial navigation retries only ERR_NETWORK_CHANGED, with a fixed attempt limit and all other failures preserved. The configuration-conflict assertion selects the expected message and still requires disabled save/explicit reload.
+  - **Acceptance:** Every discovered test runs once; ordinary files retain their 60-second budget while the multi-journey E2E file has a bounded aggregate budget. Initial navigation retries only ERR_NETWORK_CHANGED, with a fixed attempt limit and all other failures preserved. The configuration-conflict assertion selects the expected message and still requires disabled save/explicit reload. A successful list subscription catches up writes missed during asynchronous authorization/join, while stale or rejected acknowledgements cannot refresh a departed view.
   - **Validation:** Failure-first helper/runner tests, focused transport/navigation and real E2E checks, root gates and the repaired CI run.
   - **Commit:** `fix(ci): harden browser test execution`.
-  - **Evidence:** [P30-03](evidence/P30-03.md); local gates pass, hosted CI verification pending.
+  - **Evidence:** [P30-03](evidence/P30-03.md); implementation and local gates complete; hosted verification pending.
 
 - [ ] **P30-02 — Add subtask creation and navigation to the drawer**
   - **Goal:** Create, attach/detach and navigate related tasks while retaining flat board/list behavior and dirty drafts.
