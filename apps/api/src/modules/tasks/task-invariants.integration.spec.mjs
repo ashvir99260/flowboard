@@ -120,7 +120,7 @@ async function validBoard(listId) {
 
 test('every seeded demo task matches its current resolved list configuration', async () => {
   const groups = [];
-  for (const listId of [id(221), id(222), id(223)]) {
+  for (const listId of [221, 222, 223, 224, 225, 226].map(id)) {
     const tasks = await validBoard(listId);
     expect(tasks).toHaveLength(8);
     expect(tasks.every((task) => task.workspaceId === id(1) && task.primaryListId === listId)).toBe(
@@ -129,7 +129,10 @@ test('every seeded demo task matches its current resolved list configuration', a
     groups.push(...tasks);
   }
   expect(groups.map((task) => task.id).sort()).toEqual(
-    Array.from({ length: 24 }, (_, index) => id(700 + index)).sort(),
+    [
+      ...Array.from({ length: 24 }, (_, index) => id(700 + index)),
+      ...Array.from({ length: 24 }, (_, index) => id(1000 + index)),
+    ].sort(),
   );
 });
 

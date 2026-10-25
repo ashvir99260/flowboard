@@ -63,7 +63,7 @@ afterAll(async () => fixture?.close());
 
 test('tree and direct reads share seeded tenant-local ancestor permissions', async () => {
   for (const [user, count] of [
-    ['Alice', 7],
+    ['Alice', 13],
     ['Bob', 5],
     ['Carol', 7],
   ]) {
@@ -73,7 +73,8 @@ test('tree and direct reads share seeded tenant-local ancestor permissions', asy
     expect(response.body.root).toEqual({ id: id(1), name: 'Flowboard Demo', type: 'workspace' });
     expect(response.body.pageInfo).toEqual({ hasNextPage: false, nextCursor: null });
     expect(response.body.items.map((node) => node.id)).toEqual(
-      [201, 202, 211, 212, 221, 222, 223]
+      [201, 202, 203, 211, 212, 213, 214, 221, 222, 223, 224, 225, 226]
+        .filter((n) => user === 'Alice' || ![203, 213, 214, 224, 225, 226].includes(n))
         .filter((n) => user !== 'Bob' || ![222, 223].includes(n))
         .map(id),
     );
@@ -119,6 +120,40 @@ test('tree and direct reads share seeded tenant-local ancestor permissions', asy
           .set(header('Dan'))
       ).status,
     ).toBe(404);
+});
+
+test('Operations members see different boards and denied ancestors block task reads', async () => {
+  for (const [user, expected] of [
+    ['Alice', [221, 222, 223, 224, 225, 226]],
+    ['Bob', [221]],
+    ['Carol', [221, 222, 223]],
+    ['Eve', [221, 223, 224, 225, 226]],
+    ['Frank', [221, 223, 226]],
+  ]) {
+    const response = await api().get('/v1/tree').set(header(user));
+    expect(response.status).toBe(200);
+    expect(
+      response.body.items
+        .filter((node) => node.type === 'list')
+        .map((node) => node.id)
+        .sort(),
+    ).toEqual(expected.map(id).sort());
+  }
+  for (const [user, task, status] of [
+    ['Eve', 1000, 200],
+    ['Frank', 1000, 403],
+    ['Bob', 1000, 403],
+    ['Frank', 1016, 200],
+    ['Dan', 1000, 404],
+  ]) {
+    expect(
+      (
+        await api()
+          .get(`/v1/tasks/${id(task)}`)
+          .set(header(user))
+      ).status,
+    ).toBe(status);
+  }
 });
 
 test('grant writes check revisions, target membership and admin rights without changing data revisions', async () => {
@@ -205,7 +240,7 @@ test('child allows never bypass a denied or private ancestor, while admins still
   expect(
     (await api().get('/v1/tree').set(header('Bob'))).body.items.map((node) => node.id),
   ).not.toContain(id(211));
-  expect((await api().get('/v1/tree').set(header('Alice'))).body.items).toHaveLength(7);
+  expect((await api().get('/v1/tree').set(header('Alice'))).body.items).toHaveLength(13);
   await removeGrant(211, 102);
   const before = await api()
     .get(`/v1/nodes/${id(211)}`)

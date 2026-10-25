@@ -1184,14 +1184,15 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: plan richer demo and mvp alignment`.
   - **Evidence:** [P28-01](evidence/P28-01.md).
 
-- [ ] **P28-02 — Expand the fresh demo workspace and permission personas**
+- [x] **P28-02 — Expand the fresh demo workspace and permission personas**
   - **Goal:** Make one workspace demonstrate multiple boards, all field types and meaningful access differences.
   - **Requirements:** R151.
-  - **Files:** Database seed and seed integration tests; API permission/task-invariant tests; Compose assertion; current README/plan/seed guidance and evidence.
+  - **Files:** Database seed and seed integration tests; API permission/field/task-invariant tests; Compose assertion; current README/plan/seed guidance and evidence.
   - **Dependencies:** P28-01.
   - **Acceptance:** Fresh main workspace has 3 spaces, 4 folders, 6 lists, 48 tasks and 5 members; all six field types and valid resolved values; Eve/Frank demonstrate private-ancestor and deny behavior; Alice/Bob/Carol IDs/data and second tenant preserved. Existing seed markers skip all writes. Concurrent/repeated starts are idempotent; disabled seed writes nothing; insertion failures roll back. No developer database reset.
-  - **Validation:** G01–G05/G07/G08/G11; failing fresh-data and permission assertions first, isolated PostgreSQL/HTTP tests, root build/lint/typecheck/test/format. Host processes plus Docker datastores follow the user's development workflow; final image acceptance remains separate.
+  - **Validation:** G01–G05/G07/G08/G11; failing fresh-data and permission assertions first, isolated PostgreSQL/HTTP tests, root build/lint/typecheck/test/format. Use local processes and isolated PostgreSQL/Redis datastores; final application-image acceptance remains separate.
   - **Commit:** `feat(database): expand demo workspace fixtures`.
+  - **Evidence:** [P28-02](evidence/P28-02.md).
 
 - [ ] **P28-03 — Accept select options without a color**
   - **Goal:** Match the optional color contract while preserving existing colored options.

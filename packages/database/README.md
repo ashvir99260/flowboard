@@ -19,3 +19,5 @@ The internal [outbox repository](src/outbox-repository.ts) discovers due events 
 Prisma 7 uses `prisma.config.ts` for connection URLs and a driver adapter at runtime. Its schema-diff engine currently also requires a URL for an offline datamodel diff. Supply one explicitly to that development command; no fallback connection string is built into the runtime configuration.
 
 Refresh and logout serialize on User, re-read credentials after locking and use the database clock. Refresh consumption/replacement/linking is atomic; replay commits family revocation before the API sends401. Only digests cross the persistence boundary, and replacement rows retain the original family expiry.
+
+The richer fresh-demo dataset and permission personas are documented in [DEMO_DATA.md](../../docs/DEMO_DATA.md). The existing `demo-v1` marker still prevents all writes, including when the fresh fixture changes. This is not an automatic upgrade of existing data.

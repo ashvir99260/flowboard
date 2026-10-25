@@ -79,7 +79,12 @@ test('resolved schemas inherit workspace defaults and replace complete sibling d
     .get(`/v1/lists/${id(223)}/resolved-fields`)
     .set(headers.Alice);
   expect(otherSpace.status).toBe(200);
-  expect(otherSpace.body.items.map((field) => field.id)).toEqual([id(601)]);
+  expect(otherSpace.body.items.map((field) => field.id)).toEqual([id(609), id(601)]);
+  expect(otherSpace.body.items[0]).toMatchObject({
+    type: 'text',
+    isInherited: true,
+    source: { ownerType: 'space', ownerId: id(202) },
+  });
   expect(
     new Set([
       general.body.configVersion,

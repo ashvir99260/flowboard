@@ -339,7 +339,7 @@ try {
   assert.equal(await run('exec', '-T', 'redis', 'redis-cli', 'GET', 'delivery-probe'), 'retained');
   const psql = ['exec', '-T', 'postgres', 'psql', '-U', 'flowboard', '-d', 'flowboard', '-tAc'];
   assert.equal(await run(...psql, 'SELECT count(*) FROM seed_states;'), '1');
-  assert.equal(await run(...psql, 'SELECT count(*) FROM tasks;'), '28');
+  assert.equal(await run(...psql, 'SELECT count(*) FROM tasks;'), '52');
 
   console.info(`[${project}] Check dependency outage, durable write and recovery`);
   await run('stop', 'redis');
