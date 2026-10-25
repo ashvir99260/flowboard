@@ -70,12 +70,12 @@ Local [Compose](../compose.yaml) runs Redis with append-only persistence, `noevi
 
 Each environment must have its own Redis instance and PostgreSQL database/branch. Queue, channel and auth prefixes are fixed in the current code. Using the same Redis server with different logical database numbers does not isolate Pub/Sub channels. Environment-prefix support would be a separate code change, not a runtime setting that exists today.
 
-Keep Redis private and configure API/worker `REDIS_URL` at process startup. Web does not receive it. The [Render plan](RENDER.md) explains why a free, in-memory-only Key Value service is a limited experiment rather than the proposed durable worker setup.
+Keep Redis private and configure API/worker `REDIS_URL` at process startup. Web does not receive it. Redis remains an external managed dependency; provider and persistence capacity are open deployment choices. The selected compute topology is described in [Vercel Services](VERCEL.md).
 
 ## Health and operational checks
 
 - API `/health/live` reports process liveness. `/health/ready` checks database and Redis dependencies.
-- Worker `/health/ready` also needs an active BullMQ worker and both queue/publish connections. A Render background worker has no incoming network endpoint; use provider process/log monitoring and external functional acceptance rather than claiming Render will call this HTTP path.
+- Worker `/health/ready` also needs an active BullMQ worker and both queue/publish connections. The Vercel worker daemon receives no public traffic; use daemon process/log monitoring and external functional acceptance rather than expecting Vercel to call this HTTP path.
 - Readiness is not a queue-drained check. Monitor outbox age/count by state, failed/quarantined events, retries, processing latency, worker health and Redis memory.
 - The 500 ms dispatcher and database readiness probes generate regular PostgreSQL traffic. Consider this when evaluating Neon suspension/usage; no automatic idle optimization is implemented.
 - Test a real status change: REST returns success, one activity is stored, a second authorized client refreshes, and a denied client receives no protected details. Test worker restart and Redis interruption using disposable data.

@@ -358,22 +358,22 @@
     {
       "id": "C28",
       "chapter": "07-hosting",
-      "title": "Planned Render topology",
-      "status": "Planned; not deployed",
-      "description": "This is a target plan, not a deployment record. The current adapter still targets Vercel/Northflank. Worker/persistent-storage capacity and live Render acceptance remain open.",
-      "references": [["Render plan", "../RENDER.md"]],
+      "title": "Selected Vercel Services topology",
+      "status": "Configured; not deployed",
+      "description": "The repository config routes public web and Socket.IO traffic to Vercel Services and runs the worker as a Daemon. The legacy deployment adapter is not reconciled; preview worker processing and external Redis capacity remain open.",
+      "references": [["Vercel setup", "../VERCEL.md"]],
       "source": "sources/c28-planned-render-topology.mmd",
       "svg": "svg/c28-planned-render-topology.svg"
     },
     {
       "id": "C29",
       "chapter": "07-hosting",
-      "title": "Render activation gates",
+      "title": "Vercel activation gates",
       "status": "Planned",
-      "description": "The plan has explicit infrastructure, implementation and live-verification gates. A successful API trigger or a source diagram cannot substitute for running-digest and product acceptance evidence.",
+      "description": "The plan has explicit workflow, infrastructure, implementation and live-verification gates. A committed config cannot substitute for live service readiness and product acceptance evidence.",
       "references": [
-        ["Render rollout", "../RENDER.md#implementation-and-rollout-sequence"],
-        ["Open tasks", "../TASKS.md#phase-22--delivery-operations-and-render-plan"]
+        ["Vercel deployment gaps", "../VERCEL.md#build-deployment-and-current-gaps"],
+        ["Open tasks", "../TASKS.md"]
       ],
       "source": "sources/c29-render-activation-gates.mmd",
       "svg": "svg/c29-render-activation-gates.svg"

@@ -1,15 +1,14 @@
 ---
-title: "C28 — Planned Render topology · Planned; not deployed"
+title: "C28 — Selected Vercel Services topology · Configured; not deployed"
 ---
 flowchart TD
-  Browser[Browser] -->|Same-origin /api/v1| Web[Render image-backed web service]
-  Web -->|Proxy forwards to configured API origin| API[Render image-backed API service]
-  Browser <-->|Public authenticated WebSocket| API
+  Browser[Browser] -->|Same-origin pages and REST| Web[Vercel web service]
+  Web -->|Private API_INTERNAL_URL binding| API[Vercel API container service]
+  Browser -->|Public /socket.io route| API
   API --> DB[(Neon environment database)]
-  API --> Redis[(Private Render Key Value)]
-  Redis <--> Worker[Render image-backed background worker]
+  API --> Redis[(External managed Redis, provider TBD)]
+  Redis <--> Worker[Vercel worker daemon]
   Worker --> DB
-  NoIngress[Worker has no public ingress] -. boundary .-> Worker
-  Images[Published GHCR digests] -. selected independently .-> Web
-  Images -. selected independently .-> API
-  Images -. selected independently .-> Worker
+  NoIngress[Worker has no public route] -. boundary .-> Worker
+  Workflow[Legacy deployment workflow] -. unreconciled .-> Web
+  Preview[Preview daemon behavior unverified] -. preview processing gap .-> Worker

@@ -34,11 +34,11 @@ flowchart LR
   Redis --> Gateway
 ```
 
-Local Docker has `web`, `api`, `worker`, `postgres`, `redis`. Hosted preview uses Vercel for web, Northflank for API/worker/Redis and Neon for PostgreSQL. Provider availability and live deployments remain subject to the existing delivery tasks. API instances share PostgreSQL/Redis; no sticky in-process task state is authoritative.
+Local Docker has `web`, `api`, `worker`, `postgres`, `redis`. The selected hosted topology places web and API in one Vercel Services project, runs the queue consumer as a Vercel Daemon, keeps PostgreSQL on Neon and expects Redis from an external managed provider. The repository contains configuration, not evidence of a live deployment; the existing deployment adapter still needs reconciliation. API instances share PostgreSQL/Redis; no sticky in-process task state is authoritative.
 
 ### Browser auth across separate hosts
 
-Vercel and Northflank default domains are different sites. `SameSite=Lax` cookies are not sent on cross-site fetch requests, even with credentials enabled. The planned browser transport is therefore same-origin, rather than assuming CORS solves cookie policy. [Cookie semantics](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)
+The browser uses one Vercel project origin: web handles pages and same-origin REST proxying, while `/socket.io/*` routes to the API. The web service uses a private runtime binding for REST requests to API; `SameSite=Lax` cookies remain same-site without relying on cross-site credentials or CORS. [Cookie semantics](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie) See the [Vercel topology and gaps](VERCEL.md).
 
 | Boundary              | Planned behavior                                                                                                                                                                                                                                                                                                 |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

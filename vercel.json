@@ -1,0 +1,51 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "daemons": {
+    "worker": {
+      "entrypoint": "apps/worker/Dockerfile",
+      "instances": {
+        "iad1": 1
+      },
+      "root": ".",
+      "terminationGracePeriodSeconds": 30
+    }
+  },
+  "git": {
+    "deploymentEnabled": false
+  },
+  "rewrites": [
+    {
+      "destination": {
+        "service": "api"
+      },
+      "source": "/socket.io/(.*)"
+    },
+    {
+      "destination": {
+        "service": "web"
+      },
+      "source": "/(.*)"
+    }
+  ],
+  "services": {
+    "api": {
+      "entrypoint": "apps/api/Dockerfile",
+      "root": ".",
+      "runtime": "container"
+    },
+    "web": {
+      "bindings": [
+        {
+          "env": "API_INTERNAL_URL",
+          "format": "url",
+          "service": "api",
+          "type": "service"
+        }
+      ],
+      "buildCommand": "cd ../.. && pnpm build --filter=@flowboard/web",
+      "framework": "nextjs",
+      "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+      "root": "apps/web"
+    }
+  }
+}

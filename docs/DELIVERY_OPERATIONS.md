@@ -1,16 +1,16 @@
 # From a change to a running environment
 
-Source snapshot: `1ae096b`, 25 October 2026. This guide explains the current code and the target operating model. [CI/CD](CI_CD.md) lists executable checks; [independent delivery](DELIVERY.md) defines release policy; [Render](RENDER.md) is the new hosting plan. A plan does not establish that a provider is connected or a deployment has passed.
+Source snapshot: `1ae096b`, 25 October 2026. This guide explains the current code and the target operating model. [CI/CD](CI_CD.md) lists executable checks; [independent delivery](DELIVERY.md) defines release policy; [Vercel Services](VERCEL.md) is the selected application hosting target. Configuration does not establish that a provider is connected or a deployment has passed.
 
 ## What exists and what is next
 
-| Concern                      | Current implementation                                                             | Remaining work                                                                             |
-| ---------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Main and feature branches    | PR/main checks exist; work is committed in small feature branches.                 | Enforce the desired branch protection in GitHub settings.                                  |
-| Independent release          | API, web and worker have separate versions, image digests and release manifests.   | First/live publication is evidenced separately, never inferred from local tests.           |
-| Runtime environment settings | API/worker read startup settings; web reads origins at dynamic request boundaries. | Verify each chosen hosted environment with the same released image.                        |
-| Hosted CD                    | The code targets Vercel web and Northflank API/worker.                             | P22-02 replaces the provider adapter with Render; P22-03 proves live acceptance.           |
-| Ordered promotion            | The contract is documented in [PROMOTION.md](PROMOTION.md).                        | P00-11/P00-12 implement and verify explicit candidate promotion through dev/qa/stage/prod. |
+| Concern                      | Current implementation                                                             | Remaining work                                                                                                       |
+| ---------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Main and feature branches    | PR/main checks exist; work is committed in small feature branches.                 | Enforce the desired branch protection in GitHub settings.                                                            |
+| Independent release          | API, web and worker have separate versions, image digests and release manifests.   | First/live publication is evidenced separately, never inferred from local tests.                                     |
+| Runtime environment settings | API/worker read startup settings; web reads origins at dynamic request boundaries. | Verify each chosen hosted environment with the same released image.                                                  |
+| Hosted CD                    | `vercel.json` defines Vercel web/API services and a worker daemon.                 | Reconcile the legacy preview adapter with the one-project Services model; verify live behavior after provider setup. |
+| Ordered promotion            | The contract is documented in [PROMOTION.md](PROMOTION.md).                        | P00-11/P00-12 implement and verify explicit candidate promotion through dev/qa/stage/prod.                           |
 
 ## Trunk-based development in Flowboard
 
@@ -95,6 +95,6 @@ A future promotion record must include environment, all selected app versions/di
 
 1. [CI/CD](CI_CD.md): what starts, which checks gate publication, and what the existing CD job actually does.
 2. [Delivery](DELIVERY.md): fingerprints, tags, manifests and publication recovery.
-3. [Render](RENDER.md): proposed services, secrets, limitations and remaining implementation work.
+3. [Vercel Services](VERCEL.md): configured services, routes, bindings, runtime settings and current gaps.
 4. [Redis and jobs](REDIS_AND_JOBS.md): async activity, realtime transport and failure recovery.
 5. [Promotion](PROMOTION.md): acceptance contract for the future four-environment workflow.

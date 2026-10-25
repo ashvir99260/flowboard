@@ -723,3 +723,9 @@ R170–R171 use shared MUI Autocomplete selections and MUI X Community 9.16.0 wi
 ## D167 — Retain board presentation only during task-data refresh
 
 P37-01 may retain a complete authorized board snapshot while reconciling a local task placement or a list-task invalidation. It never retains that snapshot across workspace/configuration, resync, focus/reconnect or failed/invalid reads. Pending projections remain separate; a confirmed placement is applied to the retained presentation until fresh version-consistent data arrives. Controls are disabled during this bridge. Completion toasts follow validated server acknowledgement; saving state does not insert a layout-shifting banner. See [drag feedback](DRAG_FEEDBACK.md).
+
+## D168 — Vercel multi-service application hosting
+
+The user selected Vercel Services for the web and API, with the worker as a Vercel Daemon. Keep Neon as the hosted PostgreSQL provider. Redis remains an external managed dependency; do not assume or provision a provider until its capacity and persistence are selected. Railway and Render are not deployment targets. The existing Vercel/Northflank CD adapter is not the selected topology and stays gated until its workflow is reconciled.
+
+The web service uses its runtime `API_INTERNAL_URL` binding for REST proxy traffic. Public rewrites route `/socket.io/*` to the API and other paths to web. The worker has no public route or API binding. Vercel Services are beta and Daemons are public beta; current Daemons documentation does not establish preview behavior, so preview job processing must be verified. This decision selects configuration, not resource provisioning, billing, or live deployment. See [VERCEL.md](VERCEL.md).

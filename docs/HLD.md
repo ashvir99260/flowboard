@@ -102,7 +102,7 @@ flowchart LR
   Northflank -.-> PrivateRedis[Private Redis]
 ```
 
-Dashed hosting edges describe the existing Vercel/Northflank adapter, not a verified live deployment. The subsequently selected [Render topology](RENDER.md) remains a plan pending adapter implementation. Release planning/publication and preview orchestration are implemented; first real publication and provider activation remain open. Current Vercel preview deployment rebuilds released source. Promoting a single immutable artifact through dev/qa/stage/prod remains planned. See [delivery](DELIVERY.md), [CI/CD](CI_CD.md), [promotion](PROMOTION.md) and the [open-gate list](DELIVERY_SUMMARY.md#open-gates-and-limits).
+Dashed hosting edges describe the legacy Vercel/Northflank adapter, not a verified live deployment. The selected [Vercel Services topology](VERCEL.md) is configured in the repository; the deployment workflow has not yet been reconciled to it. Release planning/publication and preview orchestration are implemented; first real publication and provider activation remain open. Current Vercel preview deployment rebuilds released source. Promoting a single immutable artifact through dev/qa/stage/prod remains planned. See [delivery](DELIVERY.md), [CI/CD](CI_CD.md), [promotion](PROMOTION.md) and the [open-gate list](DELIVERY_SUMMARY.md#open-gates-and-limits).
 
 ## Scale, reliability and tradeoffs
 
