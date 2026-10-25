@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 
@@ -94,6 +95,44 @@ test('processing persists one verified status activity without changing it on re
       ])
     ).rows[0],
   ).toMatchObject({ state: 'delivered', completed_at: expect.any(Date) });
+});
+
+test('a worker waits for the dispatcher acknowledgement lock instead of dropping the queued event', async () => {
+  const { row, reference } = await statusEvent(50);
+  await postgres.client.query('BEGIN');
+  let pending;
+  try {
+    await postgres.client.query(
+      "UPDATE outbox_events SET state='dispatching', lease_owner=gen_random_uuid()::text, lease_until=clock_timestamp()+INTERVAL '30 seconds' WHERE id=$1",
+      [row.id],
+    );
+    let settled = false;
+    pending = repository.claim(reference, 10000).finally(() => {
+      settled = true;
+    });
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const result = await postgres.client.query(
+        "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%WITH eligible AS%') AS waiting",
+      );
+      if (settled || result.rows[0].waiting) break;
+
+      if (attempt === 99) throw new Error('Worker claim never reached the dispatcher lock');
+
+      await setTimeout(10);
+    }
+    await postgres.client.query(
+      "UPDATE outbox_events SET state='queued', lease_owner=NULL, lease_until=NULL WHERE id=$1",
+      [row.id],
+    );
+    await postgres.client.query('COMMIT');
+  } finally {
+    await postgres.client.query('ROLLBACK');
+  }
+  const claim = await pending;
+  expect(claim).not.toBeNull();
+  expect(claim.id).toBe(row.id);
+  expect((await repository.persist(claim)).state).toBe('ready');
+  expect(await repository.complete(claim)).toBe(true);
 });
 
 test('concurrent consumers and an expired lease cannot duplicate activity or acknowledge a newer owner', async () => {
