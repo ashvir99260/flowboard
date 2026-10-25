@@ -367,3 +367,6 @@ D159 and [SEARCH.md](SEARCH.md) define indexed list search, delivered through P3
 ## Workspace experience refresh
 
 [UI_REFRESH.md](UI_REFRESH.md) and [design system](../design-system/flowboard/MASTER.md) define P32-01–03: shared visual system/shell, workspace lists board, and header/invitation actions. Existing list status resolution, tenancy, permissions and generated APIs remain authoritative.
+# Frontend organization follow-up
+
+R164–R165 follow [the frontend refactor plan](FRONTEND_REFACTOR.md): one typed mutation execution hook with feature-owned validation, separate React components, PascalCase component files and camelCase hooks/helpers. Framework route names and backend/generated contracts keep their required spelling. P33-01 through P33-03 cover implementation and source-boundary checks.

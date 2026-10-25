@@ -389,3 +389,6 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | R161 | User interface follow-up | Branded header, compact sidebar/workspace context and readable shared task presentation. | UI/web · P32-01 | Responsive and keyboard review; actual screenshots and behavior. | In progress |
 | R162 | User interface follow-up | Workspace list columns with task drag between lists and preserved per-list status boards. | Web · P32-02 | Correct status/field/permission checks, pagination, rollback and keyboard alternatives. | In progress |
 | R163 | User interface follow-up | Header task/settings actions and real email/role invitation dialog. | Web · P32-03 | Role controls, validation, retained failures and accurate invitation success. | In progress |
+
+| R164 | Frontend organization follow-up | Common typed mutation hook and consistently named feature mutation hooks. | Web · P33-01 | Preserved mutation types, keys, callbacks, validation, retry and error behavior. | In progress |
+| R165 | Frontend organization follow-up | Separate components with PascalCase files; camelCase hooks/utilities across web, UI and forms. | Frontend · P33-02/P33-03 | Imports, public exports, context identity, source-layout rules and UI regressions. | In progress |

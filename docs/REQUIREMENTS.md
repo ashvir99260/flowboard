@@ -214,3 +214,9 @@ The user subsequently requested completion of all tasks. R156–R160 are now sel
 ## Workspace interface follow-up
 
 Provide a ClickUp/Jira-inspired branded header and sidebar with workspace context, visible lists and compact task cards. Put New task, settings and invitation actions at the upper right. Support moving task cards between visible lists and ordering within their existing status, while retaining per-list status boards. Settings links expose workspace, list/container, custom-field and member management. Invite opens an email/role dialog backed by real invitations and accurately distinguishes link creation from email delivery.
+
+## Frontend source organization follow-up
+
+R164: Route all UI TanStack mutations through a common typed hook, with feature hooks named `use<Operation>Mutation` similarly to existing query hooks. Preserve generated operations, validation, session/tenant boundaries, optimistic updates and error feedback.
+
+R165: Use PascalCase component files and camelCase hook/utility files across the frontend. Split distinct React components into separate files and update imports, tests, stories, source checks and authoring documentation. Keep required framework and tool filenames unchanged.

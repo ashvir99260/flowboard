@@ -1408,3 +1408,30 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `feat(web): add workspace quick actions`.
 
 Other future capabilities (OIDC integration, teams, webhook delivery, general container/task restoration, billing, uploads) are design notes, not disguised incomplete MVP implementations. Add tasks only if those features are requested.
+
+- [ ] **P33-01 — Centralize frontend mutation execution**
+  - **Goal:** Use one typed mutation hook with existing execution policy, preserving feature behavior.
+  - **Requirements:** R164.
+  - **Files:** Web lib hook, feature mutation hooks and mutation ownership/type regressions.
+  - **Dependencies:** Existing generated mutation options and P32 implementations.
+  - **Acceptance:** Every raw UI useMutation call is owned by the common hook; exact keys, variables, callbacks, validation and result handling remain intact; grouped hooks use the Mutation suffix.
+  - **Validation:** Type/callback and retry regressions, source-boundary checks, relevant browser mutation paths.
+  - **Commit:** `refactor(web): centralize mutation execution`.
+
+- [ ] **P33-02 — Separate frontend component implementations**
+  - **Goal:** Put independently named components in their own modules while preserving state and context lifetime.
+  - **Requirements:** R165.
+  - **Files:** Web feature/providers, shared UI/forms components and relevant stories/tests.
+  - **Dependencies:** P33-01 policy design; no API changes.
+  - **Acceptance:** Separate component files, cohesive styled slots retained, no circular context imports or changed form/overlay behavior.
+  - **Validation:** Source ownership checks and existing form, drawer, navigation and provider regressions.
+  - **Commit:** `refactor(ui): split frontend component modules`.
+
+- [ ] **P33-03 — Apply frontend naming and guardrails**
+  - **Goal:** Consistently name component files PascalCase and hooks/helpers camelCase, including future authoring rules.
+  - **Requirements:** R165.
+  - **Files:** Frontend source paths/imports, tests/stories, source-layout checks, scoped AGENTS and naming/component/frontend docs.
+  - **Dependencies:** P33-01 and P33-02.
+  - **Acceptance:** No stale local imports or references; public exports and reserved route/test/config filenames preserved; executable rules reject regressions.
+  - **Validation:** Import/source consistency plus applicable build, lint, type and test gates with exact outcomes recorded.
+  - **Commit:** `refactor(frontend): apply component and hook naming`.
