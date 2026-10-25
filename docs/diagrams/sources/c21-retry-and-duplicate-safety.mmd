@@ -1,0 +1,15 @@
+---
+title: "C21 — Retry and duplicate safety · Implemented"
+---
+flowchart TD
+  Failure{Failure window} -->|Before activity insert| Retry[Retry stored event]
+  Failure -->|After activity insert| Existing[Insert activity or verify existing event-linked row]
+  Failure -->|After publish, before completion| Duplicate[Publication may repeat]
+  Failure -->|Queue data lost| Recheck[Undelivered DB row becomes due]
+  Recheck --> Retry
+  Existing --> Publish[Publish invalidation]
+  Retry --> Existing
+  Duplicate --> Dedupe[API and client dedupe; REST remains truth]
+  Publish --> Done[Mark delivered after successful publish]
+  Offline[Browser disconnected] --> Resync[Reconnect and refetch]
+  NoReplay[PubSub has no durable replay] -. reason .-> Resync

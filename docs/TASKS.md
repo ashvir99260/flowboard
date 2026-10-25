@@ -1112,6 +1112,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Real provider deployment records and end-to-end acceptance; fixtures do not satisfy this task.
   - **Commit:** `docs: verify render preview deployment`.
 
+## Phase 23 — Visual architecture atlas
+
+- [x] **P23-01 — Add a rendered diagram atlas for the implemented system and delivery plan**
+  - **Goal:** Make the code, security/domain flows, background work and deployment model understandable through focused diagrams.
+  - **Requirements:** R146; clarify existing architecture, R144/R145 and their implementation/planning boundaries.
+  - **Files:** `docs/DIAGRAMS.md`, seven chapter guides under `docs/diagrams`, 30 editable Mermaid sources and rendered SVGs, catalog/render configuration, documentation navigation, plan/decisions/matrix and evidence.
+  - **Dependencies:** P22-01.
+  - **Acceptance:** Thirty distinct source-backed diagrams cover system/packages/data, auth/permissions, domain validation/transactions, frontend flows, Redis/outbox/recovery, CI/releases/runtime config, and planned Render/promotion. Each has a readable caption, status, source references, SVG preview and editable source. Future deployment paths are visibly labeled. Keep images self-contained, without secrets or external resources; no runtime or provider changes.
+  - **Validation:** G01/G02 documentation scope; independent source reviews; render every Mermaid source; inspect representative dense outputs and check bounds/labels; verify source/SVG inventory, links/anchors, formatting and whitespace. Application tests are not applicable to diagram-only work.
+  - **Commit:** `docs: add rendered architecture diagram atlas`.
+  - **Evidence:** [P23-01](evidence/P23-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

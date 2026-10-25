@@ -1,0 +1,15 @@
+---
+title: "C04 — Contract to generated client · Implemented"
+---
+flowchart LR
+  Zod[Pure Zod contracts] --> DTO[nestjs-zod DTOs]
+  DTO --> Validation[Request and response validation]
+  DTO --> Controllers[Decorated Nest controllers]
+  Controllers --> SpecOnly[Spec-only bootstrap]
+  SpecOnly --> Spec[Committed OpenAPI]
+  Spec --> Spectral[Spectral and drift checks]
+  Spec --> HeyAPI[Hey API generator]
+  HeyAPI --> SDK[Typed SDK and query options]
+  SDK --> Web[Web data adapters]
+  Zod --> Forms[RHF and Zod forms]
+  Setup[Auth refresh transport] --> SDK

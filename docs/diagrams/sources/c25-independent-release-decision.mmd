@@ -1,0 +1,17 @@
+---
+title: "C25 — Independent release decision · Implemented"
+---
+flowchart TD
+  App[For each API, web and worker app] --> Baseline[Read its latest published release]
+  Baseline --> Previous{Previous published release exists?}
+  Previous -->|No| First[Initialize version 0.1.0]
+  First --> Version[Independent app version]
+  Previous -->|Yes| Fingerprint[Compare committed runtime and build-input fingerprints]
+  Fingerprint --> Changed{Final artifact inputs changed?}
+  Changed -->|No| Skip[No new tag, image or release]
+  Changed -->|Yes| Commits[Inspect relevant shipped commits]
+  Commits --> Bump[Highest relevant major, minor or patch bump]
+  Bump --> Version
+  Version --> Publish[Build and publish that app]
+  Shared[Shared runtime package changes affect consumers] -. dependency graph .-> Fingerprint
+  Docs[Docs, tests and lint-only changes excluded] -. input policy .-> Fingerprint

@@ -1,0 +1,14 @@
+---
+title: "C14 — UI composition ownership · Implemented"
+---
+flowchart TD
+  Contracts[contracts: schemas and plain types] --> UI[ui: styled controls, theme and views]
+  Contracts --> Forms[forms: RHF bindings and JSON field rendering]
+  UI --> Forms
+  UI --> Web[web: data-aware feature adapters]
+  Forms --> Web
+  Client[Generated SDK and query options] --> Web
+  Session[Session and URL state] --> Web
+  Web --> Composition[Compose board, table, drawer and settings]
+  Data[Queries and mutations stay in web] -. boundary .-> Web
+  Props[UI receives plain props and callbacks] -. boundary .-> UI

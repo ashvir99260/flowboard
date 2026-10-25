@@ -1,0 +1,13 @@
+---
+title: "C23 — Trunk and review flow · Operating model"
+---
+flowchart LR
+  Main[Current main] --> Branch[Short-lived feature branch]
+  Branch --> Task[One coherent task and tests]
+  Task --> PR[Pull request]
+  PR --> Checks[Required CI checks]
+  Checks --> Review[Review and merge]
+  Review --> Next[Updated main]
+  Next --> Candidate[Independent release candidates]
+  Stack[Stacked PRs target their parent until it lands] -. review option .-> PR
+  Envs[dev, qa, stage and prod are deployments] -. not permanent source branches .-> Candidate

@@ -9,6 +9,8 @@ New to the repository? Read these in order:
 | [Low-level design](LLD.md)                | How do auth, permissions, repositories, configuration, mutations, cursors and events work?           |
 | [Delivery summary](DELIVERY_SUMMARY.md)   | How did each prompt area become code? Which tasks/evidence prove it, and what is still open?         |
 
+Explore the [diagram atlas](DIAGRAMS.md) for 30 rendered architecture, security, domain, frontend, queue and delivery views. Each links to editable Mermaid source and its owning reference.
+
 These are as-built summaries with a named source snapshot. The following documents retain the detailed contracts and operating rules:
 
 | Need                                         | Canonical reference                                                                                                                                       |

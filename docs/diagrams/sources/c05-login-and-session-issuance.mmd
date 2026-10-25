@@ -1,0 +1,20 @@
+---
+title: "C05 — Login and session issuance · Implemented"
+---
+sequenceDiagram
+  participant B as Browser client
+  participant P as Web proxy
+  participant A as Auth API
+  participant D as Identity repository
+  B->>P: Login credentials and Origin
+  P->>A: Forward approved request
+  A->>A: Validate Origin and rate limit
+  A->>D: Verify password and account
+  alt Credentials invalid
+    A-->>B: Generic authentication error
+  else Credentials valid
+    A->>D: Store hashed refresh credential and session
+    A-->>P: Access JWT and HttpOnly refresh cookie
+    P-->>B: Preserve cookie and typed response
+    Note over B: Access JWT stays in memory
+  end

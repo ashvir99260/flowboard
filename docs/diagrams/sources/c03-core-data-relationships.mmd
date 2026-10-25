@@ -1,0 +1,51 @@
+---
+title: "C03 — Core data relationships · Implemented"
+---
+erDiagram
+  USER ||--o{ MEMBERSHIP : joins
+  WORKSPACE ||--o{ MEMBERSHIP : contains
+  WORKSPACE ||--o{ NODE : owns
+  NODE o|--o{ NODE : parent
+  NODE ||--o{ TASK : primary_list
+  WORKSPACE ||--o{ STATUS_IDENTITY : defines
+  STATUS_IDENTITY ||--o{ TASK : classifies
+  WORKSPACE ||--o{ FIELD_DEFINITION : owns
+  MEMBERSHIP ||--o{ TASK_ASSIGNEE : assigned
+  TASK ||--o{ TASK_ASSIGNEE : has
+  WORKSPACE ||--o{ OUTBOX_EVENT : records
+  OUTBOX_EVENT ||--o| ACTIVITY : may_produce
+  TASK ||--o{ ACTIVITY : history
+  USER ||--o{ ACTIVITY : actor
+  WORKSPACE { uuid id PK }
+  USER { uuid id PK }
+  MEMBERSHIP { uuid workspaceId PK,FK
+    uuid userId PK,FK
+    enum role }
+  NODE { uuid id PK
+    uuid workspaceId FK
+    uuid parentId FK
+    enum type }
+  TASK { uuid id PK
+    uuid workspaceId FK
+    uuid primaryListId FK
+    uuid statusId FK
+    json customFields
+    int version }
+  STATUS_IDENTITY { uuid id PK
+    uuid workspaceId FK
+    string key
+    enum category }
+  FIELD_DEFINITION { uuid id PK
+    uuid workspaceId FK
+    string key
+    enum ownerType }
+  TASK_ASSIGNEE { uuid workspaceId PK,FK
+    uuid taskId PK,FK
+    uuid userId PK,FK }
+  OUTBOX_EVENT { uuid id PK
+    uuid workspaceId FK
+    enum state }
+  ACTIVITY { uuid id PK
+    uuid workspaceId FK
+    uuid taskId FK
+    uuid eventId FK }

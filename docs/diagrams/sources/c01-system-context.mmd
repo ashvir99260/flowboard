@@ -1,0 +1,15 @@
+---
+title: "C01 — System context · Implemented"
+---
+flowchart LR
+  Person[Workspace member] --> Browser[Browser UI]
+  Operator[API client or operator] --> REST[REST API]
+  Browser --> Web[Next.js web server]
+  Web -->|Same-origin proxy| REST
+  Browser <-->|Authenticated Socket.IO| Gateway[API gateway]
+  REST --> DB[(PostgreSQL: source of truth)]
+  REST --> Queue[(Redis: coordination and jobs)]
+  Queue <--> Worker[BullMQ worker]
+  Worker --> DB
+  Worker --> Queue
+  Queue --> Gateway

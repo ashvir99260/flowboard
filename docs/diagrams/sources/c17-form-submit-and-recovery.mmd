@@ -1,0 +1,16 @@
+---
+title: "C17 — Form submit and recovery · Implemented"
+---
+flowchart TD
+  Edit[Controlled input] --> RHF[RHF values, touched state and dirty fields]
+  RHF --> Zod{Shared or domain Zod validation}
+  Zod -->|Invalid| Inline[Field errors and focus; no request]
+  Zod -->|Valid| Mutation[Generated mutation with expected version]
+  Mutation --> Server{Authoritative response valid?}
+  Server -->|Yes| Reset[Update baseline and clear saved dirty state]
+  Reset --> Success[One success notification]
+  Server -->|Validation or request error| Repair[Preserve draft; map field paths when present]
+  Server -->|Version or config conflict, invalid response| Conflict[Retain draft; offer explicit reload]
+  Repair --> Error[One error notification plus repair controls]
+  Conflict --> Error
+  Error --> Edit

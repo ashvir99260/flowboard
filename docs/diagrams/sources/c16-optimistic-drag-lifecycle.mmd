@@ -1,0 +1,14 @@
+---
+title: "C16 — Optimistic drag lifecycle · Implemented"
+---
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Preview: Start valid pointer or keyboard drag
+  Preview --> Idle: Cancel or drop outside board
+  Preview --> Saving: Drop and submit generated mutation
+  Saving --> Reconcile: Valid authoritative response
+  Saving --> Recover: Rejected or invalid response
+  Recover --> Refresh: Roll back own preview without overwriting newer state
+  Refresh --> Idle: Refetch affected scope
+  Reconcile --> Idle: Remove pending projection and refetch authoritative lists
+  Saving --> Saving: Ignore duplicate action for pending task

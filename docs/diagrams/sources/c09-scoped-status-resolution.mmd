@@ -1,0 +1,16 @@
+---
+title: "C09 — Scoped status resolution · Implemented"
+---
+flowchart TD
+  Path[Selected list ancestor path] --> Workspace[Workspace definitions]
+  Workspace --> Space[Apply space overrides]
+  Space --> Folder[Apply folder overrides]
+  Folder --> List[Apply selected-list overrides]
+  List --> Merge[Merge by stable status key and identity]
+  Merge --> Visible[Apply nearest explicit visibility]
+  Visible --> Sort[Sort by position, key and ID]
+  Sort --> Required{not_started, active and done all present?}
+  Required -->|Yes| Result[Resolved list-specific set]
+  Required -->|No| Reject[Reject invalid configuration]
+  Stable[Task statusId is the canonical identity] -. invariant .-> Merge
+  Sibling[Resolve sibling lists independently] -. invariant .-> Path

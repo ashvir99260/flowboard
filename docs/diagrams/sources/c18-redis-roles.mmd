@@ -1,0 +1,14 @@
+---
+title: "C18 — Redis roles · Implemented"
+---
+flowchart LR
+  Auth[Auth limiter] <--> Counter[(Expiring hashed counter keys)]
+  Dispatcher[Outbox dispatcher] --> Queue[(BullMQ flowboard-events)]
+  Queue --> Worker[Worker]
+  Worker --> Channel[(PubSub flowboard:events)]
+  Channel --> Gateway[API gateway]
+  Gateway <--> Adapter[(Socket.IO adapter)]
+  Adapter <--> Peer[Other API instances]
+  DB[(PostgreSQL)] --> Dispatcher
+  Worker --> DB
+  DBNote[Authoritative records and delivery intent] -. owns .-> DB

@@ -336,3 +336,9 @@ R86 documentation follow-up: [P02-20](evidence/P02-20.md) clarifies the Docker r
 | R145 | E · User refinement | Document Render as the planned deployment target, including topology, runtime settings, provider limits and required implementation/live checks.    | Docs · P22-01; implementation P22-02/P22-03 | Official provider references and explicit plan/implementation distinction. This row verifies documentation, not a live Render deployment; live acceptance remains R98. | Verified |
 
 R96–R99 hosting clarification (D148): Render/Neon is now the planned target. Existing Vercel/Northflank adapter evidence remains historical/current implementation evidence, not Render verification. P22-02/P22-03 own the new adapter/live rollout; R98 remains unverified until those observable checks pass, and R99 still requires P00-11/P00-12 promotion evidence.
+
+## Visual architecture atlas
+
+| ID   | Source              | Requirement                                                                                                                  | Owner/tasks   | Acceptance evidence                                                                                                                                           | Status   |
+| ---- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| R146 | E · User refinement | Add extensive, readable diagrams for system architecture, security, domain flows, UI, async work and delivery/hosting plans. | Docs · P23-01 | Source-backed 30-diagram atlas, editable sources, rendered SVGs, semantic/render/link review and explicit planned-state labels; [P23-01](evidence/P23-01.md). | Verified |

@@ -1,0 +1,13 @@
+---
+title: "C13 — Ordering and no-op handling · Implemented"
+---
+flowchart TD
+  Input[Start, end, before or after anchor] --> Check[Validate task, column, anchor and versions]
+  Check --> Remove[Remove task from its current sequence]
+  Remove --> Insert[Insert at requested destination position]
+  Insert --> Compare{Result differs from canonical order?}
+  Compare -->|No| Noop[Return without artificial revision or event]
+  Compare -->|Yes| Reindex[Assign dense positions to affected columns]
+  Reindex --> Changed[Find rows whose values actually changed]
+  Changed --> Commit[Update changed versions and outbox atomically]
+  Commit --> IDs[Return changedTaskIds for reconciliation]

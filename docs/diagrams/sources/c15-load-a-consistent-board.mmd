@@ -1,0 +1,27 @@
+---
+title: "C15 — Load a consistent board · Implemented"
+---
+sequenceDiagram
+  participant V as List view
+  participant Q as Generated query options
+  participant A as API
+  V->>Q: Load selected list scope
+  par Status-dependent task pages
+    Q->>A: Read resolved statuses
+    A-->>Q: Resolved statuses with version
+    Q->>Q: Validate status response
+    Q->>A: First task page per resolved status, in parallel
+    A-->>Q: Task pages with configuration versions
+  and Effective fields
+    Q->>A: Read resolved fields
+    A-->>Q: Resolved fields with version
+  end
+  Q->>Q: Validate scope and matching versions
+  alt Consistent bundle
+    Q-->>V: Render columns and cards
+  else Mixed or stale bundle
+    Q->>A: Restart bounded bundle load
+    alt Repeated conflict
+      Q-->>V: Recoverable retry state
+    end
+  end

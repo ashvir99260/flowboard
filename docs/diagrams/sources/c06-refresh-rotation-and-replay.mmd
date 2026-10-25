@@ -1,0 +1,22 @@
+---
+title: "C06 — Refresh rotation and replay · Implemented"
+---
+sequenceDiagram
+  participant B as Browser transport
+  participant A as Auth API
+  participant D as Session storage
+  B->>A: Request with expired access token
+  A-->>B: 401
+  B->>B: Coordinate one refresh
+  B->>A: Refresh using cookie
+  A->>D: Lock and validate credential
+  alt Valid unused credential
+    D->>D: Rotate credential atomically
+    A-->>B: New cookie and access JWT
+    B->>A: Retry original request once
+  else Reused or invalid credential
+    D->>D: Revoke family when reuse is detected
+    A-->>B: 401
+    B->>B: Clear session and scoped state
+  end
+  Note over B,A: 403 does not trigger refresh

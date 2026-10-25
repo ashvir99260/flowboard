@@ -1,0 +1,15 @@
+---
+title: "C28 — Planned Render topology · Planned; not deployed"
+---
+flowchart TD
+  Browser[Browser] -->|Same-origin /api/v1| Web[Render image-backed web service]
+  Web -->|Proxy forwards to configured API origin| API[Render image-backed API service]
+  Browser <-->|Public authenticated WebSocket| API
+  API --> DB[(Neon environment database)]
+  API --> Redis[(Private Render Key Value)]
+  Redis <--> Worker[Render image-backed background worker]
+  Worker --> DB
+  NoIngress[Worker has no public ingress] -. boundary .-> Worker
+  Images[Published GHCR digests] -. selected independently .-> Web
+  Images -. selected independently .-> API
+  Images -. selected independently .-> Worker

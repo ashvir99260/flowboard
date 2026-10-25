@@ -1,0 +1,16 @@
+---
+title: "C27 — One image with different runtime configuration · Runtime seams implemented; promotion planned"
+---
+flowchart TD
+  Build[Build one app release image] --> Digest[Verified immutable digest]
+  Digest --> Dev[dev process]
+  Digest --> QA[qa process]
+  Digest --> Stage[stage process]
+  Digest --> Prod[prod process]
+  DevConfig[dev secrets and origins] --> Dev
+  QAConfig[qa secrets and origins] --> QA
+  StageConfig[stage secrets and origins] --> Stage
+  ProdConfig[prod secrets and origins] --> Prod
+  Mode[NODE_ENV stays production on hosted targets] -. rule .-> Digest
+  Boundary[Startup or dynamic server boundary reads config] -. runtime .-> QA
+  Public[Only allowlisted public origin reaches browser] -. safety .-> Boundary
