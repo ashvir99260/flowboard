@@ -4,9 +4,9 @@ import { StatusCategorySchema } from '@flowboard/contracts';
 import { FormFields } from '@flowboard/forms';
 import { Stack, Typography } from '@flowboard/ui';
 
+import type { StatusDraft } from './statusFormData';
 import type { FormFieldConfig } from '@flowboard/forms';
 import type { Control } from 'react-hook-form';
-import type { StatusDraft } from './statusFormData';
 
 export function StatusFields({
   control,
@@ -29,12 +29,15 @@ export function StatusFields({
       hint: canInherit ? 'Leave blank to inherit.' : undefined,
     },
     {
-      kind: 'text',
+      kind: 'color',
       name: 'color',
       label: 'Status color',
-      emptyValue: 'null',
+      clearable: canInherit,
+      clearLabel: 'Use inherited color',
       required: !canInherit,
-      hint: 'Hex color, for example #334455.',
+      hint: canInherit
+        ? 'Blank uses the inherited color.'
+        : 'Choose a color or enter its hex value.',
     },
     {
       kind: 'number',

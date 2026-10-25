@@ -1469,6 +1469,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `style(ui): clarify boards and compact controls`.
 
 - [ ] **P35-02 — Add accessible status color picking**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P35-02.md).
   - **Goal:** Select status colors without typing hex values while keeping inheritance explicit.
   - **Requirements:** R168.
   - **Files:** Shared form color binding, status fields, form tests/stories.

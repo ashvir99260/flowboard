@@ -5,11 +5,12 @@ import { useRef } from 'react';
 import { useController } from 'react-hook-form';
 
 import { CheckboxInput } from './CheckboxInput.js';
+import { ColorInput } from './ColorInput.js';
 import { SelectInput } from './SelectInput.js';
 
+import type { FormFieldConfig, SelectValue } from './fieldConfig.js';
 import type { FieldValue } from '@flowboard/contracts';
 import type { Control, FieldPath, FieldValues } from 'react-hook-form';
-import type { FormFieldConfig, SelectValue } from './fieldConfig.js';
 
 export type ControlledFieldProps<T extends FieldValues, Output extends FieldValues = T> = {
   config: FormFieldConfig<T>;
@@ -37,6 +38,28 @@ export function ControlledField<T extends FieldValues, Output extends FieldValue
     onValueChange?.(config.name, value);
   };
   const isDisabled = disabled || config.disabled;
+  if (config.kind === 'color')
+    return (
+      <ColorInput
+        clearable={config.clearable}
+        clearLabel={config.clearLabel}
+        disabled={isDisabled}
+        error={fieldState.error?.message}
+        hint={config.hint}
+        inputRef={inputRef}
+        label={config.label}
+        name={field.name}
+        onBlur={field.onBlur}
+        onChange={change}
+        onClear={() => {
+          change(null);
+          input.current?.focus();
+        }}
+        required={config.required}
+        value={field.value ?? null}
+      />
+    );
+
   if (config.kind === 'select' || config.kind === 'multi_select')
     return (
       <SelectInput
