@@ -1,4 +1,5 @@
 import { EventChannelName, OutboxRecordSchema, SocketEvents } from '@flowboard/contracts';
+import { DatabaseError } from '@flowboard/database';
 import { Inject, Injectable } from '@nestjs/common';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { Redis } from 'ioredis';
@@ -89,7 +90,16 @@ export class RealtimeService
             socket.conn.once('close', () => this.disconnected(socket));
             next();
           })
-          .catch(() => next(new Error('Authentication required'))),
+          .catch((cause: unknown) => {
+            const error: Error & { data?: { code: string } } = new Error('Authentication required');
+            if (
+              (cause instanceof DatabaseError || cause instanceof ApiException) &&
+              cause.code === 'WORKSPACE_ARCHIVED'
+            )
+              error.data = { code: 'WORKSPACE_ARCHIVED' };
+
+            next(error);
+          }),
       );
     });
     events.on('message', (_channel, value) => {

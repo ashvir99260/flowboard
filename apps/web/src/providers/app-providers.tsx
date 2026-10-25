@@ -10,6 +10,7 @@ import {
   useNotifications,
 } from '../features/notifications/notification-provider';
 import { RealtimeProvider } from '../features/realtime/realtime-provider';
+import { archiveStateChanged } from '../features/workspaces/workspace-lifecycle';
 import { apiError } from '../lib/api-error';
 
 import type { QueryScope } from '../lib/query-scope';
@@ -55,11 +56,15 @@ function RuntimeProviders({
     let active = true;
     let booting = true;
     let authenticated = false;
+    let previousSession: SessionEnvelope | null = null;
     const instance = setupClient({
       onSessionChange(session, reason) {
         if (!active) return;
 
-        if (reason !== 'refresh') {
+        if (
+          reason !== 'refresh' ||
+          (previousSession && archiveStateChanged(previousSession, session))
+        ) {
           lastChange.current = reason;
           notifications.clear();
           revision.current++;
@@ -78,6 +83,7 @@ function RuntimeProviders({
           notifications.show(reason === 'login' ? 'Signed in.' : 'Workspace switched.', 'success');
         }
 
+        previousSession = session;
         authenticated = Boolean(session);
 
         setState({

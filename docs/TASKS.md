@@ -1278,7 +1278,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `docs: restore form implementation guidance`.
   - **Evidence:** [P29-03](evidence/P29-03.md).
 
-- [ ] **P29-02 — Add workspace lifecycle controls and live recovery**
+- [x] **P29-02 — Add workspace lifecycle controls and live recovery**
   - **Goal:** Expose rename/archive/restore with clear confirmation and prevent archived workspace content remaining mounted in other clients.
   - **Requirements:** R156; preserve R70/R76/R80/R134/R137/R140.
   - **Files:** Web workspace settings/picker/hooks, session/realtime providers and browser tests; shared presentation only where needed; lifecycle docs/evidence.
@@ -1286,6 +1286,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Acceptance:** Generated operations + RHF/Zod forms; stale drafts remain recoverable; archive state clears scoped queries/notifications and unmounts board/drawer; initial/revoked sockets refresh safely without Redis-error loops; sole-workspace/null-selection restoration and explicit switch work; keyboard/cancel/double-submit behavior tested.
   - **Validation:** G01–G05/G09–G11; browser recovery and Redis reconnect coverage; root gates and React review.
   - **Commit:** `feat(web): manage workspace lifecycle`.
+  - **Evidence:** [P29-02](evidence/P29-02.md).
 
 - [ ] **NEXT-03 — Design one-level subtasks**
   - **Goal:** Consider parentTaskId without changing current task ownership accidentally.
