@@ -12,6 +12,8 @@ export { NativeSelect } from './modules/primitives/NativeSelect.js';
 
 export { default as Alert } from '@mui/material/Alert';
 
+export { default as Autocomplete } from '@mui/material/Autocomplete';
+
 export { default as Box } from '@mui/material/Box';
 
 export { default as Checkbox } from '@mui/material/Checkbox';

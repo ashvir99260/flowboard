@@ -2,6 +2,7 @@ import test from 'node:test';
 
 import { expect } from '@playwright/test';
 
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 import { openSettings } from './common/status-settings-fixture.mjs';
 
 test(
@@ -15,9 +16,10 @@ test(
     await expect(page.getByLabel(/^Field name/)).toBeHidden();
     await page.goBack();
     await expect(page.getByLabel(/^Field name/)).toHaveValue('Pending effort');
-    await page
-      .getByRole('combobox', { exact: true, name: 'Configuration scope' })
-      .selectOption({ label: 'Folder: Delivery' });
+    await selectAutocomplete(
+      page.getByRole('combobox', { exact: true, name: 'Configuration scope' }),
+      'Folder: Delivery',
+    );
     const changeScope = page.getByRole('dialog', { name: 'Discard unsaved field changes?' });
     await expect(changeScope).toBeVisible();
     await changeScope.getByRole('button', { exact: true, name: 'Cancel' }).click();

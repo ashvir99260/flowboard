@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import test from 'node:test';
 
+import { AuthExamples } from '@flowboard/contracts';
 import { chromium, expect } from '@playwright/test';
 
 import { startAppApi } from './common/app-api-fixture.mjs';
 import { ids } from './common/board-fixture.mjs';
 import { startWeb } from './common/proxy-fixture.mjs';
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 import { mobileOption } from './common/table-fixture.mjs';
 
 async function openTask(t, extraFields = false, timezoneId = 'UTC') {
@@ -108,6 +110,7 @@ test('create validates required fields and stores explicit zero and false values
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await page.getByRole('button', { exact: true, name: 'New task' }).click();
   await drawer.getByLabel(/^Title/).fill('Created in drawer');
+  await selectAutocomplete(drawer.getByRole('combobox', { name: /^Assignees/ }), 'Alice');
   await drawer.getByRole('button', { exact: true, name: 'Create task' }).click();
   await expect(drawer.getByLabel(/^Area/)).toBeFocused();
   assert.equal(
@@ -116,12 +119,20 @@ test('create validates required fields and stores explicit zero and false values
     ).length,
     0,
   );
-  await drawer.getByLabel(/^Area/).selectOption(ids.option);
+  await selectAutocomplete(drawer.getByLabel(/^Area/), 'Web');
   await drawer.getByLabel(/^Effort/).fill('0');
   await drawer.getByLabel(/^Approved/).check();
   await drawer.getByLabel(/^Approved/).uncheck();
+  const created = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      /\/lists\/.+\/tasks$/.test(new URL(response.url()).pathname),
+  );
   await drawer.getByRole('button', { exact: true, name: 'Create task' }).click();
   await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task created');
+  assert.deepEqual((await (await created).json()).data.assigneeIds, [
+    AuthExamples.session.data.user.id,
+  ]);
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await page.getByRole('button', { exact: true, name: 'Open task: Created in drawer' }).click();
   await expect(drawer.getByLabel(/^Effort/)).toHaveValue('0');
@@ -218,7 +229,7 @@ test('a newly created task reloads its saved identity after an editing conflict'
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await page.getByRole('button', { exact: true, name: 'New task' }).click();
   await drawer.getByLabel(/^Title/).fill('Created before conflict');
-  await drawer.getByLabel(/^Area/).selectOption(ids.option);
+  await selectAutocomplete(drawer.getByLabel(/^Area/), 'Web');
   await drawer.getByRole('button', { exact: true, name: 'Create task' }).click();
   await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task created');
   await drawer.getByLabel(/^Title/).fill('Uncommitted title');
@@ -243,11 +254,19 @@ test('a newly created task reloads its saved identity after an editing conflict'
 test('all custom-field inputs save and optional fields can be explicitly cleared', async (t) => {
   const { api, drawer } = await openTask(t, true);
   await drawer.getByLabel(/^Effort/).fill('0');
-  await drawer.getByLabel(/^Area/).selectOption(ids.option);
+  await selectAutocomplete(drawer.getByLabel(/^Area/), 'Web');
   await drawer.getByLabel(/^Approved/).uncheck();
-  await drawer.getByLabel(/^Tags/).selectOption([ids.option, mobileOption]);
+  await selectAutocomplete(drawer.getByLabel(/^Tags/), 'Web');
   await drawer.getByLabel('Notes', { exact: true }).fill('Ready for review');
-  await drawer.getByLabel('Milestone', { exact: true }).fill('2026-12-02');
+  const milestone = drawer.getByRole('group', { name: 'Milestone' });
+  for (const [name, value] of [
+    ['Year', '2026'],
+    ['Month', '12'],
+    ['Day', '02'],
+  ]) {
+    await milestone.getByRole('spinbutton', { name, exact: true }).focus();
+    await milestone.getByRole('spinbutton', { name, exact: true }).pressSequentially(value);
+  }
   await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
   await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
   assert.deepEqual(
@@ -256,14 +275,14 @@ test('all custom-field inputs save and optional fields can be explicitly cleared
       effort: 0,
       area: ids.option,
       approved: false,
-      tags: [ids.option, mobileOption],
+      tags: [mobileOption, ids.option],
       notes: 'Ready for review',
       milestone: '2026-12-02',
     },
   );
   await drawer.getByRole('button', { exact: true, name: 'Clear Tags' }).click();
   await drawer.getByLabel('Notes', { exact: true }).fill('');
-  await drawer.getByLabel('Milestone', { exact: true }).fill('');
+  await milestone.getByRole('button', { name: 'Clear Milestone' }).click();
   await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
   await expect.poll(() => api.requests.filter((item) => item.method === 'PATCH').length).toBe(2);
   assert.deepEqual(
@@ -363,21 +382,28 @@ test('a failed background workspace refresh preserves the dirty drawer through r
 for (const timezone of ['UTC', 'Asia/Kolkata', 'America/Los_Angeles'])
   test(`due-time editing stays in UTC in ${timezone}`, async (t) => {
     const { api, drawer } = await openTask(t, false, timezone);
-    const due = drawer.getByLabel(/^Due date \(UTC\)/);
-    await expect(due).toHaveValue('2026-11-01T00:00');
-    await due.fill('2026-11-02T13:45:12.123');
+    const due = drawer.getByRole('group', { name: /^Due date \(UTC\)/ });
+    const seconds = due.getByRole('spinbutton', { name: 'Seconds' });
+    await expect(seconds).toHaveText('00');
+    await seconds.focus();
+    await seconds.press('ArrowUp');
     await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
     assert.equal(
       api.requests.filter((request) => request.method === 'PATCH').at(-1).body.dueDate,
-      '2026-11-02T13:45:12.123Z',
+      '2026-11-01T00:00:01.000Z',
     );
-    await expect(due).toHaveValue('2026-11-02T13:45:12.123');
+    await expect(seconds).toHaveText('01');
     const count = api.requests.filter((request) => request.method === 'PATCH').length;
     await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(drawer.getByRole('alert')).toContainText('No changes to save.');
     assert.equal(api.requests.filter((request) => request.method === 'PATCH').length, count);
-    await due.fill('');
+    await due.getByRole('spinbutton', { exact: true, name: 'Month' }).focus();
+    await due.getByRole('spinbutton', { exact: true, name: 'Month' }).press('Delete');
+    await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
+    await expect(due).toHaveAttribute('aria-invalid', 'true');
+    assert.equal(api.requests.filter((request) => request.method === 'PATCH').length, count);
+    await due.getByRole('button', { name: 'Clear Due date (UTC)' }).click();
     await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
     await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
     assert.equal(

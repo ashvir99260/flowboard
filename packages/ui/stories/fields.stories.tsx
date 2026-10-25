@@ -1,9 +1,9 @@
+import { default as Stack } from '@mui/material/Stack';
+import { default as Typography } from '@mui/material/Typography';
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { CustomFieldInput } from '../src/modules/forms/CustomFieldInput.js';
-import { default as Stack } from '@mui/material/Stack';
-import { default as Typography } from '@mui/material/Typography';
 
 import { approved, area, effort } from './fixtures.js';
 
@@ -82,9 +82,15 @@ export const UnavailableOption: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const select = canvas.getByRole('combobox', { name: 'Area' });
-    await expect(select).toHaveValue('removed');
-    await userEvent.selectOptions(select, area.options[0]!.id);
-    await expect(select).toHaveValue(area.options[0]!.id);
+    await expect(select).toHaveValue('Unavailable option (removed)');
+    await userEvent.clear(select);
+    await userEvent.type(select, area.options[0]!.label);
+    await userEvent.click(
+      within(canvasElement.ownerDocument.body).getByRole('option', {
+        name: area.options[0]!.label,
+      }),
+    );
+    await expect(select).toHaveValue(area.options[0]!.label);
   },
 };
 

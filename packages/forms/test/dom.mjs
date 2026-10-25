@@ -8,6 +8,7 @@ for (const key of [
   'document',
   'navigator',
   'HTMLElement',
+  'Element',
   'Node',
   'MutationObserver',
   'DocumentFragment',

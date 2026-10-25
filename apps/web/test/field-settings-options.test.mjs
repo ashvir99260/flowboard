@@ -3,24 +3,32 @@ import test from 'node:test';
 
 import { expect } from '@playwright/test';
 
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 import { openSettings } from './common/status-settings-fixture.mjs';
 
 const choose = (page, label) =>
-  page.getByLabel('Configuration scope', { exact: true }).selectOption({ label });
+  selectAutocomplete(page.getByLabel('Configuration scope', { exact: true }), label);
 
 test(
   'local field copies preserve option IDs across reorder, rename and safe removal',
   { timeout: 120000 },
   async (t) => {
     const { page } = await openSettings(t, 'Field');
+    const originalDefinition = page.waitForResponse(async (response) => {
+      if (!response.url().includes('/scopes/') || !response.url().endsWith('/fields')) return false;
+
+      const body = await response.json();
+
+      return body.items?.some((field) => field.key === 'team');
+    });
     await choose(page, 'List: Product backlog');
     const teamInput = page
       .getByRole('region', { exact: true, name: 'Effective field preview' })
       .getByLabel(/^Team/);
     await expect(teamInput).toBeVisible();
-    const originalIds = await teamInput
-      .locator('option')
-      .evaluateAll((options) => options.map((option) => option.value).filter(Boolean));
+    const originalIds = (await (await originalDefinition).json()).items
+      .find((field) => field.key === 'team')
+      .options.map((option) => option.id);
     await page.getByRole('button', { exact: true, name: 'Edit Team' }).click();
     const form = page.getByRole('form', { name: 'Field editor' });
     await form.getByRole('button', { exact: true, name: 'Move option 1 down' }).click();
@@ -71,7 +79,7 @@ test(
     const { page } = await openSettings(t, 'Field');
     const form = page.getByRole('form', { name: 'Field editor' });
     await page.getByRole('button', { exact: true, name: 'Edit Effort' }).click();
-    await form.getByLabel(/^Field type/).selectOption('text');
+    await selectAutocomplete(form.getByLabel(/^Field type/), 'text');
     await form.getByRole('button', { exact: true, name: 'Save field' }).click();
     await expect(form.getByRole('alert')).toContainText('invalidate');
     await expect(form.getByLabel(/^Field type/)).toHaveValue('text');

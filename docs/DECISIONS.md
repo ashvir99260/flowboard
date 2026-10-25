@@ -715,3 +715,7 @@ R166 makes each task's existing BoardItem the sole drag surface in both board ad
 ## D165 — Workspace clarity and global navigation
 
 R167–R169 retain MUI and existing tokens. Shared presentation changes apply across routes. Card body clicks delegate to the existing drawer without hijacking drags or nested controls. The header owns account/theme/search; administration stays in the sidebar. Global search means tasks and lists in the active authorized workspace, including visible ancestor context, with server filtering before pagination. See [workspace polish](WORKSPACE_POLISH.md).
+
+## D166 — Shared Autocomplete and Community date pickers
+
+R170–R171 use shared MUI Autocomplete selections and MUI X Community 9.16.0 with Day.js 1.11.23. Field dropdowns change presentation; command menus remain menus. RHF/Zod values and generated API contracts remain unchanged. Date-only values remain calendar dates and due-date drafts remain UTC. [Input control design](INPUT_CONTROLS.md) defines boundaries and invalid-draft behavior.

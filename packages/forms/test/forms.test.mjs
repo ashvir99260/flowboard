@@ -214,12 +214,16 @@ test('number drafts, typed options and multi-selection retain falsy values', asy
   await waitFor(() => assert.equal(count.getAttribute('aria-invalid'), 'true'));
   assert.equal(saved.length, 0);
   fireEvent.change(count, { target: { value: '0' } });
-  fireEvent.change(screen.getByLabelText('Visibility'), {
-    target: { value: '__flowboard:boolean:false' },
+  fireEvent.focus(screen.getByRole('combobox', { name: 'Visibility' }));
+  fireEvent.change(screen.getByRole('combobox', { name: 'Visibility' }), {
+    target: { value: 'Hidden' },
   });
-  const tags = screen.getByLabelText('Tags');
-  for (const option of tags.options) option.selected = true;
-  fireEvent.change(tags);
+  fireEvent.click(screen.getByRole('option', { name: 'Hidden' }));
+  const tags = screen.getByRole('combobox', { name: 'Tags' });
+  for (const label of ['Design', 'API']) {
+    fireEvent.change(tags, { target: { value: label } });
+    fireEvent.click(screen.getByRole('option', { name: label }));
+  }
   fireEvent.click(screen.getByText('Save'));
   await waitFor(() => assert.equal(saved.length, 1));
   assert.equal(saved[0].count, 0);
@@ -362,13 +366,12 @@ test('datetime controls preserve milliseconds and clear to null', async () => {
     );
   }
   render(h(DatetimeForm));
-  const input = screen.getByLabelText('Due time');
-  assert.equal(input.type, 'datetime-local');
-  assert.equal(input.step, '0.001');
-  assert.equal(input.value, '2026-06-10T12:45:30.123');
+  const group = screen.getByRole('group', { name: 'Due time' });
+  assert.ok(group);
+  assert.equal(screen.getByRole('spinbutton', { name: 'Seconds' }).textContent, '30');
   fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
   await waitFor(() => assert.deepEqual(submissions[0], { due: '2026-06-10T12:45:30.123' }));
-  fireEvent.change(input, { target: { value: '' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Clear Due time' }));
   fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
   await waitFor(() => assert.deepEqual(submissions[1], { due: null }));
 });

@@ -128,3 +128,7 @@ The standalone [Storybook](STORYBOOK.md) demonstrates UI controls, domain presen
 Web's notification store accepts one result per captured action, keeps at most five messages, and invalidates captured reporters on session changes. Existing form errors and conflict/retry controls remain visible. HTTP success alone does not produce a toast: task/config response validation must finish first. Ordinary reads, session refreshes and reconnect resync remain quiet.
 
 Realtime clients opt into a recipient-relative `self` flag with the public `notifications=v1` handshake query. The token-only auth payload remains compatible with older servers. Only authorized, subscribed changes marked `self: false` produce a content-free notification, deduplicated across move endpoints. The flag refers to the acting account, including other tabs. Legacy clients receive the original payload so independent API/web releases remain compatible. Toasts are transient UI feedback; the activity feed remains the durable task history.
+
+## Searchable and date controls
+
+`SelectionInput` owns MUI Autocomplete presentation for typed single/multiple values. `DateInput` owns MUI X Community DatePicker/DateTimePicker presentation, localization and strict calendar/UTC serialization. Both accept plain values, errors, blur/change callbacks and focus refs. Form adapters and web domain forms retain validation/data ownership. Date fields expose labeled sections; optional controls use their own named clear icon rather than duplicate clear actions. See [input controls](INPUT_CONTROLS.md).

@@ -1,6 +1,12 @@
 import { expect } from '@playwright/test';
 
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+
+export async function selectAutocomplete(input: Locator, label: string) {
+  await input.click();
+  await input.fill(label);
+  await input.page().getByRole('option', { name: label, exact: true }).click();
+}
 
 export async function login(page: Page, email = 'alice@example.com', visit = true) {
   if (visit) await page.goto('/login');

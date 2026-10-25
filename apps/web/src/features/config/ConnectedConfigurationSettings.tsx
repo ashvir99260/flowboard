@@ -1,15 +1,22 @@
 'use client';
 
-import { Button, ConfirmDialog, ErrorState, FormField, Stack, Typography } from '@flowboard/ui';
+import {
+  Button,
+  ConfirmDialog,
+  ErrorState,
+  SelectionInput,
+  Stack,
+  Typography,
+} from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '../../providers/useSession';
 import { useTree } from '../tree/useTree';
 
-import type { StatusScope } from '@flowboard/contracts';
+import type { ConfigurationSettingsProps } from './configurationTypes';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { ConfigurationSettingsProps } from './configurationTypes';
+import type { StatusScope } from '@flowboard/contracts';
 
 type Editing = { busy: boolean; dirty: boolean };
 
@@ -57,28 +64,31 @@ export function ConnectedConfigurationSettings({
         Configure inherited {kind === 'status' ? 'statuses' : 'fields'} one at a time. Changes can
         affect descendant lists.
       </Typography>
-      <FormField
+      <SelectionInput
         label="Configuration scope"
         value={owner.ownerId}
-        select
         disabled={editing.busy || tree.state !== 'ready'}
-        slotProps={{ select: { native: true } }}
-        onChange={(event) => {
-          const node = nodes.find((item) => item.id === event.target.value);
+        options={[
+          {
+            value: scope.workspaceId!,
+            label: `Workspace: ${session?.data.activeWorkspace?.name ?? ''}`,
+          },
+          ...nodes.map((node) => ({
+            value: node.id,
+            label: `${node.type[0]!.toUpperCase() + node.type.slice(1)}: ${node.name}`,
+          })),
+        ]}
+        onChange={(value) => {
+          if (typeof value !== 'string') return;
+
+          const node = nodes.find((item) => item.id === value);
           changeOwner(
             node
               ? { ownerType: node.type, ownerId: node.id }
               : { ownerType: 'workspace', ownerId: scope.workspaceId! },
           );
         }}
-      >
-        <option value={scope.workspaceId!}>Workspace: {session?.data.activeWorkspace?.name}</option>
-        {nodes.map((node) => (
-          <option key={node.id} value={node.id}>
-            {node.type[0]!.toUpperCase() + node.type.slice(1)}: {node.name}
-          </option>
-        ))}
-      </FormField>
+      />
       {tree.state === 'error' && (
         <ErrorState
           title="Scopes unavailable"

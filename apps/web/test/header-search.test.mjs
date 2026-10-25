@@ -86,7 +86,7 @@ test(
     await dialog.getByRole('button', { exact: true, name: 'Search' }).click();
     try {
       await expect(
-        dialog.getByRole('button', { name: 'Open task: Review navigation' }),
+        dialog.getByRole('option', { name: 'Open task: Review navigation' }),
       ).toBeVisible();
     } catch (error) {
       t.diagnostic(await dialog.innerText());
@@ -94,7 +94,7 @@ test(
       throw error;
     }
     await dialog.getByRole('button', { name: 'Load more results' }).click();
-    await expect(dialog.getByRole('button', { name: 'Open list: Public list' })).toBeVisible();
+    await expect(dialog.getByRole('option', { name: 'Open list: Public list' })).toBeVisible();
     assert.deepEqual(
       requests.map(({ q, cursor }) => [q, cursor ?? null]),
       [
@@ -102,22 +102,22 @@ test(
         ['release', 'search-next'],
       ],
     );
-    await dialog.getByRole('button', { name: 'Open list: Public list' }).click();
+    await dialog.getByRole('option', { name: 'Open list: Public list' }).click();
     await expect(page.getByRole('heading', { exact: true, name: 'Public list' })).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Search tasks and lists' }).click();
     await dialog.getByLabel(/^Search tasks and lists/).fill('release');
     await dialog.getByRole('button', { exact: true, name: 'Search' }).click();
     await expect(
-      dialog.getByRole('button', { name: 'Open task: Review navigation' }),
+      dialog.getByRole('option', { name: 'Open task: Review navigation' }),
     ).toBeVisible();
     const beforeRepeat = requests.length;
     await dialog.getByRole('button', { exact: true, name: 'Search' }).click();
     await expect.poll(() => requests.length).toBeGreaterThan(beforeRepeat);
-    await dialog.getByRole('button', { name: 'Open task: Review navigation' }).click();
+    await dialog.getByRole('option', { name: 'Open task: Review navigation' }).click();
     await expect(page.getByRole('dialog', { name: 'Task details' })).toBeVisible();
     await page.getByRole('button', { name: 'Close task' }).click();
     await page.getByRole('button', { exact: true, name: 'Search tasks and lists' }).click();
-    await expect(dialog.getByRole('button', { name: 'Open task: Review navigation' })).toHaveCount(
+    await expect(dialog.getByRole('option', { name: 'Open task: Review navigation' })).toHaveCount(
       0,
     );
     await dialog.getByLabel(/^Search tasks and lists/).fill('nothing');

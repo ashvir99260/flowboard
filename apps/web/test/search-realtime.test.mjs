@@ -64,9 +64,9 @@ test(
     const dialog = page.getByRole('dialog', { name: 'Search workspace' });
     await dialog.getByLabel(/^Search tasks and lists/).fill('release');
     await dialog.getByRole('button', { exact: true, name: 'Search' }).click();
-    await expect(dialog.getByRole('button', { name: 'Open list: Current result 0' })).toBeVisible();
+    await expect(dialog.getByRole('option', { name: 'Open list: Current result 0' })).toBeVisible();
     await dialog.getByRole('button', { name: 'Load more results' }).click();
-    await expect(dialog.getByRole('button', { name: 'Open list: Old second page' })).toBeVisible();
+    await expect(dialog.getByRole('option', { name: 'Open list: Old second page' })).toBeVisible();
     assert.equal(requests.at(-1).cursor, 'cursor-0');
 
     for (const event of [
@@ -76,9 +76,9 @@ test(
       generation += 1;
       socket.send(`42${JSON.stringify([SocketEvents.invalidate, event])}`);
       await expect(
-        dialog.getByRole('button', { name: `Open list: Current result ${generation}` }),
+        dialog.getByRole('option', { name: `Open list: Current result ${generation}` }),
       ).toBeVisible();
-      await expect(dialog.getByRole('button', { name: 'Open list: Old second page' })).toHaveCount(
+      await expect(dialog.getByRole('option', { name: 'Open list: Old second page' })).toHaveCount(
         0,
       );
       assert.equal(requests.at(-1).q, 'release');

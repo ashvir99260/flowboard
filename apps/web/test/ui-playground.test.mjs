@@ -3,10 +3,11 @@ import { mkdir } from 'node:fs/promises';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { chromium } from '@playwright/test';
 import { designTokens } from '@flowboard/ui';
+import { chromium } from '@playwright/test';
 
 import { startUpstream, startWeb } from './common/proxy-fixture.mjs';
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 
 function luminance(color, background = 'rgb(255, 255, 255)') {
   const backdrop = background
@@ -137,15 +138,15 @@ test(
         assert.equal(field.height, 36, `${mode} single-line fields are compact`);
         assert.deepEqual(field.borders, ['solid', 'solid', 'solid', 'solid']);
       }
-      const nativeMenu = page.getByRole('combobox', { name: 'Compact menu' });
+      const menu = page.getByRole('combobox', { name: 'Compact menu' });
       assert.equal(
-        await nativeMenu.evaluate(
+        await menu.evaluate(
           (input) => input.closest('.MuiInputBase-root').getBoundingClientRect().height,
         ),
         36,
       );
-      await nativeMenu.selectOption('due');
-      assert.equal(await nativeMenu.inputValue(), 'due');
+      await selectAutocomplete(menu, 'Due date');
+      assert.equal(await menu.inputValue(), 'Due date');
       const notes = page.getByRole('textbox', { name: 'Expanding notes' });
       await notes.fill('First line\nSecond line');
       await page.evaluate(

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { login, openBacklog } from './helpers';
+import { login, openBacklog, selectAutocomplete } from './helpers';
 
 import type { Page } from '@playwright/test';
 
@@ -13,30 +13,30 @@ async function createContainer(
   parentLabel?: string,
   visibility = 'public',
 ) {
-  await page.getByRole('button', { name: 'New container', exact: true }).click();
+  await page.getByRole('button', { exact: true, name: 'New container' }).click();
   await editor(page)
     .getByLabel(/^Container name/)
     .fill(name);
-  await editor(page)
-    .getByLabel(/^Container type/)
-    .selectOption(type);
+  await selectAutocomplete(
+    editor(page).getByLabel(/^Container type/),
+    type[0]!.toUpperCase() + type.slice(1),
+  );
   if (parentLabel)
-    await editor(page)
-      .getByLabel(/^Parent container/)
-      .selectOption({ label: parentLabel });
+    await selectAutocomplete(editor(page).getByLabel(/^Parent container/), parentLabel);
 
-  await editor(page)
-    .getByLabel(/^Visibility/)
-    .selectOption(visibility);
+  await selectAutocomplete(
+    editor(page).getByLabel(/^Visibility/),
+    visibility === 'private' ? 'Private: explicit allow required' : 'Public to workspace members',
+  );
   const response = page.waitForResponse(
     (item) =>
       item.request().method() === 'POST' && new URL(item.url()).pathname === '/api/v1/nodes',
   );
-  await editor(page).getByRole('button', { name: 'Create container', exact: true }).click();
+  await editor(page).getByRole('button', { exact: true, name: 'Create container' }).click();
   const saved = await response;
   expect(saved.status()).toBe(201);
   const id = (await saved.json()).data.id as string;
-  await expect(page.getByLabel(/^Selected container/)).toHaveValue(id);
+  await expect(page.getByLabel(/^Selected container/)).toHaveValue(new RegExp(name));
   await expect(editor(page).getByLabel(/^Container name/)).toHaveValue(name);
 
   return id;
@@ -48,7 +48,7 @@ test('administrators arrange containers and manage allow, deny and removed grant
 }) => {
   await login(page);
   await openBacklog(page);
-  await page.getByRole('link', { name: 'Containers and access', exact: true }).click();
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
   const space = await createContainer(page, 'Admin browser space', 'space');
   await createContainer(page, 'Admin browser folder', 'folder', 'space: Admin browser space');
   const list = await createContainer(
@@ -63,51 +63,49 @@ test('administrators arrange containers and manage allow, deny and removed grant
   try {
     const bob = await context.newPage();
     await login(bob, 'bob@example.com');
-    await expect(bob.getByRole('button', { name: 'Admin browser list', exact: true })).toHaveCount(
+    await expect(bob.getByRole('button', { exact: true, name: 'Admin browser list' })).toHaveCount(
       0,
     );
 
     for (const mode of ['deny', 'allow', 'none']) {
       await page.getByRole('button', { name: /^Edit access for Bob/ }).click();
-      await editor(page)
-        .getByLabel(/^Explicit access/)
-        .selectOption(mode);
+      const accessLabel =
+        mode === 'none' ? 'No explicit grant' : mode === 'allow' ? 'Allow' : 'Deny';
+      await selectAutocomplete(editor(page).getByLabel(/^Explicit access/), accessLabel);
       const response = page.waitForResponse(
         (item) =>
           new URL(item.url()).pathname.startsWith(`/api/v1/nodes/${list}/grants`) &&
           item.request().method() === (mode === 'none' ? 'DELETE' : 'PUT'),
       );
-      await editor(page).getByRole('button', { name: 'Save access', exact: true }).click();
+      await editor(page).getByRole('button', { exact: true, name: 'Save access' }).click();
       expect((await response).status()).toBe(mode === 'none' ? 204 : 200);
-      await expect(editor(page).getByLabel(/^Explicit access/)).toHaveValue(mode);
+      await expect(editor(page).getByLabel(/^Explicit access/)).toHaveValue(accessLabel);
       await bob.reload();
       if (mode === 'allow')
         await expect(
-          bob.getByRole('button', { name: 'Admin browser list', exact: true }),
+          bob.getByRole('button', { exact: true, name: 'Admin browser list' }),
         ).toBeVisible();
       else
         await expect(
-          bob.getByRole('button', { name: 'Admin browser list', exact: true }),
+          bob.getByRole('button', { exact: true, name: 'Admin browser list' }),
         ).toHaveCount(0);
     }
   } finally {
     await context.close();
   }
 
-  await page.getByRole('button', { name: 'Edit details', exact: true }).click();
+  await page.getByRole('button', { exact: true, name: 'Edit details' }).click();
   await editor(page)
     .getByLabel(/^Container name/)
     .fill('Kept unsaved name');
-  await page.getByRole('button', { name: 'New container', exact: true }).click();
+  await page.getByRole('button', { exact: true, name: 'New container' }).click();
   await page
     .getByRole('dialog', { name: 'Discard unsaved changes?' })
-    .getByRole('button', { name: 'Cancel', exact: true })
+    .getByRole('button', { exact: true, name: 'Cancel' })
     .click();
   await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Kept unsaved name');
-  await editor(page).getByRole('button', { name: 'Save container', exact: true }).click();
-  await expect(
-    page.getByLabel(/^Selected container/).getByRole('option', { selected: true }),
-  ).toContainText('Kept unsaved name');
+  await editor(page).getByRole('button', { exact: true, name: 'Save container' }).click();
+  await expect(page.getByLabel(/^Selected container/)).toHaveValue(/Kept unsaved name/);
 
   await createContainer(
     page,
@@ -118,54 +116,50 @@ test('administrators arrange containers and manage allow, deny and removed grant
   const reordered = page.waitForResponse(
     (item) => item.request().method() === 'POST' && item.url().endsWith('/reorder'),
   );
-  await page.getByRole('button', { name: 'Move container up', exact: true }).click();
+  await page.getByRole('button', { exact: true, name: 'Move container up' }).click();
   expect((await reordered).status()).toBe(200);
-  await expect(page.getByRole('button', { name: 'Move container up', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { exact: true, name: 'Move container up' })).toBeDisabled();
 
-  await page.getByRole('button', { name: 'Change parent', exact: true }).click();
+  await page.getByRole('button', { exact: true, name: 'Change parent' }).click();
   const parent = editor(page).getByLabel(/^Parent container/);
   const current = await parent.inputValue();
-  const destination = await parent
-    .getByRole('option')
-    .evaluateAll(
-      (options, previous) =>
-        options
-          .map((option) => (option as HTMLOptionElement).value)
-          .find((value) => value && value !== previous),
-      current,
-    );
+  await parent.click();
+  await parent.fill('');
+  const destination = (await page.getByRole('option').allTextContents()).find(
+    (label) => label !== current && label !== 'Choose a parent',
+  );
   expect(destination).toBeTruthy();
-  await parent.selectOption(destination!);
+  await selectAutocomplete(parent, destination!);
   const moved = page.waitForResponse(
     (item) => item.request().method() === 'POST' && item.url().endsWith('/move'),
   );
-  await editor(page).getByRole('button', { name: 'Move container', exact: true }).click();
+  await editor(page).getByRole('button', { exact: true, name: 'Move container' }).click();
   expect((await moved).status()).toBe(200);
 
-  await page.getByLabel(/^Selected container/).selectOption(space);
-  await page.getByRole('button', { name: 'Archive container', exact: true }).click();
+  await selectAutocomplete(page.getByLabel(/^Selected container/), 'space: Admin browser space');
+  await page.getByRole('button', { exact: true, name: 'Archive container' }).click();
   const dialog = page.getByRole('dialog', { name: 'Archive container and descendants?' });
-  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-  await expect(page.getByLabel(/^Selected container/)).toHaveValue(space);
-  await page.getByRole('button', { name: 'Archive container', exact: true }).click();
+  await dialog.getByRole('button', { exact: true, name: 'Cancel' }).click();
+  await expect(page.getByLabel(/^Selected container/)).toHaveValue('space: Admin browser space');
+  await page.getByRole('button', { exact: true, name: 'Archive container' }).click();
   const archived = page.waitForResponse(
     (item) =>
       item.request().method() === 'DELETE' &&
       new URL(item.url()).pathname === `/api/v1/nodes/${space}`,
   );
-  await dialog.getByRole('button', { name: 'Archive subtree', exact: true }).click();
+  await dialog.getByRole('button', { exact: true, name: 'Archive subtree' }).click();
   expect((await archived).status()).toBe(204);
+  await page.getByLabel(/^Selected container/).click();
+  await page.getByLabel(/^Selected container/).fill('Admin browser space');
   await expect(
-    page
-      .getByLabel(/^Selected container/)
-      .getByRole('option', { name: 'space: Admin browser space', exact: true }),
+    page.getByRole('option', { exact: true, name: 'space: Admin browser space' }),
   ).toHaveCount(0);
 });
 
 test('members cannot open administration controls through a direct URL', async ({ page }) => {
   await login(page, 'bob@example.com');
   await openBacklog(page);
-  await expect(page.getByRole('link', { name: 'Containers and access', exact: true })).toHaveCount(
+  await expect(page.getByRole('link', { exact: true, name: 'Containers and access' })).toHaveCount(
     0,
   );
   const workspace = new URL(page.url()).pathname.split('/')[2];
@@ -184,13 +178,13 @@ test('remote configuration changes preserve the dirty administration draft until
 }) => {
   await login(page);
   await openBacklog(page);
-  await page.getByRole('link', { name: 'Containers and access', exact: true }).click();
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
   const nodeId = await createContainer(page, 'Conflict preview space', 'space');
   await editor(page)
     .getByLabel(/^Container name/)
     .fill('Keep my unsaved name');
-  await page.getByRole('link', { name: 'Field settings', exact: true }).click();
-  await page.getByRole('link', { name: 'Containers and access', exact: true }).click();
+  await page.getByRole('link', { exact: true, name: 'Field settings' }).click();
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
   await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Keep my unsaved name');
   const origin = new URL(page.url()).origin;
   const other = await browser.newContext({ extraHTTPHeaders: { Origin: origin } });
@@ -219,12 +213,12 @@ test('remote configuration changes preserve the dirty administration draft until
     ).toBeVisible({ timeout: 15000 });
     await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Keep my unsaved name');
     await expect(
-      editor(page).getByRole('button', { name: 'Save container', exact: true }),
+      editor(page).getByRole('button', { exact: true, name: 'Save container' }),
     ).toBeDisabled();
-    await editor(page).getByRole('button', { name: 'Reload administration', exact: true }).click();
+    await editor(page).getByRole('button', { exact: true, name: 'Reload administration' }).click();
     await page
       .getByRole('dialog', { name: 'Discard unsaved changes?' })
-      .getByRole('button', { name: 'Discard and continue', exact: true })
+      .getByRole('button', { exact: true, name: 'Discard and continue' })
       .click();
     await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Remote saved name');
   } finally {

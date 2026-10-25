@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { login, openBacklog } from './helpers';
+import { login, openBacklog, selectAutocomplete } from './helpers';
 
 import type { Page } from '@playwright/test';
 
@@ -39,8 +39,8 @@ test('bulk editing retains a stale selection, then persists a fresh shared chang
 
   await page.getByRole('button', { exact: true, name: 'Edit selected tasks' }).click();
   const dialog = page.getByRole('dialog', { name: 'Edit selected tasks' });
-  await dialog.getByLabel(/^Change/).selectOption('priority');
-  await dialog.getByLabel(/^Priority for selected tasks/).selectOption('high');
+  await selectAutocomplete(dialog.getByLabel(/^Change/), 'Priority');
+  await selectAutocomplete(dialog.getByLabel(/^Priority for selected tasks/), 'high');
   const conflict = page.waitForResponse(
     (response) =>
       response.request().method() === 'PATCH' &&
@@ -61,8 +61,8 @@ test('bulk editing retains a stale selection, then persists a fresh shared chang
   for (const name of names) await rowFor(page, name).getByRole('checkbox').check();
 
   await page.getByRole('button', { exact: true, name: 'Edit selected tasks' }).click();
-  await dialog.getByLabel(/^Change/).selectOption('priority');
-  await dialog.getByLabel(/^Priority for selected tasks/).selectOption('high');
+  await selectAutocomplete(dialog.getByLabel(/^Change/), 'Priority');
+  await selectAutocomplete(dialog.getByLabel(/^Priority for selected tasks/), 'high');
   const saved = page.waitForResponse(
     (response) =>
       response.request().method() === 'PATCH' &&

@@ -7,6 +7,7 @@ import { chromium, expect } from '@playwright/test';
 import { startAppApi } from './common/app-api-fixture.mjs';
 import { ids } from './common/board-fixture.mjs';
 import { startWeb } from './common/proxy-fixture.mjs';
+import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 import { mobileOption } from './common/table-fixture.mjs';
 
 async function openList(t) {
@@ -62,7 +63,7 @@ test('valid uppercase option IDs display normally while cursor requests preserve
   }).toString();
   await page.goto(url.toString());
   await expect(table).toBeVisible();
-  await expect(page.getByLabel(/^Tags/)).toHaveValue(mobileOption);
+  await expect(page.getByLabel(/^Tags/)).toHaveValue('Mobile');
   await page.getByRole('button', { exact: true, name: 'Load more tasks' }).click();
   await expect(table.getByRole('row').nth(3)).toContainText('Archive notes');
   const requests = api.requests.filter((request) => request.query.fieldKey === 'tags');
@@ -82,31 +83,31 @@ test('manual refresh restarts the complete list at its first page', async (t) =>
 
 test('sort and typed filters run on the server, retaining unsaved field values across sort changes', async (t) => {
   const { page, api, table } = await openList(t);
-  await page.getByLabel('Filter field', { exact: true }).selectOption('effort');
+  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Effort');
   await page.getByLabel(/^Effort/).fill('0');
-  await page.getByLabel('Sort by', { exact: true }).selectOption('priority');
+  await selectAutocomplete(page.getByLabel('Sort by', { exact: true }), 'Priority');
   await expect(page.getByLabel(/^Effort/)).toHaveValue('0');
-  await page.getByLabel('Direction', { exact: true }).selectOption('desc');
+  await selectAutocomplete(page.getByLabel('Direction', { exact: true }), 'Descending');
   await expect(table.getByRole('row').nth(1)).toContainText('Archive notes');
   await expect(table.getByRole('row').nth(2)).toContainText('Unscheduled work');
   await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
   await expect(table.getByRole('row').nth(2)).toContainText('Plan release');
   assert.equal(new URL(page.url()).searchParams.get('fieldValue'), '0');
 
-  await page.getByLabel('Filter field', { exact: true }).selectOption('area');
-  await page.getByLabel(/^Area/).selectOption(mobileOption);
+  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Area');
+  await selectAutocomplete(page.getByLabel(/^Area/), 'Mobile');
   await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
   await expect(table.getByRole('row').nth(2)).toContainText('Fix login');
 
-  await page.getByLabel('Filter field', { exact: true }).selectOption('approved');
+  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Approved');
   await expect(page.getByLabel(/^Approved/)).not.toBeChecked();
   await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
   await expect.poll(() => new URL(page.url()).searchParams.get('fieldValue')).toBe('false');
   await page.getByRole('button', { exact: true, name: 'Load more tasks' }).click();
   await expect(table.getByRole('row').nth(3)).toContainText('Review scope');
 
-  await page.getByLabel('Filter field', { exact: true }).selectOption('tags');
-  await page.getByLabel(/^Tags/).selectOption(ids.option);
+  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Tags');
+  await selectAutocomplete(page.getByLabel(/^Tags/), 'Web');
   await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
   await expect.poll(() => new URL(page.url()).searchParams.get('fieldOperator')).toBe('contains');
   const query = api.requests.filter((request) => request.query.fieldKey === 'tags').at(-1).query;
@@ -121,19 +122,19 @@ test('browser history, sorting and filtering reset cursor chains instead of reus
   await page.getByRole('button', { exact: true, name: 'Load more tasks' }).click();
   await expect(table.getByRole('row')).toHaveCount(5);
   const beforeSort = calls().length;
-  await page.getByLabel('Sort by', { exact: true }).selectOption('priority');
+  await selectAutocomplete(page.getByLabel('Sort by', { exact: true }), 'Priority');
   await expect(table.getByRole('row')).toHaveCount(3);
   await expect.poll(() => calls().length).toBeGreaterThan(beforeSort);
   assert.equal(calls().at(-1).query.cursor, undefined);
   assert.equal(calls().at(-1).query.sort, 'priority');
-  await page.getByLabel('Direction', { exact: true }).selectOption('desc');
+  await selectAutocomplete(page.getByLabel('Direction', { exact: true }), 'Descending');
   await expect(table.getByRole('row').nth(1)).toContainText('Archive notes');
   await page.goBack();
-  await expect(page.getByLabel('Direction', { exact: true })).toHaveValue('asc');
+  await expect(page.getByLabel('Direction', { exact: true })).toHaveValue('Ascending');
   await expect(table.getByRole('row').nth(1)).toContainText('Fix login');
   await expect(table.getByRole('row')).toHaveCount(3);
   await page.goBack();
-  await expect(page.getByLabel('Sort by', { exact: true })).toHaveValue('dueDate');
+  await expect(page.getByLabel('Sort by', { exact: true })).toHaveValue('Due date');
   await expect(table.getByRole('row')).toHaveCount(3);
   assert.equal(calls().at(-1).query.cursor, undefined);
   await page.getByRole('link', { exact: true, name: 'Board' }).click();
@@ -148,7 +149,7 @@ test('invalid filter inputs stay local and invalid URLs recover without issuing 
   const { page, api, table } = await openList(t);
   const queries = () =>
     api.requests.filter((request) => request.path.endsWith('/tasks') && !request.query.statusId);
-  await page.getByLabel('Filter field', { exact: true }).selectOption('effort');
+  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Effort');
   await page.getByLabel(/^Effort/).fill('not a number');
   const before = queries().length;
   await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
@@ -168,7 +169,7 @@ test('invalid filter inputs stay local and invalid URLs recover without issuing 
   await page.goto(invalidFilter.toString());
   await expect(page.getByRole('alert', { name: 'Invalid filter' })).toBeVisible();
   assert.equal(queries().length, before);
-  await page.getByLabel(/^Area/).selectOption(mobileOption);
+  await selectAutocomplete(page.getByLabel(/^Area/), 'Mobile');
   await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
   await expect(table).toBeVisible();
   const beforeUnknown = queries().length;
@@ -321,7 +322,7 @@ test('a board mutation settling after view navigation refreshes the task table',
   t.after(() => release());
   await card.getByRole('button', { name: /^Move task/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Move task' });
-  await dialog.getByLabel('Status', { exact: true }).selectOption(ids.done);
+  await selectAutocomplete(dialog.getByLabel('Status', { exact: true }), 'Done');
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await expect
     .poll(() => api.requests.filter((request) => request.path.endsWith('/move')).length)

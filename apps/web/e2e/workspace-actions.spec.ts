@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { login } from './helpers';
+import { login, selectAutocomplete } from './helpers';
 
 test('workspace quick actions create a private invitation and the recipient can accept it', async ({
   page,
@@ -10,9 +10,10 @@ test('workspace quick actions create a private invitation and the recipient can 
   const actions = page.getByRole('navigation', { name: 'Workspace actions' });
   await actions.getByRole('button', { exact: true, name: 'New task' }).click();
   const destination = page.getByRole('dialog', { name: 'Create a task' });
-  await destination
-    .getByLabel(/^Destination list/)
-    .selectOption({ label: 'Engineering / Delivery / Product backlog' });
+  await selectAutocomplete(
+    destination.getByLabel(/^Destination list/),
+    'Engineering / Delivery / Product backlog',
+  );
   await destination.getByRole('button', { exact: true, name: 'Continue to task' }).click();
   const task = page.getByRole('dialog', { name: 'Task details' });
   await expect(task.getByLabel(/^Title/)).toBeVisible();

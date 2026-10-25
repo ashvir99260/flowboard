@@ -1,5 +1,6 @@
 'use client';
 import { CheckboxInput } from './CheckboxInput.js';
+import { DateInput } from './DateInput.js';
 import { FormField } from './FormField.js';
 import { NumberInput } from './NumberInput.js';
 import { SelectInput } from './SelectInput.js';
@@ -15,6 +16,23 @@ export function CustomFieldInput(props: CustomFieldInputProps) {
 
   if (field.type === 'checkbox') return <CheckboxInput {...props} />;
 
+  if (field.type === 'date')
+    return (
+      <DateInput
+        disabled={disabled}
+        error={error}
+        hint={hint}
+        inputRef={inputRef}
+        kind="date"
+        label={field.name}
+        name={field.key}
+        onBlur={onBlur}
+        onChange={onChange}
+        required={field.required}
+        value={typeof value === 'string' ? value : null}
+      />
+    );
+
   return (
     <FormField
       disabled={disabled}
@@ -24,13 +42,10 @@ export function CustomFieldInput(props: CustomFieldInputProps) {
       label={field.name}
       name={field.key}
       required={field.required}
-      type={field.type === 'date' ? 'date' : 'text'}
+      type="text"
       value={value ?? ''}
       onBlur={onBlur}
       onChange={(event) => onChange(event.target.value || null)}
-      slotProps={{
-        inputLabel: { shrink: field.type === 'date' ? true : undefined },
-      }}
     />
   );
 }

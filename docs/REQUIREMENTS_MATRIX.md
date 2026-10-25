@@ -410,3 +410,10 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | R167 | Card-body click opens task details without interfering with drag or nested actions. | UI/web · P34-02              | [Focused interaction checks](evidence/P34-02.md); final acceptance pending.                                    | In progress |
 | R168 | Shared board, avatar, close-control and status-color refinements.                   | UI/forms/web · P35-01/P35-02 | [UI](evidence/P35-01.md), [forms](evidence/P35-02.md), [header](evidence/P35-04.md); final acceptance pending. | In progress |
 | R169 | Account/theme header and permission-scoped global task/list search.                 | API/web · P35-03/P35-04      | [API](evidence/P35-03.md) and [browser](evidence/P35-04.md) checks; final acceptance pending.                  | In progress |
+
+## Searchable input controls
+
+| ID   | Requirement                                            | Owner / tasks                | Evidence required                                                                             | Status      |
+| ---- | ------------------------------------------------------ | ---------------------------- | --------------------------------------------------------------------------------------------- | ----------- |
+| R170 | MUI Autocomplete for selections, assignees and search. | UI/forms/web · P36-01/P36-03 | [Selections](evidence/P36-01.md), [web/search](evidence/P36-03.md); final acceptance pending. | In progress |
+| R171 | MUI X dates with date-only/UTC semantics.              | UI/forms · P36-02            | [Date controls](evidence/P36-02.md); final acceptance pending.                                | In progress |
