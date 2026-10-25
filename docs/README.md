@@ -17,6 +17,7 @@ These are as-built summaries with a named source snapshot. The following documen
 | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Run locally, users, ports and tests          | [Project README](../README.md).                                                                                                                           |
 | Original requirements and latest status      | [Original brief](REQUIREMENTS.md), [matrix](REQUIREMENTS_MATRIX.md).                                                                                      |
+| AI contributions and priorities              | [AI usage and corrections](AI_USAGE.md), [delivery roadmap](ROADMAP.md).                                                                                  |
 | Ordered work and verification                | [Plan](PLAN.md), [tasks](TASKS.md), [decisions](DECISIONS.md), [evidence](evidence/README.md).                                                            |
 | Tables, relations, attributes and validation | [Database design](DATABASE_DESIGN.md), [field reference](FIELD_REFERENCE.md).                                                                             |
 | API contracts and examples                   | [API catalog](API_CATALOG.md), [backend contracts](BACKEND_CONTRACTS.md), [event contracts](api-events.md), [curl cookbook](../scripts/curl-cookbook.md). |

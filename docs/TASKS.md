@@ -1214,7 +1214,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat(ui): open task details from table rows`.
   - **Evidence:** [P28-04](evidence/P28-04.md).
 
-- [ ] **P28-05 — Document AI contributions and a prioritized roadmap**
+- [x] **P28-05 — Document AI contributions and a prioritized roadmap**
   - **Goal:** Complete the submission narrative with concrete, inspectable examples.
   - **Requirements:** R154.
   - **Files:** README, focused AI usage log, roadmap links and evidence.
@@ -1222,6 +1222,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Name tools and their roles; cite actual corrections to AI-generated code/tests from history without invented attribution; separate delivered extensions, next work and optional ideas; explain day-5/week-2 priorities and earlier scope superseding the two-stretch limit.
   - **Validation:** G01; source/history/links/format consistency, no runtime claims from documentation.
   - **Commit:** `docs: explain ai usage and delivery priorities`.
+  - **Evidence:** [P28-05](evidence/P28-05.md).
 
 - [ ] **P28-06 — Migrate task due dates to ISO datetimes**
   - **Goal:** Preserve a due time and timezone-independent instant instead of only a calendar day.
@@ -1281,4 +1282,4 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Validation:** Design review and chosen role/keyboard/rollback browser tests before implementation.
   - **Commit:** Chosen after design selection.
 
-Other future capabilities (OIDC integration, teams, webhook delivery, restore, billing, uploads) are design notes, not disguised incomplete MVP implementations. Add tasks only if those features are requested.
+Other future capabilities (OIDC integration, teams, webhook delivery, general container/task restoration, billing, uploads) are design notes, not disguised incomplete MVP implementations. Add tasks only if those features are requested.

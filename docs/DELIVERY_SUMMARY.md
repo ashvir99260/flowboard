@@ -154,10 +154,10 @@ This index makes omissions visible without duplicating the detailed matrix rows.
 | R149      | Explicit API DTO/test/module rules and UI component/naming/token creation guidance.               |
 | R150      | Compact outlined controls, filled metadata chips and token-owned application colors.              |
 | R151–R155 | Rich demo data, optional colors, row activation, AI/roadmap documentation and datetime alignment. |
-| R156–R160 | Considered workspace lifecycle, subtasks, search, bulk updates and admin screens.                 |
+| R156–R160 | Selected workspace lifecycle, subtasks, search, bulk updates and admin screens.                   |
 
 When a feature or provider gate changes, update the owning task/evidence and matrix first, then this summary and the relevant HLD/LLD/application section. A document's existence alone is never evidence that a feature works.
 
 ## Approved MVP alignment follow-up
 
-P28/R151–R160 is planned in [MVP_FOLLOW_UPS.md](MVP_FOLLOW_UPS.md). Richer fresh-demo data is implemented and verified in [P28-02](evidence/P28-02.md): 3 spaces, 4 folders, 6 lists, 48 tasks, 5 main-workspace members and 9 field definitions. Optional option colors are implemented and verified in [P28-03](evidence/P28-03.md). Row activation, submission documentation and task datetime support remain selected follow-up tasks. Proposed workspace lifecycle, subtasks, search, bulk edits and administration screens remain considered, not implemented. P28-01 records scope only; later task evidence establishes runtime acceptance.
+P28/R151–R160 is planned in [MVP_FOLLOW_UPS.md](MVP_FOLLOW_UPS.md). Richer fresh-demo data is implemented and verified in [P28-02](evidence/P28-02.md): 3 spaces, 4 folders, 6 lists, 48 tasks, 5 main-workspace members and 9 field definitions. Optional option colors are implemented and verified in [P28-03](evidence/P28-03.md). Row activation is verified in [P28-04](evidence/P28-04.md). [AI usage](AI_USAGE.md) and the [roadmap](ROADMAP.md) provide the submission narrative; task datetime support remains selected. D155 selects workspace lifecycle, subtasks, search, bulk edits and administration screens for design and implementation; they are not implemented by this selection. P28-01 records scope only; later task evidence establishes runtime acceptance.
