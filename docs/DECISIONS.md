@@ -679,3 +679,11 @@ The task editor explicitly labels its datetime-local control as UTC and preserve
 ## D157 — Workspace root archive and explicit recovery
 
 R156 uses a reversible root archive flag. Preserve descendant archive flags, history, memberships and grants. Ordinary identity/tenant access rejects archived roots; existing session selection is retained for recovery, while fresh login selects a live workspace or null. Only current administrators restore, through an explicitly scoped recovery operation with user → workspace lock order and live session/role/revision checks. Restore never silently switches the current workspace. Use existing configuration outbox events and clear client caches on archive-state transitions. Keep existing fail-closed session handling after rejected workspace switches. [Workspace lifecycle design](WORKSPACE_LIFECYCLE.md) defines the contracts and required race/recovery evidence.
+
+## D158 — One-level task relations within a list
+
+R157 uses nullable `Task.parentTaskId` and the existing task operations. Enforce same workspace/list through a composite self-FK; enforce a live top-level parent and maximum depth one in the workspace-locked repository. Keep board/table results flat and task fields independent. These are engineering defaults under D155; no separate subtask model or cascading move is introduced.
+
+Reject cross-list moves for attached children and parents with any child references, including archived children. Reject task-only parent archival while live children remain; preserve child relations when archived. Container archive still processes its whole subtree atomically. Archived child references deliberately continue to prevent moving or nesting their parent. General restoration/purging is not added implicitly.
+
+Optional parent-filtered reads remain cursor-paginated and permission-checked. Attachment/detachment emits the existing task update with an optional parent change; unchanged links are no-ops. Historical parent references are validated by workspace, not by their current list/archive state. [Subtask design](SUBTASKS.md) defines rollout, failure tests and P30-01/P30-02.

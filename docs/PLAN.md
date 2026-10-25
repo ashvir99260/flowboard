@@ -355,3 +355,5 @@ D154 supersedes the fixture size for future fresh databases only. P28-02 impleme
 Workspace lifecycle R156 is designed in [WORKSPACE_LIFECYCLE.md](WORKSPACE_LIFECYCLE.md), selected by D157. NEXT-02 completes design; [P29-01](evidence/P29-01.md) verifies the root API/recovery boundary and [P29-02](evidence/P29-02.md) verifies management and live browser recovery.
 
 P29-03 repairs the overwritten form guide used by the lifecycle controls. This documentation correction preserves existing runtime form behavior. Continue with NEXT-03 subtask design and its implementation slices.
+
+NEXT-03 defines [one-level subtasks](SUBTASKS.md) and D158: same-list nullable task relations, flat views, explicit move/archive restrictions and retained history. P30-01 owns the migration/contracts/guarded API; P30-02 owns drawer creation and navigation. R157 remains unverified until both implementation slices pass.
