@@ -224,3 +224,8 @@ R165: Use PascalCase component files and camelCase hook/utility files across the
 ## Full-card dragging follow-up
 
 R166: Drag tasks from the full card surface in both workspace-list and per-list status boards. Preserve nested title/Move actions, keyboard drag/reorder/cancel, pending guards, destination validation and existing drop zones.
+## Workspace clarity follow-up
+
+- **R167:** Clicking a task card body opens its detail drawer; dragging and nested actions stay independent.
+- **R168:** Consistent MUI workspace styling with visible board column separation, left-aligned compact tasks, UN unassigned avatars, icon close controls and accessible status color pickers.
+- **R169:** Header account avatar/name/role menu with Sign out, a theme toggle replacing header Settings, and permission-scoped global task/list search using a typed cursor-paginated API and generated client.

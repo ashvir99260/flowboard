@@ -1,10 +1,11 @@
 'use client';
 
-import { styled } from '@mui/material/styles';
 
 import { default as Box } from '@mui/material/Box';
 import { default as Stack } from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
 import { default as Typography } from '@mui/material/Typography';
+
 import { Paper } from '../primitives/Paper.js';
 import { StatusChip } from '../tasks/StatusChip.js';
 
@@ -12,17 +13,22 @@ import type { ResolvedStatus } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
 const Column = styled(Paper, { name: 'FlowboardKanbanColumn', slot: 'Root' })(({ theme }) => ({
-  padding: theme.spacing(0.4),
+  padding: theme.spacing(1),
+  borderRadius: 8,
+  height: '100%',
   minWidth: 0,
   width: '100%',
-  backgroundColor: 'transparent',
-  borderColor: 'transparent',
+  backgroundColor: (theme.vars ?? theme).palette.background.default,
+  borderColor: (theme.vars ?? theme).palette.divider,
 })) as typeof Paper;
 const Header = styled(Stack)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   flexWrap: 'wrap',
-  marginBottom: theme.spacing(1.6),
+  marginBottom: theme.spacing(1.2),
+  minHeight: '5.2rem',
+  paddingBottom: theme.spacing(1),
+  borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
 }));
 const Summary = styled(Box)({ minWidth: 0 });
 const Count = styled(Typography)(({ theme }) => ({

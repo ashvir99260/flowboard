@@ -402,3 +402,11 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | ID   | Source                     | Requirement                                                                                         | Owner / tasks | Evidence required                                                                         | Status      |
 | ---- | -------------------------- | --------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------- | ----------- |
 | R166 | User interaction follow-up | Full-card dragging on workspace/list boards with independent native actions and keyboard operation. | Web · P34-01  | [Focused browser checks](evidence/P34-01.md); full regression acceptance remains pending. | In progress |
+
+## Workspace clarity and search
+
+| ID   | Requirement                                                                         | Owner / tasks                | Evidence required                                                                                              | Status      |
+| ---- | ----------------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------- |
+| R167 | Card-body click opens task details without interfering with drag or nested actions. | UI/web · P34-02              | [Focused interaction checks](evidence/P34-02.md); final acceptance pending.                                    | In progress |
+| R168 | Shared board, avatar, close-control and status-color refinements.                   | UI/forms/web · P35-01/P35-02 | [UI](evidence/P35-01.md), [forms](evidence/P35-02.md), [header](evidence/P35-04.md); final acceptance pending. | In progress |
+| R169 | Account/theme header and permission-scoped global task/list search.                 | API/web · P35-03/P35-04      | [API](evidence/P35-03.md) and [browser](evidence/P35-04.md) checks; final acceptance pending.                  | In progress |

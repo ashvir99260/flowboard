@@ -42,6 +42,8 @@ export * from './field-configuration.js';
 
 export * from './tasks.js';
 
+export * from './search.js';
+
 export * from './task-mutations.js';
 
 export * from './bulk-tasks.js';

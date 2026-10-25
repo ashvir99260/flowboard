@@ -1,13 +1,15 @@
 'use client';
 
 import { NodeEnvelopeSchema } from '@flowboard/contracts';
-import { Button, ErrorState, Stack, Typography } from '@flowboard/ui';
+import { Button, Chip, ErrorState, Stack, Typography, WorkspaceIcon } from '@flowboard/ui';
+
 import { apiError } from '../../lib/apiError';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import { SessionLoading } from '../auth/SessionLoading';
 import { ListViews } from '../list/ListViews';
 import { useGetNodeQuery } from '../tree/useGetNodeQuery';
+
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 
 export function SelectedList({
   listId,
@@ -61,12 +63,16 @@ export function SelectedList({
 
   return (
     <Stack spacing={1.6}>
-      <Typography component="h1" variant="h1" sx={{ overflowWrap: 'anywhere' }}>
-        {list.name}
-      </Typography>
-      <Typography color="text.secondary">
-        {list.visibility === 'private' ? 'Private list' : 'Workspace list'}
-      </Typography>
+      <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+        <WorkspaceIcon name="list" />
+        <Typography component="h1" variant="h1" sx={{ overflowWrap: 'anywhere' }}>
+          {list.name}
+        </Typography>
+        <Chip
+          size="small"
+          label={list.visibility === 'private' ? 'Private list' : 'Workspace list'}
+        />
+      </Stack>
       <ListViews listId={listId} />
     </Stack>
   );

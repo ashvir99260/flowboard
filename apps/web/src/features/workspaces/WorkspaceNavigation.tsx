@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Button, Divider, Stack, Typography, WorkspaceIcon } from '@flowboard/ui';
+import { Box, Button, Stack, Typography, WorkspaceIcon } from '@flowboard/ui';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -14,19 +14,16 @@ export function WorkspaceNavigation({
   scope,
   selectedId,
   workspace,
-  userName,
   onSelect,
-  onLogout,
 }: {
-  onLogout: () => void;
   onSelect: () => void;
   runtime: ClientRuntime;
   scope: QueryScope;
   selectedId?: string;
-  userName: string;
   workspace: { name: string; role: 'admin' | 'member' };
 }) {
   const pathname = usePathname();
+
   const home = `/w/${scope.workspaceId}`;
   const links = [
     { label: 'Containers and access', path: 'administration', icon: 'people' },
@@ -74,8 +71,8 @@ export function WorkspaceNavigation({
             >
               {workspace.name}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Workspace · {workspace.role}
+            <Typography color="text.secondary" variant="caption">
+              Switch workspace
             </Typography>
           </Stack>
         </Stack>
@@ -146,38 +143,6 @@ export function WorkspaceNavigation({
           ))}
         </>
       )}
-      <Box sx={{ mt: 'auto', pt: 2.4 }}>
-        <Divider sx={{ mb: 1.2 }} />
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', px: 1 }}>
-          <Box
-            sx={{
-              width: '3rem',
-              height: '3rem',
-              borderRadius: '50%',
-              bgcolor: 'action.selected',
-              display: 'grid',
-              placeItems: 'center',
-              fontWeight: 600,
-            }}
-            aria-hidden="true"
-          >
-            {userName
-              .split(' ')
-              .map((part) => part[0])
-              .slice(0, 2)
-              .join('')}
-          </Box>
-          <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
-            {userName}
-          </Typography>
-        </Stack>
-        <Button
-          onClick={onLogout}
-          sx={{ justifyContent: 'flex-start', color: 'text.secondary', mt: 0.4 }}
-        >
-          Sign out
-        </Button>
-      </Box>
     </>
   );
 }

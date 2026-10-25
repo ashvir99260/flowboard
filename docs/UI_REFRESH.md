@@ -4,7 +4,7 @@ R161–R163 use a ClickUp/Jira-inspired desktop information hierarchy with Flowb
 
 ## Layout and visual rules
 
-- One slim global header: Flowboard logo, workspace context, and right-aligned New task, Invite and Settings actions.
+- One slim global header: Flowboard logo, global task/list search, New task, Invite, theme toggle and an account menu showing name/role. Administration stays in the sidebar.
 - A compact left sidebar below the header: workspace switcher, workspace board, collapsible spaces/folders/lists, administration links and account controls. Current selection is obvious without relying on color alone.
 - A white/cool-gray canvas, restrained indigo primary color, consistent sans-serif typography, light borders and small shadows. Preserve semantic HSL tokens, rem units, 62.5% root scale, accessible focus and dark-mode compatibility.
 - Main content begins with a concise breadcrumb/title and view controls; remove the large created/updated metadata block from the primary task workspace. Keep audit metadata available through existing APIs/detail views.
@@ -22,7 +22,9 @@ The workspace board and task editor must preserve current tenant, permission, re
 
 ## Actions
 
-New task lives at the upper right. Within a selected list it opens that list's existing form; from the workspace board, select a destination list first. Settings groups workspace details, container creation/management, custom fields and members using existing routes. Members do not see administrator-only actions.
+New task lives at the upper right. Within a selected list it opens that list's existing form; from the workspace board, select a destination list first. Sidebar administration groups workspace details, container creation/management, custom fields and members using existing routes. Members do not see administrator-only actions. The top-right account menu owns Sign out; the theme toggle switches the existing shared color scheme.
+
+Global search opens a keyboard-accessible dialog and calls the generated workspace search operation. It searches authorized task text and list names, shows ancestor context and opens the existing task/list flow. See [workspace polish](WORKSPACE_POLISH.md) and [search behavior](SEARCH.md).
 
 Invite opens a dialog with an email field and role. It calls the existing invitation API and shows the returned link for sharing. The current backend does not deliver email; success copy must say invitation created, not email sent. Preserve entered values on error, disable repeated submit, validate with shared schemas, and restore focus when the dialog closes.
 

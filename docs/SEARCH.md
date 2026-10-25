@@ -6,7 +6,7 @@ R158 is selected by D155. Search covers a selected list's live task titles and M
 
 Optional `q` is trimmed, 1–200 Unicode code points, and rejects NUL/unpaired surrogates. Omit it to clear search. Whitespace-only input is invalid at the API boundary. The UI treats an empty search box as clearing the parameter.
 
-Use PostgreSQL 17 `to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(description, '')) @@ websearch_to_tsquery('simple', q)`. Query values remain SQL parameters. Matching is word based and case insensitive; quoted phrases, OR and minus exclusions use PostgreSQL's web-search syntax. No stemming, fuzzy/substring matching, relevance sorting, custom-field text indexing or global cross-list search is included. A punctuation-only query returns no matches.
+Use PostgreSQL 17 `to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(description, '')) @@ websearch_to_tsquery('simple', q)`. Query values remain SQL parameters. Matching is word based and case insensitive; quoted phrases, OR and minus exclusions use PostgreSQL's web-search syntax. No stemming, fuzzy/substring matching, relevance sorting or custom-field text indexing is included. A punctuation-only query returns no matches.
 
 ## Persistence and access
 
@@ -19,6 +19,12 @@ Existing tenant and list permission checks remain authoritative. Search predicat
 Search and Clear preserve the selected sort and field filter; changing either preserves search. URLs support reload/back navigation. Reuse generated operations, existing scoped query keys and stale-response rejection; never approximate PostgreSQL search in JavaScript. Keep forms in RHF/Zod and controls in the shared UI package. Empty/error/loading states remain explicit.
 
 API logs retain route templates and exclude query contents. Disable Next's development request URL logging because search terms may contain task content. Browser history intentionally retains a user-shared search URL.
+
+## Global header search
+
+P35-03/P35-04 add `GET /v1/search` and the header search dialog. Global means the current workspace's visible tasks and lists. Use the same text matching for task titles/descriptions and list names. Search runs in a consistent tenant read snapshot, resolves full ancestor access centrally, then filters before SQL pagination. Returned paths contain only visible ancestor names. No cross-workspace or hidden-result counts are exposed.
+
+Results are ordered by type and ID. Signed cursors bind caller/workspace/query/limit and both workspace revisions; stale pages return 409. The client uses generated query options, validates page shapes/revisions, clears results when the dialog closes or session changes, and opens the existing list/task flow. Existing list-scoped filters and sorting are unchanged.
 
 ## Delivery and acceptance
 

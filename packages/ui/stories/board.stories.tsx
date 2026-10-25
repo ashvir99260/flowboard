@@ -1,3 +1,4 @@
+import { default as Stack } from '@mui/material/Stack';
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
@@ -7,7 +8,6 @@ import { KanbanCard } from '../src/modules/board/KanbanCard.js';
 import { KanbanColumn } from '../src/modules/board/KanbanColumn.js';
 import { TreeItem } from '../src/modules/navigation/TreeItem.js';
 import { Button } from '../src/modules/primitives/Button.js';
-import { default as Stack } from '@mui/material/Stack';
 
 import { statuses, task } from './fixtures.js';
 
@@ -29,6 +29,8 @@ export const Card: Story = {
       within(canvasElement).getByRole('button', { name: `Open task: ${task.title}` }),
     );
     await expect(args.onOpen).toHaveBeenCalledOnce();
+    await userEvent.click(within(canvasElement).getByRole('article'));
+    await expect(args.onOpen).toHaveBeenCalledTimes(2);
   },
 };
 
@@ -51,6 +53,8 @@ export const Columns: Story = {
     </BoardViewport>
   ),
 };
+
+export const DarkColumns: Story = { ...Columns, globals: { theme: 'dark' } };
 
 function Navigation() {
   const [expanded, setExpanded] = useState(false);

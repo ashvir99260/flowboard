@@ -711,3 +711,7 @@ R164–R165 supersede D146's frontend filename rule: React implementation files 
 ## D164 — Full-card drag surfaces
 
 R166 makes each task's existing BoardItem the sole drag surface in both board adapters. Use a focusable group with the library drag attributes/instructions; avoid a role=button wrapper around title/Move buttons. Keep the library's interactive-element blocking so nested controls retain click and keyboard behavior. Existing list/status drop zones, mutation validation, optimistic handling and pending guards remain unchanged.
+
+## D165 — Workspace clarity and global navigation
+
+R167–R169 retain MUI and existing tokens. Shared presentation changes apply across routes. Card body clicks delegate to the existing drawer without hijacking drags or nested controls. The header owns account/theme/search; administration stays in the sidebar. Global search means tasks and lists in the active authorized workspace, including visible ancestor context, with server filtering before pagination. See [workspace polish](WORKSPACE_POLISH.md).

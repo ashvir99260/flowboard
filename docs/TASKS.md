@@ -1448,3 +1448,52 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** One drag surface per card, pointer drag from card padding/metadata, keyboard drag/cancel/focus, native title/Move actions unaffected, pending drags disabled.
   - **Validation:** Focused browser regression for both boards plus compatible existing drag selectors; report full suites separately.
   - **Commit:** `feat(web): drag tasks from the whole card`.
+- [ ] **P34-02 — Open task details from the card body**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P34-02.md).
+  - **Goal:** Open the existing detail drawer from a normal card click on both boards.
+  - **Requirements:** R167; preserve R166.
+  - **Files:** Shared KanbanCard, interaction tests, task-card browser regression.
+  - **Dependencies:** P34-01 implementation.
+  - **Acceptance:** Body/title clicks open once; Move is independent; drag/drop/cancel never opens details; keyboard alternative remains.
+  - **Validation:** Focused shared UI and real-browser interaction checks.
+  - **Commit:** `feat(ui): open task details from card clicks`.
+
+- [ ] **P35-01 — Refine shared board and overlay presentation**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P35-01.md).
+  - **Goal:** Make shared task/board/overlay presentation compact and consistent.
+  - **Requirements:** R168.
+  - **Files:** UI board, task avatar, close controls, icons, relevant tests/stories.
+  - **Dependencies:** Existing shared UI tokens and components.
+  - **Acceptance:** Left-aligned cards, visible theme-aware column separation, UN avatar, icon-only close controls with accessible names and preserved focus/disabled behavior.
+  - **Validation:** Focused UI interaction/render checks and desktop/narrow browser review.
+  - **Commit:** `style(ui): clarify boards and compact controls`.
+
+- [ ] **P35-02 — Add accessible status color picking**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P35-02.md).
+  - **Goal:** Select status colors without typing hex values while keeping inheritance explicit.
+  - **Requirements:** R168.
+  - **Files:** Shared form color binding, status fields, form tests/stories.
+  - **Dependencies:** Existing RHF/Zod form system.
+  - **Acceptance:** Picker and value stay synchronized; blank/inherit, required validation and disabled states work.
+  - **Validation:** Focused form behavior and status-form checks.
+  - **Commit:** `feat(forms): add status color picker`.
+
+- [ ] **P35-03 — Add authorized workspace search API**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P35-03.md).
+  - **Goal:** Search tasks and lists throughout the active workspace.
+  - **Requirements:** R169.
+  - **Files:** Contracts, database repository, API module/DTOs, OpenAPI/client and integration tests.
+  - **Dependencies:** Existing tenancy, permission, cursor and full-text search infrastructure.
+  - **Acceptance:** Typed documented endpoint, cursor-only pages, no inaccessible/archived/cross-tenant results or path leakage; malformed/stale/rebound cursors rejected.
+  - **Validation:** Contract tests and real-Postgres API regressions; regenerate spec/client.
+  - **Commit:** `feat(api): search workspace tasks and lists`.
+
+- [ ] **P35-04 — Compose clear header and global search**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P35-04.md).
+  - **Goal:** Put search, theme and account actions in a consistent header across workspace pages.
+  - **Requirements:** R169; R168 visual consistency.
+  - **Files:** Web workspace/search components/hooks, shared layout presentation, browser tests.
+  - **Dependencies:** P35-03 generated client and P35-01 icons.
+  - **Acceptance:** Avatar/name/role menu signs out; header Settings replaced by theme toggle; generated search finds/opens authorized tasks/lists, paginates and clears stale session results; sidebar administration retained.
+  - **Validation:** Focused browser/search/session regressions, type checks and visual review.
+  - **Commit:** `feat(web): simplify header and add global search`.

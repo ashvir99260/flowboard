@@ -13,8 +13,8 @@ import { useId, useState } from 'react';
 
 import { MoveForm } from '../board/MoveForm';
 
-import type { useTaskPlacementMutation } from '../board/useTaskPlacementMutation';
 import type { WorkspaceMoveSelection } from './workspaceBoardData';
+import type { useTaskPlacementMutation } from '../board/useTaskPlacementMutation';
 
 export function WorkspaceMoveRepair({
   selection,
@@ -27,11 +27,13 @@ export function WorkspaceMoveRepair({
 }) {
   const id = useId();
   const [busy, setBusy] = useState(false);
+
   const { destination, source, sourceStatus, task } = selection;
 
   return (
     <Dialog
       open
+      closeDisabled={busy}
       fullWidth
       maxWidth="sm"
       aria-labelledby={`${id}-title`}

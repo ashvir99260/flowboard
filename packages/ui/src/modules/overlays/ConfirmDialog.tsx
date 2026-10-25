@@ -1,14 +1,13 @@
 'use client';
 
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useId, useRef } from 'react';
 
-import { ToastRegion } from '../notifications/ToastRegion.js';
+import { Dialog } from './Dialog.js';
 
 export function ConfirmDialog({
   busy = false,
@@ -33,6 +32,7 @@ export function ConfirmDialog({
   return (
     <Dialog
       open={open}
+      closeDisabled={busy}
       aria-labelledby={`${id}-title`}
       aria-describedby={`${id}-description`}
       onClose={() => {
@@ -42,7 +42,6 @@ export function ConfirmDialog({
       maxWidth="xs"
       slotProps={{ transition: { onEntered: () => cancel.current?.focus() } }}
     >
-      <ToastRegion />
       <DialogTitle id={`${id}-title`}>{title}</DialogTitle>
       <DialogContent>
         <DialogContentText id={`${id}-description`}>{description}</DialogContentText>

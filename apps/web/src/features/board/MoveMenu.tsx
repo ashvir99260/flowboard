@@ -18,11 +18,11 @@ import { useTree } from '../tree/useTree';
 import { MoveForm } from './MoveForm';
 import { useMoveDestination } from './useMoveDestination';
 
-import type { ResolvedStatus, Task } from '@flowboard/contracts';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import type { BoardColumn } from './boardData';
 import type { useTaskPlacementMutation } from './useTaskPlacementMutation';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { ResolvedStatus, Task } from '@flowboard/contracts';
 
 export function MoveMenu({
   task,
@@ -52,6 +52,7 @@ export function MoveMenu({
   return (
     <Dialog
       open
+      closeDisabled={busy}
       aria-labelledby={`${id}-title`}
       fullWidth
       maxWidth="sm"

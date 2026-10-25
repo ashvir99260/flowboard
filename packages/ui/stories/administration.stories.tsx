@@ -28,9 +28,7 @@ export const PagedRoster: Story = {
     await expect(canvas.getByRole('button', { name: 'Previous members' })).toBeDisabled();
     await userEvent.click(canvas.getByRole('button', { name: 'Next members' }));
     await expect(canvas.getByText('Members 21–23 of 23')).toBeVisible();
-    await userEvent.click(
-      canvas.getByRole('button', { name: 'Edit access for Member 23', exact: true }),
-    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit access for Member 23' }));
     await expect(args.onEdit).toHaveBeenCalledWith(members[22]!.userId);
   },
 };

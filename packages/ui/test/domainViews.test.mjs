@@ -221,6 +221,8 @@ test('a busy drawer blocks Escape and its close action', () => {
   );
   const close = screen.getByRole('button', { name: 'Close' });
   assert.equal(close.disabled, true);
+  assert.equal(close.textContent, '');
+  assert.ok(close.querySelector('svg'));
   fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
   fireEvent.click(close);
   assert.equal(calls, 0);
@@ -356,4 +358,29 @@ test('row activation ignores modified, prevented, selected-text and interactive 
     assert.deepEqual(opened, [], `contenteditable=${value}`);
   }
   assert.deepEqual(opened, []);
+});
+
+test('dialog close icons preserve the guarded dismiss callback and busy state', () => {
+  const calls = [];
+  const view = render(
+    h(UI.Dialog, { open: true, onClose: (...args) => calls.push(args) }, 'Content'),
+  );
+  const close = screen.getByRole('button', { name: 'Close dialog' });
+  assert.equal(close.textContent, '');
+  assert.ok(close.querySelector('svg'));
+  fireEvent.click(close);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][1], 'escapeKeyDown');
+  view.rerender(
+    h(
+      UI.Dialog,
+      { open: true, closeDisabled: true, onClose: (...args) => calls.push(args) },
+      'Content',
+    ),
+  );
+  assert.equal(screen.getByRole('button', { name: 'Close dialog' }).disabled, true);
+  fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+  assert.equal(calls.length, 1);
+  view.rerender(h(UI.Dialog, { open: true }, 'Non-dismissible'));
+  assert.equal(screen.queryByRole('button', { name: 'Close dialog' }), null);
 });

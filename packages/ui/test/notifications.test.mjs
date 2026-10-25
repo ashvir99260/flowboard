@@ -14,6 +14,9 @@ test('a replacement notification does not wait for the dismissed toast exit anim
   const host = (message) => createElement(ToastHost, { message, onDismiss });
   const view = render(host({ id: 1, message: 'Please correct the title.', severity: 'error' }));
   const first = screen.getByRole('status', { name: 'Notification: Please correct the title.' });
+  const close = screen.getByRole('button', { name: 'Dismiss notification' });
+  assert.equal(close.textContent, '');
+  assert.ok(close.querySelector('svg'));
   view.rerender(host(undefined));
   assert.equal(first.isConnected, false);
   // No animationend event: browsers can delay it while a tab is backgrounded.

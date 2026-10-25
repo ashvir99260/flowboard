@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { ControlledField } from '../src/ControlledField.js';
-import { FormFields } from '../src/FormFields.js';
 import { parseFormFields } from '../src/fieldConfig.js';
+import { FormFields } from '../src/FormFields.js';
 import { useZodForm } from '../src/useZodForm.js';
 
 export function TypedExample() {
@@ -27,11 +27,18 @@ export function TypedExample() {
     />
   );
   const fields = parseFormFields<z.input<typeof schema>>([], ['profile.name']);
+  const colorField = (
+    <ControlledField
+      control={form.control}
+      config={{ kind: 'color', name: 'profile.name', label: 'Color', clearable: true }}
+    />
+  );
 
   return (
     <>
       <FormFields control={form.control} fields={fields} />
       {invalid}
+      {colorField}
     </>
   );
 }

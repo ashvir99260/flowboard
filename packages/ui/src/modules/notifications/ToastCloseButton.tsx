@@ -1,12 +1,14 @@
 'use client';
-import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+
+import { WorkspaceIcon } from '../navigation/WorkspaceIcon.js';
 
 import type { CloseButtonProps } from 'react-toastify';
 
 export function ToastCloseButton({ closeToast }: CloseButtonProps) {
   return (
-    <Button aria-label="Dismiss notification" sx={{ minHeight: '4.4rem' }} onClick={closeToast}>
-      Dismiss
-    </Button>
+    <IconButton aria-label="Dismiss notification" onClick={closeToast}>
+      <WorkspaceIcon name="close" />
+    </IconButton>
   );
 }

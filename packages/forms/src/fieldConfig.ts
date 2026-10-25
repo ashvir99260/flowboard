@@ -11,7 +11,7 @@ const name = z
   .refine(
     (value) =>
       value
-        .split('./index')
+        .split('.')
         .every((part) => /^[A-Za-z_][A-Za-z0-9_]*$|^\d+$/.test(part) && !unsafeSegments.has(part)),
     'Use a safe dot-separated field path',
   );
@@ -53,6 +53,12 @@ const number = z.strictObject({
   kind: z.literal('number'),
   emptyValue: z.enum(['null', 'nan']).optional(),
 });
+const color = z.strictObject({
+  ...common,
+  kind: z.literal('color'),
+  clearable: z.boolean().optional(),
+  clearLabel: z.string().min(1).max(100).optional(),
+});
 const select = z.strictObject({ ...common, kind: z.enum(['select', 'multi_select']), options });
 const checkbox = z.strictObject({ ...common, kind: z.literal('checkbox') });
 const custom = z.strictObject({
@@ -70,7 +76,7 @@ const custom = z.strictObject({
   clearable: z.boolean().optional(),
 });
 export const FormFieldsSchema = z
-  .array(z.discriminatedUnion('kind', [text, number, select, checkbox, custom]))
+  .array(z.discriminatedUnion('kind', [text, number, color, select, checkbox, custom]))
   .max(200)
   .superRefine((fields, context) => {
     const names: string[] = [];

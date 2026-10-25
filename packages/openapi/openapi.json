@@ -5249,6 +5249,160 @@
         "title": "Scope status collection",
         "type": "object"
       },
+      "SearchPageResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Visible search results in stable type and ID order with same-snapshot revisions.",
+        "example": {
+          "configVersion": 1,
+          "dataVersion": 1,
+          "items": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "nextCursor": null
+          }
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "dataVersion": {
+            "description": "Workspace task and tree data revision.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Data version",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Authorized items in stable order.",
+            "example": [],
+            "items": {
+              "additionalProperties": false,
+              "description": "Minimal navigation data for an authorized live task or list.",
+              "example": {
+                "containerId": "10000000-0000-4000-8000-000000000010",
+                "id": "10000000-0000-4000-8000-000000000100",
+                "path": [
+                  "Engineering",
+                  "Delivery",
+                  "Backlog"
+                ],
+                "title": "Review release notes",
+                "type": "task"
+              },
+              "properties": {
+                "containerId": {
+                  "description": "Primary list for a task, or the parent folder for a list.",
+                  "example": "10000000-0000-4000-8000-000000000010",
+                  "format": "uuid",
+                  "nullable": true,
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Containing node",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Visible task or list identifier.",
+                  "example": "10000000-0000-4000-8000-000000000100",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Result ID",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "Authorized ancestor names; task paths include their primary list.",
+                  "example": [
+                    "Engineering",
+                    "Delivery",
+                    "Backlog"
+                  ],
+                  "items": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "title": "Breadcrumb names",
+                  "type": "array"
+                },
+                "title": {
+                  "description": "Task title or list name, without task content.",
+                  "example": "Review release notes",
+                  "maxLength": 500,
+                  "minLength": 1,
+                  "title": "Result title",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "Whether the result opens a list or task details.",
+                  "enum": [
+                    "list",
+                    "task"
+                  ],
+                  "example": "task",
+                  "title": "Result type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "title",
+                "containerId",
+                "path"
+              ],
+              "title": "Workspace search result",
+              "type": "object"
+            },
+            "maxItems": 100,
+            "title": "Items",
+            "type": "array"
+          },
+          "pageInfo": {
+            "additionalProperties": false,
+            "description": "Consistent forward-pagination state.",
+            "example": {
+              "hasNextPage": false,
+              "nextCursor": null
+            },
+            "properties": {
+              "hasNextPage": {
+                "description": "Whether another page is available.",
+                "example": false,
+                "title": "Has next page",
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "description": "Continuation token, or null at the end.",
+                "example": null,
+                "maxLength": 2048,
+                "minLength": 1,
+                "nullable": true,
+                "title": "Next cursor",
+                "type": "string"
+              }
+            },
+            "required": [
+              "hasNextPage",
+              "nextCursor"
+            ],
+            "title": "Page information",
+            "type": "object"
+          }
+        },
+        "required": [
+          "items",
+          "pageInfo",
+          "configVersion",
+          "dataVersion"
+        ],
+        "title": "Workspace search page",
+        "type": "object"
+      },
       "SessionResponseDto_Output": {
         "additionalProperties": false,
         "description": "Successful authentication or refresh response. The separate httpOnly cookie carries the opaque refresh credential.",
@@ -15843,6 +15997,258 @@
         ]
       }
     },
+    "/v1/search": {
+      "get": {
+        "description": "Search task titles/descriptions and list names within the active workspace. Full ancestor permissions filter results and breadcrumbs before stable cursor pagination; cursors bind the caller, query, page size and both workspace revisions.",
+        "operationId": "searchWorkspace",
+        "parameters": [
+          {
+            "description": "Opaque server-authenticated continuation token; keep the same query.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "example": "opaque.cursor",
+              "maxLength": 2048,
+              "minLength": 1,
+              "title": "Cursor",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum returned items, from 1 to 100.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": "50",
+              "example": "50",
+              "pattern": "^(?:[1-9]\\d?|100)$",
+              "title": "Page limit",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Required word or quoted-phrase search across visible task titles, descriptions and list names.",
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "example": "release notes",
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Workspace search text",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "dataVersion": 1,
+                  "items": [],
+                  "pageInfo": {
+                    "hasNextPage": false,
+                    "nextCursor": null
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SearchPageResponseDto_Output"
+                }
+              }
+            },
+            "description": "Authorized task/list navigation results and same-snapshot revisions."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Authentication required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A valid access token is required.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Current workspace membership or permission is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Configuration or collection changed; reload state or restart cursor pagination.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Search visible workspace tasks and lists",
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/v1/tasks": {
       "patch": {
         "description": "Apply one shared patch to at most fifty unique live tasks. Recheck every permission and version inside one workspace transaction. Any invalid or denied target rolls back the complete batch; unchanged targets produce no event.",
@@ -20436,6 +20842,10 @@
     {
       "description": "Authorized task reads and cursor pagination",
       "name": "Tasks"
+    },
+    {
+      "description": "Authorized task and list search in the active workspace",
+      "name": "Search"
     },
     {
       "description": "Authorized asynchronous task status history",

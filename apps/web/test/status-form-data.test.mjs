@@ -99,3 +99,25 @@ test('status forms share request validation and use minimal patches or no-op', (
     name: 'Building',
   });
 });
+
+test('status colors preserve explicit inheritance and reject invalid or missing local values', () => {
+  const { fixture, configuration } = setup();
+  const target = fixture.rows[1].identity.id;
+  const inherited = { ...statusDefaults(configuration, target), color: null };
+  assert.equal(statusCommand(configuration, inherited, target).body.color, null);
+  assert.equal(previewStatusEdit(configuration, inherited, target).items[1].color, '#334455');
+  assert.equal(
+    statusDraftSchema(configuration, target).safeParse({ ...inherited, color: 'blue' }).success,
+    false,
+  );
+
+  const local = readStatusConfiguration({
+    ...fixture,
+    scope: fixture.scopes[0],
+    collections: [fixture.collections[0]],
+  });
+  assert.equal(
+    previewStatusEdit(local, { ...statusDefaults(local, target), color: null }, target).success,
+    false,
+  );
+});

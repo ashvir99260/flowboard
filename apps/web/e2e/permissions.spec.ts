@@ -16,7 +16,8 @@ test('same-browser sign out closes sockets and Bob cannot retain Alice private c
   await expect(page.getByRole('region', { exact: true, name: 'Task board' })).toBeVisible();
   const privateUrl = page.url();
   await expect.poll(() => sockets).toBeGreaterThan(0);
-  await page.getByRole('button', { exact: true, name: 'Sign out' }).click();
+  await page.getByRole('button', { name: /^Account menu for / }).click();
+  await page.getByRole('menuitem', { exact: true, name: 'Sign out' }).click();
   await expect(page.getByRole('heading', { name: 'Sign in to Flowboard' })).toBeVisible();
   await expect.poll(() => sockets).toBe(0);
   await login(page, 'bob@example.com', false);
