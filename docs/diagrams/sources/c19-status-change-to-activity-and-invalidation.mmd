@@ -5,14 +5,18 @@ sequenceDiagram
   participant U as Client A
   participant A as API
   participant D as PostgreSQL
+  participant P as Worker dispatcher
   participant Q as BullMQ
-  participant W as Worker
+  participant W as Worker consumer
   participant G as Socket gateway
   participant B as Client B
   U->>A: Change task status
   A->>D: Commit task, version and outbox together
   A-->>U: Authoritative response
-  A->>Q: Enqueue stable event-ID reference
+  P->>D: Claim committed outbox event
+  D-->>P: Persisted event reference and lease
+  P->>Q: Enqueue stable event-ID reference
+  P->>D: Mark queued with recovery recheck
   Q->>W: Deliver job, possibly repeatedly
   W->>D: Reload event and persist activity idempotently
   W->>G: Publish through private Redis channel

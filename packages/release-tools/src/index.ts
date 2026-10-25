@@ -7,6 +7,12 @@ export const applications = ['api', 'web', 'worker'] as const;
 
 export type Application = (typeof applications)[number];
 
+export const applicationDockerfiles: Record<Application, string> = {
+  api: 'Dockerfile.api',
+  web: 'apps/web/Dockerfile',
+  worker: 'Dockerfile.worker',
+};
+
 export interface Release {
   app: Application;
   mode: 'new' | 'resume';
@@ -200,6 +206,8 @@ export function planReleases({
     };
     for (const path of ['.npmrc', '.dockerignore', 'pnpm-workspace.yaml'])
       inputs[path] = read(path);
+    const dockerfile = applicationDockerfiles[app];
+    inputs[dockerfile] = read(dockerfile);
     const turbo = read('turbo.json')
       ? (JSON.parse(read('turbo.json')) as Record<string, unknown>)
       : {};
@@ -301,13 +309,15 @@ export function planReleases({
               commit,
             ).split('\0');
             if (
-              !changed.some((file) =>
-                paths.some(
-                  (path) =>
-                    file.startsWith(`${path}/`) &&
-                    (file.endsWith('/package.json') ||
-                      productionFile(file.slice(path.length + 1), path)),
-                ),
+              !changed.some(
+                (file) =>
+                  file === applicationDockerfiles[app] ||
+                  paths.some(
+                    (path) =>
+                      file.startsWith(`${path}/`) &&
+                      (file.endsWith('/package.json') ||
+                        productionFile(file.slice(path.length + 1), path)),
+                  ),
               )
             )
               continue;

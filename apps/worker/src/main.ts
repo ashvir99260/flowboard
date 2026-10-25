@@ -1,10 +1,12 @@
 import { once } from 'node:events';
 
+import { createOutboxRuntime } from '@flowboard/jobs';
 import { createLogger, readLogLevel } from '@flowboard/logger';
 
 import { createActivityWorker } from './activity.worker.js';
 import { readWorkerConfig, WorkerConfigError } from './config.js';
 import { createHealthServer } from './health.js';
+import { startWorkerRuntime } from './runtime.js';
 
 let logger = createLogger({ level: 'info', service: 'worker' });
 let stage = 'log_config';
@@ -13,7 +15,16 @@ async function bootstrap() {
   logger = createLogger({ service: 'worker', level: readLogLevel(process.env.LOG_LEVEL) });
   stage = 'configuration';
   const config = readWorkerConfig(process.env);
-  const runtime = createActivityWorker(config.databaseUrl, config.redisUrl, logger);
+  const activity = createActivityWorker(config.databaseUrl, config.redisUrl, logger);
+  let outbox;
+  try {
+    outbox = createOutboxRuntime(config.databaseUrl, config.redisUrl, logger);
+  } catch (error) {
+    await activity.close();
+    throw error;
+  }
+  stage = 'dependencies';
+  const runtime = await startWorkerRuntime(activity, outbox);
   const server = createHealthServer(runtime);
   let closing: Promise<void> | undefined;
   const close = () =>
@@ -31,10 +42,7 @@ async function bootstrap() {
     if (address && typeof address !== 'string')
       logger.info('worker.started', { port: address.port, outcome: 'activity_worker' });
 
-    void runtime
-      .ready()
-      .then(() => logger.info('worker.ready'))
-      .catch(() => logger.warn('worker.readiness.pending', { code: 'DEPENDENCIES_UNAVAILABLE' }));
+    logger.info('worker.ready');
     for (const signal of ['SIGINT', 'SIGTERM'] as const)
       process.once(signal, () => {
         void close().catch(() => {

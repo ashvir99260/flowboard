@@ -2,13 +2,21 @@
 title: "C18 — Redis roles · Implemented"
 ---
 flowchart LR
-  Auth[Auth limiter] <--> Counter[(Expiring hashed counter keys)]
-  Dispatcher[Outbox dispatcher] --> Queue[(BullMQ flowboard-events)]
-  Queue --> Worker[Worker]
-  Worker --> Channel[(PubSub flowboard:events)]
-  Channel --> Gateway[API gateway]
+  subgraph API[API service]
+    Auth[Auth limiter]
+    Gateway[Socket gateway]
+  end
+  subgraph Daemon[Worker daemon]
+    Dispatcher[Outbox dispatcher]
+    Consumer[Activity consumer]
+  end
+  Auth <--> Counter[(Expiring hashed counter keys)]
+  Dispatcher -->|Enqueue event reference| Queue[(BullMQ event queue)]
+  Queue --> Consumer
+  Consumer --> Channel[(Private event pub/sub)]
+  Channel --> Gateway
   Gateway <--> Adapter[(Socket.IO adapter)]
   Adapter <--> Peer[Other API instances]
-  DB[(PostgreSQL)] --> Dispatcher
-  Worker --> DB
+  DB[(PostgreSQL)] -->|Claim committed outbox events| Dispatcher
+  Consumer -->|Persist activity and delivery state| DB
   DBNote[Authoritative records and delivery intent] -. owns .-> DB

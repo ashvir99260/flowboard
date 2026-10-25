@@ -74,7 +74,7 @@ Every tenant-owned record carries `workspaceId`, and composite relationships pre
 
 **Edit or move a task.** The UI sends expected versions and an explicit destination/placement. The API checks access, then locks the workspace and reloads membership, permissions and configuration inside the write transaction. It validates the full result, changes task/order versions and inserts outbox events. Invalid input, forbidden access or stale versions produce typed errors. The UI preserves the draft or rolls back its optimistic placement and rereads current data.
 
-**Notify collaborators.** The dispatcher leases committed outbox rows and queues event references. The worker reads the persisted event, writes status-change activity once and publishes a trusted internal notification. Gateways recheck each recipient before emitting minimal invalidations. Clients refetch; they do not trust an event as a task snapshot. The [LLD sequences](LLD.md#task-mutation-and-event-sequence) show these steps and retry boundaries.
+**Notify collaborators.** The worker daemon's dispatcher leases committed outbox rows and queues event references. The worker reads the persisted event, writes status-change activity once and publishes a trusted internal notification. Gateways recheck each recipient before emitting minimal invalidations. Clients refetch; they do not trust an event as a task snapshot. The [LLD sequences](LLD.md#task-mutation-and-event-sequence) show these steps and retry boundaries.
 
 ## Security and consistency model
 

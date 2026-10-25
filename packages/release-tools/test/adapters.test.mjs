@@ -65,15 +65,21 @@ console.log(args[0] === 'rev-parse' ? ${JSON.stringify(release.sha)} : ${JSON.st
     (await readFile(log, 'utf8')).trim().split('\n').filter(Boolean).map(JSON.parse);
 }
 
-test('Docker publisher builds only selected app with immutable version/SHA tags', async (t) => {
-  const commands = await dockerFixture(t, {});
-  assert.equal(await ensureImage(release, image), digest);
-  const build = (await commands()).find((args) => args[1] === 'build');
-  assert.equal(build[build.indexOf('--file') + 1], 'apps/api/Dockerfile');
-  assert.ok(build.includes(`${image}:0.1.1`));
-  assert.ok(build.includes(`${image}:sha-${release.sha}`));
-  assert.ok(build.includes('--push'));
-});
+for (const [app, dockerfile] of [
+  ['api', 'Dockerfile.api'],
+  ['web', 'apps/web/Dockerfile'],
+  ['worker', 'Dockerfile.worker'],
+])
+  test(`Docker publisher builds only ${app} with immutable version/SHA tags`, async (t) => {
+    const commands = await dockerFixture(t, {});
+    const selected = { ...release, app, tag: `${app}/v${release.version}` };
+    assert.equal(await ensureImage(selected, image), digest);
+    const build = (await commands()).find((args) => args[1] === 'build');
+    assert.equal(build[build.indexOf('--file') + 1], dockerfile);
+    assert.ok(build.includes(`${image}:0.1.1`));
+    assert.ok(build.includes(`${image}:sha-${release.sha}`));
+    assert.ok(build.includes('--push'));
+  });
 
 test('Docker publisher reuses matching image and repairs only missing SHA tag', async (t) => {
   const commands = await dockerFixture(t, {

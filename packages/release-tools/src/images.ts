@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { Release } from './index.js';
+import { applicationDockerfiles, type Release } from './index.js';
 
 export async function ensureImage(release: Release, image: string): Promise<string> {
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
@@ -76,7 +76,7 @@ export async function ensureImage(release: Release, image: string): Promise<stri
         '--platform',
         'linux/amd64',
         '--file',
-        `apps/${release.app}/Dockerfile`,
+        applicationDockerfiles[release.app],
         '--tag',
         versionTag,
         '--tag',

@@ -127,14 +127,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
-    name: Deploy released applications to preview
+    name: Deploy released services to Vercel Hobby
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.CD_ENABLED == 'true'
     needs: release
     runs-on: ubuntu-24.04
     timeout-minutes: 50
-    environment: preview
+    environment: demo
     concurrency:
-      group: flowboard-preview-deployment
+      group: flowboard-vercel-deployment
       cancel-in-progress: false
     permissions:
       contents: read
@@ -147,7 +147,7 @@ jobs:
           node-version: '22.23.2'
       - run: npm install --global pnpm@12.15.0
       - run: pnpm install --frozen-lockfile
-      - run: pnpm deploy:preview
+      - run: pnpm deploy:vercel
         env:
           CD_ENABLED: ${{ vars.CD_ENABLED }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -155,7 +155,3 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
           VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
-          NORTHFLANK_API_TOKEN: ${{ secrets.NORTHFLANK_API_TOKEN }}
-          NORTHFLANK_PROJECT_ID: ${{ vars.NORTHFLANK_PROJECT_ID }}
-          NORTHFLANK_API_SERVICE_ID: ${{ vars.NORTHFLANK_API_SERVICE_ID }}
-          NORTHFLANK_WORKER_SERVICE_ID: ${{ vars.NORTHFLANK_WORKER_SERVICE_ID }}

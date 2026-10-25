@@ -29,7 +29,7 @@
       "env": ["GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH"],
       "outputs": []
     },
-    "deploy:preview": {
+    "deploy:vercel": {
       "cache": false,
       "dependsOn": ["build"],
       "env": [
@@ -41,11 +41,7 @@
         "GITHUB_REF",
         "VERCEL_TOKEN",
         "VERCEL_PROJECT_ID",
-        "VERCEL_TEAM_ID",
-        "NORTHFLANK_API_TOKEN",
-        "NORTHFLANK_PROJECT_ID",
-        "NORTHFLANK_API_SERVICE_ID",
-        "NORTHFLANK_WORKER_SERVICE_ID"
+        "VERCEL_TEAM_ID"
       ],
       "outputs": []
     },

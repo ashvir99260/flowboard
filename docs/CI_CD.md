@@ -1,6 +1,6 @@
-# Continuous integration and preview deployment
+# Continuous integration and Vercel deployment
 
-Updated 25 October 2026. **This page describes the currently implemented workflow**, including its legacy Vercel/Northflank provider adapter. The selected application target is now [Vercel Services](VERCEL.md), but the workflow has not been reconciled with the one-project services configuration. Keep `CD_ENABLED` off. Railway and Render are not deployment targets. See [delivery operations](DELIVERY_OPERATIONS.md) and [PROMOTION.md](PROMOTION.md) for operating boundaries and the future build-once `dev → qa → stage → prod` contract.
+Updated 26 October 2026. Parallel verification and independent publication feed one gated Vercel Hobby Services deployment. Daemons require a production target. Provisioning and live acceptance remain separately verified; see [Vercel deployment](VERCEL.md) and [promotion](PROMOTION.md).
 
 ```mermaid
 flowchart LR
@@ -13,12 +13,13 @@ flowchart LR
   Checks --> Publish[Main only: publish affected app images and releases]
   UI --> Publish
   Docker --> Publish
-  Publish --> Gate[GitHub preview environment / CD_ENABLED]
-  Gate --> Web[Vercel preview: released web commit]
-  Gate --> API[Northflank preview API: released digest]
-  Gate --> Worker[Northflank preview worker: released digest]
+  Publish --> Gate[GitHub demo environment / CD_ENABLED]
+  Gate --> Project[Vercel Hobby: one current-main deployment]
+  Project --> Web[Next.js service]
+  Project --> API[Nest API service]
+  Project --> Worker[BullMQ daemon]
   API --> Neon[Neon preview PostgreSQL]
-  API --> Redis[Private Redis]
+  API --> Redis[Upstash Free Redis]
   Worker --> Neon
   Worker --> Redis
 ```
@@ -54,43 +55,36 @@ Within a lane, Turbo still respects dependency builds. Both matrices set `fail-f
 
 Within the web suite, [the launcher](../apps/web/scripts/test.mjs) runs all discovered ordinary test files with the existing 60-second file limit, then runs the aggregate E2E wrapper with a budget derived from its discovered journeys. Per-journey timeouts remain in force. A failure in either group fails the suite without suppressing the other group. This prevents an aggregate file timeout from cancelling otherwise bounded journeys on slower runners; it does not retry tests or omit assertions.
 
-`Publish affected apps` requires both complete matrices, the UI job and a non-PR main run. It alone receives GitHub contents/packages write permissions and serializes publication. `Deploy released applications to preview` depends on publication, main, and `CD_ENABLED=true`; it uses the protected GitHub `preview` environment and serializes deployments. A PR never publishes or deploys this shared target. Workflow job configuration does not prove branch protection or environment approval settings were enabled in GitHub.
+`Publish affected apps` requires both complete matrices, the UI job and a non-PR main run. It alone receives GitHub contents/packages write permissions and serializes publication. `Deploy released services to Vercel Hobby` depends on publication, main, and `CD_ENABLED=true`; it uses the protected GitHub `demo` environment and serializes deployments. A PR never publishes or deploys this shared target. Workflow job configuration does not prove branch protection or environment approval settings were enabled in GitHub.
 
 The workflow does not currently add dependency-audit, CodeQL, image-vulnerability or external penetration-test jobs. OpenAPI/client checks are part of builds, not extra named GitHub check lanes. `pnpm release:check` is a separate clean-checkout acceptance command, not the workflow's entry command.
 
-## Existing legacy deployment adapter
+## One Vercel Services deployment
 
-- CI runs on pull requests and main; pull requests cannot publish or deploy this shared preview.
-- The serialized publisher remains authoritative for independent versions and immutable images.
-- A deployment job follows successful main publication only when repository variable `CD_ENABLED=true`. It uses the GitHub `preview` environment and `pnpm deploy:preview`. Absent configuration leaves it visibly skipped.
-- Reconcile each app's latest published release whose source is a verified ancestor of current main. This recovers missed deployments after a later merge changes another app. Matching ready deployments are reused without a new rollout.
-- Northflank receives the exact API/worker image digest. Vercel builds the exact released Git commit as a **preview**, without assigning production traffic. This is intentionally a source build, not four-environment artifact promotion.
-- Validate all required settings before any provider writes. Missing credentials, invalid identities, provider errors, failed rollouts and timeouts fail the job.
-- Serialize preview deployments and refuse stale main workflows before mutations and during readiness polling. A stale Vercel build can finish at its unique preview URL, but it cannot acquire a production alias through this workflow.
-- PostgreSQL/Redis secrets stay on the hosts. CD needs deployment permissions, not database credentials. API startup applies checked-in migrations before readiness; hosted DEMO_SEED stays false.
+The serialized publisher remains authoritative for independent app versions and immutable images. After successful publication, the deployment job runs pnpm deploy:vercel for the current main SHA only when CD_ENABLED=true. It uses the GitHub demo environment and the configured Vercel Hobby team/project.
 
-## Selected Vercel Services configuration
+All published app manifests are validated before a provider mutation, and their source commits must be reachable from current main. The adapter submits one production deployment for web, API and worker together. It verifies the linked repository, service-project configuration, required production environment-key names, source SHA, release metadata, ready state, expected service inventory and generated Vercel URL. It reads environment names without decrypting values.
 
-The root [`vercel.json`](../vercel.json) defines the web/API services, the API binding, public Socket.IO route, and worker daemon. See [VERCEL.md](VERCEL.md) for the service roots, runtime settings, and current limitations. This repository configuration does not provision the Vercel project or external data services. Do not set the `API_INTERNAL_URL` service binding manually.
+The production target is deliberate: Vercel Daemons do not run in previews. This project is a dedicated hobby demo, not an authorization to reuse unrelated production data. The source build does not implement the future four-environment unchanged-artifact promoter.
 
-The legacy deployment job still contains Vercel preview plus Northflank API/worker operations. It is not a deployment path for the selected single Vercel Services project. Do not add or use those legacy provider credentials for this target. A future workflow change must deploy the services coherently and verify worker daemon behavior before preview can claim job-processing acceptance. Keep `CD_ENABLED` off.
+## Credentials and activation
+
+The demo GitHub environment needs the VERCEL_TOKEN secret plus VERCEL_PROJECT_ID and VERCEL_TEAM_ID variables. The token must belong to the selected account. No Northflank credentials are used. Database, Redis and auth secrets live in Vercel runtime settings; they are not needed by the deployment adapter and must not enter its logs.
+
+The project must already exist, be linked to this GitHub repository and use the Services preset with repository root. Keep CD_ENABLED off until the project, free-tier resources and live acceptance are complete. Root vercel.json disables automatic Git deploys so the verified publication/deployment path remains the owner.
 
 ## Readiness and recovery
 
-Northflank updates only the external image, preserving replica count, registry credentials, ports and runtime variables. Readiness requires the requested digest, deployment state `COMPLETED` and a deployed image URL containing that digest. Missing digest evidence times out.
+Retries look up the production deployment by current source SHA and validated release metadata, reusing ready or in-progress work instead of creating a new rollout. Missing, mismatched, failed, cancelled or malformed provider results fail closed. Polling is bounded. A main revision change stops the old workflow before further mutations.
 
-After the explicit initial project bootstrap, Vercel creates a preview by omitting `target` from the deployment request and disabling automatic custom-domain assignment. Retry lookup filters previews by released SHA and metadata, including providers that represent previews as a null target. Polling verifies preview identity, the release metadata, `READY` and a generated `*.vercel.app` URL before printing it. No production promotion endpoint is called. Failed, cancelled or blocked builds fail the job; an in-progress matching preview is polled on retry. Project protection may require Vercel sign-in to open the URL; readiness does not imply anonymous access.
-
-Each provider wait is bounded to 15 minutes. If main changes mid-run, rerun on current main. A failed Northflank rollout may need a provider-side correction or restart. There is no automatic destructive rollback or production promotion. The API startup applies migrations before reporting ready.
+No automatic destructive database rollback is attempted. API startup applies checked-in migrations before serving requests; deployment rollback still requires schema compatibility. Vercel READY is only provider readiness: P38-03 additionally checks real auth, task writes, worker activity and realtime behavior.
 
 ## Current limits and live acceptance
 
-The local MVP includes login/refresh/logout, a permission-filtered tree, board/list/task editing, scoped configuration, realtime updates and durable activity processing. Both API and worker expose HTTP liveness/readiness; API startup runs migrations with opt-in demo seeding. P12-03 verifies the full suite and both Docker modes. These local results do not establish a verified hosted deployment.
+The local MVP and regression suites do not establish a hosted rollout. P38-03 owns the actual Vercel/Neon/Upstash records and live user journeys; P38-04 owns independent worker dispatch. Free quotas can interrupt a continuously running demo. See [Vercel setup and limits](VERCEL.md).
 
-The original P00-14 and Render P22-02/P22-03 targets are superseded by P38-02/P38-03 for Vercel Services. Those tasks must record actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
+## Provider references
 
-## Legacy provider references checked 23 October 2026
-
-- [Vercel first-deployment behavior](https://vercel.com/docs/deployments/environments#first-deployment), [Vercel preview creation](https://vercel.com/docs/rest-api/deployments/create-a-new-deployment), [deployment listing](https://vercel.com/docs/rest-api/deployments/list-deployments), [generated URLs](https://vercel.com/docs/deployments/generated-urls), [deployment protection](https://vercel.com/docs/deployment-protection)
-- [Northflank update semantics](https://northflank.com/docs/v1/api/use-the-api#update-resources-safely), [service update](https://northflank.com/docs/v1/api/project/services/patch-deployment-service), [service status](https://northflank.com/docs/v1/api/project/services/get-service), [Sandbox limits and account requirements](https://northflank.com/docs/v1/application/billing/pricing-on-northflank)
-- [Neon regions](https://neon.com/docs/introduction/regions)
+- [Services](https://vercel.com/docs/services), [Daemons and production-only support](https://vercel.com/docs/daemons)
+- [Create deployment](https://vercel.com/docs/rest-api/deployments/create-a-new-deployment), [deployment listing](https://vercel.com/docs/rest-api/deployments/list-deployments), [deployment protection](https://vercel.com/docs/deployment-protection)
+- [Neon Free](https://neon.com/blog/neon-free-plan-1-gb-per-project), [Upstash Free](https://upstash.com/pricing/redis)

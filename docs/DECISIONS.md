@@ -729,3 +729,19 @@ P37-01 may retain a complete authorized board snapshot while reconciling a local
 The user selected Vercel Services for the web and API, with the worker as a Vercel Daemon. Keep Neon as the hosted PostgreSQL provider. Redis remains an external managed dependency; do not assume or provision a provider until its capacity and persistence are selected. Railway and Render are not deployment targets. The existing Vercel/Northflank CD adapter is not the selected topology and stays gated until its workflow is reconciled.
 
 The web service uses its runtime `API_INTERNAL_URL` binding for REST proxy traffic. Public rewrites route `/socket.io/*` to the API and other paths to web. The worker has no public route or API binding. Vercel Services are beta and Daemons are public beta; current Daemons documentation does not establish preview behavior, so preview job processing must be verified. This decision selects configuration, not resource provisioning, billing, or live deployment. See [VERCEL.md](VERCEL.md).
+
+## D169 — One Hobby demo deployment, with an independent queue dispatcher
+
+The user requested deployment of web, API and worker together on Vercel's free tier and selected Upstash Free for Redis. Keep the existing Neon Free project. Use one dedicated demo project on Vercel Hobby; never upgrade plans automatically. Current [Daemon documentation](https://vercel.com/docs/daemons) explicitly limits daemon execution to production deployments. The shared demo therefore uses Vercel's `production` target; a preview URL cannot establish worker acceptance. This supersedes D168's uncertainty about preview support and the older split-provider CD path.
+
+Deploy the validated current main SHA once for all services, after independent app publication succeeds. Preserve release tags/digests as publication records; a Vercel source build still does not satisfy future unchanged-artifact promotion. Validate the configured Hobby team and project before any deployment and keep the GitHub deployment gate disabled until live acceptance and credentials are configured. Database/Redis/signing credentials stay in Vercel runtime settings, not Git or browser bundles.
+
+Move normal outbox dispatch to the worker daemon. A Vercel API function must not own a background loop whose progress depends on its request lifetime. Keep the existing transactional outbox, leases, retries and event contracts, sharing the implementation through a jobs package. Optional API injection remains an integration-test compatibility seam.
+
+Free plans are bounded, not an unlimited uptime promise. Upstash Free currently includes 500,000 commands/month; idle BullMQ activity also consumes commands. Neon Free currently includes 100 CU-hours/project/month: a continuously polled 0.25 CU database would use about 180 CU-hours in 30 days. Treat this as a limited-use demo, monitor quotas and pause the daemon when the demo is not needed. Do not claim that these limits support uninterrupted month-long operation. Live deployment and a future idle-efficient delivery design remain distinct from configuration/build success.
+
+## D170 — Canonical root Dockerfiles for Vercel containers
+
+Live Vercel builds use the Dockerfile directory as context, even when the service root is the repository root. Nested app Dockerfiles therefore omit the other workspaces. The live API and daemon builders also reject the documented `#stage` suffix as a literal filename.
+
+Move the existing API and worker build definitions unchanged to `Dockerfile.api` and `Dockerfile.worker` at the repository root. Vercel, Compose and independent image publication all use these same canonical files; do not maintain duplicate provider-specific definitions. Map each root file to only its owning app in release fingerprints. Keep the web Dockerfile in its app because Vercel builds web through the native Next.js service. Source/schema checks do not replace the live deployment evidence in P38-03.

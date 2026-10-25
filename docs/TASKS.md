@@ -1551,20 +1551,42 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `feat: configure vercel multi-service deployment`.
   - **Completion evidence:** [P38-01](evidence/P38-01.md).
 
-- [ ] **P38-02 — Reconcile deployment automation with the Vercel Services project**
+- [x] **P38-02 — Reconcile deployment automation with the Vercel Services project**
   - **Goal:** Replace the legacy Vercel/Northflank split-preview workflow with one deployment path for the configured Vercel project.
   - **Requirements:** R98.
   - **Files:** Release-tool deployment adapter/config/tests, GitHub workflow, CI/CD and delivery docs.
-  - **Dependencies:** P38-01; an approved design for preview worker processing and the external Redis service.
-  - **Acceptance:** Deploy the released source into the one project, verify all configured services and runtime settings, preserve stale-run/retry safety, and verify whether daemon processing is supported in preview deployments before claiming preview acceptance.
+  - **Dependencies:** P38-01; D169 selects a production-target Hobby demo and Upstash Free.
+  - **Acceptance:** Deploy the validated current main source once into the one Hobby project after publication; verify web/API/worker inventory and required production runtime setting names, preserve stale-run/retry safety, reject a non-Hobby or mismatched project before writes, and remove Northflank credentials from the active deployment path. Production target is required because preview deployments do not run daemons. Preserve independent release publication and the future immutable-promotion boundary.
   - **Validation:** Provider fixtures, workflow checks, standard implementation gates; no live success claim from fixtures.
   - **Commit:** `ci: deploy the vercel services project`.
+  - **Completion evidence:** [P38-02](evidence/P38-02.md).
 
-- [ ] **P38-03 — Verify the Vercel shared deployment**
-  - **Goal:** Record a real Vercel/Neon/Redis rollout after the workflow and preview-worker design are ready.
+- [x] **P38-03 — Verify the Vercel shared deployment**
+  - **Goal:** Record a real Vercel/Neon/Redis rollout after the workflow and worker-daemon runtime are ready.
   - **Requirements:** R96–R98.
-  - **Files:** Deployment evidence and environment documentation; secrets stay in provider settings.
-  - **Dependencies:** P38-02, connected provider access, selected Redis capacity and explicitly approved service plans.
-  - **Acceptance:** Record actual Vercel services/daemon, isolated database and Redis settings; verify auth/refresh, tenant-scoped task flow, migrations, async activity, realtime, health and recovery. Verify and state whether daemon processing is supported in preview deployments.
+  - **Files:** Root API/worker Dockerfiles, Compose and image-publisher path mapping/tests, deployment evidence and environment documentation; secrets stay in provider settings.
+  - **Dependencies:** P38-02, P38-04, connected provider access, selected Upstash Free/Neon Free capacity and the Vercel Hobby plan.
+  - **Acceptance:** Record actual Vercel services/daemon, isolated database and Redis settings; verify auth/refresh, tenant-scoped task flow, migrations, async activity, realtime, health and recovery. Use a production-target demo; do not claim worker support on preview deployments. Check quotas and retain the explicit limit on month-long unattended operation. Credentials and paid upgrades are never committed or inferred from deployment permission.
   - **Validation:** Real provider deployment records and external end-to-end checks; fixtures do not satisfy this task.
-  - **Commit:** `docs: verify the vercel shared deployment`.
+  - **Commit:** `fix(deploy): build and verify vercel services`.
+  - **Completion evidence:** [P38-03](evidence/P38-03.md).
+
+- [x] **P38-04 — Run committed-event dispatch in the worker daemon**
+  - **Goal:** Keep durable event delivery independent of a Vercel API function's request lifetime.
+  - **Requirements:** R98 and the existing activity/outbox delivery requirements; D169.
+  - **Files:** Shared jobs package, API/worker bootstrap and compatibility seams, dependency manifests/lockfile/boundaries, focused lifecycle/integration tests and deployment documentation.
+  - **Dependencies:** P38-01; before P38-03 live acceptance.
+  - **Acceptance:** Normal API bootstrap starts no polling dispatcher. The worker starts the shared dispatcher and BullMQ consumer, cleans both up on failed startup and shutdown, and retains tenant scope, transactional event references, retries and idempotency. Preserve existing API test injection without duplicating the dispatch implementation. No claim that constant polling fits a full month of Neon Free compute.
+  - **Validation:** Observe failing ownership/lifecycle tests; run shared/API/worker integration coverage plus build, types, lint and formatting. Live worker processing is separately proven by P38-03.
+  - **Commit:** `fix(worker): own outbox dispatch in the daemon`.
+  - **Completion evidence:** [P38-04](evidence/P38-04.md).
+
+- [x] **P38-05 — Connect the existing Neon production database**
+  - **Goal:** Use the user-selected Neon project with the current Prisma architecture and prove real hosted-service behavior.
+  - **Requirements:** R96–R98; preserve central tenancy and the existing authentication boundary.
+  - **Files:** `neon.ts`, exact CLI configuration dependencies/lockfile, installed Neon skills, ignored environment files, hosting guide and evidence.
+  - **Dependencies:** Authorized Neon CLI login; project `solitary-thunder-02260917`, production branch, and P38-04 runtime implementation.
+  - **Acceptance:** `neon deploy` applies only Postgres configuration and pulls runtime variables; pooled connections serve requests and direct connections run checked-in migrations. No public demo credentials, provider secrets or local CLI context enter Git. Prove signup/session, task persistence and worker activity through real Neon/Redis services without changing the application to Neon Auth.
+  - **Validation:** `npm run build`, migration result, native API/worker/web startup and hosted-service smoke tests; record errors and unavailable checks.
+  - **Commit:** `feat: connect existing neon postgres project`.
+  - **Completion evidence:** [P38-05](evidence/P38-05.md).

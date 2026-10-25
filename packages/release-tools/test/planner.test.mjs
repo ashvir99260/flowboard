@@ -101,6 +101,8 @@ for (const [path, expected] of [
   ['apps/web/src/index.ts', ['web']],
   ['apps/web/stories/runtime.ts', ['web']],
   ['apps/worker/src/index.ts', ['worker']],
+  ['Dockerfile.api', ['api']],
+  ['Dockerfile.worker', ['worker']],
   ['packages/database/src/index.ts', ['api', 'worker']],
   ['packages/logger/src/index.ts', ['api', 'worker']],
   ['packages/ui/src/index.ts', ['web']],

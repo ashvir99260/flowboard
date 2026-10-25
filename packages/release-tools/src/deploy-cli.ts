@@ -9,7 +9,7 @@ const {
   GITHUB_REF: ref,
 } = process.env;
 if (process.env.CD_ENABLED !== 'true' || ref !== 'refs/heads/main')
-  throw new Error('Preview deployment is not enabled for this context');
+  throw new Error('Vercel deployment is not enabled for this context');
 
 if (
   !repository ||
@@ -25,10 +25,6 @@ const values = {
   vercelProjectId: process.env.VERCEL_PROJECT_ID,
   vercelTeamId: process.env.VERCEL_TEAM_ID,
   githubRepoId: process.env.GITHUB_REPOSITORY_ID,
-  northflankToken: process.env.NORTHFLANK_API_TOKEN,
-  northflankProjectId: process.env.NORTHFLANK_PROJECT_ID,
-  apiServiceId: process.env.NORTHFLANK_API_SERVICE_ID,
-  workerServiceId: process.env.NORTHFLANK_WORKER_SERVICE_ID,
 };
 const config = Object.fromEntries(
   Object.entries(values).filter(([, value]) => value !== undefined),
@@ -42,10 +38,9 @@ await deployReleasedApps({
   manifests,
   config,
   providers: {
-    ...providers,
-    async vercel(manifest) {
-      const url = await providers.vercel(manifest);
-      process.stdout.write(`Web preview ready: ${url} (${manifest.tag})\n`);
+    async vercel(source) {
+      const url = await providers.vercel(source);
+      process.stdout.write(`Vercel Services ready: ${url} (${source.sha})\n`);
     },
   },
   assertCurrent,
@@ -53,6 +48,6 @@ await deployReleasedApps({
 });
 process.stdout.write(
   manifests.length
-    ? `Deployed released applications to preview: ${manifests.map((manifest) => manifest.tag).join(', ')}\n`
+    ? `Deployed Vercel project from released source: ${sha}\n`
     : 'No published applications; deployment skipped.\n',
 );

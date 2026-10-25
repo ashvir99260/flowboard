@@ -2,9 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "daemons": {
     "worker": {
-      "entrypoint": "apps/worker/Dockerfile",
+      "entrypoint": "Dockerfile.worker",
       "instances": {
         "iad1": 1
+      },
+      "resources": {
+        "requests": {
+          "memory": "1Gi"
+        }
       },
       "root": ".",
       "terminationGracePeriodSeconds": 30
@@ -29,7 +34,7 @@
   ],
   "services": {
     "api": {
-      "entrypoint": "apps/api/Dockerfile",
+      "entrypoint": "Dockerfile.api",
       "root": ".",
       "runtime": "container"
     },

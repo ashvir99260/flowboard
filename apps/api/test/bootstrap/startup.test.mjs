@@ -1,9 +1,39 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { startInfrastructure } from '@flowboard/config-jest/infrastructure';
 import { startProcess } from '@flowboard/config-jest/process';
 
 const cwd = new URL('../../', import.meta.url);
+
+test('the HTTP API does not start a background outbox polling loop', async (t) => {
+  const infrastructure = await startInfrastructure();
+  const runtime = startProcess(['dist/main.js'], {
+    cwd,
+    outboundOrigins: [infrastructure.databaseUrl, infrastructure.redisUrl].flatMap((url) =>
+      ['localhost', '127.0.0.1', '[::1]'].map((host) => `http://${host}:${new URL(url).port}`),
+    ),
+    env: {
+      AUTH_ALLOW_INSECURE_HTTP: 'true',
+      AUTH_ALLOWED_ORIGINS: 'http://localhost:3000',
+      AUTH_SECRET: 'test-only-abcdefghijklmnopqrstuvwxyz123456',
+      DATABASE_URL: infrastructure.databaseUrl,
+      HOST: 'localhost',
+      PORT: '0',
+      REDIS_URL: infrastructure.redisUrl,
+    },
+  });
+  t.after(async () => {
+    try {
+      await runtime.stop('SIGTERM');
+      assert.match(runtime.output(), /"event":"api.stopped"/);
+    } finally {
+      await infrastructure.close();
+    }
+  });
+  await runtime.waitFor(/"event":"api.started"/);
+  assert.doesNotMatch(runtime.output(), /"event":"outbox.started"/);
+});
 
 test('Nest refuses to start the HTTP platform without database configuration', async (t) => {
   const runtime = startProcess(['dist/main.js'], { cwd, env: { HOST: 'localhost', PORT: '0' } });

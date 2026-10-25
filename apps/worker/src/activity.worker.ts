@@ -8,6 +8,32 @@ import { createActivityProcessor } from './activity.processor.js';
 
 import type { Logger } from '@flowboard/logger';
 
+export async function closeActivityResources({
+  worker,
+  connection,
+  publisher,
+  active,
+  repository,
+}: {
+  active: ReadonlySet<Promise<void>>;
+  connection: { disconnect(): void };
+  publisher: { disconnect(): void };
+  repository: { close(): Promise<void> };
+  worker: { close(force?: boolean): Promise<void> };
+}) {
+  const cleanup = async (action: () => unknown) => action();
+  const stopped = cleanup(() => worker.close(true));
+  const disconnected = [
+    cleanup(() => connection.disconnect()),
+    cleanup(() => publisher.disconnect()),
+  ];
+  const results = await Promise.allSettled([stopped, ...disconnected]);
+  await Promise.allSettled([...active]);
+  results.push(...(await Promise.allSettled([cleanup(() => repository.close())])));
+  const failed = results.find((result) => result.status === 'rejected');
+  if (failed?.status === 'rejected') throw failed.reason;
+}
+
 export function createActivityWorker(
   databaseUrl: string,
   redisUrl: string,
@@ -94,14 +120,7 @@ export function createActivityWorker(
       }
     },
     close(): Promise<void> {
-      closing ??= (async () => {
-        const stopped = worker.close(true);
-        connection.disconnect();
-        publisher.disconnect();
-        await stopped;
-        await Promise.allSettled([...active]);
-        await repository.close();
-      })();
+      closing ??= closeActivityResources({ worker, connection, publisher, active, repository });
 
       return closing;
     },

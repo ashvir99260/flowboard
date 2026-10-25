@@ -43,18 +43,24 @@ test('all workspace checks run as independent free-runner jobs before publicatio
   }
 });
 
-test('the workflow uses preview secrets and only deploys after main release success', () => {
+test('the workflow uses demo secrets and only deploys Vercel after main release success', () => {
   const workflow = parse(
     readFileSync(new URL('../../../.github/workflows/delivery.yml', import.meta.url), 'utf8'),
   );
   const job = workflow.jobs.deploy;
-  assert.equal(job.environment, 'preview');
+  assert.equal(job.environment, 'demo');
   assert.equal(job.needs, 'release');
   assert.match(job.if, /github.ref == 'refs\/heads\/main'/);
   assert.match(job.if, /github.event_name != 'pull_request'/);
   assert.match(job.if, /vars.CD_ENABLED == 'true'/);
   assert.equal(job.concurrency['cancel-in-progress'], false);
-  assert.ok(job.steps.some((step) => step.run === 'pnpm deploy:preview'));
+  assert.ok(job.steps.some((step) => step.run === 'pnpm deploy:vercel'));
+  const deployment = job.steps.find((step) => step.run === 'pnpm deploy:vercel');
+  assert.equal(deployment.env.VERCEL_TEAM_ID, '${{ vars.VERCEL_TEAM_ID }}');
+  assert.equal(
+    Object.keys(deployment.env).some((key) => key.startsWith('NORTHFLANK_')),
+    false,
+  );
 });
 
 test('component browser tests have an independent runner and remain a publication gate', () => {
@@ -91,7 +97,7 @@ for (const [name, env] of [
   ['disabled deployment', { CD_ENABLED: 'false', GITHUB_REF: 'refs/heads/main' }],
   ['pull request deployment', { CD_ENABLED: 'true', GITHUB_REF: 'refs/pull/2/merge' }],
 ])
-  test(`preview CLI refuses ${name} before contacting providers`, () => {
+  test(`Vercel CLI refuses ${name} before contacting providers`, () => {
     const result = spawnSync(
       process.execPath,
       [fileURLToPath(new URL('../dist/deploy-cli.js', import.meta.url))],
@@ -101,11 +107,10 @@ for (const [name, env] of [
           ...env,
           GITHUB_TOKEN: '',
           VERCEL_TOKEN: '',
-          NORTHFLANK_API_TOKEN: '',
         },
         encoding: 'utf8',
       },
     );
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /Preview deployment is not enabled/);
+    assert.match(result.stderr, /Vercel deployment is not enabled/);
   });

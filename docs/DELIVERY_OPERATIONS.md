@@ -4,13 +4,13 @@ Source snapshot: `1ae096b`, 25 October 2026. This guide explains the current cod
 
 ## What exists and what is next
 
-| Concern                      | Current implementation                                                             | Remaining work                                                                                                       |
-| ---------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Main and feature branches    | PR/main checks exist; work is committed in small feature branches.                 | Enforce the desired branch protection in GitHub settings.                                                            |
-| Independent release          | API, web and worker have separate versions, image digests and release manifests.   | First/live publication is evidenced separately, never inferred from local tests.                                     |
-| Runtime environment settings | API/worker read startup settings; web reads origins at dynamic request boundaries. | Verify each chosen hosted environment with the same released image.                                                  |
-| Hosted CD                    | `vercel.json` defines Vercel web/API services and a worker daemon.                 | Reconcile the legacy preview adapter with the one-project Services model; verify live behavior after provider setup. |
-| Ordered promotion            | The contract is documented in [PROMOTION.md](PROMOTION.md).                        | P00-11/P00-12 implement and verify explicit candidate promotion through dev/qa/stage/prod.                           |
+| Concern                      | Current implementation                                                             | Remaining work                                                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Main and feature branches    | PR/main checks exist; work is committed in small feature branches.                 | Enforce the desired branch protection in GitHub settings.                                         |
+| Independent release          | API, web and worker have separate versions, image digests and release manifests.   | First/live publication is evidenced separately, never inferred from local tests.                  |
+| Runtime environment settings | API/worker read startup settings; web reads origins at dynamic request boundaries. | Verify each chosen hosted environment with the same released image.                               |
+| Hosted CD                    | `vercel.json` defines Vercel web/API services and a worker daemon.                 | Verify the gated one-project Hobby deployment after provider setup and worker-dispatch migration. |
+| Ordered promotion            | The contract is documented in [PROMOTION.md](PROMOTION.md).                        | P00-11/P00-12 implement and verify explicit candidate promotion through dev/qa/stage/prod.        |
 
 ## Trunk-based development in Flowboard
 
@@ -24,7 +24,7 @@ flowchart LR
   PR --> Main[Merge to main]
   Main --> Gates[All verification passes]
   Gates --> Releases[Publish affected app images and manifests]
-  Releases --> Preview[Chosen shared preview]
+  Releases --> Preview[Vercel production-target hobby demo]
   Releases -. planned selected-candidate promotion .-> Dev[dev]
   Dev -. same app digests .-> QA[qa]
   QA -. same app digests .-> Stage[stage]

@@ -15,6 +15,7 @@ const workspaces = [
   'packages/contracts',
   'packages/database',
   'packages/logger',
+  'packages/jobs',
   'packages/openapi',
   'packages/api-client',
   'packages/ui',
@@ -261,7 +262,8 @@ test('strict Turbo development preserves worker dependencies and frozen image ru
     );
   }
   for (const app of ['api', 'web', 'worker']) {
-    const dockerfile = await readFile(new URL(`apps/${app}/Dockerfile`, root), 'utf8');
+    const path = app === 'web' ? 'apps/web/Dockerfile' : `Dockerfile.${app}`;
+    const dockerfile = await readFile(new URL(path, root), 'utf8');
     const development = dockerfile.split(' AS development')[1].split(/^FROM /m)[0];
     assert.match(development, /PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false/);
   }
@@ -269,7 +271,8 @@ test('strict Turbo development preserves worker dependencies and frozen image ru
 
 test('Prisma-capable image builds install OpenSSL before dependency generation', async () => {
   for (const app of ['api', 'web', 'worker']) {
-    const dockerfile = await readFile(new URL(`apps/${app}/Dockerfile`, root), 'utf8');
+    const path = app === 'web' ? 'apps/web/Dockerfile' : `Dockerfile.${app}`;
+    const dockerfile = await readFile(new URL(path, root), 'utf8');
     const stages = new Map(
       dockerfile
         .split(/^FROM /m)

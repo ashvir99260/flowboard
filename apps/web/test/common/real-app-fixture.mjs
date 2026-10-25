@@ -82,7 +82,7 @@ export async function startRealApp(t, { activityWorker = false, realtime = false
       signal: AbortSignal.timeout(5000),
     });
     if (readiness.ok) {
-      if (activityWorker) {
+      if (activityWorker || realtime) {
         const worker = startProcess(
           [fileURLToPath(new URL('../../../worker/dist/main.js', import.meta.url))],
           {
