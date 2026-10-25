@@ -14,7 +14,9 @@ import type { ClientRuntime } from '../../providers/app-providers';
 import type { Task } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
-const TaskEditorContext = createContext<((taskId: string | null) => void) | null>(null);
+const TaskEditorContext = createContext<
+  ((taskId: string | null, targetListId?: string) => void) | null
+>(null);
 
 type Selection = { listId: string; parentTaskId?: string; taskId?: string };
 type DrawerAction = { type: 'close' | 'reload' } | { selection: Selection; type: 'navigate' };
@@ -160,13 +162,14 @@ export function TaskEditorProvider({
   const origin = useRef<HTMLElement | null>(null);
   const originTaskId = useRef<string | null>(null);
   const open = useCallback(
-    (taskId: string | null) => {
-      if (!listId) return;
+    (taskId: string | null, targetListId?: string) => {
+      const destination = targetListId ?? listId;
+      if (!destination) return;
 
       origin.current =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
       originTaskId.current = taskId;
-      setSelection({ taskId: taskId ?? undefined, listId });
+      setSelection({ taskId: taskId ?? undefined, listId: destination });
     },
     [listId],
   );

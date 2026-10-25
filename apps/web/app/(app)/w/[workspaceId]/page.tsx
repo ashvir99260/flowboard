@@ -1,7 +1,5 @@
-import { EmptyState } from '@flowboard/ui';
+import { WorkspaceBoard } from '../../../../src/features/workspace-board/workspace-board';
 
 export default function WorkspacePage() {
-  return (
-    <EmptyState description="Open a list from the workspace navigation." title="Choose a list" />
-  );
+  return <WorkspaceBoard />;
 }
