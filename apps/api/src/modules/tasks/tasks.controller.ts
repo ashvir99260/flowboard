@@ -72,7 +72,7 @@ export class ListTasksController {
   @NodePermission('task.read', 'listId')
   @ApiOperation({
     description:
-      'Read authorized live tasks using typed filters, including an optional visible parent task, stable sort and a cursor bound to every filter and both workspace revisions.',
+      'Read authorized live tasks using word/phrase title-description search and typed filters, including an optional visible parent task, stable sort and a cursor bound to every filter and both workspace revisions.',
     operationId: 'listTasks',
     summary: 'Read a page of list tasks',
   })

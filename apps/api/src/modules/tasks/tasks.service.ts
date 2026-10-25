@@ -126,6 +126,7 @@ export class TasksService {
     const fingerprint = createHash('sha256')
       .update(
         JSON.stringify({
+          q: query.q,
           sort: query.sort,
           direction: query.direction,
           statusId: query.statusId,
