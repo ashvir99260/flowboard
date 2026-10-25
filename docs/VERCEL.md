@@ -1,6 +1,6 @@
 # Vercel Hobby deployment
 
-Updated 26 October 2026. The target is one Vercel Hobby project containing the Next.js web service, NestJS API container service and BullMQ worker daemon. PostgreSQL uses the existing Neon Free project; Redis uses Upstash Free over TLS. Configuration and automated provider tests do not establish a live deployment: P38-03 records that separately.
+Updated 26 October 2026. The target is one Vercel Hobby project containing the Next.js web service, NestJS API container service and BullMQ worker daemon. PostgreSQL uses the existing Neon Free project; Redis uses Upstash Free over TLS. The live demo is https://flowboard-two-gilt.vercel.app. [P38-03](evidence/P38-03.md) records the verified Git deployment; configuration tests alone do not establish live behavior.
 
 ## Deployment target and routing
 
@@ -61,7 +61,7 @@ Keep automatic Git deployment disabled in vercel.json so pushes cannot bypass th
 
 ## Live acceptance
 
-P38-03 must record the deployment URL and source identity, Hobby plan, real web/API/worker readiness, signup/login/refresh, an authorized task edit, worker-written activity and cross-client realtime delivery. Check quota dashboards and record any provider failures accurately. Vercel READY alone does not prove the worker processed a job.
+The initial and final committed rollouts passed signup/login/refresh, task/custom-field writes, worker activity and two-client realtime checks. A controlled worker restart resumed processing without duplicate activity. The final worker is a live 1 GiB instance belonging to the verified deployment. See [P38-03](evidence/P38-03.md) for exact source, deployment identity, prior failures and local checks. Re-run these application checks after future rollouts; Vercel READY alone does not prove that the worker processed a job.
 
 Vercel builds these services from source. This does not satisfy the future unchanged-artifact dev → qa → stage → prod contract. See [promotion](PROMOTION.md), [CI/CD](CI_CD.md) and [independent releases](DELIVERY.md).
 

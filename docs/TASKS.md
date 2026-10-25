@@ -1561,14 +1561,15 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `ci: deploy the vercel services project`.
   - **Completion evidence:** [P38-02](evidence/P38-02.md).
 
-- [ ] **P38-03 — Verify the Vercel shared deployment**
-  - **Goal:** Record a real Vercel/Neon/Redis rollout after the workflow and preview-worker design are ready.
+- [x] **P38-03 — Verify the Vercel shared deployment**
+  - **Goal:** Record a real Vercel/Neon/Redis rollout after the workflow and worker-daemon runtime are ready.
   - **Requirements:** R96–R98.
   - **Files:** Root API/worker Dockerfiles, Compose and image-publisher path mapping/tests, deployment evidence and environment documentation; secrets stay in provider settings.
   - **Dependencies:** P38-02, P38-04, connected provider access, selected Upstash Free/Neon Free capacity and the Vercel Hobby plan.
   - **Acceptance:** Record actual Vercel services/daemon, isolated database and Redis settings; verify auth/refresh, tenant-scoped task flow, migrations, async activity, realtime, health and recovery. Use a production-target demo; do not claim worker support on preview deployments. Check quotas and retain the explicit limit on month-long unattended operation. Credentials and paid upgrades are never committed or inferred from deployment permission.
   - **Validation:** Real provider deployment records and external end-to-end checks; fixtures do not satisfy this task.
   - **Commit:** `fix(deploy): build and verify vercel services`.
+  - **Completion evidence:** [P38-03](evidence/P38-03.md).
 
 - [x] **P38-04 — Run committed-event dispatch in the worker daemon**
   - **Goal:** Keep durable event delivery independent of a Vercel API function's request lifetime.
