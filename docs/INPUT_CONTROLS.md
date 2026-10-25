@@ -4,7 +4,7 @@ R170–R171 replace field dropdowns with MUI Autocomplete and date controls with
 
 ## Selections
 
-The UI package owns a controlled searchable selection component. Single and multiple selections preserve scalar values, stable IDs, null choices, false/zero, and unknown selected values without silently changing a draft. Typed search text does not become a new option. Multi-select uses removable chips and keyboard navigation. Disabled controls retain submitted values and RHF focuses the actual input on errors.
+The UI package owns a controlled searchable selection component. Single and multiple selections preserve scalar values, stable IDs, null choices, false/zero, and unknown selected values without silently changing a draft. Typed search text does not become a new option. Multi-select uses removable chips and keyboard navigation. Nullable custom-field multi-selects distinguish an explicit clear (null) from removing the final chip (an empty array). Disabled controls retain submitted values and RHF focuses the actual input on errors.
 
 The forms package maps existing select/multi_select descriptors to the shared component, including task assignees. Shared custom-field selectors and direct web dropdowns use the same presentation. Global search uses MUI Autocomplete over authorized server results; client filtering never replaces the server search. Preserve its page loading, errors, session clearing and workspace invalidation behavior.
 

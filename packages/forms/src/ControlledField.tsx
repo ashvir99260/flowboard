@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, CustomFieldInput, FormField, Stack } from '@flowboard/ui';
+import { Button, CustomFieldInput, DateInput, FormField, Stack } from '@flowboard/ui';
 import { useRef } from 'react';
 import { useController } from 'react-hook-form';
 
@@ -134,7 +134,7 @@ export function ControlledField<T extends FieldValues, Output extends FieldValue
         {config.kind === 'custom' &&
           config.clearable &&
           !definition.required &&
-          !['checkbox', 'single_select', 'multi_select'].includes(definition.type) &&
+          !['checkbox', 'single_select', 'multi_select', 'date'].includes(definition.type) &&
           field.value !== null && (
             <Button
               type="button"
@@ -151,6 +151,23 @@ export function ControlledField<T extends FieldValues, Output extends FieldValue
       </Stack>
     );
   }
+
+  if (config.kind === 'date' || config.kind === 'datetime-local')
+    return (
+      <DateInput
+        disabled={isDisabled}
+        error={fieldState.error?.message}
+        hint={config.hint}
+        inputRef={inputRef}
+        kind={config.kind}
+        label={config.label}
+        name={field.name}
+        onBlur={field.onBlur}
+        onChange={(value) => change(value ?? (config.emptyValue === 'null' ? null : ''))}
+        required={config.required}
+        value={field.value || null}
+      />
+    );
 
   return (
     <FormField
@@ -172,13 +189,6 @@ export function ControlledField<T extends FieldValues, Output extends FieldValue
       required={config.required}
       type={config.kind === 'textarea' ? 'text' : config.kind}
       value={field.value ?? ''}
-      slotProps={
-        config.kind === 'datetime-local'
-          ? { inputLabel: { shrink: true }, htmlInput: { step: 0.001 } }
-          : config.kind === 'date'
-            ? { inputLabel: { shrink: true } }
-            : undefined
-      }
     />
   );
 }

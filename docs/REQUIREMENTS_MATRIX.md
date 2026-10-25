@@ -413,7 +413,7 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 
 ## Searchable input controls
 
-| ID   | Requirement                                            | Owner / tasks                | Evidence required                                                            | Status      |
-| ---- | ------------------------------------------------------ | ---------------------------- | ---------------------------------------------------------------------------- | ----------- |
-| R170 | MUI Autocomplete for selections, assignees and search. | UI/forms/web · P36-01/P36-03 | [Selections](evidence/P36-01.md); direct web/search verification pending.    | In progress |
-| R171 | MUI X dates with date-only/UTC semantics.              | UI/forms · P36-02            | Date/time round-trip, invalid input, clearing, timezone and browser editing. | Planned     |
+| ID   | Requirement                                            | Owner / tasks                | Evidence required                                                         | Status      |
+| ---- | ------------------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------- | ----------- |
+| R170 | MUI Autocomplete for selections, assignees and search. | UI/forms/web · P36-01/P36-03 | [Selections](evidence/P36-01.md); direct web/search verification pending. | In progress |
+| R171 | MUI X dates with date-only/UTC semantics.              | UI/forms · P36-02            | [Date controls](evidence/P36-02.md); final acceptance pending.            | In progress |

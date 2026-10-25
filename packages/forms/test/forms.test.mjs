@@ -366,13 +366,12 @@ test('datetime controls preserve milliseconds and clear to null', async () => {
     );
   }
   render(h(DatetimeForm));
-  const input = screen.getByLabelText('Due time');
-  assert.equal(input.type, 'datetime-local');
-  assert.equal(input.step, '0.001');
-  assert.equal(input.value, '2026-06-10T12:45:30.123');
+  const group = screen.getByRole('group', { name: 'Due time' });
+  assert.ok(group);
+  assert.equal(screen.getByRole('spinbutton', { name: 'Seconds' }).textContent, '30');
   fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
   await waitFor(() => assert.deepEqual(submissions[0], { due: '2026-06-10T12:45:30.123' }));
-  fireEvent.change(input, { target: { value: '' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Clear Due time' }));
   fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
   await waitFor(() => assert.deepEqual(submissions[1], { due: null }));
 });

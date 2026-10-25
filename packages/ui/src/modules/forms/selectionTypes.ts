@@ -16,6 +16,7 @@ type SelectionCommonProps = Readonly<{
   label: string;
   name?: string;
   onBlur?: () => void;
+  onClear?: () => void;
   options: readonly SelectionOption[];
   required?: boolean;
 }>;

@@ -52,7 +52,13 @@ export function SelectionInput(props: SelectionInputProps) {
       isOptionEqualToValue={(option, value) => Object.is(option.value, value.value)}
       multiple={Boolean(props.multiple)}
       onBlur={onBlur}
-      onChange={(_event, next) => {
+      onChange={(_event, next, reason) => {
+        if (reason === 'clear' && props.onClear) {
+          props.onClear();
+
+          return;
+        }
+
         if (props.multiple) {
           props.onChange(Array.isArray(next) ? next.map((option) => option.value) : []);
 
@@ -62,6 +68,7 @@ export function SelectionInput(props: SelectionInputProps) {
         props.onChange(next && !Array.isArray(next) ? next.value : null);
       }}
       options={allOptions}
+      slotProps={{ clearIndicator: { sx: { visibility: 'visible' } } }}
       value={props.multiple ? selection : (selection[0] ?? null)}
       renderInput={(params) => (
         <TextField

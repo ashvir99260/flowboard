@@ -1508,6 +1508,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `feat(forms): use searchable MUI selections`.
 
 - [ ] **P36-02 — MUI X date and date-time controls**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P36-02.md).
   - **Goal:** Replace native date controls with shared Community pickers.
   - **Requirements:** R171.
   - **Files:** UI date wrapper/adapter/helpers, forms date binding, custom date renderer, exact dependencies/lockfile, tests/stories.

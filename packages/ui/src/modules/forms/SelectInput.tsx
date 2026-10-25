@@ -31,6 +31,7 @@ export function SelectInput({
     <SelectionInput
       {...shared}
       multiple
+      onClear={() => onChange(null)}
       value={Array.isArray(value) ? value : []}
       onChange={(values) =>
         onChange(values.filter((item): item is string => typeof item === 'string'))

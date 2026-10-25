@@ -40,9 +40,9 @@ Task, status, field-definition and move forms use the same controlled inputs. Do
 
 ## Task due instants
 
-Task due dates use the generic datetime-local widget with millisecond step precision. Web owns the UTC adapter, label and validation: existing instants become suffix-free UTC control values, and submitted values become canonical UTC instants. A native minute-only control value gains zero seconds; existing seconds/milliseconds are preserved. Blank input clears to null. Custom fields of type date continue using calendar-day controls.
+Task due dates use the shared MUI X DateTimePicker through the generic datetime-local descriptor. Web owns the UTC meaning, label and request mapper; the UI wrapper parses/displays UTC and preserves seconds/milliseconds. Date-only fields use DatePicker and emit YYYY-MM-DD. A clear icon emits null; an incomplete or impossible date stays an invalid draft so Zod can block submission. The picker exposes labeled keyboard sections and a calendar popup.
 
-The UTC adapter is owned by the web task form; custom date fields retain calendar-day validation. See [D156](DECISIONS.md#d156--task-due-instants-and-utc-editing) and [P28-06 evidence](evidence/P28-06.md).
+The UI package owns its Day.js localization provider; consumers do not need a second provider. See [input controls](INPUT_CONTROLS.md) and [P36-02 evidence](evidence/P36-02.md).
 
 ## Task relationships
 

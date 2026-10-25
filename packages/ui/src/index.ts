@@ -24,6 +24,10 @@ export { CustomFieldInput } from './modules/forms/CustomFieldInput.js';
 
 export { SelectionInput } from './modules/forms/SelectionInput.js';
 
+export { DateInput } from './modules/forms/DateInput.js';
+
+export type { DateInputProps } from './modules/forms/DateInput.js';
+
 export type {
   SelectionInputProps,
   SelectionOption,

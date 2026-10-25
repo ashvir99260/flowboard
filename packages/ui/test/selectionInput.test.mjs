@@ -174,3 +174,24 @@ test('required multi-selection uses the selected values for native required vali
   fireEvent.keyDown(input, { key: 'Backspace' });
   assert.equal(input.required, true);
 });
+
+test('a nullable multi-select can distinguish clearing from removing its final chip', () => {
+  const changes = [];
+  render(
+    createElement(UI.CustomFieldInput, {
+      field: {
+        key: 'tags',
+        name: 'Tags',
+        type: 'multi_select',
+        required: false,
+        options: [{ id: 'a', label: 'Alpha' }],
+      },
+      value: ['a'],
+      onChange: (value) => changes.push(value),
+    }),
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Clear Tags' }));
+  assert.equal(changes.at(-1), null);
+  fireEvent.keyDown(screen.getByRole('combobox', { name: 'Tags' }), { key: 'Backspace' });
+  assert.deepEqual(changes.at(-1), []);
+});
