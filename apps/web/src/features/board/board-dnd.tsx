@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, useMediaQuery } from '@flowboard/ui';
+import { Button, WorkspaceIcon, useMediaQuery } from '@flowboard/ui';
 import {
   BoardDropzone,
   BoardGrid,
@@ -75,15 +75,17 @@ function Card({
         >
           <KanbanCard
             task={task}
+            onOpen={() => openTask(task.id)}
             dragHandle={
               <Button
                 {...provided.dragHandleProps}
                 data-drag-task={task.id}
                 aria-label={`Drag task: ${task.title}`}
                 disabled={pending}
-                sx={{ touchAction: 'none', mb: 0.4 }}
+                title="Drag task"
+                sx={{ touchAction: 'none', minWidth: '3.2rem', px: 0.4 }}
               >
-                Drag
+                <WorkspaceIcon name="menu" />
               </Button>
             }
             metadata={
@@ -94,19 +96,14 @@ function Card({
             actions={
               <>
                 <Button
-                  data-open-task={task.id}
-                  aria-label={`Open task: ${task.title}`}
-                  onClick={() => openTask(task.id)}
-                >
-                  Open task
-                </Button>
-                <Button
                   data-move-task={task.id}
                   aria-label={`Move task: ${task.title}`}
                   disabled={pending}
                   onClick={open}
+                  title="Move task"
+                  sx={{ minWidth: '3.2rem', px: 0.4 }}
                 >
-                  Move
+                  <WorkspaceIcon name="dots" />
                 </Button>
               </>
             }

@@ -23,7 +23,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Card: Story = {
   play: async ({ args, canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: task.title }));
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: `Open task: ${task.title}` }),
+    );
     await expect(args.onOpen).toHaveBeenCalledOnce();
   },
 };

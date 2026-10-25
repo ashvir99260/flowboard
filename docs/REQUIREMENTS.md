@@ -210,3 +210,7 @@ For R151, fresh demo databases receive the expanded fixture. Existing initialize
 ## Follow-up authorization — complete the local backlog (25 October 2026)
 
 The user subsequently requested completion of all tasks. R156–R160 are now selected for safe design and implementation after the remaining P28 tasks, rather than consideration only. Keep one tested task/commit at a time and define workspace recovery, subtask ownership, search permissions, bulk atomicity and administration interactions before implementing each. This authorizes local backlog completion, not destructive data resets or unconfigured external deployment.
+
+## Workspace interface follow-up
+
+Provide a ClickUp/Jira-inspired branded header and sidebar with workspace context, visible lists and compact task cards. Put New task, settings and invitation actions at the upper right. Support moving task cards between visible lists and ordering within their existing status, while retaining per-list status boards. Settings links expose workspace, list/container, custom-field and member management. Invite opens an email/role dialog backed by real invitations and accurately distinguishes link creation from email delivery.

@@ -12,7 +12,6 @@ async function openBoard(t, configure = () => {}) {
   const browser = await chromium.launch({ headless: true });
   t.after(() => browser.close());
   const api = await startAppApi(t);
-  configure(api.controls.board);
   const { origin } = await startWeb(t, api.origin);
   const page = await browser.newPage();
   page.setDefaultTimeout(10000);
@@ -21,16 +20,29 @@ async function openBoard(t, configure = () => {}) {
   await page.getByLabel(/^Password/).fill('browser-test-password');
   await page.getByRole('button', { exact: true, name: 'Sign in' }).click();
   await page.getByRole('button', { name: /Engineering/ }).click();
+  const workspace = page.getByRole('region', { exact: true, name: 'Workspace lists board' });
+  await workspace
+    .getByRole('region', { exact: true, name: 'Public list list column' })
+    .getByRole('article')
+    .first()
+    .waitFor();
+  await workspace
+    .getByRole('region', { exact: true, name: 'Private list list column' })
+    .getByRole('article')
+    .first()
+    .waitFor();
+  configure(api.controls.board);
+  const requestStart = api.requests.length;
   await page.getByRole('button', { exact: true, name: 'Public list' }).click();
 
-  return { page, api, origin };
+  return { page, api, origin, requestStart };
 }
 
 test(
   'boards render exact sibling columns, card metadata, empty columns and per-column pagination',
   { timeout: 120000 },
   async (t) => {
-    const { page, api } = await openBoard(t);
+    const { page, api, requestStart } = await openBoard(t);
     const board = page.getByRole('region', { exact: true, name: 'Task board' });
     await board.waitFor();
     const todo = board.getByRole('region', { exact: true, name: 'To do column' });
@@ -58,6 +70,7 @@ test(
     await expect(todo.getByRole('article')).toHaveCount(2);
     assert.ok(
       api.requests
+        .slice(requestStart)
         .filter((request) => request.path.endsWith('/tasks'))
         .every((request) => request.query.statusId),
     );

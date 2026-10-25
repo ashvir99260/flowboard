@@ -1,7 +1,7 @@
 'use client';
 
 import { CurrentUserEnvelopeSchema, NodeEnvelopeSchema } from '@flowboard/contracts';
-import { Alert, Box, Button, Divider, Stack, Typography } from '@flowboard/ui';
+import { Alert, Box, Button, FlowboardLogo, Stack, Typography } from '@flowboard/ui';
 import { ErrorState, WorkspaceLayout } from '@flowboard/ui';
 import NextLink from 'next/link';
 import { useParams } from 'next/navigation';
@@ -14,8 +14,10 @@ import { useGetCurrentUserQuery } from '../auth/use-get-current-user-query';
 import { ConfigurationSettingsHost } from '../config/configuration-settings-host';
 import { ListViews } from '../list/list-view';
 import { TaskEditorProvider } from '../tasks/task-drawer';
-import { Sidebar } from '../tree/sidebar';
 import { useGetNodeQuery } from '../tree/use-get-node-query';
+
+import { WorkspaceActions } from './workspace-actions';
+import { WorkspaceNavigation } from './workspace-navigation';
 
 import type { QueryScope } from '../../lib/query-scope';
 import type { ClientRuntime } from '../../providers/app-providers';
@@ -79,16 +81,6 @@ function SelectedList({
       <Typography color="text.secondary">
         {list.visibility === 'private' ? 'Private list' : 'Workspace list'}
       </Typography>
-      <Box component="dl" sx={{ m: 0 }}>
-        <Typography component="dt">Created</Typography>
-        <Typography component="dd" sx={{ m: 0, mb: 1.2 }}>
-          {new Date(list.createdAt).toLocaleDateString()}
-        </Typography>
-        <Typography component="dt">Last updated</Typography>
-        <Typography component="dd" sx={{ m: 0 }}>
-          {new Date(list.updatedAt).toLocaleDateString()}
-        </Typography>
-      </Box>
       <ListViews listId={listId} />
     </Stack>
   );
@@ -197,66 +189,27 @@ function VerifiedWorkspace({
         open={open}
         onOpen={() => setOpen(true)}
         onClose={() => setOpen(false)}
+        header={<FlowboardLogo />}
+        headerActions={
+          <WorkspaceActions
+            listId={listId}
+            runtime={runtime}
+            scope={scope}
+            role={activeWorkspace.role}
+          />
+        }
         navigation={
-          <>
-            <Typography variant="h3" component="h2" sx={{ p: 0.8, overflowWrap: 'anywhere' }}>
-              {activeWorkspace.name}
-            </Typography>
-            <Button component={NextLink} href="/workspaces">
-              Switch workspace
-            </Button>
-            {activeWorkspace.role === 'admin' && (
-              <>
-                <Button
-                  component={NextLink}
-                  href={`/w/${scope.workspaceId}/settings/administration`}
-                  onClick={() => setOpen(false)}
-                >
-                  Containers and access
-                </Button>
-                <Button
-                  component={NextLink}
-                  href={`/w/${scope.workspaceId}/settings/workspace`}
-                  onClick={() => setOpen(false)}
-                >
-                  Workspace settings
-                </Button>
-                <Button
-                  component={NextLink}
-                  href={`/w/${scope.workspaceId}/settings/statuses`}
-                  onClick={() => setOpen(false)}
-                >
-                  Status settings
-                </Button>
-                <Button
-                  component={NextLink}
-                  href={`/w/${scope.workspaceId}/settings/fields`}
-                  onClick={() => setOpen(false)}
-                >
-                  Field settings
-                </Button>
-              </>
-            )}
-            <Divider sx={{ my: 1.2 }} />
-            <Sidebar
-              runtime={runtime}
-              scope={scope}
-              selectedId={listId}
-              onSelect={() => setOpen(false)}
-            />
-            <Box sx={{ mt: 'auto', pt: 2.4 }}>
-              <Typography variant="body2" sx={{ px: 0.8, overflowWrap: 'anywhere' }}>
-                {user.name}
-              </Typography>
-              <Button
-                onClick={() => {
-                  void logout();
-                }}
-              >
-                Sign out
-              </Button>
-            </Box>
-          </>
+          <WorkspaceNavigation
+            runtime={runtime}
+            scope={scope}
+            selectedId={listId}
+            workspace={activeWorkspace}
+            userName={user.name}
+            onSelect={() => setOpen(false)}
+            onLogout={() => {
+              void logout();
+            }}
+          />
         }
       >
         <ConfigurationSettingsHost>{children}</ConfigurationSettingsHost>

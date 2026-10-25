@@ -9,18 +9,23 @@ import type { ResolvedStatus } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
 const Column = styled(Paper, { name: 'FlowboardKanbanColumn', slot: 'Root' })(({ theme }) => ({
-  padding: theme.spacing(1.2),
+  padding: theme.spacing(0.4),
   minWidth: 0,
   width: '100%',
+  backgroundColor: 'transparent',
+  borderColor: 'transparent',
 })) as typeof Paper;
 const Header = styled(Stack)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   flexWrap: 'wrap',
-  marginBottom: theme.spacing(1.2),
+  marginBottom: theme.spacing(1.6),
 }));
 const Summary = styled(Box)({ minWidth: 0 });
-const Count = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(0.4) }));
+const Count = styled(Typography)(({ theme }) => ({
+  marginTop: theme.spacing(0.6),
+  fontSize: '1.2rem',
+}));
 
 export function KanbanColumn({
   action,

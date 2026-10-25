@@ -381,3 +381,11 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | R158 | E · User completion request | Implement permission-scoped title/description full-text search, replacing the explicit stub.                                                                                        | Search · NEXT-01, P31-01, P31-02             | Design and explicit selection before implementation.                                                             | In progress |
 | R159 | E · User completion request | Consider bounded bulk task updates with transactional validation and conflicts.                                                                                       | Design · NEXT-04                             | Design and explicit selection before implementation.                                                             | In progress |
 | R160 | E · User completion request | Consider container/grant administration UI over existing guarded APIs.                                                                                                | Design · NEXT-05                             | Design and explicit selection before implementation.                                                             | In progress |
+
+## Workspace interface follow-up
+
+| ID | Source | Requirement | Owner / tasks | Evidence required | Status |
+| --- | --- | --- | --- | --- | --- |
+| R161 | User interface follow-up | Branded header, compact sidebar/workspace context and readable shared task presentation. | UI/web · P32-01 | Responsive and keyboard review; actual screenshots and behavior. | In progress |
+| R162 | User interface follow-up | Workspace list columns with task drag between lists and preserved per-list status boards. | Web · P32-02 | Correct status/field/permission checks, pagination, rollback and keyboard alternatives. | In progress |
+| R163 | User interface follow-up | Header task/settings actions and real email/role invitation dialog. | Web · P32-03 | Role controls, validation, retained failures and accurate invitation success. | In progress |

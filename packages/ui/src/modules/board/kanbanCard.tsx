@@ -12,30 +12,61 @@ import type { Task } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
 const Card = styled(Paper, { name: 'FlowboardKanbanCard', slot: 'Root' })(({ theme }) => ({
-  padding: theme.spacing(1.2),
+  padding: theme.spacing(1),
   minWidth: 0,
+  borderRadius: 8,
+  backgroundColor: (theme.vars ?? theme).palette.background.paper,
+  '&:hover': { boxShadow: theme.shadows[1] },
 })) as typeof Paper;
+const Header = styled('div')(({ theme }) => ({
+  alignItems: 'flex-start',
+  display: 'flex',
+  gap: theme.spacing(0.4),
+}));
+const DragHandle = styled('div')({ display: 'flex', flexShrink: 0 });
+const ActionHeading = styled('h3')({ display: 'flex', flex: 1, margin: 0, minWidth: 0 });
 const OpenTitle = styled(ButtonBase)(({ theme }) => ({
-  minHeight: '4.4rem',
-  width: '100%',
+  minHeight: '3.6rem',
+  minWidth: 0,
+  flex: 1,
   justifyContent: 'flex-start',
   textAlign: 'left',
-  fontWeight: 600,
+  fontSize: '1.3rem',
+  fontWeight: 550,
+  lineHeight: 1.5,
   overflowWrap: 'anywhere',
   borderRadius: theme.shape.borderRadius,
+  '@media (pointer: coarse)': { minHeight: '4.4rem' },
 }));
+const TitleText = styled('span')({
+  display: '-webkit-box',
+  overflow: 'hidden',
+  WebkitBoxOrient: 'vertical',
+  WebkitLineClamp: 2,
+});
 const Title = styled(Typography)({
-  minHeight: '4.4rem',
-  fontWeight: 600,
+  display: '-webkit-box',
+  flex: 1,
+  minWidth: 0,
+  fontSize: '1.3rem',
+  fontWeight: 550,
+  lineHeight: 1.5,
+  overflow: 'hidden',
   overflowWrap: 'anywhere',
+  WebkitBoxOrient: 'vertical',
+  WebkitLineClamp: 2,
 }) as typeof Typography;
 const Summary = styled(Stack)(({ theme }) => ({
   flexWrap: 'wrap',
   alignItems: 'center',
-  marginBlock: theme.spacing(0.8),
+  justifyContent: 'space-between',
+  marginTop: theme.spacing(0.4),
 }));
-const Metadata = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(0.8), minWidth: 0 }));
-const Actions = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(0.8), flexWrap: 'wrap' }));
+const Metadata = styled(Stack)(({ theme }) => ({ marginTop: theme.spacing(0.6), minWidth: 0 }));
+const Actions = styled(Stack)(({ theme }) => ({
+  marginTop: theme.spacing(0.4),
+  flexWrap: 'wrap',
+}));
 
 export function KanbanCard({
   actions,
@@ -52,19 +83,30 @@ export function KanbanCard({
 }>) {
   return (
     <Card component="article" aria-label={task.title} variant="outlined">
-      {dragHandle}
-      {onOpen ? (
-        <OpenTitle onClick={onOpen}>{task.title}</OpenTitle>
-      ) : (
-        <Title component="h3" variant="body1">
-          {task.title}
-        </Title>
-      )}
+      <Header>
+        {onOpen ? (
+          <ActionHeading aria-label={task.title}>
+            <OpenTitle
+              aria-label={`Open task: ${task.title}`}
+              data-open-task={task.id}
+              onClick={onOpen}
+              title={task.title}
+            >
+              <TitleText>{task.title}</TitleText>
+            </OpenTitle>
+          </ActionHeading>
+        ) : (
+          <Title component="h3" title={task.title} variant="body1">
+            {task.title}
+          </Title>
+        )}
+        {dragHandle && <DragHandle>{dragHandle}</DragHandle>}
+      </Header>
       <Summary direction="row" useFlexGap spacing={0.8}>
         <PriorityBadge priority={task.priority} />
-        <DueDateLabel date={task.dueDate} />
+        {task.dueDate !== null && <DueDateLabel date={task.dueDate} variant="compact" />}
+        <AssigneeAvatarGroup assignees={task.assignees} />
       </Summary>
-      <AssigneeAvatarGroup assignees={task.assignees} />
       {metadata && <Metadata>{metadata}</Metadata>}
       {actions && (
         <Actions direction="row" spacing={0.8} useFlexGap>

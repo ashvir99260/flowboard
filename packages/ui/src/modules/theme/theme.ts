@@ -19,8 +19,9 @@ export const theme = createTheme({
           secondary: designTokens.palette.light.muted,
         },
         primary: {
-          contrastText: designTokens.palette.light.surface,
-          main: designTokens.palette.light.foreground,
+          contrastText: designTokens.palette.light.onAccent,
+          dark: designTokens.palette.light.brandHover,
+          main: designTokens.palette.light.brand,
         },
         secondary: {
           main: designTokens.palette.light.selected,
@@ -43,7 +44,10 @@ export const theme = createTheme({
           contrastText: designTokens.palette.light.onAccent,
         },
         divider: designTokens.palette.light.border,
-        action: { selected: designTokens.palette.light.selected },
+        action: {
+          hover: designTokens.palette.light.hover,
+          selected: designTokens.palette.light.selected,
+        },
       },
     },
     dark: {
@@ -58,8 +62,9 @@ export const theme = createTheme({
           secondary: designTokens.palette.dark.muted,
         },
         primary: {
-          contrastText: designTokens.palette.dark.background,
-          main: designTokens.palette.dark.foreground,
+          contrastText: designTokens.palette.dark.onAccent,
+          dark: designTokens.palette.dark.brandHover,
+          main: designTokens.palette.dark.brand,
         },
         secondary: {
           main: designTokens.palette.dark.selected,
@@ -82,7 +87,10 @@ export const theme = createTheme({
           contrastText: designTokens.palette.dark.onAccent,
         },
         divider: designTokens.palette.dark.border,
-        action: { selected: designTokens.palette.dark.selected },
+        action: {
+          hover: designTokens.palette.dark.hover,
+          selected: designTokens.palette.dark.selected,
+        },
       },
     },
   },
@@ -95,12 +103,12 @@ export const theme = createTheme({
     htmlFontSize: 10,
     fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     fontSize: 14,
-    h1: { fontSize: '2.2rem', fontWeight: 650, lineHeight: 1.45 },
-    h2: { fontSize: '1.8rem', fontWeight: 600, lineHeight: 1.5 },
-    h3: { fontSize: '1.6rem', fontWeight: 600, lineHeight: 1.5 },
+    h1: { fontSize: '2.2rem', fontWeight: 650, letterSpacing: '-0.04rem', lineHeight: 1.45 },
+    h2: { fontSize: '1.8rem', fontWeight: 600, letterSpacing: '-0.02rem', lineHeight: 1.5 },
+    h3: { fontSize: '1.6rem', fontWeight: 600, letterSpacing: '-0.01rem', lineHeight: 1.5 },
     body1: { fontSize: '1.4rem', lineHeight: 1.5 },
     body2: { fontSize: '1.3rem', lineHeight: 1.5 },
-    button: { fontSize: '1.4rem', textTransform: 'none' },
+    button: { fontSize: '1.3rem', letterSpacing: 0, textTransform: 'none' },
   },
   spacing: (factor: number | 'auto') =>
     factor === 'auto' ? factor : `${factor * designTokens.spacing}rem`,

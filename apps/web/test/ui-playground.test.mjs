@@ -4,6 +4,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { chromium } from '@playwright/test';
+import { designTokens } from '@flowboard/ui';
 
 import { startUpstream, startWeb } from './common/proxy-fixture.mjs';
 
@@ -64,9 +65,18 @@ test(
       await page.keyboard.press('Tab');
       await control.focus();
       await page.keyboard.press('Enter');
+      const expectedBackground = await page.evaluate((color) => {
+        const sample = document.createElement('span');
+        sample.style.color = color;
+        document.body.append(sample);
+        const result = getComputedStyle(sample).color;
+        sample.remove();
+
+        return result;
+      }, designTokens.palette[mode].background);
       await page.waitForFunction(
         (expected) => getComputedStyle(document.body).backgroundColor === expected,
-        mode === 'light' ? 'rgb(250, 250, 250)' : 'rgb(9, 9, 11)',
+        expectedBackground,
       );
       assert.equal(await control.getAttribute('aria-pressed'), 'true');
       assert.equal(

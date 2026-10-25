@@ -1377,4 +1377,34 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Validation:** Design review and chosen role/keyboard/rollback browser tests before implementation.
   - **Commit:** Feature-scoped implementation commit after source completion.
 
+- [ ] **P32-01 — Refresh the branded workspace shell**
+  - **Implementation:** Complete; final verification pending. [Evidence](evidence/P32-01.md).
+  - **Goal:** Deliver a compact header/sidebar and readable task workspace using shared MUI presentation.
+  - **Requirements:** R161; preserve navigation, roles, tokens and accessibility.
+  - **Files:** Shared theme/layout/board/navigation components; workspace shell; design docs and stories.
+  - **Dependencies:** Existing workspace, board and administration implementations.
+  - **Acceptance:** Logo/header, clear workspace/list navigation, compact cards, responsive sidebar and preserved keyboard/focus behavior.
+  - **Validation:** Browser visual/interaction review and focused regression cases; final quality gates remain separately reported.
+  - **Commit:** `feat(ui): refresh workspace navigation and cards`.
+
+- [ ] **P32-02 — Add workspace list-board drag and drop**
+  - **Implementation:** Complete; final verification pending. [Evidence](evidence/P32-02.md).
+  - **Goal:** Move task cards between visible lists from workspace home.
+  - **Requirements:** R162; preserve status/field/permission validation and revisions.
+  - **Files:** Workspace-board feature, home route, task editor integration and tests.
+  - **Dependencies:** Existing generated list/move operations and P32-01 presentation.
+  - **Acceptance:** Correct list/status identities, bounded pages, optimistic rollback, destination correction form, keyboard and button move alternatives.
+  - **Validation:** Cross-list, required-field, denial, stale version and reorder regressions plus browser interaction review.
+  - **Commit:** `feat(web): add workspace list board`.
+
+- [ ] **P32-03 — Add header quick actions and invitations**
+  - **Implementation:** Complete; final verification pending. [Evidence](evidence/P32-03.md).
+  - **Goal:** Put task creation, workspace settings and real invitations in the header.
+  - **Requirements:** R163; preserve generated API and form boundaries.
+  - **Files:** Workspace action/invite components, hooks, shell integration and tests.
+  - **Dependencies:** Existing task, invitation and administration APIs; P32-01.
+  - **Acceptance:** Correct selected-list task creation, email/role validation, failure-safe draft, invitation link success, role-restricted settings and focus restoration.
+  - **Validation:** Admin/member actions and successful/failed invitation regressions; no false email-sent message.
+  - **Commit:** `feat(web): add workspace quick actions`.
+
 Other future capabilities (OIDC integration, teams, webhook delivery, general container/task restoration, billing, uploads) are design notes, not disguised incomplete MVP implementations. Add tasks only if those features are requested.

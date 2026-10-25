@@ -30,6 +30,10 @@ export { KanbanCard } from './modules/board/kanbanCard.js';
 
 export { KanbanColumn } from './modules/board/kanbanColumn.js';
 
+export { WorkspaceColumn } from './modules/board/workspaceColumn.js';
+
+export type { WorkspaceColumnProps } from './modules/board/workspaceColumn.js';
+
 export * from './primitives.js';
 
 export { MemberAccess } from './modules/administration/memberAccess.js';
@@ -59,6 +63,14 @@ export { MarkdownContent } from './modules/content/markdownContent.js';
 export { LoadingState } from './modules/feedback/loadingState.js';
 
 export { WorkspaceLayout } from './modules/layout/workspaceLayout.js';
+
+export { FlowboardLogo } from './modules/layout/flowboardLogo.js';
+
+export type { FlowboardLogoProps } from './modules/layout/flowboardLogo.js';
+
+export { WorkspaceIcon } from './modules/navigation/workspaceIcon.js';
+
+export type { WorkspaceIconName, WorkspaceIconProps } from './modules/navigation/workspaceIcon.js';
 
 export { BoardDropzone, BoardGrid, BoardItem, BoardViewport } from './modules/board/boardLayout.js';
 

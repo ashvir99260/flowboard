@@ -119,6 +119,8 @@ Status chips fill with their stored color; a selected field option uses its opti
 
 ## Action and live notifications
 
+P32 adds `FlowboardLogo`, `WorkspaceIcon` and `WorkspaceColumn` as plain shared presentation. `WorkspaceLayout` accepts optional header/action slots and keeps its responsive navigation behavior. Interactive `KanbanCard` titles retain a level-three heading plus a distinct open button; drag and move controls remain sibling actions. Compact card dates keep the full UTC timestamp in `dateTime`/`title`. Web owns the list-board queries, destinations, invitations and role decisions; the UI package never performs those requests.
+
 The standalone [Storybook](STORYBOOK.md) demonstrates UI controls, domain presentation, shared overlays and notifications using local props and the shared theme. Its browser checks complement the application playground and end-to-end journeys.
 
 `ToastHost` wraps the application with one React Toastify renderer. Web passes a plain message and dismissal callback; UI owns themed styling and registers the innermost drawer/dialog as the toast's accessible region. Arrival never moves focus. Alt+T focuses the notification; its Dismiss button or Escape closes it. Escape from a focused toast leaves the underlying dialog open. Errors remain until dismissed; success/info use six seconds with hover/window-focus pause and reduced-motion styling.

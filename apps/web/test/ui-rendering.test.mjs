@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { AuthExamples } from '@flowboard/contracts';
+import { designTokens } from '@flowboard/ui';
 import { chromium } from '@playwright/test';
 
 import { startAppApi } from './common/app-api-fixture.mjs';
@@ -37,9 +38,18 @@ test(
     });
     await page.goto(origin);
     await page.getByRole('heading', { exact: true, name: 'Choose a workspace' }).waitFor();
+    const expectedBackground = await page.evaluate((color) => {
+      const sample = document.createElement('span');
+      sample.style.color = color;
+      document.body.append(sample);
+      const result = getComputedStyle(sample).color;
+      sample.remove();
+
+      return result;
+    }, designTokens.palette.light.background);
     assert.equal(
       await page.locator('body').evaluate((body) => getComputedStyle(body).backgroundColor),
-      'rgb(250, 250, 250)',
+      expectedBackground,
     );
     assert.deepEqual(errors, []);
     assert.equal((await page.goto(`${origin}/playground`)).status(), 404);
