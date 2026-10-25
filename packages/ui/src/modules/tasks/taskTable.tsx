@@ -14,7 +14,7 @@ import { PriorityBadge } from './priorityBadge.js';
 import { StatusChip } from './statusChip.js';
 
 import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
-import type { GridColDef } from '@mui/x-data-grid';
+import type { GridColDef, GridEventListener } from '@mui/x-data-grid';
 
 const Container = styled('div')({
   height: 'min(64rem, 75dvh)',
@@ -72,6 +72,44 @@ export function TaskTable({
 }) {
   const { ref: remRef, size: remSize } = useRemSize();
   const estimateRowHeight = useCallback(() => 6.4 * remSize, [remSize]);
+  const openRow = useCallback<GridEventListener<'rowClick'>>(
+    (params, event) => {
+      const target = event.target;
+      if (
+        !(target instanceof Element) ||
+        event.defaultPrevented ||
+        event.defaultMuiPrevented ||
+        event.button !== 0 ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        target.closest(
+          'button, a, input, select, textarea, label, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"], [role="checkbox"], [role="combobox"], [role="switch"]',
+        )
+      )
+        return;
+
+      const item = items.find(({ id }) => id === params.id);
+      const row = target.closest('[role="row"]');
+      if (!item || !row) return;
+
+      const selection = row.ownerDocument.getSelection();
+      if (
+        selection &&
+        !selection.isCollapsed &&
+        Array.from({ length: selection.rangeCount }, (_, index) =>
+          selection.getRangeAt(index),
+        ).some((range) => range.intersectsNode(row))
+      )
+        return;
+
+      row.querySelector<HTMLElement>('[data-open-task]')?.focus({ preventScroll: true });
+      onOpenTask(item.id);
+    },
+    [items, onOpenTask],
+  );
+
   const columns = useMemo<GridColDef<Task>[]>(() => {
     const statusById = new Map(statuses.map((status) => [status.id, status]));
     const fixed: GridColDef<Task>[] = [
@@ -167,6 +205,7 @@ export function TaskTable({
         disableColumnMenu
         disableColumnSelector
         disableRowSelectionOnClick
+        onRowClick={openRow}
       />
     </Container>
   );

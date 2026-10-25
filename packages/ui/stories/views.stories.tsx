@@ -36,6 +36,18 @@ export const WithCustomColumns: Story = {
   },
 };
 
+export const RowBodyOpening: Story = {
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const title = canvas.getByRole('button', { name: `Open task: ${task.title}` });
+    const row = title.closest('[role="row"]')!;
+    await userEvent.click(row.querySelector('[data-field="statusId"]')!);
+    await expect(args.onOpenTask).toHaveBeenCalledTimes(1);
+    await expect(args.onOpenTask).toHaveBeenCalledWith(task.id);
+    await expect(title).toHaveFocus();
+  },
+};
+
 export const KeyboardOpening: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
@@ -101,7 +113,9 @@ export const MultipleLoadedPages: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Append loaded rows' }));
     await expect(canvas.getByRole('button', { name: 'Open task: Task 051' })).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: 'Go to next page' }));
+    await expect(args.onOpenTask).not.toHaveBeenCalled();
     await userEvent.click(await canvas.findByRole('button', { name: 'Open task: Task 105' }));
+    await expect(args.onOpenTask).toHaveBeenCalledTimes(1);
     await expect(args.onOpenTask).toHaveBeenCalledWith(loadedTasks[104]!.id);
     await userEvent.click(canvas.getByRole('button', { name: 'Reset loaded rows' }));
     await waitFor(() =>
