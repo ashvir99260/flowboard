@@ -405,8 +405,8 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 
 ## Workspace clarity and search
 
-| ID   | Requirement                                                                         | Owner / tasks                | Evidence required                                                              | Status      |
-| ---- | ----------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------ | ----------- |
-| R167 | Card-body click opens task details without interfering with drag or nested actions. | UI/web · P34-02              | [Focused interaction checks](evidence/P34-02.md); final acceptance pending.    | In progress |
-| R168 | Shared board, avatar, close-control and status-color refinements.                   | UI/forms/web · P35-01/P35-02 | Focused interactions and desktop/narrow light/dark review.                     | Planned     |
-| R169 | Account/theme header and permission-scoped global task/list search.                 | API/web · P35-03/P35-04      | Contract, PostgreSQL permission/cursor and browser search/account regressions. | Planned     |
+| ID   | Requirement                                                                         | Owner / tasks                | Evidence required                                                                                              | Status      |
+| ---- | ----------------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------- |
+| R167 | Card-body click opens task details without interfering with drag or nested actions. | UI/web · P34-02              | [Focused interaction checks](evidence/P34-02.md); final acceptance pending.                                    | In progress |
+| R168 | Shared board, avatar, close-control and status-color refinements.                   | UI/forms/web · P35-01/P35-02 | [UI](evidence/P35-01.md), [forms](evidence/P35-02.md), [header](evidence/P35-04.md); final acceptance pending. | In progress |
+| R169 | Account/theme header and permission-scoped global task/list search.                 | API/web · P35-03/P35-04      | [API](evidence/P35-03.md) and [browser](evidence/P35-04.md) checks; final acceptance pending.                  | In progress |

@@ -198,7 +198,8 @@ test(
     );
     await page.goto(`${origin}/w/${api.workspace.id}/settings/workspace`);
     await page.getByRole('alert', { name: 'Access denied' }).waitFor();
-    await page.getByRole('button', { exact: true, name: 'Sign out' }).click();
+    await page.getByRole('button', { name: /^Account menu for / }).click();
+    await page.getByRole('menuitem', { exact: true, name: 'Sign out' }).click();
     await page.getByLabel(/^Email/).fill('alice@example.test');
     await page.getByLabel(/^Password/).fill('browser-test-password');
     await page.getByRole('button', { exact: true, name: 'Sign in' }).click();

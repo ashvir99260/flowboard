@@ -15,7 +15,7 @@ This follow-up keeps MUI/Emotion, the shared component library, existing typogra
 
 Add GET /v1/search using the existing token-resolved workspace, DB-backed membership and central permission policy. Reuse bounded PostgreSQL search semantics. Search live task titles/descriptions and list names, filter inaccessible ancestors before pagination, and return only typed display/navigation data. Cursor pagination binds query, workspace, caller and revisions; stale or mismatched cursors fail safely. No schema migration or separate indexing service is needed.
 
-The web consumes the generated operation through a feature-owned query hook. Cache keys include the existing session scope and query. Old results clear on workspace/session changes. The header never scans unfiltered tasks on the client.
+The web consumes the generated operation through a feature-owned query hook. Cache keys include the existing session scope and query. Old results clear on workspace/session changes. Workspace invalidations and current-scope mutations restart search from its first page instead of preserving revoked titles or stale cursors. The header never scans unfiltered tasks on the client.
 
 ## Delivery
 

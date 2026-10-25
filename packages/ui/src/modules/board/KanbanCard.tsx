@@ -70,7 +70,8 @@ const Metadata = styled(Stack)(({ theme }) => ({
   minWidth: 0,
 }));
 const Actions = styled(Stack)(({ theme }) => ({
-  marginTop: theme.spacing(0.4),
+  marginLeft: theme.spacing(0.4),
+  flexShrink: 0,
   flexWrap: 'wrap',
 }));
 
@@ -123,6 +124,11 @@ export function KanbanCard({
           </Title>
         )}
         {dragHandle && <DragHandle>{dragHandle}</DragHandle>}
+        {actions && (
+          <Actions direction="row" spacing={0.8} useFlexGap>
+            {actions}
+          </Actions>
+        )}
       </Header>
       <Summary direction="row" useFlexGap spacing={0.8}>
         <PriorityBadge priority={task.priority} />
@@ -130,11 +136,6 @@ export function KanbanCard({
         <AssigneeAvatarGroup assignees={task.assignees} />
       </Summary>
       {metadata && <Metadata>{metadata}</Metadata>}
-      {actions && (
-        <Actions direction="row" spacing={0.8} useFlexGap>
-          {actions}
-        </Actions>
-      )}
     </Card>
   );
 }

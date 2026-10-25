@@ -1,20 +1,31 @@
 'use client';
 
 import { CurrentUserEnvelopeSchema } from '@flowboard/contracts';
-import { Alert, Button, ErrorState, FlowboardLogo, WorkspaceLayout } from '@flowboard/ui';
+import {
+  AccountMenu,
+  Alert,
+  Button,
+  ErrorState,
+  FlowboardLogo,
+  WorkspaceLayout,
+} from '@flowboard/ui';
 import NextLink from 'next/link';
-import type { ReactNode } from 'react';
 import { useState } from 'react';
+
 import { apiError } from '../../lib/apiError';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import { useSession } from '../../providers/useSession';
 import { SessionLoading } from '../auth/SessionLoading';
 import { useGetCurrentUserQuery } from '../auth/useGetCurrentUserQuery';
 import { ConfigurationSettingsHost } from '../config/ConfigurationSettingsHost';
+import { GlobalSearch } from '../search/GlobalSearch';
 import { TaskEditorProvider } from '../tasks/TaskEditorProvider';
+
 import { WorkspaceActions } from './WorkspaceActions';
 import { WorkspaceNavigation } from './WorkspaceNavigation';
+
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { ReactNode } from 'react';
 
 export function VerifiedWorkspace({
   runtime,
@@ -110,13 +121,23 @@ export function VerifiedWorkspace({
         onOpen={() => setOpen(true)}
         onClose={() => setOpen(false)}
         header={<FlowboardLogo />}
+        headerSearch={<GlobalSearch runtime={runtime} scope={scope} />}
         headerActions={
-          <WorkspaceActions
-            listId={listId}
-            runtime={runtime}
-            scope={scope}
-            role={activeWorkspace.role}
-          />
+          <>
+            <WorkspaceActions
+              listId={listId}
+              runtime={runtime}
+              scope={scope}
+              role={activeWorkspace.role}
+            />
+            <AccountMenu
+              name={user.name}
+              role={activeWorkspace.role}
+              onSignOut={() => {
+                void logout();
+              }}
+            />
+          </>
         }
         navigation={
           <WorkspaceNavigation
@@ -124,11 +145,7 @@ export function VerifiedWorkspace({
             scope={scope}
             selectedId={listId}
             workspace={activeWorkspace}
-            userName={user.name}
             onSelect={() => setOpen(false)}
-            onLogout={() => {
-              void logout();
-            }}
           />
         }
       >

@@ -66,6 +66,12 @@ export { WorkspaceLayout } from './modules/layout/WorkspaceLayout.js';
 
 export { FlowboardLogo } from './modules/layout/FlowboardLogo.js';
 
+export { AccountMenu } from './modules/navigation/AccountMenu.js';
+
+export { HeaderSearchButton } from './modules/navigation/HeaderSearchButton.js';
+
+export { ThemeToggle } from './modules/navigation/ThemeToggle.js';
+
 export type { FlowboardLogoProps } from './modules/layout/FlowboardLogo.js';
 
 export { WorkspaceIcon } from './modules/navigation/WorkspaceIcon.js';

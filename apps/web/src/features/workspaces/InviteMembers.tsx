@@ -1,10 +1,11 @@
 'use client';
 
-import type { InvitationContext, InvitationFormState } from './invitationTypes';
-
 import { Button, ConfirmDialog, Dialog, DialogContent, DialogTitle, Stack } from '@flowboard/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+
 import { InviteContent } from './InviteContent';
+
+import type { InvitationContext, InvitationFormState } from './invitationTypes';
 
 export function InviteMembers({
   open,
@@ -15,6 +16,7 @@ export function InviteMembers({
   const [state, setState] = useState<InvitationFormState>({ busy: false, dirty: false });
   const [confirm, setConfirm] = useState(false);
   const onState = useCallback((value: InvitationFormState) => setState(value), []);
+
   const close = () => {
     if (state.busy) return;
 
@@ -22,16 +24,16 @@ export function InviteMembers({
     else onClose();
   };
 
-  useEffect(() => {
-    if (!open) {
-      setState({ busy: false, dirty: false });
-      setConfirm(false);
-    }
-  }, [open]);
-
   return (
     <>
-      <Dialog open={open} onClose={close} fullWidth maxWidth="sm" aria-labelledby="invite-title">
+      <Dialog
+        open={open}
+        onClose={close}
+        closeDisabled={state.busy}
+        fullWidth
+        maxWidth="sm"
+        aria-labelledby="invite-title"
+      >
         <DialogTitle id="invite-title">Invite to workspace</DialogTitle>
         <DialogContent>
           <Stack spacing={1.6}>

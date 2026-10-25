@@ -1,11 +1,11 @@
 'use client';
 
-import { styled } from '@mui/material/styles';
-
 import { default as Box } from '@mui/material/Box';
 import { default as Drawer } from '@mui/material/Drawer';
 import { default as IconButton } from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
 import { default as useMediaQuery } from '@mui/material/useMediaQuery';
+
 import { WorkspaceIcon } from '../navigation/WorkspaceIcon.js';
 import { Button } from '../primitives/Button.js';
 import { designTokens } from '../theme/tokens.js';
@@ -86,6 +86,7 @@ export function WorkspaceLayout({
   children,
   header,
   headerActions,
+  headerSearch,
   navigation,
   open,
   onOpen,
@@ -94,12 +95,14 @@ export function WorkspaceLayout({
   children: ReactNode;
   header?: ReactNode;
   headerActions?: ReactNode;
+  headerSearch?: ReactNode;
   navigation: ReactNode;
   onClose: () => void;
   onOpen: () => void;
   open: boolean;
 }>) {
   const desktop = useMediaQuery((theme) => theme.breakpoints.up('md'));
+
   const hasHeader = header !== undefined || headerActions !== undefined;
 
   return (
@@ -111,7 +114,10 @@ export function WorkspaceLayout({
               <WorkspaceIcon name="menu" />
             </IconButton>
           )}
-          <HeaderContent>{header}</HeaderContent>
+          <HeaderContent>
+            {header}
+            {headerSearch}
+          </HeaderContent>
           {headerActions && <HeaderActions>{headerActions}</HeaderActions>}
         </Header>
       )}

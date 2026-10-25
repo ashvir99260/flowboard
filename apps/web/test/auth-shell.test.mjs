@@ -79,7 +79,8 @@ test(
     await page.getByRole('heading', { exact: true, name: 'Private list' }).waitFor();
     await page.goBack();
     await page.getByRole('heading', { exact: true, name: 'Public list' }).waitFor();
-    await page.getByRole('button', { name: 'Sign out' }).click();
+    await page.getByRole('button', { name: /^Account menu for / }).click();
+    await page.getByRole('menuitem', { name: 'Sign out' }).click();
     await login('bob@example.test', false);
     assert.equal(await page.getByRole('button', { exact: true, name: 'Private list' }).count(), 0);
     await page.goto(`${origin}/w/${api.workspace.id}/lists/${api.privateList.id}`);

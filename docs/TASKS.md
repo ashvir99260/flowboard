@@ -1489,6 +1489,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `feat(api): search workspace tasks and lists`.
 
 - [ ] **P35-04 — Compose clear header and global search**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P35-04.md).
   - **Goal:** Put search, theme and account actions in a consistent header across workspace pages.
   - **Requirements:** R169; R168 visual consistency.
   - **Files:** Web workspace/search components/hooks, shared layout presentation, browser tests.
