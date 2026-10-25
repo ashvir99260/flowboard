@@ -1,6 +1,6 @@
 # Continuous integration and preview deployment
 
-The initial hosted environment is a **shared preview** on Vercel (web), Northflank (API, worker and Redis) and Neon (PostgreSQL), as requested on 23 October 2026. P00-13 replaces the earlier production-only CD target. The future build-once `dev → qa → stage → prod` flow remains separate in [PROMOTION.md](PROMOTION.md); it does not block this preview.
+Updated 25 October 2026. **This page describes the currently implemented workflow**, including its legacy Vercel/Northflank provider adapter. The new selected target is [Render with Neon](RENDER.md), but that adapter and live rollout are still planned. Do not enable the legacy CD job expecting it to deploy Render. See [delivery operations](DELIVERY_OPERATIONS.md) for trunk-based development and runtime configuration, and [PROMOTION.md](PROMOTION.md) for the future build-once `dev → qa → stage → prod` contract.
 
 ```mermaid
 flowchart LR
@@ -32,7 +32,27 @@ Every job uses the standard `ubuntu-24.04` GitHub-hosted runner. [GitHub documen
 
 Branch protection should require `Workspace / build`, `Workspace / lint`, `Workspace / test`, `Workspace / typecheck`, `Workspace / format:check`, `Compose / docker:check` and `Compose / docker:dev:check`, replacing obsolete check names if configured. Repository settings are not changed by this workflow commit.
 
-## Deployment contract
+## Exact checks and dependency graph
+
+Source: [`.github/workflows/delivery.yml`](../.github/workflows/delivery.yml). PR open/update/reopen/title edits, main pushes and manual dispatch trigger verification. All seven instances below start independently, subject to runner capacity; they do not run sequentially after each other. Each runner has its own checkout and frozen pnpm install.
+
+| Required check name          | What it verifies                                                                                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Workspace / build`          | Every applicable app/package build. Includes OpenAPI regeneration comparison, Spectral conventions and generated-client drift checks through package build scripts. |
+| `Workspace / lint`           | Shared ESLint/boundaries/naming/version rules, Conventional Commit/PR title validation, checksum-verified Actionlint for workflows.                                 |
+| `Workspace / test`           | Root Turbo suites: contracts, real PostgreSQL API/database, worker/Redis, UI/Storybook and browser journeys.                                                        |
+| `Workspace / typecheck`      | App/package TypeScript contracts, including separate story/form type checks.                                                                                        |
+| `Workspace / format:check`   | Shared formatting; package manifest order remains deliberate.                                                                                                       |
+| `Compose / docker:check`     | Production-image five-service health and application acceptance.                                                                                                    |
+| `Compose / docker:dev:check` | Development Compose startup/live-update verification.                                                                                                               |
+
+Within a lane, Turbo still respects dependency builds. Both matrices set `fail-fast: false`; a failed lane does not cancel the other results. Standard `ubuntu-24.04` runners and public-repository guards retain the existing cost boundary. [GitHub's public-runner policy](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories).
+
+`Publish affected apps` requires both complete matrices and a non-PR main run. It alone receives GitHub contents/packages write permissions and serializes publication. `Deploy released applications to preview` depends on publication, main, and `CD_ENABLED=true`; it uses the protected GitHub `preview` environment and serializes deployments. A PR never publishes or deploys this shared target. Workflow job configuration does not prove branch protection or environment approval settings were enabled in GitHub.
+
+The workflow does not currently add dependency-audit, CodeQL, image-vulnerability or external penetration-test jobs. OpenAPI/client checks are part of builds, not extra named GitHub check lanes. `pnpm release:check` is a separate clean-checkout acceptance command, not the workflow's entry command.
+
+## Existing legacy deployment contract
 
 - CI runs on pull requests and main; pull requests cannot publish or deploy this shared preview.
 - The serialized publisher remains authoritative for independent versions and immutable images.
@@ -43,7 +63,7 @@ Branch protection should require `Workspace / build`, `Workspace / lint`, `Works
 - Serialize preview deployments and refuse stale main workflows before mutations and during readiness polling. A stale Vercel build can finish at its unique preview URL, but it cannot acquire a production alias through this workflow.
 - PostgreSQL/Redis secrets stay on the hosts. CD needs deployment permissions, not database credentials. API startup applies checked-in migrations before readiness; hosted DEMO_SEED stays false.
 
-## Connect the shared preview
+## Legacy Vercel/Northflank setup (not the Render plan)
 
 1. Create the Vercel project and **preview-only** Northflank services using [DELIVERY.md](DELIVERY.md). Use a dedicated `flowboard-preview` Vercel project, linked to this repository with root `apps/web`. Vercel forces the first deployment to production even for preview requests. CI checks unfiltered project history and refuses an empty project before writing; complete the explicitly reviewed bootstrap in the hosting guide first. The committed `vercel.json` disables automatic Git deployments, so CI controls which released SHA builds. Keep Northflank automatic image/tag updates disabled.
 2. Create a GitHub environment named `preview`, restricted to `main`. Add the two tokens below as environment secrets. Add the resource IDs as repository variables. Use least-privilege tokens for the selected preview project/services.
@@ -77,9 +97,9 @@ Each provider wait is bounded to 15 minutes. If main changes mid-run, rerun on c
 
 The local MVP includes login/refresh/logout, a permission-filtered tree, board/list/task editing, scoped configuration, realtime updates and durable activity processing. Both API and worker expose HTTP liveness/readiness; API startup runs migrations with opt-in demo seeding. P12-03 verifies the full suite and both Docker modes. These local results do not establish a verified hosted deployment.
 
-P00-14 records actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
+The original P00-14 target is superseded by P22-02/P22-03 for Render. Those tasks must record actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
 
-## References checked 23 October 2026
+## Legacy provider references checked 23 October 2026
 
 - [Vercel first-deployment behavior](https://vercel.com/docs/deployments/environments#first-deployment), [Vercel preview creation](https://vercel.com/docs/rest-api/deployments/create-a-new-deployment), [deployment listing](https://vercel.com/docs/rest-api/deployments/list-deployments), [generated URLs](https://vercel.com/docs/deployments/generated-urls), [deployment protection](https://vercel.com/docs/deployment-protection)
 - [Northflank update semantics](https://northflank.com/docs/v1/api/use-the-api#update-resources-safely), [service update](https://northflank.com/docs/v1/api/project/services/patch-deployment-service), [service status](https://northflank.com/docs/v1/api/project/services/get-service), [Sandbox limits and account requirements](https://northflank.com/docs/v1/application/billing/pricing-on-northflank)

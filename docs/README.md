@@ -21,6 +21,9 @@ These are as-built summaries with a named source snapshot. The following documen
 | Change impact and implementation conventions | [Architecture map](../ARCHITECTURE.md), [agent guide map](agents/README.md), [workflow](DEVELOPMENT_WORKFLOW.md).                                         |
 | Components/forms/styles                      | [UI system](UI_COMPONENT_SYSTEM.md), [forms](FORM_SYSTEM.md), [tokens](STYLE_TOKENS.md), [Storybook](STORYBOOK.md).                                       |
 | Delivery and hosting                         | [Independent delivery](DELIVERY.md), [CI/CD](CI_CD.md), [future promotion](PROMOTION.md).                                                                 |
+| Delivery operating model                     | [Trunk-based development, runtime environments and release examples](DELIVERY_OPERATIONS.md).                                                             |
+| Redis and background work                    | [Redis roles, BullMQ, outbox, activity and recovery](REDIS_AND_JOBS.md).                                                                                  |
+| Planned hosting target                       | [Render topology, settings, limits and remaining implementation](RENDER.md).                                                                              |
 | Background research                          | [Product architecture references](REFERENCE_ARCHITECTURES.md), [earlier system design](SYSTEM_DESIGN.md), [UI references](UI_DESIGN.md).                  |
 
 Use source/schema plus task evidence to resolve stale design language. Historical research is not a claim about third-party internals, and planned hosting/promotion is not live deployment evidence. When behavior changes, update its owning reference and evidence before refreshing the summaries.

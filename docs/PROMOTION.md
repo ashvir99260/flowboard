@@ -2,15 +2,15 @@
 
 Status: agreed direction from the user's 23 October 2026 clarification; future four-environment execution is planned, not implemented. This document supersedes the assumption that deploying the same Git commit is sufficient artifact promotion.
 
-## Initial preview comes first
+## Shared preview comes first
 
-The user subsequently clarified that an initial hosted preview should run now on Vercel, Northflank and Neon. [CI_CD.md](CI_CD.md) defines that shared preview: Vercel builds a released commit as a preview, and Northflank runs released API/worker digests. This initial source-build exception is intentional and does not claim build-once promotion. P00-13/P00-14 implement and verify it without waiting for P00-11/P00-12. No production deployment is enabled by this preview workflow.
+The selected target is now [Render with Neon](RENDER.md). Start with one shared preview, then implement ordered promotion separately. Current CD code still uses the earlier Vercel/Northflank adapter; it must be replaced and verified before claiming a Render deployment. [Delivery operations](DELIVERY_OPERATIONS.md) connects this contract to the actual release/runtime code.
 
 ## What stays separate
 
 Docker Compose is the local development/test environment for web, API, worker, PostgreSQL and Redis. It does not require every hosted environment to use Docker. The portable Dockerfiles remain useful, but the production artifact format and host must support the same immutable bytes across environments.
 
-Trunk-based development, if adopted, means one `main` trunk and short-lived feature branches. `dev`, `qa`, `stage` and `prod` are deployment targets, not long-lived source branches. Their configuration and approval rules do not create new application versions.
+The target trunk-based development model means one `main` trunk and short-lived feature branches. `dev`, `qa`, `stage` and `prod` are deployment targets, not long-lived source branches. Their configuration and approval rules do not create new application versions.
 
 ```mermaid
 flowchart LR
@@ -36,21 +36,21 @@ flowchart LR
 
 ## Runtime configuration
 
-| Concern               | Contract                                                                                                                                                             |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Node execution mode   | `NODE_ENV=production` for every hosted target; do not set it to `qa` or `stage`                                                                                      |
-| Environment identity  | Use `APP_ENV` with `dev`, `qa`, `stage` or `prod`; the initial preview may use `preview`, and local tooling may use `local`                                          |
-| Server settings       | Load and validate database/Redis URLs, auth settings and service origins when the process starts; inject through the host's runtime configuration/secrets            |
-| Browser settings      | Serve only a typed, explicitly allowed public configuration from dynamic Next.js server rendering/bootstrap; initialize the generated client from that configuration |
-| Browser secrets       | Never expose database URLs, Redis credentials, signing keys or provider tokens                                                                                       |
-| Build inputs          | No environment-specific API origins, feature flags or secrets baked into client bundles or static HTML                                                               |
-| Next.js restrictions  | Do not use `NEXT_PUBLIC_*` or `next.config` `env` for values that differ between deployment targets; those are build-time substitutions                              |
-| Caching               | Public runtime bootstrap/config must not be statically prerendered or shared between environments; immutable JS/CSS can keep long-lived caching                      |
-| Configuration changes | Restart/redeploy the same artifact with new runtime settings; no source edit or rebuild                                                                              |
+| Concern               | Contract                                                                                                                                                                               |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Node execution mode   | `NODE_ENV=production` for every hosted target; do not set it to `qa` or `stage`                                                                                                        |
+| Environment identity  | A future `APP_ENV` label may name dev/qa/stage/prod; current application code does not consume this selector. Provider service/configuration identity identifies the environment today |
+| Server settings       | Load and validate database/Redis URLs, auth settings and service origins when the process starts; inject through the host's runtime configuration/secrets                              |
+| Browser settings      | Serve only a typed, explicitly allowed public configuration from dynamic Next.js server rendering/bootstrap; initialize the generated client from that configuration                   |
+| Browser secrets       | Never expose database URLs, Redis credentials, signing keys or provider tokens                                                                                                         |
+| Build inputs          | No environment-specific API origins, feature flags or secrets baked into client bundles or static HTML                                                                                 |
+| Next.js restrictions  | Do not use `NEXT_PUBLIC_*` or `next.config` `env` for values that differ between deployment targets; those are build-time substitutions                                                |
+| Caching               | Public runtime bootstrap/config must not be statically prerendered or shared between environments; immutable JS/CSS can keep long-lived caching                                        |
+| Configuration changes | Restart/redeploy the same artifact with new runtime settings; no source edit or rebuild                                                                                                |
 
 Use shared schemas and a narrow public configuration type. Read server values at startup or a deliberately dynamic request boundary; merely moving a value to `process.env` is insufficient if the route is prerendered during build. Do not rewrite compiled bundles with search-and-replace at container startup.
 
-Each environment needs isolated database data and Redis/queue namespaces or instances. Neon remains the hosted PostgreSQL choice; separate projects/branches/databases and credentials must be chosen when environments are provisioned. Migrations are an environment-specific deployment step using backward-compatible changes, not part of artifact rebuilding. Demo seed data must remain excluded from production.
+Each environment needs isolated database data and a separate Redis instance. Current fixed queue/channel/auth namespaces are not configurable; a Redis logical database alone does not isolate Pub/Sub. Neon remains the hosted PostgreSQL choice; separate projects/branches/databases and credentials must be chosen when environments are provisioned. Migrations are an environment-specific deployment step using backward-compatible changes, not part of artifact rebuilding. Demo seed data must remain excluded from production.
 
 ## Current implementation versus this target
 
@@ -58,30 +58,29 @@ Each environment needs isolated database data and Redis/queue namespaces or inst
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Local Compose and per-app Dockerfiles                   | Keep for local use and optional portable packaging                                                                                                                        |
 | Independent release tags and digest manifests           | Reuse as the foundation                                                                                                                                                   |
-| Northflank API/worker deployment by digest              | Preserves image identity for a given release                                                                                                                              |
+| Legacy Northflank API/worker deployment by digest       | Preserves image identity for a given release                                                                                                                              |
 | Vercel deployment from `gitSource`                      | Builds the source again; **does not satisfy build-once promotion**                                                                                                        |
 | Shared-preview CD job and latest-release reconciliation | Does not implement ordered four-environment promotion of an explicitly selected candidate                                                                                 |
 | Public runtime bootstrap                                | REST uses the runtime-only server proxy (P07-04); validated `REALTIME_PUBLIC_URL` is read at server request time for Socket.IO (P11-03). Full promotion remains separate. |
 
-The shared preview can be enabled with `CD_ENABLED=true` once its own targets and credentials are ready. It does not provide the four-environment contract above. P00-08 is historical evidence of the earlier production-only design; P00-13 supersedes its target without claiming future promotion is implemented.
+The current `CD_ENABLED=true` gate enables only the legacy provider adapter with its configured targets. It does not enable Render or provide the four-environment contract above. P00-08 is historical evidence of the earlier production-only design; P00-13 supersedes its target without claiming future promotion is implemented.
 
-## Hosting decision before implementation
+## Selected hosting path
 
-There are two viable paths to evaluate when four-environment execution is requested:
+The new Render plan uses image-backed web, API and worker services. Publish the final container once, retain its registry digest and deploy that digest with each target's runtime settings. The existing `linux/amd64` publication and dynamic web origins are foundations; a Render adapter, environment gates and live same-digest acceptance remain unimplemented.
 
-1. Publish a portable application artifact (for example Next standalone with its assets, plus deployed Node dependencies for API/worker) and run it on hosts that accept unchanged artifacts. If a host requires a container, package it once before fixing the release candidate identity: the container has its own digest. Promote the selected final artifact unchanged; do not repackage it for each environment. Local Docker does not force that choice.
-2. Keep Vercel for the UI only if a tested prebuilt artifact path proves identical output across the selected environment targets, with runtime-only configuration. `vercel --prebuilt` can upload existing Vercel Build Output API files, which are different from Next standalone output. Its CLI checks the build target against the deployment target: the documented prebuilt flow pairs `vercel build --target=<environment>` with `vercel deploy --prebuilt --target=<same-environment>`. A QA/preview artifact cannot simply be relabeled as production; ordinary preview-to-production promotion rebuilds with production settings. The supported staged-production promotion keeps the existing production configuration snapshot; it is not four distinct runtime environments. Never bypass provider metadata/validation to make an artifact appear compatible. Account/plan and environment restrictions must be checked before committing to this path.
-
-Four persistent environments also need more capacity than the currently proposed hobby allocation; provider eligibility and cost must be re-evaluated. Do not silently replace Vercel, assume a paid four-environment plan, or claim that a repeated source build is artifact promotion. Choose the hosting path only when implementation is requested and its constraints are verified.
+Do not use a Render Git-backed service that rebuilds source for each target when proving this contract. Do not confuse a successful deploy-hook request with a ready, digest-verified deployment. Persistent worker/storage capacity and four environments require a separate budget decision; see [RENDER.md](RENDER.md).
 
 ## Acceptance proof for the future implementation
 
 Build a candidate once, disable compilation and dependency downloads during promotion, and deploy it to two isolated target configurations. Artifact registry access, provider deployment APIs and runtime test traffic remain allowed. Assert identical artifact hashes, different allowed runtime settings, no secret in browser assets, no configuration leakage through caches, and successful rejection of invalid/missing settings. Extend the same proof to `dev → qa → stage → prod`, approvals, failed promotion/retry, and rollback. Record the exact tested candidate in deployment evidence.
 
-## References checked 23 October 2026
+## References
 
 - [Next.js self-hosting and runtime environment variables](https://nextjs.org/docs/app/guides/self-hosting)
 - [Next.js environment variables and build-time public substitution](https://nextjs.org/docs/app/guides/environment-variables)
 - [Vercel build targets](https://vercel.com/docs/cli/build)
 - [Vercel prebuilt deployment](https://vercel.com/docs/cli/deploy#prebuilt)
 - [Vercel environment and promotion behavior](https://vercel.com/docs/deployments/promoting-a-deployment)
+
+Render references and current provider limits were checked on 25 October 2026 and are linked in [RENDER.md](RENDER.md). The Vercel references above explain the legacy source-build limitation.
