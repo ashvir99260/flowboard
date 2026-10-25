@@ -11,14 +11,14 @@ Source snapshot: `3cc62b0`, 25 October 2026. This guide explains what the applic
 | Workspace management | Administrators rename or archive the selected workspace in sidebar settings, then restore archived workspaces from the picker. Archive retains data and closes other clients' workspace views. |
 | Board                | See the list's resolved status columns and task metadata. Drag with pointer or keyboard; use an explicit Move dialog for accessible placement or another list.                                 |
 | Table                | Use MUI Data Grid with built-in and resolved custom columns. Sort/filter on the server, load cursor pages, and page through loaded rows locally.                                               |
-| Task editor          | Create/edit/archive tasks, edit resolved custom fields, preview safe Markdown and see status-change activity. Invalid saves retain the draft.                                                  |
+| Task editor          | Create/edit/archive tasks, manage one-level subtasks, edit resolved custom fields, preview safe Markdown and see status-change activity. Invalid saves retain the draft.                       |
 | Configuration        | Admins manage scoped status/field definitions and inspect inherited/local previews. Unsafe changes are rejected without discarding the draft.                                                  |
 | Collaboration        | Authorized open clients refetch after edits/moves. Action results and eligible remote changes appear as Toastify notifications.                                                                |
 | API access           | The same operations are available through the typed REST API, Swagger and the executable curl cookbook.                                                                                        |
 
 The web app does not expose a dedicated screen for every API operation. Workspace read/rename/archive/restore are available through the API and management UI; see [workspace lifecycle](WORKSPACE_LIFECYCLE.md). Member/invitation/grant/container administration is available through the API where implemented; do not infer management screens from endpoint availability. Invitations are manually shared and accepted through the API: there is no email sender or invitation-acceptance web form. Search is a tracked stub, not a usable feature.
 
-The task API supports [one-level subtasks](SUBTASKS.md) through nullable parentTaskId and parent-filtered cursor reads. Parent/child drawer controls remain the separate P30-02 UI task; API availability does not imply those controls are already visible.
+The drawer supports [one-level subtasks](SUBTASKS.md). Use **Add subtask** on a saved top-level task, complete its required fields, then save. **Parent task** attaches an existing task to a top-level task in the same list; **No parent** explicitly detaches it. Related-task navigation confirms before discarding edits. Parent choices and children load in cursor pages, and open clients refresh after relationship changes. Boards and tables continue to show every task as a flat row/card. Parent moves and archives retain the documented relationship safeguards.
 
 ## A normal working session
 

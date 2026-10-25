@@ -486,7 +486,7 @@ export function createBoardApi(nodes) {
     }
 
     const statusId = url.searchParams.get('statusId');
-    if (controls.tableMode && !statusId) {
+    if (!statusId) {
       const parsed = ListTasksQuerySchema.safeParse(Object.fromEntries(url.searchParams));
       if (!parsed.success) {
         error(response, 'VALIDATION_FAILED', 'Invalid table query');
@@ -515,7 +515,9 @@ export function createBoardApi(nodes) {
 
       const rows = controls.empty
         ? []
-        : sortedTableRows(tasksFor(node, session), query, statusesFor(node));
+        : sortedTableRows(tasksFor(node, session), query, statusesFor(node)).filter(
+            (task) => !query.parentTaskId || task.parentTaskId === query.parentTaskId,
+          );
       const start = cursor?.offset ?? 0;
       const nextCursor = rows.length > start + 2 ? `table:${++cursorSequence}` : null;
       if (nextCursor)

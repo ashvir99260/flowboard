@@ -12,12 +12,14 @@ import { useRealtime } from '../realtime/realtime-provider';
 import { TaskBuiltInFields } from './task-built-in-fields';
 import { TaskCustomFields } from './task-custom-fields';
 import { createTaskInput, taskDefaults, taskDraftSchema, updateTaskInput } from './task-form-data';
+import { TaskParentField } from './task-parent-field';
 import { useTaskWrite } from './use-task-write';
 
 import type { assembleTaskDetail } from './task-detail-data';
 import type { TaskDraft } from './task-form-data';
 import type { QueryScope } from '../../lib/query-scope';
 import type { ClientRuntime } from '../../providers/app-providers';
+import type { Task } from '@flowboard/contracts';
 import type { FormEvent } from 'react';
 import type { FieldPath } from 'react-hook-form';
 
@@ -47,12 +49,14 @@ export function TaskForm({
   reload,
   onArchived,
   onPersisted,
+  parentTaskId,
 }: {
   detail: Detail;
   listId: string;
   onArchived: () => void;
-  onPersisted: (taskId: string) => void;
+  onPersisted: (task: Task) => void;
   onState: (state: { busy: boolean; dirty: boolean }) => void;
+  parentTaskId?: string;
   reload: () => void;
   runtime: ClientRuntime;
   scope: QueryScope;
@@ -80,7 +84,7 @@ export function TaskForm({
     setFocus,
     formState: { isDirty },
   } = useZodForm(taskDraftSchema(detail.fields, detail.statuses), {
-    defaultValues: taskDefaults(detail.fields, detail.statuses, baseline),
+    defaultValues: taskDefaults(detail.fields, detail.statuses, baseline, parentTaskId),
     mode: 'onBlur',
   });
 
@@ -169,7 +173,7 @@ export function TaskForm({
               body: createTaskInput(draft, detail.configVersion),
             });
       if (result.success && result.response) {
-        onPersisted(result.response.data.id);
+        onPersisted(result.response.data);
         setBaseline(result.response.data);
         reset(taskDefaults(detail.fields, detail.statuses, result.response.data));
         setNotice(baseline ? 'Task saved.' : 'Task created.');
@@ -189,9 +193,15 @@ export function TaskForm({
         const path =
           first === 'customFields' && detail.fields.some((field) => field.key === second)
             ? `customFields.${String(second)}`
-            : ['title', 'description', 'statusId', 'priority', 'dueDate', 'assigneeIds'].includes(
-                  String(first),
-                )
+            : [
+                  'title',
+                  'description',
+                  'statusId',
+                  'priority',
+                  'dueDate',
+                  'assigneeIds',
+                  'parentTaskId',
+                ].includes(String(first))
               ? String(first)
               : null;
         if (path) {
@@ -244,6 +254,14 @@ export function TaskForm({
         </Button>
       )}
       <TaskBuiltInFields baseline={baseline} busy={busy} control={control} detail={detail} />
+      <TaskParentField
+        control={control}
+        busy={busy}
+        taskId={baseline?.id}
+        listId={listId}
+        runtime={runtime}
+        scope={scope}
+      />
       <TaskCustomFields fields={detail.fields} control={control} busy={busy} />
       <Button type="submit" variant="contained" disabled={busy || conflict}>
         {busy ? 'Saving…' : baseline ? 'Save changes' : 'Create task'}
