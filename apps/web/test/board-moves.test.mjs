@@ -67,7 +67,7 @@ test('button moves are optimistic, persist, and roll back rejected saves without
 test('drag instructions describe Space, arrows and Escape without promising Enter support', async (t) => {
   const { board } = await openBoard(t);
   const instructions = await board
-    .getByRole('button', { name: /^Drag task/ })
+    .getByRole('group', { name: /^Drag task/ })
     .first()
     .evaluate((element) =>
       (element.getAttribute('aria-describedby') ?? '')
@@ -89,12 +89,12 @@ test('pointer dragging changes status and keyboard dragging reorders with focus 
   const card = todo
     .getByRole('article')
     .filter({ has: page.getByRole('heading', { exact: true, name: 'Review navigation' }) });
-  const handle = card.getByRole('button', { name: /^Drag task/ });
+  const handle = card.locator('..');
   const from = await handle.boundingBox();
   const to = await active.getByRole('article').first().boundingBox();
-  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.move(from.x + 4, from.y + 24);
   await page.mouse.down();
-  await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2, { steps: 3 });
+  await page.mouse.move(from.x + 16, from.y + 24, { steps: 3 });
   await page.mouse.move(to.x + to.width / 2, to.y + to.height - 1, { steps: 15 });
   await page.mouse.up();
   await expect(
@@ -107,7 +107,7 @@ test('pointer dragging changes status and keyboard dragging reorders with focus 
   const moved = active
     .getByRole('article')
     .filter({ has: page.getByRole('heading', { exact: true, name: 'Review navigation' }) })
-    .getByRole('button', { name: /^Drag task/ });
+    .locator('..');
   await expect(moved).toBeEnabled();
   await moved.focus();
   await page.keyboard.press('Space');
@@ -143,10 +143,7 @@ test('keyboard ordering preserves the unloaded suffix and an unchanged drop send
   const { page, board, api } = await openBoard(t);
   const todo = board.getByRole('region', { exact: true, name: 'To do column' });
   const firstTitle = await todo.getByRole('heading', { level: 3 }).first().textContent();
-  const handle = todo
-    .getByRole('article')
-    .first()
-    .getByRole('button', { name: /^Drag task/ });
+  const handle = todo.getByRole('article').first().locator('..');
   await handle.focus();
   await page.keyboard.press('Space');
   await expect(page.getByText(/^Picked up Public board task/)).toBeAttached();
@@ -172,11 +169,7 @@ test('keyboard ordering preserves the unloaded suffix and an unchanged drop send
     'Next page task',
   ]);
   const before = api.requests.filter((request) => request.path.endsWith('/reorder')).length;
-  await todo
-    .getByRole('article')
-    .first()
-    .getByRole('button', { name: /^Drag task/ })
-    .focus();
+  await todo.getByRole('article').first().locator('..').focus();
   await page.keyboard.press('Space');
   await expect(page.getByText(/^Picked up Review navigation/)).toBeAttached();
   await page.keyboard.press('Space');
@@ -303,14 +296,14 @@ test('duplicate submissions for one pending task issue only one mutation', async
 });
 
 async function dragTo(page, card, target) {
-  const handle = card.getByRole('button', { name: /^Drag task/ });
+  const handle = card.locator('..');
   await expect(handle).toBeEnabled();
   const from = await handle.boundingBox();
   const to = await target.boundingBox();
   assert.ok(from && to);
-  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.move(from.x + 4, from.y + 24);
   await page.mouse.down();
-  await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2, { steps: 3 });
+  await page.mouse.move(from.x + 16, from.y + 24, { steps: 3 });
   await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 12 });
   await page.mouse.up();
 }
@@ -324,12 +317,12 @@ test('dropping a pointer drag outside the board cancels without a mutation', asy
   const card = todo
     .getByRole('article')
     .filter({ has: page.getByRole('heading', { exact: true, name: 'Review navigation' }) });
-  const handle = card.getByRole('button', { name: /^Drag task/ });
+  const handle = card.locator('..');
   const from = await handle.boundingBox();
   assert.ok(from);
-  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.move(from.x + 4, from.y + 24);
   await page.mouse.down();
-  await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2, { steps: 3 });
+  await page.mouse.move(from.x + 16, from.y + 24, { steps: 3 });
   await expect(page.getByText(/^Picked up Review navigation, To do/)).toBeAttached();
   await page.mouse.move(5, 5, { steps: 12 });
   await page.mouse.up();
@@ -388,7 +381,7 @@ test('keyboard dragging can enter an empty status column', async (t) => {
   const card = board
     .getByRole('article')
     .filter({ has: page.getByRole('heading', { exact: true, name: 'Active task' }) });
-  const handle = card.getByRole('button', { name: /^Drag task/ });
+  const handle = card.locator('..');
   await handle.focus();
   await page.keyboard.press('Space');
   await expect(page.getByText(/^Picked up Active task, In progress/)).toBeAttached();

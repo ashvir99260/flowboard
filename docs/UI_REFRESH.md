@@ -8,7 +8,7 @@ R161–R163 use a ClickUp/Jira-inspired desktop information hierarchy with Flowb
 - A compact left sidebar below the header: workspace switcher, workspace board, collapsible spaces/folders/lists, administration links and account controls. Current selection is obvious without relying on color alone.
 - A white/cool-gray canvas, restrained indigo primary color, consistent sans-serif typography, light borders and small shadows. Preserve semantic HSL tokens, rem units, 62.5% root scale, accessible focus and dark-mode compatibility.
 - Main content begins with a concise breadcrumb/title and view controls; remove the large created/updated metadata block from the primary task workspace. Keep audit metadata available through existing APIs/detail views.
-- Cards are compact, with a clear title, small priority/due/assignee metadata, subtle drag handle and secondary move action. Do not remove keyboard or single-pointer move alternatives.
+- Cards are compact, with a clear title, small priority/due/assignee metadata, full-card dragging and a secondary move action. Do not remove keyboard or single-pointer move alternatives.
 
 ## Views and drag behavior
 

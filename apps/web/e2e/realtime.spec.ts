@@ -19,7 +19,7 @@ test('a second client sees keyboard moves and a stale optimistic move rolls back
     await login(bob, 'bob@example.com');
     await openBacklog(bob);
     const title = 'Build demo workflow 1';
-    const handle = column(page, 'To do').getByRole('button', {
+    const handle = column(page, 'To do').getByRole('group', {
       exact: true,
       name: `Drag task: ${title}`,
     });
@@ -33,7 +33,7 @@ test('a second client sees keyboard moves and a stale optimistic move rolls back
       column(bob, 'In progress').getByRole('heading', { exact: true, name: title }),
     ).toBeVisible();
     await expect(
-      column(page, 'In progress').getByRole('button', { exact: true, name: `Drag task: ${title}` }),
+      column(page, 'In progress').getByRole('group', { exact: true, name: `Drag task: ${title}` }),
     ).toBeEnabled();
     let intercepted: (() => void) | undefined;
     const held = new Promise<void>((resolve) => {
@@ -50,7 +50,7 @@ test('a second client sees keyboard moves and a stale optimistic move rolls back
     const staleResponse = page.waitForResponse((response) =>
       response.url().endsWith('/tasks/f1000000-0000-4000-8000-000000000700/move'),
     );
-    const moved = column(page, 'In progress').getByRole('button', {
+    const moved = column(page, 'In progress').getByRole('group', {
       exact: true,
       name: `Drag task: ${title}`,
     });

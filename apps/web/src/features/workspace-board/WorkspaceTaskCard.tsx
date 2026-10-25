@@ -1,6 +1,5 @@
 'use client';
 
-import type { Task } from '@flowboard/contracts';
 import {
   BoardItem,
   Button,
@@ -11,8 +10,11 @@ import {
   WorkspaceIcon,
 } from '@flowboard/ui';
 import { Draggable } from '@hello-pangea/dnd';
+
 import { useTaskEditor } from '../tasks/useTaskEditor';
+
 import type { WorkspaceBoardColumn } from './workspaceBoardData';
+import type { Task } from '@flowboard/contracts';
 
 export function WorkspaceTaskCard({
   task,
@@ -30,22 +32,25 @@ export function WorkspaceTaskCard({
   task: Task;
 }) {
   const openTask = useTaskEditor();
+
   const status = column.statuses.find((item) => item.id === task.statusId)!;
   const field = column.fields.find((item) => Object.hasOwn(task.customFields, item.key));
 
   return (
-    <Draggable
-      draggableId={task.id}
-      index={index}
-      isDragDisabled={pending}
-      disableInteractiveElementBlocking
-    >
+    <Draggable draggableId={task.id} index={index} isDragDisabled={pending}>
       {(provided, snapshot) => (
         <BoardItem
           ref={provided.innerRef}
           {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          role="group"
+          aria-label={`Drag task: ${task.title}`}
+          aria-roledescription="draggable task"
+          aria-disabled={pending}
+          data-drag-task={task.id}
           style={{
             ...provided.draggableProps.style,
+            cursor: pending ? 'default' : snapshot.isDragging ? 'grabbing' : 'grab',
             ...(reduced
               ? snapshot.isDropAnimating
                 ? { transitionDuration: '0.001s' }
@@ -56,18 +61,6 @@ export function WorkspaceTaskCard({
           <KanbanCard
             task={task}
             onOpen={() => openTask(task.id, task.primaryListId)}
-            dragHandle={
-              <Button
-                {...provided.dragHandleProps}
-                data-drag-task={task.id}
-                aria-label={`Drag task: ${task.title}`}
-                disabled={pending}
-                title="Drag task"
-                sx={{ touchAction: 'none', minWidth: '3.2rem', px: 0.4 }}
-              >
-                <WorkspaceIcon name="menu" />
-              </Button>
-            }
             metadata={
               <Stack direction="row" useFlexGap spacing={0.4} sx={{ flexWrap: 'wrap' }}>
                 <StatusChip status={status} />

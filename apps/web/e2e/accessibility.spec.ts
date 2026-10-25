@@ -37,7 +37,7 @@ test('seeded sibling boards, keyboard controls and responsive forms pass accessi
     new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect((await scan()).violations).toEqual([]);
   const handle = column(page, 'To do')
-    .getByRole('button', { name: /^Drag task/ })
+    .getByRole('group', { name: /^Drag task/ })
     .first();
   await handle.focus();
   await page.keyboard.press('Space');

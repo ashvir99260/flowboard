@@ -399,6 +399,6 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 
 ## Card interaction follow-up
 
-| ID   | Source                     | Requirement                                                                                         | Owner / tasks | Evidence required                                                                        | Status      |
-| ---- | -------------------------- | --------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------- | ----------- |
-| R166 | User interaction follow-up | Full-card dragging on workspace/list boards with independent native actions and keyboard operation. | Web · P34-01  | Body-pointer drag, keyboard/cancel/focus, pending guards and nested control regressions. | In progress |
+| ID   | Source                     | Requirement                                                                                         | Owner / tasks | Evidence required                                                                         | Status      |
+| ---- | -------------------------- | --------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------- | ----------- |
+| R166 | User interaction follow-up | Full-card dragging on workspace/list boards with independent native actions and keyboard operation. | Web · P34-01  | [Focused browser checks](evidence/P34-01.md); full regression acceptance remains pending. | In progress |

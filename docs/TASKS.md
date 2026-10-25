@@ -1440,6 +1440,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `refactor(frontend): apply component and hook naming`.
 
 - [ ] **P34-01 — Enable full-card dragging on both boards**
+  - **Implementation:** Complete; final acceptance verification pending. [Focused evidence](evidence/P34-01.md).
   - **Goal:** Make card bodies draggable while preserving nested actions and keyboard operation.
   - **Requirements:** R166; preserve R162 and task permission/configuration safety.
   - **Files:** BoardCard.tsx, WorkspaceTaskCard.tsx, board/workspace browser tests and related drag selectors, UI interaction docs.
