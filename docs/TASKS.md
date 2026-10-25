@@ -1438,3 +1438,12 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** No stale local imports or references; public exports and reserved route/test/config filenames preserved; executable rules reject regressions.
   - **Validation:** Import/source consistency plus applicable build, lint, type and test gates with exact outcomes recorded.
   - **Commit:** `refactor(frontend): apply component and hook naming`.
+
+- [ ] **P34-01 — Enable full-card dragging on both boards**
+  - **Goal:** Make card bodies draggable while preserving nested actions and keyboard operation.
+  - **Requirements:** R166; preserve R162 and task permission/configuration safety.
+  - **Files:** BoardCard.tsx, WorkspaceTaskCard.tsx, board/workspace browser tests and related drag selectors, UI interaction docs.
+  - **Dependencies:** Existing draggable adapters, scoped move mutation and P33 component organization.
+  - **Acceptance:** One drag surface per card, pointer drag from card padding/metadata, keyboard drag/cancel/focus, native title/Move actions unaffected, pending drags disabled.
+  - **Validation:** Focused browser regression for both boards plus compatible existing drag selectors; report full suites separately.
+  - **Commit:** `feat(web): drag tasks from the whole card`.

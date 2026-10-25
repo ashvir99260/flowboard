@@ -16,6 +16,8 @@ The workspace home shows visible lists as columns. Each list contains tasks, and
 
 Use the existing guarded move operation. Cross-list moves resolve destination status/custom-field rules and must not silently discard field data; use the existing move form when input is needed. Optimistic changes roll back on failure. Same-list placement retains status, so arbitrary cross-status ordering is performed in the existing status board. Partial pages cannot imply a complete list; show Load more and loaded counts.
 
+The full card body is the drag surface on both boards. Keep one focusable drag group per task, with Space/arrow/Escape instructions. Native title and Move controls remain independently operable and do not start dragging. Pending writes disable dragging; no second mutation or alternative drop endpoint is introduced.
+
 The workspace board and task editor must preserve current tenant, permission, revision and realtime rules. A task selected on the workspace board opens in its actual primary list. Do not send a guessed list/role/tenant from UI state as server authority.
 
 ## Actions

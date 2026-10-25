@@ -220,3 +220,7 @@ Provide a ClickUp/Jira-inspired branded header and sidebar with workspace contex
 R164: Route all UI TanStack mutations through a common typed hook, with feature hooks named `use<Operation>Mutation` similarly to existing query hooks. Preserve generated operations, validation, session/tenant boundaries, optimistic updates and error feedback.
 
 R165: Use PascalCase component files and camelCase hook/utility files across the frontend. Split distinct React components into separate files and update imports, tests, stories, source checks and authoring documentation. Keep required framework and tool filenames unchanged.
+
+## Full-card dragging follow-up
+
+R166: Drag tasks from the full card surface in both workspace-list and per-list status boards. Preserve nested title/Move actions, keyboard drag/reorder/cancel, pending guards, destination validation and existing drop zones.

@@ -707,3 +707,7 @@ R161–R163 use a compact ClickUp/Jira-inspired layout with Flowboard branding, 
 ## D163 — Frontend component names and mutation ownership
 
 R164–R165 supersede D146's frontend filename rule: React implementation files in web/UI/forms use PascalCase; hooks and utilities use camelCase. Keep reserved Next routes and tool-specific test/story/config names. Split distinct React components, while cohesive private styled slots remain local. `useApiMutation` owns the existing retry/network execution defaults; feature `use<Operation>Mutation` hooks retain their generated operations, validation, exact keys, cache behavior and notifications. See [the refactor plan](FRONTEND_REFACTOR.md).
+
+## D164 — Full-card drag surfaces
+
+R166 makes each task's existing BoardItem the sole drag surface in both board adapters. Use a focusable group with the library drag attributes/instructions; avoid a role=button wrapper around title/Move buttons. Keep the library's interactive-element blocking so nested controls retain click and keyboard behavior. Existing list/status drop zones, mutation validation, optimistic handling and pending guards remain unchanged.
