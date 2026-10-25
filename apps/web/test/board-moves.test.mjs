@@ -13,7 +13,12 @@ async function openBoard(t, configure = () => {}) {
   t.after(() => browser.close());
   const api = await startAppApi(t);
   configure(api);
-  const { origin } = await startWeb(t, api.origin);
+  const { origin } = await startWeb(
+    t,
+    api.origin,
+    'localhost',
+    process.env.FLOWBOARD_WEB_DEV_TEST === '1',
+  );
   const page = await browser.newPage();
   page.setDefaultTimeout(8000);
   await page.goto(`${origin}/login`);
@@ -108,7 +113,7 @@ test('pointer dragging changes status and keyboard dragging reorders with focus 
     .getByRole('article')
     .filter({ has: page.getByRole('heading', { exact: true, name: 'Review navigation' }) })
     .locator('..');
-  await expect(moved).toBeEnabled();
+  await expect(moved).toHaveAttribute('aria-disabled', 'false');
   await moved.focus();
   await page.keyboard.press('Space');
   await expect(page.getByText(/^Picked up Review navigation, In progress/)).toBeAttached();
@@ -121,7 +126,7 @@ test('pointer dragging changes status and keyboard dragging reorders with focus 
   await expect(page.getByText(/^Over In progress, position 1/)).toBeAttached();
   await page.keyboard.press('Space');
   await expect(active.getByRole('heading', { level: 3 }).first()).toHaveText('Review navigation');
-  await expect(moved).toBeEnabled();
+  await expect(moved).toHaveAttribute('aria-disabled', 'false');
   await expect(moved).toBeFocused();
   await page.keyboard.press('Space');
   await expect(page.getByText(/^Picked up Review navigation, In progress/)).toBeAttached();
@@ -364,11 +369,13 @@ test('rejection of one pending drag cannot undo another task saved in the meanti
     done,
   );
   await expect(done.getByRole('heading', { exact: true, name: 'Review navigation' })).toBeVisible();
+  await expect(page.getByRole('status', { name: 'Notification: Task moved.' })).toBeVisible();
+  await page.keyboard.press('Alt+t');
+  await page.keyboard.press('Escape');
   release();
-  await page
-    .getByRole('status', { exact: true, name: '' })
-    .filter({ hasText: 'Task changed. Refresh before retrying.' })
-    .waitFor();
+  await expect(
+    page.getByRole('status', { name: 'Notification: Task changed. Refresh before retrying.' }),
+  ).toBeVisible();
   await expect(todo.getByRole('heading', { name: firstTitle, exact: true })).toBeVisible();
   await expect(done.getByRole('heading', { exact: true, name: 'Review navigation' })).toBeVisible();
 });

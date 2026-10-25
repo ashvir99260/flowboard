@@ -417,3 +417,7 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | ---- | ------------------------------------------------------ | ---------------------------- | --------------------------------------------------------------------------------------------- | ----------- |
 | R170 | MUI Autocomplete for selections, assignees and search. | UI/forms/web · P36-01/P36-03 | [Selections](evidence/P36-01.md), [web/search](evidence/P36-03.md); final acceptance pending. | In progress |
 | R171 | MUI X dates with date-only/UTC semantics.              | UI/forms · P36-02            | [Date controls](evidence/P36-02.md); final acceptance pending.                                | In progress |
+
+| ID   | Requirement                                                                    | Owner / task | Evidence required                                              | Status      |
+| ---- | ------------------------------------------------------------------------------ | ------------ | -------------------------------------------------------------- | ----------- |
+| R172 | Stable task placement during drag save/refresh and confirmed completion toast. | Web · P37-01 | [Focused checks](evidence/P37-01.md); full acceptance pending. | In progress |

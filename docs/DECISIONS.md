@@ -719,3 +719,7 @@ R167–R169 retain MUI and existing tokens. Shared presentation changes apply ac
 ## D166 — Shared Autocomplete and Community date pickers
 
 R170–R171 use shared MUI Autocomplete selections and MUI X Community 9.16.0 with Day.js 1.11.23. Field dropdowns change presentation; command menus remain menus. RHF/Zod values and generated API contracts remain unchanged. Date-only values remain calendar dates and due-date drafts remain UTC. [Input control design](INPUT_CONTROLS.md) defines boundaries and invalid-draft behavior.
+
+## D167 — Retain board presentation only during task-data refresh
+
+P37-01 may retain a complete authorized board snapshot while reconciling a local task placement or a list-task invalidation. It never retains that snapshot across workspace/configuration, resync, focus/reconnect or failed/invalid reads. Pending projections remain separate; a confirmed placement is applied to the retained presentation until fresh version-consistent data arrives. Controls are disabled during this bridge. Completion toasts follow validated server acknowledgement; saving state does not insert a layout-shifting banner. See [drag feedback](DRAG_FEEDBACK.md).

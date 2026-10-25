@@ -132,3 +132,5 @@ Realtime clients opt into a recipient-relative `self` flag with the public `noti
 ## Searchable and date controls
 
 `SelectionInput` owns MUI Autocomplete presentation for typed single/multiple values. `DateInput` owns MUI X Community DatePicker/DateTimePicker presentation, localization and strict calendar/UTC serialization. Both accept plain values, errors, blur/change callbacks and focus refs. Form adapters and web domain forms retain validation/data ownership. Date fields expose labeled sections; optional controls use their own named clear icon rather than duplicate clear actions. See [input controls](INPUT_CONTROLS.md).
+
+P37-01 keeps Toastify registration ahead of imperative message display, including StrictMode replay. A queued display is cancelled when its effect is cleaned up. The hidden progress animation is the dismissal clock, so reduced-motion overrides must preserve its six-second duration while reducing visible transitions. See [drag feedback](DRAG_FEEDBACK.md).

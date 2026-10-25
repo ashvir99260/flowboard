@@ -6,7 +6,7 @@ import {
   listTasksOptions,
 } from '@flowboard/api-client/tanstack-query';
 import { focusManager, onlineManager, useQueries, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
@@ -15,17 +15,20 @@ import { assembleTaskList } from '../list/listData';
 import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
 
-import { workspaceSnapshotState } from './workspaceBoardData';
+import { projectWorkspaceMoves, workspaceSnapshotState } from './workspaceBoardData';
 
+import type { WorkspaceBoardColumn, WorkspaceListNode } from './workspaceBoardData';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { WorkspaceBoardColumn, WorkspaceListNode } from './workspaceBoardData';
+import type { TaskPlacement } from '../board/taskPlacement';
 
 type Attempt = { generation: number; pages: string[]; restarts: number };
 export type WorkspaceColumnState =
   | { list: WorkspaceListNode; state: 'loading' }
   | { list: WorkspaceListNode; message: string; state: 'error' }
   | (WorkspaceBoardColumn & { atLimit: boolean; loadingMore: boolean; state: 'ready' });
+
+type ReadyColumn = Extract<WorkspaceColumnState, { state: 'ready' }>;
 
 const emptyAttempt: Attempt = { generation: 0, pages: [], restarts: 0 };
 const pagePolicy = {
@@ -45,8 +48,31 @@ export function useWorkspaceBoardQuery(
   const client = useQueryClient();
   const [attempts, setAttempts] = useState<Record<string, Attempt>>({});
   const [snapshotRestarts, setSnapshotRestarts] = useState(0);
-  const retry = useCallback(
-    (listId?: string) => {
+
+  const [epoch, setEpoch] = useState(0);
+  const activeEpoch = useRef(0);
+  const latest = useRef<{ columns: readonly ReadyColumn[]; epoch: number } | null>(null);
+  const [retained, setRetained] = useState<readonly WorkspaceBoardColumn[] | null>(null);
+  const refresh = useCallback(
+    (listId?: string, soft = false, placement?: TaskPlacement) => {
+      const snapshot = latest.current?.epoch === epoch ? latest.current.columns : [];
+      if (soft)
+        setRetained((current) => {
+          const previous = current ?? snapshot;
+
+          return previous.length
+            ? placement
+              ? projectWorkspaceMoves(previous, [placement])
+              : previous
+            : null;
+        });
+      else {
+        latest.current = null;
+        setRetained(null);
+      }
+
+      activeEpoch.current += 1;
+      setEpoch(activeEpoch.current);
       setSnapshotRestarts(0);
       setAttempts((current) => ({
         ...current,
@@ -64,24 +90,34 @@ export function useWorkspaceBoardQuery(
         ),
       }));
     },
-    [lists],
+    [epoch, lists],
+  );
+  const retry = useCallback((listId?: string) => refresh(listId), [refresh]);
+  const refreshTasks = useCallback(
+    (placement?: TaskPlacement) => refresh(undefined, true, placement),
+    [refresh],
   );
 
   useRealtime(undefined, () => retry());
 
   useEffect(() => {
-    const refresh = () => retry();
+    const refreshAll = () => retry();
     const unfocus = focusManager.subscribe((focused) => {
-      if (focused) refresh();
+      if (focused) refreshAll();
     });
     const unonline = onlineManager.subscribe((online) => {
-      if (online) refresh();
+      if (online) refreshAll();
     });
     const unmutate = client.getMutationCache().subscribe((event) => {
       if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
 
+      if (configurationChanged(event.mutation.options.mutationKey, event.action.type, scope)) {
+        refreshAll();
+
+        return;
+      }
+
       if (
-        configurationChanged(event.mutation.options.mutationKey, event.action.type, scope) ||
         lists.some((list) =>
           taskMutationAffectsList(
             event.mutation.options.mutationKey,
@@ -90,8 +126,22 @@ export function useWorkspaceBoardQuery(
             list.id,
           ),
         )
-      )
-        refresh();
+      ) {
+        const isPlacement = event.mutation.options.mutationKey?.[0] === 'task-placement';
+        const recoverable = [
+          'NETWORK_ERROR',
+          'INTERNAL_ERROR',
+          'SERVICE_UNAVAILABLE',
+          'RATE_LIMITED',
+        ].includes(apiError(event.mutation.state.error).code);
+        if (isPlacement && (event.action.type === 'success' || recoverable))
+          refreshTasks(
+            event.action.type === 'success'
+              ? (event.mutation.state.variables as TaskPlacement)
+              : undefined,
+          );
+        else refreshAll();
+      }
     });
 
     return () => {
@@ -99,11 +149,12 @@ export function useWorkspaceBoardQuery(
       unonline();
       unmutate();
     };
-  }, [client, lists, retry, scope]);
+  }, [client, lists, retry, refreshTasks, scope]);
 
   const tags = (listId: string) => [
     `workspace-board:${instance}:${listId}:${(attempts[listId] ?? emptyAttempt).generation}`,
   ];
+
   const statuses = useQueries({
     queries: lists.map((list) => ({
       ...withQueryScope(
@@ -124,9 +175,11 @@ export function useWorkspaceBoardQuery(
       ...pagePolicy,
     })),
   });
+
   const requests = lists.flatMap((list) =>
     [undefined, ...(attempts[list.id]?.pages ?? [])].map((cursor) => ({ listId: list.id, cursor })),
   );
+
   const tasks = useQueries({
     queries: requests.map(({ listId, cursor }) => ({
       ...withQueryScope(
@@ -155,7 +208,7 @@ export function useWorkspaceBoardQuery(
     const result = assembleTaskList({
       workspaceId: scope.workspaceId!,
       listId: list.id,
-      query: { sort: 'manual', direction: 'asc' },
+      query: { direction: 'asc', sort: 'manual' },
       statuses: statuses[index]?.data,
       fields: fields[index]?.data,
       pages: pageIndexes.flatMap((pageIndex) =>
@@ -174,6 +227,7 @@ export function useWorkspaceBoardQuery(
     if (result.state === 'stale' || error?.code === 'CURSOR_STALE') {
       if (attempt.restarts < 2) {
         staleIds.push(list.id);
+
         return { list, state: 'loading' };
       }
 
@@ -216,9 +270,7 @@ export function useWorkspaceBoardQuery(
           .join('|')
       : '';
 
-  useEffect(() => {
-    if (!snapshotKey || snapshotRestarts >= 2) return;
-
+  if (snapshotKey && snapshotRestarts < 2) {
     setSnapshotRestarts((current) => current + 1);
     setAttempts((current) => {
       const next = { ...current };
@@ -230,11 +282,9 @@ export function useWorkspaceBoardQuery(
 
       return next;
     });
-  }, [snapshotKey, snapshotRestarts]);
+  }
 
-  useEffect(() => {
-    if (!staleKey) return;
-
+  if (staleKey) {
     setAttempts((current) => {
       const next = { ...current };
       for (const listId of staleKey.split(',')) {
@@ -249,9 +299,11 @@ export function useWorkspaceBoardQuery(
 
       return next;
     });
-  }, [staleKey]);
+  }
 
   const loadMore = (listId: string) => {
+    if (retained !== null) return;
+
     const column = columns.find((item) => item.list.id === listId);
     if (column?.state !== 'ready' || !column.nextCursor || column.loadingMore || column.atLimit)
       return;
@@ -282,5 +334,36 @@ export function useWorkspaceBoardQuery(
                 },
         );
 
-  return { columns: coherent, loadMore, retry };
+  const failed = [...statuses, ...fields, ...tasks].some((query) => query.isError);
+  const invalid = coherent.some((column) => column.state === 'error');
+  const complete =
+    coherent.length === lists.length && coherent.every((column) => column.state === 'ready');
+
+  useEffect(() => {
+    if (activeEpoch.current !== epoch) return;
+
+    if (complete) latest.current = { epoch, columns: coherent as ReadyColumn[] };
+    else if (failed || invalid) latest.current = null;
+  }, [coherent, complete, epoch, failed, invalid]);
+
+  if (retained !== null && (complete || failed || invalid)) setRetained(null);
+
+  const refreshing = retained !== null && !complete && !failed && !invalid;
+  const visibleColumns = refreshing
+    ? coherent.map((column) => {
+        const previous = retained.find((item) => item.list.id === column.list.id);
+
+        return previous
+          ? {
+              ...previous,
+              list: column.list,
+              state: 'ready' as const,
+              loadingMore: true,
+              atLimit: false,
+            }
+          : column;
+      })
+    : coherent;
+
+  return { columns: visibleColumns, loadMore, retry, refreshTasks, refreshing };
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import type { Task } from '@flowboard/contracts';
 import {
   BoardViewport,
   Button,
@@ -11,22 +10,22 @@ import {
   Typography,
 } from '@flowboard/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
+
 import { MoveMenu } from '../board/MoveMenu';
 import { useTaskPlacementMutation } from '../board/useTaskPlacementMutation';
 import { useNotifications } from '../notifications/useNotifications';
 import { useTree } from '../tree/useTree';
+
 import { useWorkspaceBoardQuery } from './useWorkspaceBoardQuery';
-import type {
-  WorkspaceBoardColumn,
-  WorkspaceListNode,
-  WorkspaceMoveSelection,
-} from './workspaceBoardData';
 import { planWorkspaceMove, projectWorkspaceMoves } from './workspaceBoardData';
 import { WorkspaceBoardDnd } from './WorkspaceBoardDnd';
 import { WorkspaceListSubscription } from './WorkspaceListSubscription';
 import { WorkspaceMoveRepair } from './WorkspaceMoveRepair';
+
+import type { WorkspaceBoardColumn, WorkspaceMoveSelection } from './workspaceBoardData';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { Task } from '@flowboard/contracts';
 
 export function ConnectedWorkspaceBoard({
   runtime,
@@ -39,21 +38,19 @@ export function ConnectedWorkspaceBoard({
   const tree = useTree(runtime, scope);
   const [listLimit, setListLimit] = useState(10);
   const [repair, setRepair] = useState<WorkspaceMoveSelection | null>(null);
-  const [menu, setMenu] = useState<{ task: Task; column: WorkspaceBoardColumn } | null>(null);
+  const [menu, setMenu] = useState<{ column: WorkspaceBoardColumn; task: Task } | null>(null);
   const lastTask = useRef<string | null>(null);
-  const lastLists = useRef<readonly WorkspaceListNode[]>([]);
+  const focusPending = useRef(false);
+  const [focusTick, setFocusTick] = useState(0);
   const lists = useMemo(
-    () =>
-      tree.state === 'ready'
-        ? tree.nodes.filter((node) => node.type === 'list')
-        : lastLists.current,
+    () => (tree.state === 'ready' ? tree.nodes.filter((node) => node.type === 'list') : []),
     [tree],
   );
-  if (tree.state === 'ready') lastLists.current = lists;
 
   const visible = useMemo(() => lists.slice(0, listLimit), [listLimit, lists]);
   const board = useWorkspaceBoardQuery(runtime, scope, visible);
-  const { pending, submit, notice } = useTaskPlacementMutation(runtime, scope);
+  const { pending, submit } = useTaskPlacementMutation(runtime, scope);
+
   const ready = board.columns.filter((column) => column.state === 'ready');
   const projected = projectWorkspaceMoves(ready, pending);
   const columns = board.columns.map((column) =>
@@ -62,40 +59,55 @@ export function ConnectedWorkspaceBoard({
       : column,
   );
   const visibleIds = tree.state === 'ready' ? lists.map((list) => list.id).join(',') : null;
+  const submitMove: typeof submit = (command) =>
+    board.refreshing
+      ? Promise.resolve({
+          success: false,
+          error: { code: 'BUSY', message: 'Wait for the board to finish updating.' },
+        })
+      : submit(command);
+
+  if (visibleIds !== null) {
+    const allowed = new Set(visibleIds.split(','));
+    if (repair && (!allowed.has(repair.source.list.id) || !allowed.has(repair.destination.list.id)))
+      setRepair(null);
+
+    if (menu && !allowed.has(menu.column.list.id)) setMenu(null);
+  }
+
+  const restoreFocus = () => {
+    focusPending.current = true;
+    setFocusTick((current) => current + 1);
+  };
 
   useEffect(() => {
-    if (visibleIds === null) return;
+    if (!focusPending.current || board.refreshing || tree.state !== 'ready') return;
 
-    const allowed = new Set(visibleIds.split(','));
-    setRepair((current) =>
-      current && (!allowed.has(current.source.list.id) || !allowed.has(current.destination.list.id))
-        ? null
-        : current,
-    );
-    setMenu((current) => (current && !allowed.has(current.column.list.id) ? null : current));
-  }, [visibleIds]);
+    const taskId = lastTask.current;
+    const target = taskId
+      ? document.querySelector<HTMLElement>(`[data-move-task="${CSS.escape(taskId)}"]`)
+      : null;
+    (
+      target ?? document.querySelector<HTMLElement>('[aria-label="Workspace lists board"]')
+    )?.focus();
+    focusPending.current = false;
+  }, [board.refreshing, focusTick, tree.state]);
 
-  const restoreFocus = () =>
-    requestAnimationFrame(() => {
-      const taskId = lastTask.current;
-      const target = taskId
-        ? document.querySelector<HTMLElement>(`[data-move-task="${CSS.escape(taskId)}"]`)
-        : null;
-      (
-        target ?? document.querySelector<HTMLElement>('[aria-label="Workspace lists board"]')
-      )?.focus();
-    });
   const move = (taskId: string, destinationListId: string, index: number) => {
+    if (board.refreshing) return;
+
     const plan = planWorkspaceMove(projected, taskId, destinationListId, index);
     lastTask.current = taskId;
     if (plan.kind === 'repair') {
       setRepair(plan.selection);
+
       return;
     }
 
     if (plan.kind === 'blocked') {
       notifications.capture()(plan.message, 'error');
       restoreFocus();
+
       return;
     }
 
@@ -105,7 +117,7 @@ export function ConnectedWorkspaceBoard({
   return (
     <>
       {visible.map((list) => (
-        <WorkspaceListSubscription key={list.id} listId={list.id} refresh={() => board.retry()} />
+        <WorkspaceListSubscription key={list.id} listId={list.id} refresh={board.refreshTasks} />
       ))}
       {tree.state === 'loading' ? (
         <LoadingState>Loading workspace lists…</LoadingState>
@@ -117,8 +129,8 @@ export function ConnectedWorkspaceBoard({
         />
       ) : !lists.length ? (
         <EmptyState
-          title="No visible lists"
           description="Create a list or ask a workspace administrator for access."
+          title="No visible lists"
         />
       ) : (
         <Stack spacing={1.6} sx={{ minWidth: 0 }}>
@@ -142,20 +154,23 @@ export function ConnectedWorkspaceBoard({
             Each column is a list. Tasks stay grouped by status; drag within a group to reorder or
             into another list to move.
           </Typography>
-          {notice && (
-            <Typography aria-live="off" role="status">
-              {notice}
-            </Typography>
-          )}
           <BoardViewport role="region" aria-label="Workspace lists board" tabIndex={0}>
             <WorkspaceBoardDnd
               columns={columns}
-              pending={new Set(pending.map((command) => command.taskId))}
+              pending={
+                new Set(
+                  board.refreshing
+                    ? ready.flatMap((column) => column.tasks.map((task) => task.id))
+                    : pending.map((command) => command.taskId),
+                )
+              }
               workspaceId={scope.workspaceId!}
               move={move}
               retry={board.retry}
               loadMore={board.loadMore}
               openMove={(task, column) => {
+                if (board.refreshing) return;
+
                 lastTask.current = task.id;
                 setMenu({ task, column });
               }}
@@ -171,7 +186,7 @@ export function ConnectedWorkspaceBoard({
       {repair && (
         <WorkspaceMoveRepair
           selection={repair}
-          submit={submit}
+          submit={submitMove}
           onClose={() => {
             setRepair(null);
             restoreFocus();
@@ -190,7 +205,7 @@ export function ConnectedWorkspaceBoard({
           }))}
           runtime={runtime}
           scope={scope}
-          submit={submit}
+          submit={submitMove}
           onClose={() => {
             setMenu(null);
             restoreFocus();
