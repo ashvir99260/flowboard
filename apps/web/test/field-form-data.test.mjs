@@ -86,3 +86,17 @@ test('new fields cannot duplicate a local key', () => {
   const config = configuration(true);
   assert.equal(previewFieldEdit(config, fieldDefaults(config, 'area')).success, false);
 });
+
+test('blank option colors become omitted values and uncolored edits remain no-ops', () => {
+  const config = configuration(true);
+  const draft = fieldDefaults(config, 'area');
+  draft.options[0].color = '';
+  const command = fieldCommand(config, draft, 'area');
+  assert.equal(Object.hasOwn(command.body.options[0], 'color'), false);
+  const uncolored = structuredClone(config);
+  for (const collection of [uncolored.local, uncolored.effective]) {
+    delete collection.find(({ key }) => key === 'area').options[0].color;
+  }
+  const unchanged = fieldDefaults(uncolored, 'area');
+  assert.equal(fieldCommand(uncolored, unchanged, 'area'), null);
+});

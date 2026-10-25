@@ -427,3 +427,18 @@ test('guarded value and patch schemas remain exportable for generated API contra
     }
   }
 });
+
+test('select option colors are optional but supplied colors stay strictly validated', () => {
+  const withoutColor = { id: id(900), label: 'Uncolored' };
+  expect(contracts.CustomFieldOptionSchema.parse(withoutColor)).toEqual(withoutColor);
+  expect(
+    contracts.resolveFields({
+      scopes,
+      definitions: [field(901, 'choice', 'single_select', 0, { options: [withoutColor] })],
+    }).success,
+  ).toBe(true);
+  for (const color of ['', null, 'red', '#abc'])
+    expect(contracts.CustomFieldOptionSchema.safeParse({ ...withoutColor, color }).success).toBe(
+      false,
+    );
+});

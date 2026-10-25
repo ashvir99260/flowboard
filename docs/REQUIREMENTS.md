@@ -205,3 +205,8 @@ The user now authorizes recording the missing items identified in the MVP compar
 Workspace rename/archive, one-level subtasks, full-text search, bulk task updates and a container/grant administration UI are considered enhancements (R156–R160). They are recorded for design/prioritization, not selected for immediate implementation. Workspace archival in particular needs an explicit session, membership and recovery policy. Existing hosting/release/promotion gates retain their own authorization and evidence; this request does not activate deployments.
 
 For R151, fresh demo databases receive the expanded fixture. Existing initialized databases remain unchanged; never reset a volume or rewrite user data to show new seed content. Document a separate fresh local preview. A future additive seed upgrade requires its own safety design and authorization. See [follow-up plan](MVP_FOLLOW_UPS.md) and [ordered tasks](TASKS.md).
+
+
+## Follow-up authorization — complete the local backlog (25 October 2026)
+
+The user subsequently requested completion of all tasks. R156–R160 are now selected for safe design and implementation after the remaining P28 tasks, rather than consideration only. Keep one tested task/commit at a time and define workspace recovery, subtask ownership, search permissions, bulk atomicity and administration interactions before implementing each. This authorizes local backlog completion, not destructive data resets or unconfigured external deployment.
