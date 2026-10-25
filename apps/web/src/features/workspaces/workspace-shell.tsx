@@ -209,6 +209,13 @@ function VerifiedWorkspace({
               <>
                 <Button
                   component={NextLink}
+                  href={`/w/${scope.workspaceId}/settings/administration`}
+                  onClick={() => setOpen(false)}
+                >
+                  Containers and access
+                </Button>
+                <Button
+                  component={NextLink}
                   href={`/w/${scope.workspaceId}/settings/workspace`}
                   onClick={() => setOpen(false)}
                 >
