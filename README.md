@@ -253,7 +253,7 @@ Use `localhost` in local browser URLs and host-side connection settings. Compose
 
 The API applies checked-in Prisma migrations, then seeds the local demo once before listening. The worker waits for API health. API and worker readiness check PostgreSQL and Redis with bounded timeouts. Task boards, editing, configuration and the activity feed are available; authenticated socket collaboration updates other authorized clients.
 
-Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `carol@example.com` (members), plus `dan@example.com` in a second tenant. Their development-only password is `FlowboardDemo123!`, stored as individually salted Argon2id hashes. Alice is also a member of the second tenant. The main tenant contains 24 tasks across three lists, four field definitions across all four scopes, inherited/overridden statuses, one private list and one list denying Bob. The second tenant has three tasks. Use `POST /v1/auth/login` with `{ "email": "alice@example.com", "password": "FlowboardDemo123!" }` and an allowed `Origin` header (for example `http://localhost:3000`). `POST /v1/auth/signup` also accepts `name` and `workspaceName`; it creates a separate workspace/admin/default statuses. Both return a 15-minute access token and set an httpOnly refresh cookie. Use `POST /v1/auth/refresh` with the refresh cookie and allowed Origin to rotate it; use `POST /v1/auth/logout` to revoke the family and expire the cookie. Both accept an empty body. A reused refresh cookie revokes the whole family, so the client session transport coordinates concurrent refresh requests.
+Local demo accounts are `alice@example.com` (admin), `bob@example.com` and `carol@example.com` (members), plus `dan@example.com` in a second tenant. Their development-only password is `FlowboardDemo123!`, stored as individually salted Argon2id hashes. Alice is also a member of the second tenant. Fresh main demo workspaces contain 48 tasks across six lists in three spaces and four folders, nine field definitions covering all six types across all four scopes, and inherited/overridden statuses. Alice, Bob, Carol, Eve and Frank demonstrate different access rules; Dan remains in the second tenant. The original private launch list and Bob's Discovery deny remain, and the private Operations space adds support-folder denial and private-list access. The second tenant has three tasks. Use `POST /v1/auth/login` with `{ "email": "alice@example.com", "password": "FlowboardDemo123!" }` and an allowed `Origin` header (for example `http://localhost:3000`). `POST /v1/auth/signup` also accepts `name` and `workspaceName`; it creates a separate workspace/admin/default statuses. Both return a 15-minute access token and set an httpOnly refresh cookie. Use `POST /v1/auth/refresh` with the refresh cookie and allowed Origin to rotate it; use `POST /v1/auth/logout` to revoke the family and expire the cookie. Both accept an empty body. A reused refresh cookie revokes the whole family, so the client session transport coordinates concurrent refresh requests.
 
 `DEMO_SEED` defaults to `true` only in local Compose. Leave it `false` on hosted environments. A completed seed marker is committed atomically with the data; later or concurrent boots preserve your edits. Migrations use `DATABASE_URL_UNPOOLED` when supplied (Neon's direct connection), while runtime queries use `DATABASE_URL` (which may be pooled). For explicit local maintenance, export those URLs and run `pnpm db:migrate`, or `DEMO_SEED=true pnpm db:seed` after migration. Neither command resets data.
 
@@ -262,6 +262,29 @@ To run the apps with `pnpm dev` while keeping only PostgreSQL and Redis in Docke
 Run `pnpm docker:check` for an isolated image/build/browser/restart/recovery check. It reserves ports, derives matching browser origins, ignores the root `.env`, and uses unique image tags. A real browser edits a task; REST edits survive restart; readiness reflects a Redis outage and queued activity appears after recovery. It removes its own containers and image tags, leaving its uniquely named data volumes intact. It never targets development volumes.
 
 Run `pnpm docker:dev:check` to verify live app/shared-package edits and compile-error recovery against a temporary source copy. It uses separate images and random ports, preserves your source and running stack, and retains only its isolated data volumes after cleanup.
+
+### Expanded demo personas and safe fresh previews
+
+| Account | Main-workspace access                                                                                |
+| ------- | ---------------------------------------------------------------------------------------------------- |
+| Alice   | Administrator: all six lists, including private containers and configuration.                        |
+| Bob     | Product backlog; no Private launch, Discovery or Operations.                                         |
+| Carol   | All three original lists; no Operations.                                                             |
+| Eve     | Product backlog, Discovery and all three Operations lists, including private Support triage.         |
+| Frank   | Product backlog, Discovery and Routine operations; the Customer support folder is explicitly denied. |
+
+Use `eve@example.com` and `frank@example.com` with the same local demo password shown above. Operations contains Support triage, Incident follow-up and Routine operations. Its lists show inherited/local status differences, text, multi-select, required severity and checkbox fields, with unassigned/multi-assigned tasks and zero/false values. Boards are alternate views of these lists; there is no separate board record. See [demo data](docs/DEMO_DATA.md).
+
+Seeding runs once. An existing initialized database keeps its current dataset and edits after updating the code. To try the richer fixtures without touching it, use a new Compose project with unused local ports:
+
+```sh
+WEB_PORT=3020 API_PORT=3021 DEMO_SEED=true \
+AUTH_ALLOWED_ORIGINS=http://localhost:3020,http://localhost:3021 \
+WEB_ALLOWED_ORIGINS=http://localhost:3020 REALTIME_PUBLIC_URL=http://localhost:3021 \
+docker compose -p flowboard-expanded-preview up --build
+```
+
+Open `http://localhost:3020` and `http://localhost:3021/docs`. The new project uses separate named volumes; choose another project name if this one already has initialized data. This does not reset, upgrade or merge the old database. Stop it with Ctrl+C; retain its volumes to preserve edits.
 
 ## Releases and hosted environments
 

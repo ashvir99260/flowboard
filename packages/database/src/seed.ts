@@ -2,11 +2,11 @@ import { CustomFieldOptionSchema } from '@flowboard/contracts';
 
 import { createClient } from './client.js';
 import { hashPassword } from './password.js';
+import { demoId as id, OperationsAccounts, seedOperations } from './seed-operations.js';
 
 import type { Prisma } from './generated/client.js';
 import type { Priority } from '@flowboard/contracts';
 
-const id = (value: number) => `f1000000-0000-4000-8000-${String(value).padStart(12, '0')}`;
 const version = 'demo-v1';
 // Intentionally public local-demo credentials; hosted deployments leave DEMO_SEED off.
 export const DemoPassword = 'FlowboardDemo123!';
@@ -16,6 +16,7 @@ export const DemoAccounts = Object.freeze([
   { email: 'bob@example.com', id: id(102), name: 'Bob' },
   { email: 'carol@example.com', id: id(103), name: 'Carol' },
   { email: 'dan@example.com', id: id(104), name: 'Dan' },
+  ...OperationsAccounts,
 ]);
 
 export async function seedDemoData(databaseUrl: string): Promise<boolean> {
@@ -32,6 +33,7 @@ export async function seedDemoData(databaseUrl: string): Promise<boolean> {
           });
         }
         await mainWorkspace(tx);
+        await seedOperations(tx, id(1));
         await otherWorkspace(tx);
         await tx.seedState.create({ data: { version } });
 
@@ -140,6 +142,15 @@ async function mainWorkspace(tx: Prisma.TransactionClient) {
         ownerId: id(211),
         ownerType: 'folder',
         type: 'date',
+        workspaceId,
+      },
+      {
+        id: id(609),
+        key: 'customer',
+        name: 'Research customer',
+        ownerId: id(202),
+        ownerType: 'space',
+        type: 'text',
         workspaceId,
       },
       {
