@@ -38,7 +38,7 @@ test(
     assert.equal(await todo.getByRole('heading', { level: 3 }).count(), 2);
     await todo.getByText('Urgent', { exact: true }).waitFor();
     await todo.getByText('Effort: 0', { exact: true }).first().waitFor();
-    await todo.getByText(/Nov 1, 2026/).waitFor();
+    await todo.getByText(/2026-11-01 00:00:00 UTC/).waitFor();
     await todo.getByLabel('Alice').waitFor();
     assert.equal(
       await board.getByRole('region', { name: 'Done column' }).getByRole('article').count(),

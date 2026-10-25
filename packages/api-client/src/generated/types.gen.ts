@@ -490,7 +490,7 @@ export type CreateTaskDto = {
     /**
      * Due date
      *
-     * Calendar day or null when no due date is set.
+     * ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.
      */
     dueDate?: string | null;
     /**
@@ -2564,7 +2564,7 @@ export type TaskMutationResponseDtoOutput = {
         /**
          * Due date
          *
-         * Calendar day or null when no due date is set.
+         * ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.
          */
         dueDate: string | null;
         /**
@@ -2708,7 +2708,7 @@ export type TaskPageResponseDtoOutput = {
         /**
          * Due date
          *
-         * Calendar day or null when no due date is set.
+         * ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.
          */
         dueDate: string | null;
         /**
@@ -2859,7 +2859,7 @@ export type TaskResponseDtoOutput = {
         /**
          * Due date
          *
-         * Calendar day or null when no due date is set.
+         * ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.
          */
         dueDate: string | null;
         /**
@@ -3244,7 +3244,7 @@ export type UpdateTaskDto = {
     /**
      * Due date
      *
-     * Calendar day or null when no due date is set.
+     * ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.
      */
     dueDate?: string | null;
     /**

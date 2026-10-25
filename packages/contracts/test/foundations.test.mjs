@@ -115,3 +115,33 @@ describe('shared transport rules', () => {
     ).toBe(false);
   });
 });
+
+test('task due instants normalize offsets and milliseconds without accepting calendar dates', () => {
+  expect(contracts.TaskDueDateSchema.parse('2026-06-10T18:15:30.123+05:30')).toBe(
+    '2026-06-10T12:45:30.123Z',
+  );
+  expect(contracts.TaskDueDateSchema.parse('2026-06-10T12:45:30Z')).toBe(
+    '2026-06-10T12:45:30.000Z',
+  );
+  expect(contracts.TaskDueDateSchema.parse('2024-02-29T00:00:00.1Z')).toBe(
+    '2024-02-29T00:00:00.100Z',
+  );
+  for (const invalid of [
+    'garbage',
+    '2026-13-11T00:00:00Z',
+    '2026-06-10',
+    '2026-06-10T12:45:30',
+    '2025-02-29T00:00:00Z',
+    '2026-06-10T12:45:30.1234Z',
+    '0000-01-01T00:00:00Z',
+    '0001-01-01T00:00:00+01:00',
+    '9999-12-31T23:59:59-01:00',
+  ])
+    expect(contracts.TaskDueDateSchema.safeParse(invalid).success).toBe(false);
+  for (const io of ['input', 'output'])
+    expect(z.toJSONSchema(contracts.TaskDueDateSchema, { io })).toMatchObject({
+      format: 'date-time',
+      type: 'string',
+    });
+  expect(contracts.CalendarDateSchema.parse('2024-02-29')).toBe('2024-02-29');
+});

@@ -96,7 +96,7 @@ export function boardFixture() {
       page(ids.active, [
         task(3, ids.active, 0, {
           priority: 'high',
-          dueDate: '2026-10-28',
+          dueDate: '2026-10-28T00:00:00.000Z',
           assigneeIds: [AuthExamples.session.data.user.id],
           assignees: [AuthExamples.session.data.user].map(({ id, name }) => ({ id, name })),
         }),

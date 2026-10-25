@@ -54,5 +54,5 @@ export const task = TaskSchema.parse({
   statusId: status.id,
   priority: 'high',
   customFields: { approved: false, effort: 0 },
-  dueDate: '2026-12-01',
+  dueDate: '2026-12-01T00:00:00.000Z',
 });

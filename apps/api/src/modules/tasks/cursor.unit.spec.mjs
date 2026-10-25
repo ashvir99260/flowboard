@@ -1,3 +1,5 @@
+import { createHmac } from 'node:crypto';
+
 import { afterEach, expect, jest, test } from '@jest/globals';
 
 import { CursorCodec } from '../../../dist/core/common/cursor.js';
@@ -15,7 +17,7 @@ afterEach(() => jest.restoreAllMocks());
 test.each([
   { sort: 'manual', id, statusId: id, position: 2 },
   { sort: 'dueDate', id, dueDate: null },
-  { sort: 'dueDate', id, dueDate: '2026-02-28' },
+  { sort: 'dueDate', id, dueDate: '2026-02-28T00:00:00.000Z' },
   { sort: 'priority', id, priority: 'urgent' },
 ])('task cursor retains exact sort position and fixed expiry: %j', (after) => {
   let now = Date.parse('2026-10-24T10:00:00Z');
@@ -44,6 +46,28 @@ test.each([
   );
   now += 500_000;
   expect(() => codec.decodeTask(first, binding)).toThrow(
+    expect.objectContaining({ code: 'INVALID_CURSOR' }),
+  );
+});
+
+test('legacy signed calendar-date cursors fail with INVALID_CURSOR', () => {
+  const secret = new Uint8Array(32);
+  const payload = Buffer.from(
+    JSON.stringify({
+      ...binding,
+      v: 1,
+      kind: 'tasks',
+      expiresAt: Date.now() + 900000,
+      configVersion: 1,
+      dataVersion: 1,
+      after: { sort: 'dueDate', id, dueDate: '2026-02-28' },
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', secret)
+    .update(`flowboard:cursor:v1:${payload}`)
+    .digest('base64url');
+  const codec = new CursorCodec(secret);
+  expect(() => codec.decodeTask(`${payload}.${signature}`, binding)).toThrow(
     expect.objectContaining({ code: 'INVALID_CURSOR' }),
   );
 });

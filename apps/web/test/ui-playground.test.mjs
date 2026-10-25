@@ -81,7 +81,7 @@ test(
         ),
         'Reduced motion must suppress button transitions',
       );
-      assert.ok(await page.getByText('Due · Jan 1, 2026', { exact: true }).isVisible());
+      assert.ok(await page.getByText('Due · 2026-01-01 00:00:00 UTC', { exact: true }).isVisible());
       const composed = page.getByRole('region', { name: 'Composed workspace panel' });
       await composed.getByRole('button', { name: 'Open task: Review shared components' }).click();
       assert.ok(

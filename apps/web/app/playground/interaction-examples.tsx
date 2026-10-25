@@ -48,7 +48,7 @@ export function InteractionExamples() {
               id: '20000000-0000-4000-8000-000000000200',
               title: 'Review the release notes',
               assignees: [],
-              dueDate: '2026-10-30',
+              dueDate: '2026-10-30T00:00:00.000Z',
               priority: 'normal',
             }}
             onOpen={() => setNotice('Open task action selected')}

@@ -1,8 +1,9 @@
 'use client';
 
+import { TaskDueDateSchema } from '@flowboard/contracts';
 import Typography from '@mui/material/Typography';
 
-import { formatCalendarDate } from '../../utils/formatDate.js';
+import { formatTimestamp } from '../../utils/formatDate.js';
 
 import type { Task } from '@flowboard/contracts';
 
@@ -17,8 +18,8 @@ export function DueDateLabel({
       </Typography>
     );
 
-  const formatted = formatCalendarDate(date);
-  if (!formatted)
+  const parsed = TaskDueDateSchema.safeParse(date);
+  if (!parsed.success)
     return (
       <Typography color="error" component="span" variant="body2">
         Invalid date
@@ -32,7 +33,7 @@ export function DueDateLabel({
       color={overdue ? 'error' : 'text.secondary'}
       variant="body2"
     >
-      {overdue ? 'Overdue' : 'Due'} · {formatted}
+      {overdue ? 'Overdue' : 'Due'} · {formatTimestamp(parsed.data)}
     </Typography>
   );
 }
