@@ -2,7 +2,9 @@
 
 import { createWorkspaceInvitationMutation } from '@flowboard/api-client/tanstack-query';
 import { CreateInvitationSchema } from '@flowboard/contracts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiMutation } from '../../lib/useApiMutation';
 
 import { apiError } from '../../lib/api-error';
 import { configurationChanged } from '../config/configuration-events';
@@ -20,10 +22,8 @@ export function useCreateWorkspaceInvitation(runtime: ClientRuntime, scope: Quer
   const notifications = useNotifications();
   const client = useQueryClient();
   const generated = createWorkspaceInvitationMutation({ client: runtime.client });
-  const mutation = useMutation({
+  const mutation = useApiMutation({
     mutationKey: ['configuration-write', scope.revision, scope.userId, scope.workspaceId],
-    retry: false,
-    networkMode: 'always',
     mutationFn: async (input: CreateInvitation, context) => {
       const body = CreateInvitationSchema.parse(input);
       const response = await generated.mutationFn!(

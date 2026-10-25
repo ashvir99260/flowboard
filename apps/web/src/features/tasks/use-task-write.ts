@@ -6,7 +6,9 @@ import {
   updateTaskMutation,
 } from '@flowboard/api-client/tanstack-query';
 import { ArchiveTaskSchema, CreateTaskSchema, UpdateTaskSchema } from '@flowboard/contracts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiMutation } from '../../lib/useApiMutation';
 
 import { apiError } from '../../lib/api-error';
 import { useNotifications } from '../notifications/notification-provider';
@@ -44,10 +46,8 @@ export function useTaskWrite(
   const update = updateTaskMutation({ client: runtime.client });
   const archive = archiveTaskMutation({ client: runtime.client });
 
-  const mutation = useMutation({
+  const mutation = useApiMutation({
     mutationKey: ['task-write', scope.revision, scope.userId, scope.workspaceId],
-    retry: false,
-    networkMode: 'always',
     mutationFn: async (command: TaskWrite, context) => {
       if (command.kind === 'archive') {
         await archive.mutationFn!(

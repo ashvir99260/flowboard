@@ -17,7 +17,9 @@ import {
   UpdateNodeSchema,
   UpsertGrantSchema,
 } from '@flowboard/contracts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiMutation } from '../../lib/useApiMutation';
 
 import { apiError } from '../../lib/api-error';
 import { configurationChanged } from '../config/configuration-events';
@@ -62,10 +64,8 @@ export function useAdministrationWrite(runtime: ClientRuntime, scope: QueryScope
   const archive = archiveNodeMutation({ client: runtime.client });
   const grant = upsertNodeGrantMutation({ client: runtime.client });
   const removeGrant = removeNodeGrantMutation({ client: runtime.client });
-  const mutation = useMutation({
+  const mutation = useApiMutation({
     mutationKey: ['configuration-write', scope.revision, scope.userId, scope.workspaceId],
-    retry: false,
-    networkMode: 'always',
     mutationFn: async (command: AdministrationCommand, context) => {
       if (command.kind === 'archive') {
         await archive.mutationFn!(

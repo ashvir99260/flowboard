@@ -6,7 +6,9 @@ import {
   restoreWorkspaceMutation,
   updateWorkspaceMutation,
 } from '@flowboard/api-client/tanstack-query';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiMutation } from '../../lib/useApiMutation';
 
 import { apiError } from '../../lib/api-error';
 import { withQueryScope } from '../../lib/query-scope';
@@ -31,10 +33,8 @@ export function useWorkspaceWrite(runtime: ClientRuntime, scope: QueryScope) {
   const archive = archiveWorkspaceMutation({ client: runtime.client });
   const restore = restoreWorkspaceMutation({ client: runtime.client });
 
-  const mutation = useMutation({
+  const mutation = useApiMutation({
     mutationKey: ['configuration-write', scope.revision, scope.userId, scope.workspaceId],
-    networkMode: 'always',
-    retry: false,
     mutationFn: async (command: Command, context) => {
       const path = { workspaceId: command.workspaceId };
       const body = { expectedConfigVersion: command.expectedConfigVersion };

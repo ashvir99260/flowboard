@@ -2,7 +2,9 @@
 
 import { bulkUpdateTasksMutation } from '@flowboard/api-client/tanstack-query';
 import { BulkUpdateTasksSchema } from '@flowboard/contracts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiMutation } from '../../lib/useApiMutation';
 
 import { apiError } from '../../lib/api-error';
 import { useNotifications } from '../notifications/notification-provider';
@@ -24,10 +26,8 @@ export function useBulkUpdateTasks(
   const notifications = useNotifications();
   const client = useQueryClient();
   const generated = bulkUpdateTasksMutation({ client: runtime.client });
-  const mutation = useMutation({
+  const mutation = useApiMutation({
     mutationKey: ['task-write', scope.revision, scope.userId, scope.workspaceId],
-    retry: false,
-    networkMode: 'always',
     mutationFn: async (
       command: { body: BulkUpdateTasks; listId: string; tasks: readonly Task[] },
       context,

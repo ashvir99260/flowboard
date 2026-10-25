@@ -2,7 +2,9 @@
 
 import { acceptWorkspaceInvitationMutation } from '@flowboard/api-client/tanstack-query';
 import { AcceptInvitationSchema, AcceptedInvitationEnvelopeSchema } from '@flowboard/contracts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiMutation } from '../../lib/useApiMutation';
 
 import { apiError } from '../../lib/api-error';
 import { useNotifications } from '../notifications/notification-provider';
@@ -16,10 +18,8 @@ export function useAcceptWorkspaceInvitation(runtime: ClientRuntime, scope: Quer
   const notifications = useNotifications();
   const client = useQueryClient();
   const generated = acceptWorkspaceInvitationMutation({ client: runtime.client });
-  const mutation = useMutation({
+  const mutation = useApiMutation({
     mutationKey: ['accept-invitation', scope.revision, scope.userId],
-    retry: false,
-    networkMode: 'always',
     mutationFn: async (token: string, context) => {
       const response = await generated.mutationFn!(
         { body: AcceptInvitationSchema.parse({ token }) },

@@ -6,8 +6,10 @@ import {
   ReorderTaskSchema,
   TaskMutationEnvelopeSchema,
 } from '@flowboard/contracts';
-import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
+import { useMutationState, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+
+import { useApiMutation } from '../../lib/useApiMutation';
 
 import { apiError } from '../../lib/api-error';
 import { useNotifications } from '../notifications/notification-provider';
@@ -29,10 +31,8 @@ export function useTaskMutation(runtime: ClientRuntime, scope: QueryScope) {
   const move = moveTaskMutation({ client: runtime.client });
   const reorder = reorderTaskMutation({ client: runtime.client });
 
-  const mutation = useMutation<MoveTaskResponse, unknown, TaskPlacement>({
+  const mutation = useApiMutation<MoveTaskResponse, unknown, TaskPlacement>({
     mutationKey,
-    networkMode: 'always',
-    retry: false,
     mutationFn: async (command, context) => {
       const body = MoveTaskSchema.required({ statusId: true }).parse(command.request);
       const path = { taskId: command.taskId };

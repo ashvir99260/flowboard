@@ -5,7 +5,9 @@ import {
   removeScopeFieldMutation,
   updateScopeFieldMutation,
 } from '@flowboard/api-client/tanstack-query';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiMutation } from '../../../lib/useApiMutation';
 
 import { apiError } from '../../../lib/api-error';
 import { useNotifications } from '../../notifications/notification-provider';
@@ -31,10 +33,8 @@ export function useFieldWrite(runtime: ClientRuntime, scope: QueryScope, owner: 
   const update = updateScopeFieldMutation({ client: runtime.client });
   const remove = removeScopeFieldMutation({ client: runtime.client });
 
-  const mutation = useMutation({
+  const mutation = useApiMutation({
     mutationKey: ['configuration-write', scope.revision, scope.userId, scope.workspaceId],
-    retry: false,
-    networkMode: 'always',
     mutationFn: async (command: Command, context) => {
       if (command.kind === 'remove') {
         await remove.mutationFn!(
