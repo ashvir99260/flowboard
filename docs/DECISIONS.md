@@ -745,3 +745,9 @@ Free plans are bounded, not an unlimited uptime promise. Upstash Free currently 
 Live Vercel builds use the Dockerfile directory as context, even when the service root is the repository root. Nested app Dockerfiles therefore omit the other workspaces. The live API and daemon builders also reject the documented `#stage` suffix as a literal filename.
 
 Move the existing API and worker build definitions unchanged to `Dockerfile.api` and `Dockerfile.worker` at the repository root. Vercel, Compose and independent image publication all use these same canonical files; do not maintain duplicate provider-specific definitions. Map each root file to only its owning app in release fingerprints. Keep the web Dockerfile in its app because Vercel builds web through the native Next.js service. Source/schema checks do not replace the live deployment evidence in P38-03.
+
+## D171 — Four explicit run and deployment modes
+
+The user's current target is native `pnpm run dev` for everyday development, with only PostgreSQL and Redis in Docker; a full five-service `docker compose up --build` preview with automatic migrations/seed and no required env-file setup in a clean checkout; Vercel only for a temporary hosted demo; and Docker images stored in Amazon ECR for future production deployment.
+
+This supersedes wording that made Vercel the permanent production host or limited Docker to local tooling. Vercel's technical production target remains necessary for its demo worker and does not change the long-term target. Existing publication still uses GHCR; P39-02 will implement ECR after AWS configuration is selected. ECR stores images and does not choose the container runtime. Future environments promote unchanged per-app digests with runtime settings and isolated data; P00-11/P00-12 retain the promotion work. No AWS resources, credentials or running deployment change as part of this clarification. [Run modes](RUN_AND_DEPLOY.md) is the current contract.

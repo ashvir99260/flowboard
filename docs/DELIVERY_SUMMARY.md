@@ -1,5 +1,7 @@
 # Flowboard requirement and delivery summary
 
+Current hosting clarification: [run modes](RUN_AND_DEPLOY.md) distinguishes native development, setup-free Compose preview, the verified temporary Vercel demo (P38-03), and planned Docker/ECR production. The dated counts and open items below describe their named implementation snapshot; they do not supersede D171.
+
 This is the reader-friendly map from the original prompt and subsequent requests to the implementation. It summarizes the [requirement matrix](REQUIREMENTS_MATRIX.md), [task ledger](TASKS.md), [decisions](DECISIONS.md) and [evidence records](evidence/README.md); it does not replace them or turn an unchecked item into completed work.
 
 Implementation snapshot: `3cc62b0` (P19-01), reviewed 25 October 2026. At that snapshot the ledger contains 104 tasks: 98 checked and six open. Of R01–R140, 135 are marked Verified, four In progress and one Planned. H01–H06 separately cover the original documentation harness. P20-01/R141 adds this documentation set after that implementation snapshot.

@@ -1,6 +1,6 @@
-# Continuous integration and Vercel deployment
+# Continuous integration and deployment
 
-Updated 26 October 2026. Parallel verification and independent publication feed one gated Vercel Hobby Services deployment. Daemons require a production target. Provisioning and live acceptance remain separately verified; see [Vercel deployment](VERCEL.md) and [promotion](PROMOTION.md).
+Updated 26 October 2026. Parallel verification and current GHCR publication feed the gated temporary Vercel demo. Future production uses Docker images in ECR and unchanged-digest promotion; that path is not implemented. Vercel's technical production target enables its daemon. See [run modes](RUN_AND_DEPLOY.md), [Vercel demo](VERCEL.md) and [promotion](PROMOTION.md).
 
 ```mermaid
 flowchart LR
@@ -10,11 +10,12 @@ flowchart LR
   Main[Merge to main] --> Checks
   Main --> UI
   Main --> Docker
-  Checks --> Publish[Main only: publish affected app images and releases]
+  Checks --> Publish[Main only: publish affected app images to GHCR and releases]
   UI --> Publish
   Docker --> Publish
   Publish --> Gate[GitHub demo environment / CD_ENABLED]
-  Gate --> Project[Vercel Hobby: one current-main deployment]
+  Gate --> Project[Temporary Vercel Hobby demo: current-main source build]
+  Publish -. future registry integration .-> ECR[ECR images and unchanged-digest promotion]
   Project --> Web[Next.js service]
   Project --> API[Nest API service]
   Project --> Worker[BullMQ daemon]
@@ -24,7 +25,7 @@ flowchart LR
   Worker --> Redis
 ```
 
-Database and queue connections in this diagram are implemented and verified locally. Provider deployment and its live acceptance remain separate, unchecked work.
+The temporary Vercel/Neon/Upstash deployment was verified in P38-03. Protected CI activation remains separate. The dotted ECR path represents future work; current jobs still authenticate and publish to GHCR.
 
 ## Parallel checks and free runners
 

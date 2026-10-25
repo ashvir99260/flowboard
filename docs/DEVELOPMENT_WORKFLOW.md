@@ -2,6 +2,8 @@
 
 This is the operating procedure for a human or AI implementing Flowboard. Its purpose is to carry one requirement from the brief to working behavior, verified evidence and a reviewable commit. The user has authorized ordered implementation through the remaining local MVP tasks. This workflow grants no additional scope or permission to publish, merge or deploy.
 
+Use [run modes](RUN_AND_DEPLOY.md) for environment setup. Everyday implementation runs the three apps with `pnpm run dev` and only PostgreSQL/Redis in Docker. Full Compose is the setup-free preview. Vercel is temporary demo hosting; Docker/ECR is the future production target, not an already provisioned environment.
+
 ## 1. Read the right source
 
 | Question                           | Authoritative source                                                              |

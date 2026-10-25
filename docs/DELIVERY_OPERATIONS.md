@@ -1,16 +1,16 @@
 # From a change to a running environment
 
-Source snapshot: `1ae096b`, 25 October 2026. This guide explains the current code and the target operating model. [CI/CD](CI_CD.md) lists executable checks; [independent delivery](DELIVERY.md) defines release policy; [Vercel Services](VERCEL.md) is the selected application hosting target. Configuration does not establish that a provider is connected or a deployment has passed.
+Updated 26 October 2026. This guide explains the current code and target operating model. [Run modes](RUN_AND_DEPLOY.md) defines native development, full Compose preview, the temporary [Vercel demo](VERCEL.md), and future Docker/ECR production. [CI/CD](CI_CD.md) lists executable checks; [independent delivery](DELIVERY.md) defines current GHCR publication. ECR and its AWS application runtime are not configured.
 
 ## What exists and what is next
 
-| Concern                      | Current implementation                                                             | Remaining work                                                                                    |
-| ---------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Main and feature branches    | PR/main checks exist; work is committed in small feature branches.                 | Enforce the desired branch protection in GitHub settings.                                         |
-| Independent release          | API, web and worker have separate versions, image digests and release manifests.   | First/live publication is evidenced separately, never inferred from local tests.                  |
-| Runtime environment settings | API/worker read startup settings; web reads origins at dynamic request boundaries. | Verify each chosen hosted environment with the same released image.                               |
-| Hosted CD                    | `vercel.json` defines Vercel web/API services and a worker daemon.                 | Verify the gated one-project Hobby deployment after provider setup and worker-dispatch migration. |
-| Ordered promotion            | The contract is documented in [PROMOTION.md](PROMOTION.md).                        | P00-11/P00-12 implement and verify explicit candidate promotion through dev/qa/stage/prod.        |
+| Concern                      | Current implementation                                                                                            | Remaining work                                                                                                   |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Main and feature branches    | PR/main checks exist; work is committed in small feature branches.                                                | Enforce the desired branch protection in GitHub settings.                                                        |
+| Independent release          | API, web and worker have separate versions, image digests and release manifests.                                  | First/live publication is evidenced separately, never inferred from local tests.                                 |
+| Runtime environment settings | API/worker read startup settings; web reads origins at dynamic request boundaries.                                | Verify each chosen hosted environment with the same released image.                                              |
+| Hosted CD                    | P38-03 verifies the temporary Vercel demo with web/API services and a worker daemon; CI deployment remains gated. | ECR integration and the production runtime remain planned; enable CI deployment only with its required settings. |
+| Ordered promotion            | The contract is documented in [PROMOTION.md](PROMOTION.md).                                                       | P00-11/P00-12 implement and verify explicit candidate promotion through dev/qa/stage/prod.                       |
 
 ## Trunk-based development in Flowboard
 
@@ -24,8 +24,9 @@ flowchart LR
   PR --> Main[Merge to main]
   Main --> Gates[All verification passes]
   Gates --> Releases[Publish affected app images and manifests]
-  Releases --> Preview[Vercel production-target hobby demo]
-  Releases -. planned selected-candidate promotion .-> Dev[dev]
+  Releases --> Preview[Temporary Vercel source-build demo]
+  Releases -. planned registry integration .-> ECR[Docker images in ECR]
+  ECR -. planned selected-candidate promotion .-> Dev[dev]
   Dev -. same app digests .-> QA[qa]
   QA -. same app digests .-> Stage[stage]
   Stage -. same app digests .-> Prod[prod]
@@ -67,7 +68,7 @@ docker run --env-file /secure/qa/web.env \
   ghcr.io/OWNER/flowboard-web@sha256:DIGEST
 ```
 
-The image reference stays identical; values inside the two runtime environment files differ. A managed host injects the same settings from service secrets instead. Config changes require a restart/redeploy to reach the new process environment, not a new app version. The current repo has the portable images and runtime seams; it does **not** yet have an executable four-environment promoter proving this entire sequence.
+The image reference stays identical; values inside the two runtime environment files differ. These examples use the current GHCR format; the planned ECR publisher changes the registry reference without changing the digest-promotion rule. A managed host injects settings from service secrets. Config changes require a restart/redeploy to reach the new process environment, not a new app version. The current repo has portable images and runtime seams; it does **not** yet have an ECR publisher or executable four-environment promoter proving this entire sequence.
 
 ## Where environment settings enter
 

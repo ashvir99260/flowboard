@@ -1,14 +1,14 @@
 # Build once, promote unchanged
 
-Status: agreed direction from the user's 23 October 2026 clarification; future four-environment execution is planned, not implemented. This document supersedes the assumption that deploying the same Git commit is sufficient artifact promotion.
+Status: D171 selects Docker images stored in ECR for future production. Four-environment execution and ECR integration are planned, not implemented. Deploying the same Git commit is not sufficient proof of artifact promotion. [Run modes](RUN_AND_DEPLOY.md) defines development, local preview, temporary demo and production separately.
 
 ## Shared demo comes first
 
-The selected application target is now [Vercel Services](VERCEL.md), with Neon for PostgreSQL. Start with a shared environment, then implement ordered promotion separately. Vercel Services build from repository source and do not satisfy the unchanged-artifact contract by themselves. The current CD path deploys one Services project from current main; the demo uses the production target because worker daemons do not run in previews. [Delivery operations](DELIVERY_OPERATIONS.md) connects this contract to the actual release/runtime code.
+The current temporary demo uses [Vercel Services](VERCEL.md), Neon and Upstash. It is separate from the long-term Docker/ECR production target. Vercel builds from repository source and does not satisfy the unchanged-artifact contract. Its technical production target enables the worker daemon; that platform label does not redefine Flowboard's future production architecture. [Delivery operations](DELIVERY_OPERATIONS.md) connects this contract to the actual release/runtime code.
 
 ## What stays separate
 
-Docker Compose is the local development/test environment for web, API, worker, PostgreSQL and Redis. It does not require every hosted environment to use Docker. The portable Dockerfiles remain useful, but the production artifact format and host must support the same immutable bytes across environments.
+Full Docker Compose is the local preview/test environment. Everyday development runs web/API/worker through `pnpm run dev` with only PostgreSQL and Redis in Docker. Future hosted environments run the selected immutable Docker images from ECR. The AWS application runtime is not yet selected; ECR is the image registry, not a container scheduler.
 
 The target trunk-based development model means one `main` trunk and short-lived feature branches. `dev`, `qa`, `stage` and `prod` are deployment targets, not long-lived source branches. Their configuration and approval rules do not create new application versions.
 
@@ -16,7 +16,7 @@ The target trunk-based development model means one `main` trunk and short-lived 
 flowchart LR
   PR[Short-lived branch / PR checks] --> Main[main]
   Main --> Build[Build release candidate once]
-  Build --> Artifact[Immutable artifact + digest + source manifest]
+  Build --> Artifact[Docker image in ECR + digest + source manifest: planned]
   Artifact --> Dev[dev: runtime configuration]
   Dev --> QA[qa: same digest + runtime configuration]
   QA --> Stage[stage: same digest + runtime configuration]
@@ -56,7 +56,7 @@ Each environment needs isolated database data and a separate Redis instance. Cur
 
 | Current component                                       | Compatibility                                                                                                                                                             |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Local Compose and per-app Dockerfiles                   | Keep for local use and optional portable packaging                                                                                                                        |
+| Local Compose and per-app Dockerfiles                   | Full local preview and the Docker artifact foundation for future ECR production                                                                                           |
 | Independent release tags and digest manifests           | Reuse as the foundation                                                                                                                                                   |
 | Existing Northflank API/worker deployment by digest     | Historical provider path; not the selected deployment topology                                                                                                            |
 | Vercel Services deployment from source                  | Builds the source for the deployment; **does not satisfy build-once promotion**                                                                                           |
@@ -67,7 +67,7 @@ The current `CD_ENABLED=true` gate enables only the configured Vercel Hobby Serv
 
 ## Selected hosting path
 
-The selected Vercel Services configuration is documented in [VERCEL.md](VERCEL.md). Vercel source builds are acceptable for the selected initial topology but do not prove artifact promotion. An environment-neutral artifact path, promotion gates and live same-digest acceptance remain unimplemented.
+The temporary Vercel demo is documented in [VERCEL.md](VERCEL.md). Current image publication uses GHCR. P39-02 will integrate ECR; P00-11/P00-12 retain promotion gates and live same-digest acceptance. No ECR repository, IAM role or AWS application runtime is claimed as configured.
 
 ## Acceptance proof for the future implementation
 

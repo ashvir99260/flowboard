@@ -2,9 +2,9 @@
 
 A self-hosted project management app for learning sound architecture at hobby scale.
 
-**Current state:** The modular API, tenant permissions, inherited statuses/custom fields, task board/table/drawer, configuration editors, activity worker and authenticated realtime collaboration are implemented. Shared contracts generate the OpenAPI client. Local Docker and host-development workflows are available; hosted preview activation remains a separate external setup. See task evidence for tested behavior and outstanding release gates.
+**Current state:** The modular API, tenant permissions, inherited statuses/custom fields, task board/table/drawer, configuration editors, activity worker and authenticated realtime collaboration are implemented. Shared contracts generate the OpenAPI client. Native development and the setup-free Compose preview are available; the temporary Vercel demo is verified. Docker/ECR production integration remains planned. See task evidence for tested behavior and outstanding release gates.
 
-**Try it locally:** [Run the complete preview with Docker](#preview-with-one-command); no `.env` setup is required.
+**Run modes:** Use `pnpm run dev` for everyday development with only PostgreSQL/Redis in Docker. [Run the complete preview with Docker](#preview-with-one-command) without manual `.env` setup. Vercel is the temporary hosted demo; future production uses Docker images stored in Amazon ECR. [Run and deployment guide](docs/RUN_AND_DEPLOY.md) distinguishes the implemented workflows from planned ECR integration.
 
 Start with the [application guide](docs/APPLICATION_GUIDE.md) for features, packages and libraries; [HLD](docs/HLD.md) for system boundaries; [LLD](docs/LLD.md) for implementation flows; and the [delivery summary](docs/DELIVERY_SUMMARY.md) for prompt-to-task coverage and open gates. The [documentation index](docs/README.md) links the detailed references. See the [AI usage log](docs/AI_USAGE.md) for verified corrections and the [roadmap](docs/ROADMAP.md) for delivery priorities. The [diagram atlas](docs/DIAGRAMS.md) provides 30 rendered views of the system, domain rules, frontend, delivery and hosting plans.
 
@@ -147,8 +147,13 @@ cp -n .env.example .env
 cp -n apps/api/.env.example apps/api/.env
 cp -n apps/worker/.env.example apps/worker/.env
 cp -n apps/web/.env.example apps/web/.env.local
-docker compose -f compose.yaml -f compose.local.yaml up -d postgres redis
-pnpm dev
+docker compose -f compose.yaml -f compose.local.yaml up -d --wait postgres redis
+```
+
+For a newly empty development database, [let the API initialize it once](docs/RUN_AND_DEPLOY.md#everyday-development-native-apps-docker-datastores) before starting the worker. Then run the normal development command:
+
+```sh
+pnpm run dev
 ```
 
 The root `.env` configures Compose. The API and worker load their own `.env` when launched with their `dev` or `start` scripts; Next.js loads `.env.local`. Existing process environment variables override file values. The Node services also work without a file when their environment is supplied externally. Restart Node development processes after editing their env files. These private files are ignored by Git and excluded from Docker images. Keep database credentials/ports consistent between root and app files if you customize them, and never put server secrets in the web file. The local API example enables migrations, demo seeding and Swagger; hosted deployments use injected secrets and disable local-only settings.
@@ -209,7 +214,7 @@ For Swagger, open **Try it out**, replace illustrative credentials with a real a
 
 ### Live code updates while developing
 
-Use the development override when you want saved local source edits to appear automatically:
+Everyday development uses [native `pnpm run dev`](#run-locally), with only PostgreSQL and Redis in Docker. The following container-reload override remains an optional alternative:
 
 ```sh
 mkdir -p packages/database/src/generated
@@ -336,11 +341,11 @@ Behavioral suites run Node/Chromium on the host with isolated Docker datastores;
 
 Merges to `main` publish only affected applications: `api/vX.Y.Z`, `web/vX.Y.Z`, and `worker/vX.Y.Z`, with separate GHCR images and source/digest manifests. Shared runtime package changes release their consumers; documentation/test-only changes do not. Pull requests run read-only verification first.
 
-Local development uses Docker PostgreSQL. The selected hosted application target is **Vercel Services** for web and API plus a worker daemon, with **Neon** retained for PostgreSQL. Redis uses Upstash Free over TLS; the free command and compute quotas bound this demo. The service configuration is committed, but resources and live deployment are not verified. See the [Vercel deployment guide](docs/VERCEL.md) and [delivery operations](docs/DELIVERY_OPERATIONS.md).
+Local development uses Docker PostgreSQL and Redis while web/API/worker run on the host. **Vercel Services is the temporary hosted demo**, using Neon PostgreSQL and Upstash Redis; its live verification is recorded in [P38-03](docs/evidence/P38-03.md). The free command and compute quotas bound this demo. See the [Vercel demo guide](docs/VERCEL.md) and [run modes](docs/RUN_AND_DEPLOY.md).
 
 The deployment adapter submits one current-main production deployment to the configured Vercel Hobby project after checks and publication. Production is required for the worker daemon; preview deployments do not run it. Keep `CD_ENABLED` off until credentials and live acceptance are verified. Railway and Render are not deployment targets. The [CI/CD guide](docs/CI_CD.md) lists the actual parallel check lanes and current publication/deployment gates. [Independent delivery](docs/DELIVERY.md) explains versions and release recovery; [Redis and BullMQ](docs/REDIS_AND_JOBS.md) explains background activity, realtime and failures.
 
-Future `dev → qa → stage → prod` promotion will reuse one build and inject configuration at runtime. Docker remains the local development/test setup. See the [build-once contract and current limitations](docs/PROMOTION.md).
+**Future production uses per-app Docker images in Amazon ECR.** The current publisher still targets GHCR; ECR integration and the AWS application runtime remain planned. Future `dev → qa → stage → prod` promotion reuses the same selected image digest and injects configuration at runtime. See the [build-once contract and current limitations](docs/PROMOTION.md).
 
 Generate contracts with `pnpm gen:api`. The isolated Nest bootstrap exports real DTO/controller metadata without database, Redis or secrets. `pnpm openapi:check` regenerates into a temporary directory, validates that fresh document with Spectral, compares it byte-for-byte with the committed spec, and always removes temporary files. Normal builds run the same check and also reject stale generated client output. The rules require unique operation IDs, versioned domain paths, typed errors, and cursor/limit plus an items/pageInfo envelope for paginated collections. Bounded status/field configuration collections are the documented pagination exceptions. The generated Hey API SDK and TanStack Query options are committed and never hand-edited. `pnpm client:check` compares a temporary regeneration, including missing or extra files. Public imports are `@flowboard/api-client/sdk`, `/types`, and `/tanstack-query`; the root export remains available. The pinned generator exposes `listTasksQueryKey`, `listTasksOptions`, `listTasksInfiniteOptions` and `createTaskMutation`, which are consumed by TanStack hooks. It does not generate React hooks directly. Response serialization rejects invalid server output with a sanitized 500. Public errors use the shared envelope, including malformed/oversized requests.
 

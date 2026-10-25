@@ -1,10 +1,10 @@
 # Independent releases and deployment
 
-> Updated 26 October 2026: [Vercel Services](VERCEL.md) hosts the shared Hobby demo with Neon Free and Upstash Free. Independent tags/images remain as described below; one gated deployment builds the validated current main source for all services. This is not unchanged-artifact promotion. Keep CD_ENABLED off until live acceptance.
+> Updated 26 October 2026: [Vercel Services](VERCEL.md) hosts the temporary Hobby demo with Neon Free and Upstash Free. Current independent images publish to GHCR. Future production uses Docker images in Amazon ECR and runtime configuration (D171); that integration is planned. See [run modes](RUN_AND_DEPLOY.md).
 
-**Future promotion direction:** Docker is for local development/test. Trunk-based `dev → qa → stage → prod` delivery with one unchanged artifact and runtime configuration remains future work. Vercel Services configuration does not by itself meet that build-once contract; see [PROMOTION.md](PROMOTION.md).
+**Future promotion direction:** Build each changed app's Docker image once, publish it to ECR, then promote the unchanged digest through `dev → qa → stage → prod` with runtime configuration. Everyday development runs native apps; full Compose provides local previews. Vercel source builds are the temporary-demo path and do not meet the build-once contract; see [PROMOTION.md](PROMOTION.md).
 
-Status: Docker and release automation are implemented; P12-03 verifies the complete local MVP and both container modes, 24 October 2026. The first real main-branch publication is tracked by P00-07. This document does not claim a hosted deployment exists.
+Status: Docker and release automation are implemented; P12-03 retains local MVP/container evidence. P38-03 verifies the temporary hosted demo. The first real main-branch publication is tracked by P00-07; ECR publishing and immutable promotion remain separately planned.
 
 ## Release contract
 
@@ -40,11 +40,11 @@ Local PostgreSQL stays in Docker. A localhost-only port override supports runnin
 
 ## Hosted services
 
-Use [Vercel Services](VERCEL.md) for the selected web/API/worker topology and [Neon preview setup](#neon-preview-setup) for the hosted database. Redis is an external managed dependency; its provider, capacity and environment isolation remain to be selected. Railway and Render are not deployment targets. No provider resource, secret or paid capacity has been provisioned by this repository change.
+The temporary demo uses [Vercel Services](VERCEL.md) for web/API/worker, [Neon](#neon-preview-setup) for PostgreSQL and Upstash Free for Redis. P38-03 records the live verification; its quota limits still apply. Future production uses Docker images in ECR with a separately selected application runtime. This documentation change provisions no resources and changes no credentials or paid capacity.
 
-Neon can suspend idle compute. The API outbox dispatcher polls PostgreSQL, and readiness checks query dependencies; this traffic may keep compute awake. Liveness is dependency-independent. Assess polling and health-check frequency against actual hosted usage before claiming idle suspension or free-tier suitability. PostgreSQL remains authoritative; no migration or validation policy changes because the host is Neon.
+Neon can suspend idle compute. The worker outbox dispatcher polls PostgreSQL, and readiness checks query dependencies; this traffic may keep compute awake. Liveness is dependency-independent. Assess polling and health-check frequency against actual hosted usage before claiming idle suspension or free-tier suitability. PostgreSQL remains authoritative; no migration or validation policy changes because the host is Neon.
 
-Provider configuration and credentials are separate from releases. This work does not create accounts, allocate hosted resources, or claim a running cloud deployment. Record URLs and required secret names when the chosen host is connected; never commit their values.
+Provider configuration and credentials are separate from releases. The running temporary demo is evidenced in [P38-03](evidence/P38-03.md); ECR publication and the production runtime remain planned. Record URLs and required secret names when a host is connected; never commit their values.
 
 ## Sources checked on 23 October 2026
 
@@ -81,7 +81,7 @@ Existing image tags are reused only when digest and source/version labels match.
 
 Enable GitHub Actions and package publication for the repository, and require the verification jobs in branch protection. The workflow starts after this change is merged into main; a local passing run is not proof of a remote publication. If GHCR packages are private, give the host a read-only registry credential, or explicitly change the package visibility to public for this public hobby app. Public image contents must never contain secrets.
 
-See [Vercel multi-service deployment](VERCEL.md) for project configuration, service bindings, route exposure and runtime settings. The local MVP includes authentication, tenant-scoped tasks, realtime updates and durable activity processing. Hosted acceptance remains open until the Vercel project and external dependencies are deployed and exercised.
+See [Vercel multi-service deployment](VERCEL.md) for project configuration, service bindings, route exposure and runtime settings. The local MVP includes authentication, tenant-scoped tasks, realtime updates and durable activity processing. [P38-03](evidence/P38-03.md) verifies the temporary hosted demo; protected main-branch CD activation is still tracked separately. Future ECR publication and environment promotion have not been implemented.
 
 ## Neon preview setup
 

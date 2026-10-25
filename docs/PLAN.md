@@ -2,6 +2,8 @@
 
 **Status:** The local MVP is implemented and verified through P12-03, including a clean checkout and both Docker modes. Updated 25 October 2026. The P13 composable UI refinement is complete and verified. P14 shared RHF bindings and JSON field presentation are implemented and verified across auth and product editing forms. P15 HSL/10px-rem styling is implemented and verified, preserving default geometry and browser font preferences. Hosted preview activation, first publication and future environment promotion remain separately tracked.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
+
+**Current run/deployment direction (D171):** Native `pnpm run dev` with PostgreSQL/Redis in Docker for development; zero-env full Compose for local previews; Vercel only for temporary hosted demos; Docker images in ECR for future production. Current publication is GHCR, and ECR/AWS runtime integration remains planned. [Run modes](RUN_AND_DEPLOY.md) owns the workflow details.
 **Architecture:** A modular NestJS API and separate BullMQ worker share PostgreSQL persistence. A Next.js client uses generated REST clients and Socket.IO invalidations. Shared packages contain framework-independent contracts, pure resolution functions, and presentational UI.
 **Stack:** pnpm, Turborepo, TypeScript, Next.js App Router, MUI, React Hook Form, Zod, TanStack Query, Hey API, NestJS, Prisma, PostgreSQL, Redis, Socket.IO, BullMQ, Jest, Supertest, Playwright.
 **Requirements:** [REQUIREMENTS.md](REQUIREMENTS.md). Execution backlog: [TASKS.md](TASKS.md). Chosen defaults: [DECISIONS.md](DECISIONS.md). Agent rules: [../AGENTS.md](../AGENTS.md).
@@ -305,13 +307,13 @@ Compatibility will be rechecked against pinned versions before implementation. T
 
 ### Independent delivery follow-up (23 October 2026)
 
-P00-04 through P00-06 add per-app Docker images, selective semantic releases and CI publication before domain development continues. `packages/release-tools` is CI-only; it compares committed app/runtime/compiler inputs against each app's published baseline. The selected application topology is Vercel Services/Daemons with Neon PostgreSQL and an external Redis dependency; local development keeps PostgreSQL/Redis in Compose. Product implementation order remains unchanged. [DELIVERY.md](DELIVERY.md) defines versioning and release recovery; [VERCEL.md](VERCEL.md) defines the hosted application configuration.
+P00-04 through P00-06 add per-app Docker images, selective semantic releases and CI publication before domain development continues. `packages/release-tools` is CI-only; it compares committed app/runtime/compiler inputs against each app's published baseline. Vercel Services/Daemons with Neon PostgreSQL and Upstash Redis form the temporary demo. Everyday development keeps only PostgreSQL/Redis in Compose and runs apps natively. Product implementation order remains unchanged. [DELIVERY.md](DELIVERY.md) defines current GHCR versioning and release recovery; [VERCEL.md](VERCEL.md) defines the demo configuration.
 
 P00-08 established conditional CD after release publication. P00-13 implemented a Vercel/Northflank initial preview adapter, which is now a historical path. The selected multi-service project is configured by P38-01; P38-02 owns one Hobby production-target deployment, P38-04 moves dispatch into the daemon, and P38-03 owns live verification. Pending per-app releases still recover across later merges. Four-environment work does not block this demo; no cloud resource or database migration is created by CI.
 
 ### Future build-once promotion (23 October 2026 clarification)
 
-Docker remains the local development/test topology. If four-environment trunk-based delivery is adopted, build a candidate once and promote that exact artifact through `dev → qa → stage → prod`, injecting each target's validated runtime settings. Do not use environment branches, rebuilds or environment-specific public bundle constants. [PROMOTION.md](PROMOTION.md) defines the artifact/runtime contract and identifies the current Vercel source-build gap. P00-10 documents this direction; P00-11/P00-12 remain future implementation tasks.
+Docker serves local previews and the future production artifact. D171 selects ECR for the long-term image registry, with its integration tracked by P39-02. If four-environment trunk-based delivery is adopted, build a candidate once and promote its exact image digest through `dev → qa → stage → prod`, injecting each target's validated runtime settings. Do not use environment branches, rebuilds or environment-specific public bundle constants. [PROMOTION.md](PROMOTION.md) defines the contract; P00-11/P00-12 remain future implementation tasks. The temporary Vercel source build is not this promotion path.
 
 ### Notification refinement (25 October 2026)
 
@@ -341,7 +343,7 @@ P20-01 documents the as-built system in separate high-level design, low-level de
 
 P21-01 groups shared UI implementation under `modules` with camelCase filenames and focused components, retaining public exports and behavior. P21-02 adds tested React hook-spacing/organization rules and applies them without mechanically reordering dependency-sensitive hooks. The two changes remain separate implementation tasks and commits.
 
-P22-01 records a historical Render proposal. D168 and P38-01 supersede it with Vercel Services/Daemons for application compute, Neon for PostgreSQL, and an external Redis provider to be selected. P38-02/P38-03 own workflow reconciliation and live Vercel acceptance; P00-11/P00-12 still own the unimplemented four-environment promotion guarantees. A provider plan or runtime-configured service alone is not a live deployment or promotion test.
+P22-01 records a historical Render proposal. P38 delivered the temporary Vercel Services/Daemons demo with Neon and Upstash. D171 distinguishes that verified demo from future Docker/ECR production hosting. P39-02 owns ECR publishing; P00-11/P00-12 still own the unimplemented four-environment promotion guarantees. A provider plan or runtime-configured service alone is not a live deployment or promotion test.
 
 P23-01 adds a 30-diagram visual atlas grouped by system, security, domain, frontend, async work, delivery and planned hosting/promotion. Editable Mermaid sources and rendered SVGs explain distinct questions, with captions/source links and explicit current/planned labels. The atlas supplements existing canonical guides rather than changing runtime contracts.
 
