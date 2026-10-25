@@ -699,3 +699,7 @@ R159 uses one PATCH /v1/tasks command with 1–50 unique task IDs and expected v
 ## D161 — Administration over existing container and grant APIs
 
 R160 exposes the existing guarded container and grant operations in an administrator workspace screen, with paginated hierarchy/member data, versioned mutations, dirty-draft handling and explicit archive confirmation. Reuse existing generated operations and shared forms; no second permission model or raw API transport is added.
+
+## D162 — Branded workspace shell and dual board levels
+
+R161–R163 use a compact ClickUp/Jira-inspired layout with Flowboard branding, MUI/Emotion and the existing semantic tokens. Workspace home groups tasks by primary list; opening a list preserves resolved-status Kanban/table views. Cross-list drops use existing move validation and prompts rather than discarding fields. Invitations use the implemented link-creation API and never claim email delivery. [UI refresh](UI_REFRESH.md) records the design and access boundaries.

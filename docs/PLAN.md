@@ -363,3 +363,7 @@ NEXT-03 defines [one-level subtasks](SUBTASKS.md) and D158: same-list nullable t
 ## Remaining local feature slices
 
 D159 and [SEARCH.md](SEARCH.md) define indexed list search, delivered through P31-01/P31-02. D160 defines bounded atomic bulk updates (NEXT-04), and D161 defines the container/grant administration screen (NEXT-05). Each feature reuses existing authorization, contracts and UI boundaries. Keep their verification status distinct from implementation progress; external deployment activation remains separate.
+
+## Workspace experience refresh
+
+[UI_REFRESH.md](UI_REFRESH.md) and [design system](../design-system/flowboard/MASTER.md) define P32-01–03: shared visual system/shell, workspace lists board, and header/invitation actions. Existing list status resolution, tenancy, permissions and generated APIs remain authoritative.
