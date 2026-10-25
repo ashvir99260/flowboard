@@ -359,3 +359,7 @@ P29-03 repairs the overwritten form guide used by the lifecycle controls. This d
 NEXT-03 defines [one-level subtasks](SUBTASKS.md) and D158: same-list nullable task relations, flat views, explicit move/archive restrictions and retained history. P30-01 owns the migration/contracts/guarded API; P30-02 owns drawer creation and navigation. Both implementation slices are now verified for R157.
 
 [P30-01](evidence/P30-01.md) verifies the subtask API, migration and event compatibility. [P30-02](evidence/P30-02.md) verifies creation/navigation, explicit attach/detach, pagination, dirty-draft handling and real-client refresh. Continue with the ordered follow-up tasks.
+
+## Remaining local feature slices
+
+D159 and [SEARCH.md](SEARCH.md) define indexed list search, delivered through P31-01/P31-02. D160 defines bounded atomic bulk updates (NEXT-04), and D161 defines the container/grant administration screen (NEXT-05). Each feature reuses existing authorization, contracts and UI boundaries. Keep their verification status distinct from implementation progress; external deployment activation remains separate.
