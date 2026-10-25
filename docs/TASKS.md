@@ -1632,7 +1632,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `fix(api): enable hosted swagger access`.
   - **Completion evidence:** [P39-04](evidence/P39-04.md).
 
-- [ ] **P39-05 — Activate and verify hosted Swagger**
+- [x] **P39-05 — Activate and verify hosted Swagger**
   - **Goal:** Enable the tested Swagger configuration on the existing Vercel demo and provide its working URL.
   - **Requirements:** R175.
   - **Files:** Deployment evidence and task/matrix completion; server-side Vercel configuration stays outside Git.
@@ -1640,3 +1640,4 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** Set only API_DOCS=true and API_DOCS_BASE_PATH=/api for the production-target demo, deploy a committed revision and verify page/assets/specs, health Try it out, login/refresh and protected-route rejection. Preserve API/worker health and all existing data; do not change the plan or activate automatic CD.
   - **Validation:** Real deployment records, browser and HTTP checks; fixtures do not establish live acceptance.
   - **Commit:** `docs: record hosted swagger verification`.
+  - **Completion evidence:** [P39-05](evidence/P39-05.md).
