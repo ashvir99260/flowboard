@@ -334,3 +334,30 @@ test('a board mutation settling after view navigation refreshes the task table',
   release();
   await expect(row).toContainText('Done');
 });
+
+test('row body opens the task once and restores its title focus, while text selection remains usable', async (t) => {
+  const { page, table } = await openList(t);
+  const title = table.getByRole('button', { exact: true, name: 'Open task: Fix login' });
+  const row = title.locator('xpath=ancestor::*[@role="row"]');
+  const status = row.locator('[data-field="statusId"]');
+  await status.click({ modifiers: ['Control'] });
+  const drawer = page.getByRole('dialog', { name: 'Task details' });
+  await expect(drawer).toHaveCount(0);
+  await status.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    element.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
+  });
+  await expect(drawer).toHaveCount(0);
+  await page.evaluate(() => window.getSelection().removeAllRanges());
+  await status.click();
+  await expect(drawer.getByLabel(/^Title/)).toHaveValue('Fix login');
+  await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
+  await expect(title).toBeFocused();
+  await title.press('Enter');
+  await expect(drawer.getByLabel(/^Title/)).toHaveValue('Fix login');
+  await expect(drawer).toHaveCount(1);
+});

@@ -267,3 +267,93 @@ test('activity time normalizes offsets and handles an invalid display value safe
     cleanup();
   }
 });
+
+test('task row body opens exactly once and retains a useful focus origin', async () => {
+  const opened = [];
+  render(
+    h(UI.TaskTable, {
+      items: [
+        {
+          id: 'row',
+          title: 'Row task',
+          priority: 'normal',
+          statusId: status.id,
+          assignees: [],
+          dueDate: null,
+          customFields: {},
+        },
+      ],
+      fields: [],
+      statuses: [status],
+      onOpenTask: (id) => opened.push(id),
+    }),
+  );
+  const button = await screen.findByRole('button', { name: 'Open task: Row task' });
+  const label = screen.getByText('In progress · Active');
+  fireEvent.click(label);
+  assert.deepEqual(opened, ['row']);
+  assert.equal(globalThis.document.activeElement, button);
+  opened.length = 0;
+  fireEvent.click(button);
+  assert.deepEqual(opened, ['row']);
+});
+
+test('row activation ignores modified, prevented, selected-text and interactive clicks', async () => {
+  const opened = [];
+  render(
+    h(UI.TaskTable, {
+      items: [
+        {
+          id: 'row',
+          title: 'Row task',
+          priority: 'normal',
+          statusId: status.id,
+          assignees: [],
+          dueDate: null,
+          customFields: {},
+        },
+      ],
+      fields: [],
+      statuses: [status],
+      onOpenTask: (id) => opened.push(id),
+    }),
+  );
+  await screen.findByRole('button', { name: 'Open task: Row task' });
+  const label = screen.getByText('In progress · Active');
+  for (const event of [
+    { ctrlKey: true },
+    { metaKey: true },
+    { shiftKey: true },
+    { altKey: true },
+    { button: 1 },
+  ]) {
+    fireEvent.click(label, event);
+    assert.deepEqual(opened, [], JSON.stringify(event));
+  }
+  label.addEventListener('click', (event) => event.preventDefault(), { once: true });
+  fireEvent.click(label);
+  assert.deepEqual(opened, [], 'preventDefault');
+  const range = globalThis.document.createRange();
+  range.selectNodeContents(label);
+  globalThis.window.getSelection().removeAllRanges();
+  globalThis.window.getSelection().addRange(range);
+  assert.equal(globalThis.window.getSelection().isCollapsed, false);
+  fireEvent.click(label);
+  assert.deepEqual(opened, [], 'selected text');
+  globalThis.window.getSelection().removeAllRanges();
+  for (const tag of ['input', 'button', 'a']) {
+    const control = globalThis.document.createElement(tag);
+    label.closest('[role="gridcell"]').append(control);
+    fireEvent.click(control);
+    assert.deepEqual(opened, [], tag);
+  }
+  for (const value of ['', 'true', 'plaintext-only']) {
+    const editable = globalThis.document.createElement('span');
+    editable.setAttribute('contenteditable', value);
+    editable.textContent = 'Edit me';
+    label.closest('[role="gridcell"]').append(editable);
+    fireEvent.click(editable);
+    assert.deepEqual(opened, [], `contenteditable=${value}`);
+  }
+  assert.deepEqual(opened, []);
+});

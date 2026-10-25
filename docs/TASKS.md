@@ -1204,7 +1204,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat(fields): allow optional option colors`.
   - **Evidence:** [P28-03](evidence/P28-03.md).
 
-- [ ] **P28-04 — Open task details from table rows**
+- [x] **P28-04 — Open task details from table rows**
   - **Goal:** Support clicking non-interactive row content in addition to the accessible title action.
   - **Requirements:** R153.
   - **Files:** UI task table, web list interaction tests/stories and evidence.
@@ -1212,6 +1212,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Row body opens the correct task once; title remains keyboard accessible; nested links/buttons/inputs, text selection and pagination do not trigger duplicate or unrelated opens.
   - **Validation:** G01–G05/G09/G10; behavioral browser/component regressions, Storybook and root gates.
   - **Commit:** `feat(ui): open task details from table rows`.
+  - **Evidence:** [P28-04](evidence/P28-04.md).
 
 - [ ] **P28-05 — Document AI contributions and a prioritized roadmap**
   - **Goal:** Complete the submission narrative with concrete, inspectable examples.
