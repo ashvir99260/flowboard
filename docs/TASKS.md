@@ -1551,7 +1551,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `feat: configure vercel multi-service deployment`.
   - **Completion evidence:** [P38-01](evidence/P38-01.md).
 
-- [ ] **P38-02 — Reconcile deployment automation with the Vercel Services project**
+- [x] **P38-02 — Reconcile deployment automation with the Vercel Services project**
   - **Goal:** Replace the legacy Vercel/Northflank split-preview workflow with one deployment path for the configured Vercel project.
   - **Requirements:** R98.
   - **Files:** Release-tool deployment adapter/config/tests, GitHub workflow, CI/CD and delivery docs.
@@ -1559,6 +1559,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** Deploy the validated current main source once into the one Hobby project after publication; verify web/API/worker inventory and required production runtime setting names, preserve stale-run/retry safety, reject a non-Hobby or mismatched project before writes, and remove Northflank credentials from the active deployment path. Production target is required because preview deployments do not run daemons. Preserve independent release publication and the future immutable-promotion boundary.
   - **Validation:** Provider fixtures, workflow checks, standard implementation gates; no live success claim from fixtures.
   - **Commit:** `ci: deploy the vercel services project`.
+  - **Completion evidence:** [P38-02](evidence/P38-02.md).
 
 - [ ] **P38-03 — Verify the Vercel shared deployment**
   - **Goal:** Record a real Vercel/Neon/Redis rollout after the workflow and preview-worker design are ready.

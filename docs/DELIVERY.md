@@ -1,6 +1,6 @@
 # Independent releases and deployment
 
-> Updated 25 October 2026: [Vercel Services](VERCEL.md) is the selected application hosting target, with Neon retained for PostgreSQL. The release/image implementation below remains current. The existing preview adapter still has a separate Northflank API/worker path and has not yet been reconciled with the single Vercel project; keep `CD_ENABLED` off until that work is complete. Start with [delivery operations](DELIVERY_OPERATIONS.md) for trunk-based development, runtime configuration and the separate same-image promotion contract.
+> Updated 26 October 2026: [Vercel Services](VERCEL.md) hosts the shared Hobby demo with Neon Free and Upstash Free. Independent tags/images remain as described below; one gated deployment builds the validated current main source for all services. This is not unchanged-artifact promotion. Keep CD_ENABLED off until live acceptance.
 
 **Future promotion direction:** Docker is for local development/test. Trunk-based `dev → qa → stage → prod` delivery with one unchanged artifact and runtime configuration remains future work. Vercel Services configuration does not by itself meet that build-once contract; see [PROMOTION.md](PROMOTION.md).
 

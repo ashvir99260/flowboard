@@ -58,10 +58,9 @@ flowchart LR
     Features --> Resolve[Shared status and field resolvers]
     Features --> Repos[Tenant repositories and transaction locks]
     Socket[Socket.IO gateway + Redis adapter] --> Guards
-    Outbox[Outbox dispatcher]
   end
   Repos --> DB[(PostgreSQL)]
-  DB --> Outbox
+  DB --> Outbox[Worker outbox dispatcher]
   Outbox --> Redis[(Redis / BullMQ)]
   Redis --> Worker[Activity worker]
   Worker --> DB
@@ -337,9 +336,9 @@ Behavioral suites run Node/Chromium on the host with isolated Docker datastores;
 
 Merges to `main` publish only affected applications: `api/vX.Y.Z`, `web/vX.Y.Z`, and `worker/vX.Y.Z`, with separate GHCR images and source/digest manifests. Shared runtime package changes release their consumers; documentation/test-only changes do not. Pull requests run read-only verification first.
 
-Local development uses Docker PostgreSQL. The selected hosted application target is **Vercel Services** for web and API plus a worker daemon, with **Neon** retained for PostgreSQL. Redis is an external managed dependency whose provider and capacity remain undecided. The service configuration is committed, but resources and live deployment are not verified. See the [Vercel deployment guide](docs/VERCEL.md) and [delivery operations](docs/DELIVERY_OPERATIONS.md).
+Local development uses Docker PostgreSQL. The selected hosted application target is **Vercel Services** for web and API plus a worker daemon, with **Neon** retained for PostgreSQL. Redis uses Upstash Free over TLS; the free command and compute quotas bound this demo. The service configuration is committed, but resources and live deployment are not verified. See the [Vercel deployment guide](docs/VERCEL.md) and [delivery operations](docs/DELIVERY_OPERATIONS.md).
 
-The existing CD adapter still contains a separate Northflank API/worker path and has not been reconciled with the one-project Vercel Services setup; keep `CD_ENABLED` off. Railway and Render are not deployment targets. The [CI/CD guide](docs/CI_CD.md) lists the actual parallel check lanes and current publication/deployment gates. [Independent delivery](docs/DELIVERY.md) explains versions and release recovery; [Redis and BullMQ](docs/REDIS_AND_JOBS.md) explains background activity, realtime and failures.
+The deployment adapter submits one current-main production deployment to the configured Vercel Hobby project after checks and publication. Production is required for the worker daemon; preview deployments do not run it. Keep `CD_ENABLED` off until credentials and live acceptance are verified. Railway and Render are not deployment targets. The [CI/CD guide](docs/CI_CD.md) lists the actual parallel check lanes and current publication/deployment gates. [Independent delivery](docs/DELIVERY.md) explains versions and release recovery; [Redis and BullMQ](docs/REDIS_AND_JOBS.md) explains background activity, realtime and failures.
 
 Future `dev → qa → stage → prod` promotion will reuse one build and inject configuration at runtime. Docker remains the local development/test setup. See the [build-once contract and current limitations](docs/PROMOTION.md).
 

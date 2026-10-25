@@ -22,7 +22,7 @@
     "docker:check": "turbo run docker:check",
     "release:plan": "turbo run release:plan",
     "release:publish": "turbo run release:publish",
-    "deploy:preview": "turbo run deploy:preview",
+    "deploy:vercel": "turbo run deploy:vercel",
     "db:migrate": "turbo run db:migrate",
     "db:seed": "turbo run db:seed",
     "gen:api": "turbo run api:generate",

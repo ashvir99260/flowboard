@@ -2,9 +2,9 @@
 
 Status: agreed direction from the user's 23 October 2026 clarification; future four-environment execution is planned, not implemented. This document supersedes the assumption that deploying the same Git commit is sufficient artifact promotion.
 
-## Shared preview comes first
+## Shared demo comes first
 
-The selected application target is now [Vercel Services](VERCEL.md), with Neon for PostgreSQL. Start with a shared environment, then implement ordered promotion separately. Vercel Services build from repository source and do not satisfy the unchanged-artifact contract by themselves. The current CD adapter also still has a separate Northflank API/worker path and must be reconciled with the one-project service configuration before enabling it. [Delivery operations](DELIVERY_OPERATIONS.md) connects this contract to the actual release/runtime code.
+The selected application target is now [Vercel Services](VERCEL.md), with Neon for PostgreSQL. Start with a shared environment, then implement ordered promotion separately. Vercel Services build from repository source and do not satisfy the unchanged-artifact contract by themselves. The current CD path deploys one Services project from current main; the demo uses the production target because worker daemons do not run in previews. [Delivery operations](DELIVERY_OPERATIONS.md) connects this contract to the actual release/runtime code.
 
 ## What stays separate
 
@@ -63,7 +63,7 @@ Each environment needs isolated database data and a separate Redis instance. Cur
 | Shared-preview CD job and latest-release reconciliation | Does not implement ordered four-environment promotion of an explicitly selected candidate                                                                                 |
 | Public runtime bootstrap                                | REST uses the runtime-only server proxy (P07-04); validated `REALTIME_PUBLIC_URL` is read at server request time for Socket.IO (P11-03). Full promotion remains separate. |
 
-The current `CD_ENABLED=true` gate enables only the legacy provider adapter with its configured targets. It does not configure the Vercel Services project or provide the four-environment contract above. Keep it off until the deployment workflow is reconciled. P00-08 is historical evidence of the earlier production-only design; P00-13 superseded that target without implementing multi-service Vercel delivery.
+The current `CD_ENABLED=true` gate enables only the configured Vercel Hobby Services deployment after verification and publication. It does not provision credentials or provide the four-environment contract above. Keep it off until live acceptance passes. P00-08 is historical evidence of the earlier production-only design; P00-13 superseded that target without implementing multi-service Vercel delivery.
 
 ## Selected hosting path
 
