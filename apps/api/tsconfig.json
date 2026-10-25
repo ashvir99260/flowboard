@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "dist",
+    "rewriteRelativeImportExtensions": true,
     "rootDir": "src"
   },
   "exclude": ["dist", "node_modules", "test", "src/**/*.spec.*"],

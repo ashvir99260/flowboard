@@ -3,7 +3,7 @@ import { SilentLogger } from '@flowboard/logger';
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 
-import type { EventPublisher } from './outbox.service.js';
+import type { EventPublisher } from './outbox.service.ts';
 import type { EventJobReference } from '@flowboard/contracts';
 import type { Logger } from '@flowboard/logger';
 

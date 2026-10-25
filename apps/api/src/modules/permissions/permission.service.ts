@@ -1,12 +1,12 @@
 import { compareTreePositions, resolveVisibleTree } from '@flowboard/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 
-import { ApiException } from '../../core/common/errors/api-exception.js';
-import { ApiLoggerKey } from '../../core/common/tokens/logger.token.js';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
+import { ApiLoggerKey } from '../../core/common/tokens/logger.token.ts';
 
-import { PermissionsRuntimeKey } from './permissions.runtime.js';
+import { PermissionsRuntimeKey } from './permissions.runtime.ts';
 
-import type { PermissionsRuntime } from './permissions.runtime.js';
+import type { PermissionsRuntime } from './permissions.runtime.ts';
 import type {
   Grant,
   GrantEnvelope,

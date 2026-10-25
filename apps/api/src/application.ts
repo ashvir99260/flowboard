@@ -2,18 +2,18 @@ import 'reflect-metadata';
 
 import { SilentLogger } from '@flowboard/logger';
 import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
-import { AppModule } from './app.module.js';
-import { RealtimeService } from './modules/realtime/realtime.service.js';
-import { NestLogger } from './shared/logging/nest-logger.js';
-import { requestLogging } from './shared/logging/request-logging.js';
+import { AppModule } from './app.module.ts';
+import { GracefulExpressAdapter } from './core/common/graceful-express-adapter.ts';
+import { RealtimeService } from './modules/realtime/realtime.service.ts';
+import { NestLogger } from './shared/logging/nest-logger.ts';
+import { requestLogging } from './shared/logging/request-logging.ts';
 
-import type { AuthRuntime } from './modules/auth/runtime.js';
-import type { OutboxRuntime } from './modules/outbox/outbox.runtime.js';
-import type { DependencyProbe } from './modules/platform/dependency-probe.js';
+import type { AuthRuntime } from './modules/auth/runtime.ts';
+import type { OutboxRuntime } from './modules/outbox/outbox.runtime.ts';
+import type { DependencyProbe } from './modules/platform/dependency-probe.ts';
 import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -50,7 +50,7 @@ export async function createApplication(
       options.outbox,
       options.realtime,
     ),
-    new ExpressAdapter(),
+    new GracefulExpressAdapter(),
     {
       bodyParser: false,
       logger: options.logger ? new NestLogger(logger) : false,

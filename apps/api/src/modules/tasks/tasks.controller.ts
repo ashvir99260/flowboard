@@ -30,12 +30,12 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
+import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.ts';
 import {
   documentedAccessError,
   documentedError,
-} from '../../core/common/swagger/api-documentation.js';
-import { NodePermission, TaskPermission } from '../permissions/permission.decorator.js';
+} from '../../core/common/swagger/api-documentation.ts';
+import { NodePermission, TaskPermission } from '../permissions/permission.decorator.ts';
 
 import {
   ArchiveTaskDto,
@@ -46,13 +46,13 @@ import {
   TaskListParamsDto,
   TaskParamsDto,
   UpdateTaskDto,
-} from './tasks.request.dto.js';
+} from './tasks.request.dto.ts';
 import {
   TaskMutationResponseDto,
   TaskPageResponseDto,
   TaskResponseDto,
-} from './tasks.response.dto.js';
-import { TasksService } from './tasks.service.js';
+} from './tasks.response.dto.ts';
+import { TasksService } from './tasks.service.ts';
 
 import type { IdentitySession } from '@flowboard/database';
 

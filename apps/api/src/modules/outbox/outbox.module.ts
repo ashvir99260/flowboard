@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import type { OutboxRuntime } from './outbox.runtime.js';
+import type { OutboxRuntime } from './outbox.runtime.ts';
 import type { DynamicModule } from '@nestjs/common';
 
 const OutboxRuntimeKey = Symbol('OutboxRuntime');

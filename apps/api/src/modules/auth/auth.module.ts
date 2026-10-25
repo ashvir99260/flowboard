@@ -2,14 +2,14 @@ import { SilentLogger } from '@flowboard/logger';
 import { Inject, Injectable, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
-import { LoggingModule } from '../../shared/logging/logging.module.js';
+import { LoggingModule } from '../../shared/logging/logging.module.ts';
 
-import { AuthController } from './auth.controller.js';
-import { AuthGuard } from './auth.guard.js';
-import { AuthService } from './auth.service.js';
-import { AuthRuntimeKey } from './runtime.js';
+import { AuthController } from './auth.controller.ts';
+import { AuthGuard } from './auth.guard.ts';
+import { AuthService } from './auth.service.ts';
+import { AuthRuntimeKey } from './runtime.ts';
 
-import type { AuthRuntime } from './runtime.js';
+import type { AuthRuntime } from './runtime.ts';
 import type { Logger } from '@flowboard/logger';
 import type { DynamicModule, OnApplicationShutdown } from '@nestjs/common';
 

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import { LoggingModule } from '../../shared/logging/logging.module.js';
+import { LoggingModule } from '../../shared/logging/logging.module.ts';
 
-import { RealtimeGateway } from './realtime.gateway.js';
-import { RealtimeConfigKey, RealtimeService } from './realtime.service.js';
+import { RealtimeGateway } from './realtime.gateway.ts';
+import { RealtimeConfigKey, RealtimeService } from './realtime.service.ts';
 
 import type { Logger } from '@flowboard/logger';
 import type { DynamicModule } from '@nestjs/common';

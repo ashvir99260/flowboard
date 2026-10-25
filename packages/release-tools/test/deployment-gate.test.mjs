@@ -34,7 +34,7 @@ test('all workspace checks run as independent free-runner jobs before publicatio
         step.run === 'pnpm --filter @flowboard/web exec playwright install --with-deps chromium',
     ),
   );
-  assert.deepEqual(jobs.release.needs, ['verify', 'containers']);
+  assert.deepEqual(jobs.release.needs, ['verify', 'ui', 'containers']);
   assert.equal(jobs.release['continue-on-error'], undefined);
   assert.equal(jobs.deploy.needs, 'release');
   for (const job of Object.values(jobs)) {
@@ -55,6 +55,24 @@ test('the workflow uses preview secrets and only deploys after main release succ
   assert.match(job.if, /vars.CD_ENABLED == 'true'/);
   assert.equal(job.concurrency['cancel-in-progress'], false);
   assert.ok(job.steps.some((step) => step.run === 'pnpm deploy:preview'));
+});
+
+test('component browser tests have an independent runner and remain a publication gate', () => {
+  const { jobs } = parse(
+    readFileSync(new URL('../../../.github/workflows/delivery.yml', import.meta.url), 'utf8'),
+  );
+  assert.ok(jobs.ui, 'Browser component tests need their own runner');
+  assert.equal(jobs.ui.needs, undefined);
+  assert.equal(jobs.ui.if, 'github.event.repository.private == false');
+  assert.ok(jobs.ui.steps.some((step) => step.run === 'pnpm test --filter=@flowboard/ui'));
+  assert.ok(
+    jobs.verify.steps.some(
+      (step) =>
+        step.if === "matrix.command == 'test'" &&
+        step.run === "pnpm test --filter='!@flowboard/ui'",
+    ),
+  );
+  assert.ok(jobs.release.needs.includes('ui'));
 });
 
 test('commit policy checks event data in the lint leg and reruns on title edits', () => {

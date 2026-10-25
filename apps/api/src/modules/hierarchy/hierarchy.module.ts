@@ -1,11 +1,11 @@
 import { SilentLogger } from '@flowboard/logger';
 import { Module } from '@nestjs/common';
 
-import { LoggingModule } from '../../shared/logging/logging.module.js';
+import { LoggingModule } from '../../shared/logging/logging.module.ts';
 
-import { HierarchyDatabaseKey, HierarchyService } from './hierarchy.service.js';
-import { NodesController } from './nodes.controller.js';
-import { TreeController } from './tree.controller.js';
+import { HierarchyDatabaseKey, HierarchyService } from './hierarchy.service.ts';
+import { NodesController } from './nodes.controller.ts';
+import { TreeController } from './tree.controller.ts';
 
 import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';

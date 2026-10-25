@@ -10,19 +10,19 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
-import { documentedAccessError } from '../../core/common/swagger/api-documentation.js';
+import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.ts';
+import { documentedAccessError } from '../../core/common/swagger/api-documentation.ts';
 
-import { NodePermission } from './permission.decorator.js';
-import { PermissionService } from './permission.service.js';
+import { NodePermission } from './permission.decorator.ts';
+import { PermissionService } from './permission.service.ts';
 import {
   GrantNodeParamsDto,
   GrantParamsDto,
   GrantVersionDto,
   PermissionPageQueryDto,
   UpsertGrantDto,
-} from './permissions.request.dto.js';
-import { GrantPageResponseDto, GrantResponseDto } from './permissions.response.dto.js';
+} from './permissions.request.dto.ts';
+import { GrantPageResponseDto, GrantResponseDto } from './permissions.response.dto.ts';
 
 import type { GrantEnvelope, GrantPage } from '@flowboard/contracts';
 import type { IdentitySession } from '@flowboard/database';

@@ -3,11 +3,11 @@ import { setTimeout } from 'node:timers/promises';
 import { createOutboxRepository } from '@flowboard/database';
 import { SilentLogger } from '@flowboard/logger';
 
-import { outboxSettings } from './outbox.config.js';
-import { createEventPublisher } from './outbox.publisher.js';
-import { createOutboxDispatcher } from './outbox.service.js';
+import { outboxSettings } from './outbox.config.ts';
+import { createEventPublisher } from './outbox.publisher.ts';
+import { createOutboxDispatcher } from './outbox.service.ts';
 
-import type { OutboxSettings } from './outbox.config.js';
+import type { OutboxSettings } from './outbox.config.ts';
 import type { Logger } from '@flowboard/logger';
 
 export interface OutboxRuntime {

@@ -3,11 +3,11 @@ import { Controller, Get, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 
-import { documentedAccessError } from '../../core/common/swagger/api-documentation.js';
-import { ActiveWorkspacePermission } from '../permissions/permission.decorator.js';
-import { PermissionService } from '../permissions/permission.service.js';
-import { PermissionPageQueryDto } from '../permissions/permissions.request.dto.js';
-import { TreePageResponseDto } from '../permissions/permissions.response.dto.js';
+import { documentedAccessError } from '../../core/common/swagger/api-documentation.ts';
+import { ActiveWorkspacePermission } from '../permissions/permission.decorator.ts';
+import { PermissionService } from '../permissions/permission.service.ts';
+import { PermissionPageQueryDto } from '../permissions/permissions.request.dto.ts';
+import { TreePageResponseDto } from '../permissions/permissions.response.dto.ts';
 
 import type { TreePage } from '@flowboard/contracts';
 import type { IdentitySession } from '@flowboard/database';

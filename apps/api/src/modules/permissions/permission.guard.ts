@@ -2,7 +2,7 @@ import { ListSubscriptionSchema, StatusScopeSchema, UuidSchema } from '@flowboar
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { ApiException } from '../../core/common/errors/api-exception.js';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
 
 import {
   ActiveWorkspaceKey,
@@ -11,7 +11,7 @@ import {
   PermissionService,
   ScopePermissionKey,
   TaskPermissionKey,
-} from './permission.service.js';
+} from './permission.service.ts';
 
 import type { PermissionAction } from '@flowboard/contracts';
 import type { IdentitySession } from '@flowboard/database';

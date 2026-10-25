@@ -5,7 +5,7 @@
     "@flowboard/ui#test": {
       "cache": false,
       "dependsOn": ["build", "storybook:build"],
-      "env": ["PLAYWRIGHT_BROWSERS_PATH"],
+      "env": ["PLAYWRIGHT_BROWSERS_PATH", "VITEST_PW_DEBUG"],
       "outputs": []
     },
     "api:generate": {

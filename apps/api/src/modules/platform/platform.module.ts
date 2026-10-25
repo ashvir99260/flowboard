@@ -1,9 +1,9 @@
 import { Inject, Injectable, Module } from '@nestjs/common';
 
-import { DependencyProbeKey } from './dependency-probe.js';
-import { HealthController } from './health.controller.js';
+import { DependencyProbeKey } from './dependency-probe.ts';
+import { HealthController } from './health.controller.ts';
 
-import type { DependencyProbe } from './dependency-probe.js';
+import type { DependencyProbe } from './dependency-probe.ts';
 import type { DynamicModule, OnApplicationShutdown } from '@nestjs/common';
 
 @Injectable()

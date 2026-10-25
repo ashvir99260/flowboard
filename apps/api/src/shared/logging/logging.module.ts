@@ -1,7 +1,7 @@
 import { SilentLogger } from '@flowboard/logger';
 import { Module } from '@nestjs/common';
 
-import { ApiLoggerKey } from '../../core/common/tokens/logger.token.js';
+import { ApiLoggerKey } from '../../core/common/tokens/logger.token.ts';
 
 import type { Logger } from '@flowboard/logger';
 import type { DynamicModule } from '@nestjs/common';

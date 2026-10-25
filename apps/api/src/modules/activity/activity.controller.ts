@@ -6,12 +6,12 @@ import { ZodResponse } from 'nestjs-zod';
 import {
   documentedAccessError,
   documentedError,
-} from '../../core/common/swagger/api-documentation.js';
-import { TaskPermission } from '../permissions/permission.decorator.js';
+} from '../../core/common/swagger/api-documentation.ts';
+import { TaskPermission } from '../permissions/permission.decorator.ts';
 
-import { ActivityQueryDto, ActivityTaskParamsDto } from './activity.request.dto.js';
-import { ActivityPageResponseDto } from './activity.response.dto.js';
-import { ActivityService } from './activity.service.js';
+import { ActivityQueryDto, ActivityTaskParamsDto } from './activity.request.dto.ts';
+import { ActivityPageResponseDto } from './activity.response.dto.ts';
+import { ActivityService } from './activity.service.ts';
 
 import type { IdentitySession } from '@flowboard/database';
 

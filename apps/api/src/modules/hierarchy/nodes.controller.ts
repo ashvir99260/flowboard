@@ -21,10 +21,10 @@ import {
 } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
-import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.js';
-import { documentedError } from '../../core/common/swagger/api-documentation.js';
-import { ActiveWorkspacePermission, NodePermission } from '../permissions/permission.decorator.js';
+import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.ts';
+import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.ts';
+import { documentedError } from '../../core/common/swagger/api-documentation.ts';
+import { ActiveWorkspacePermission, NodePermission } from '../permissions/permission.decorator.ts';
 
 import {
   CreateNodeDto,
@@ -33,9 +33,9 @@ import {
   NodeVersionDto,
   ReorderNodeDto,
   UpdateNodeDto,
-} from './hierarchy.request.dto.js';
-import { NodeResponseDto } from './hierarchy.response.dto.js';
-import { HierarchyService } from './hierarchy.service.js';
+} from './hierarchy.request.dto.ts';
+import { NodeResponseDto } from './hierarchy.response.dto.ts';
+import { HierarchyService } from './hierarchy.service.ts';
 
 import type { NodeEnvelope } from '@flowboard/contracts';
 import type { IdentitySession } from '@flowboard/database';

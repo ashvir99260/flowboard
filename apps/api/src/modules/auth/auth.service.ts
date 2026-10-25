@@ -6,13 +6,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { jwtVerify, SignJWT } from 'jose';
 import { z } from 'zod';
 
-import { ApiException } from '../../core/common/errors/api-exception.js';
-import { ApiLoggerKey } from '../../core/common/tokens/logger.token.js';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
+import { ApiLoggerKey } from '../../core/common/tokens/logger.token.ts';
 
-import { clearRefreshCookie, readRefreshCookie, refreshCookie } from './cookie-policy.js';
-import { AuthRuntimeKey } from './runtime.js';
+import { clearRefreshCookie, readRefreshCookie, refreshCookie } from './cookie-policy.ts';
+import { AuthRuntimeKey } from './runtime.ts';
 
-import type { AuthRuntime } from './runtime.js';
+import type { AuthRuntime } from './runtime.ts';
 import type { LogIn, SessionEnvelope, SignUp } from '@flowboard/contracts';
 import type { AuthenticatedIdentity, IdentitySession } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';

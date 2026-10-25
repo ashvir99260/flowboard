@@ -8,6 +8,8 @@ export default defineConfig({
   plugins: [storybookTest({ configDir: fileURLToPath(new URL('.', import.meta.url)) })],
   test: {
     name: 'ui-stories',
+    // Bound browser contexts in local all-workspace runs and the dedicated CI job.
+    fileParallelism: false,
     browser: {
       enabled: true,
       headless: true,

@@ -1,6 +1,6 @@
 import { ErrorExamples } from '@flowboard/contracts';
 
-import { ErrorResponseDto } from '../dto/error-response.dto.js';
+import { ErrorResponseDto } from '../dto/error-response.dto.ts';
 
 import type { ApiResponseOptions } from '@nestjs/swagger';
 

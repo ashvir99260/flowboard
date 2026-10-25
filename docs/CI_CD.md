@@ -5,10 +5,13 @@ Updated 25 October 2026. **This page describes the currently implemented workflo
 ```mermaid
 flowchart LR
   PR[Pull request] --> Checks[Build / lint / types / tests / format]
+  PR --> UI[UI components and stories]
   PR --> Docker[Compose health and persistence]
   Main[Merge to main] --> Checks
+  Main --> UI
   Main --> Docker
   Checks --> Publish[Main only: publish affected app images and releases]
+  UI --> Publish
   Docker --> Publish
   Publish --> Gate[GitHub preview environment / CD_ENABLED]
   Gate --> Web[Vercel preview: released web commit]
@@ -24,31 +27,32 @@ Database and queue connections in this diagram are implemented and verified loca
 
 ## Parallel checks and free runners
 
-Five independent GitHub jobs run `pnpm build`, `pnpm lint`, `pnpm test`, `pnpm typecheck` and `pnpm format:check`. Each root command uses Turbo across all applicable apps and packages; new workspaces join through the workspace graph. Turbo still builds required dependencies inside a job before a dependent check can use them. No check waits for another check job. Fail-fast is disabled, so one failed lane does not cancel the remaining results. Workflow lint runs within the lint lane.
+Five matrix jobs cover build, lint, tests, types and formatting. The test leg runs `pnpm test --filter='!@flowboard/ui'`; a sixth independent job runs `pnpm test --filter=@flowboard/ui` for components and Storybook. This preserves every package suite while isolating browser component tests from backend/browser integration load. The other matrix commands use Turbo across all applicable apps and packages. Turbo still builds required dependencies inside a job before a dependent check can use them; database type checking waits for its Prisma-generating build. No check waits for another check job. Fail-fast is disabled, so one failed lane does not cancel the remaining results. Workflow lint runs within the lint lane.
 
-Production-image and development live-reload Compose checks start alongside the five lanes. Publication waits for the complete verification matrix and Compose checks to succeed; deployment waits for publication. Runner availability and the account's concurrency limits can still queue jobs.
+Production-image and development live-reload Compose checks start alongside these six lanes. Publication waits for the complete verification matrix, UI job and Compose checks to succeed; deployment waits for publication. Runner availability and the account's concurrency limits can still queue jobs.
 
 Every job uses the standard `ubuntu-24.04` GitHub-hosted runner. [GitHub documents these runners as free and unlimited for public repositories](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories). This setup adds no larger runner, paid cache service, organization subscription or billing change. Entry jobs skip if the repository becomes private, preventing their dependent release/deployment jobs from running under potentially billable private-repository rules. This is a CI-runner guarantee, not a promise about unrelated hosting or storage products.
 
-Branch protection should require `Workspace / build`, `Workspace / lint`, `Workspace / test`, `Workspace / typecheck`, `Workspace / format:check`, `Compose / docker:check` and `Compose / docker:dev:check`, replacing obsolete check names if configured. Repository settings are not changed by this workflow commit.
+Branch protection should require `Workspace / build`, `Workspace / lint`, `Workspace / test`, `Workspace / typecheck`, `Workspace / format:check`, `UI / components and stories`, `Compose / docker:check` and `Compose / docker:dev:check`, replacing obsolete check names if configured. Repository settings are not changed by this workflow commit.
 
 ## Exact checks and dependency graph
 
-Source: [`.github/workflows/delivery.yml`](../.github/workflows/delivery.yml). PR open/update/reopen/title edits, main pushes and manual dispatch trigger verification. All seven instances below start independently, subject to runner capacity; they do not run sequentially after each other. Each runner has its own checkout and frozen pnpm install.
+Source: [`.github/workflows/delivery.yml`](../.github/workflows/delivery.yml). PR open/update/reopen/title edits, main pushes and manual dispatch trigger verification. All eight instances below start independently, subject to runner capacity; they do not run sequentially after each other. Each runner has its own checkout and frozen pnpm install. The earlier C24 diagram is a snapshot of the preceding seven-job workflow.
 
-| Required check name          | What it verifies                                                                                                                                                    |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Workspace / build`          | Every applicable app/package build. Includes OpenAPI regeneration comparison, Spectral conventions and generated-client drift checks through package build scripts. |
-| `Workspace / lint`           | Shared ESLint/boundaries/naming/version rules, Conventional Commit/PR title validation, checksum-verified Actionlint for workflows.                                 |
-| `Workspace / test`           | Root Turbo suites: contracts, real PostgreSQL API/database, worker/Redis, UI/Storybook and browser journeys.                                                        |
-| `Workspace / typecheck`      | App/package TypeScript contracts, including separate story/form type checks.                                                                                        |
-| `Workspace / format:check`   | Shared formatting; package manifest order remains deliberate.                                                                                                       |
-| `Compose / docker:check`     | Production-image five-service health and application acceptance.                                                                                                    |
-| `Compose / docker:dev:check` | Development Compose startup/live-update verification.                                                                                                               |
+| Required check name           | What it verifies                                                                                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Workspace / build`           | Every applicable app/package build. Includes OpenAPI regeneration comparison, Spectral conventions and generated-client drift checks through package build scripts. |
+| `Workspace / lint`            | Shared ESLint/boundaries/naming/version rules, Conventional Commit/PR title validation, checksum-verified Actionlint for workflows.                                 |
+| `Workspace / test`            | Turbo suites excluding the UI package: contracts, real PostgreSQL API/database, worker/Redis and application browser journeys.                                      |
+| `UI / components and stories` | UI component and Storybook browser suites, with story files run sequentially and failed browser request diagnostics enabled.                                        |
+| `Workspace / typecheck`       | App/package TypeScript contracts, including separate story/form type checks.                                                                                        |
+| `Workspace / format:check`    | Shared formatting; package manifest order remains deliberate.                                                                                                       |
+| `Compose / docker:check`      | Production-image five-service health and application acceptance.                                                                                                    |
+| `Compose / docker:dev:check`  | Development Compose startup/live-update verification.                                                                                                               |
 
 Within a lane, Turbo still respects dependency builds. Both matrices set `fail-fast: false`; a failed lane does not cancel the other results. Standard `ubuntu-24.04` runners and public-repository guards retain the existing cost boundary. [GitHub's public-runner policy](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories).
 
-`Publish affected apps` requires both complete matrices and a non-PR main run. It alone receives GitHub contents/packages write permissions and serializes publication. `Deploy released applications to preview` depends on publication, main, and `CD_ENABLED=true`; it uses the protected GitHub `preview` environment and serializes deployments. A PR never publishes or deploys this shared target. Workflow job configuration does not prove branch protection or environment approval settings were enabled in GitHub.
+`Publish affected apps` requires both complete matrices, the UI job and a non-PR main run. It alone receives GitHub contents/packages write permissions and serializes publication. `Deploy released applications to preview` depends on publication, main, and `CD_ENABLED=true`; it uses the protected GitHub `preview` environment and serializes deployments. A PR never publishes or deploys this shared target. Workflow job configuration does not prove branch protection or environment approval settings were enabled in GitHub.
 
 The workflow does not currently add dependency-audit, CodeQL, image-vulnerability or external penetration-test jobs. OpenAPI/client checks are part of builds, not extra named GitHub check lanes. `pnpm release:check` is a separate clean-checkout acceptance command, not the workflow's entry command.
 

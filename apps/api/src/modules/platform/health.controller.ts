@@ -3,15 +3,15 @@ import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 
-import { PublicRoute } from '../../core/common/decorators/public.decorator.js';
-import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.js';
-import { ApiException } from '../../core/common/errors/api-exception.js';
-import { documentedError, RequestIdHeaders } from '../../core/common/swagger/api-documentation.js';
+import { PublicRoute } from '../../core/common/decorators/public.decorator.ts';
+import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.ts';
+import { ApiException } from '../../core/common/errors/api-exception.ts';
+import { documentedError, RequestIdHeaders } from '../../core/common/swagger/api-documentation.ts';
 
-import { DependencyProbeKey } from './dependency-probe.js';
-import { LivenessResponseDto, ReadinessResponseDto } from './health.response.dto.js';
+import { DependencyProbeKey } from './dependency-probe.ts';
+import { LivenessResponseDto, ReadinessResponseDto } from './health.response.dto.ts';
 
-import type { DependencyProbe } from './dependency-probe.js';
+import type { DependencyProbe } from './dependency-probe.ts';
 import type { Liveness, Readiness } from '@flowboard/contracts';
 
 @ApiTags('Health')

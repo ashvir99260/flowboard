@@ -8,7 +8,7 @@ import {
 } from '@flowboard/contracts';
 import { z } from 'zod';
 
-import { ApiException } from './errors/api-exception.js';
+import { ApiException } from './errors/api-exception.ts';
 
 const payloadSchema = z.strictObject({
   v: z.literal(1),

@@ -1,9 +1,9 @@
 import { EventJobReferenceSchema, OutboxRecordSchema } from '@flowboard/contracts';
 import { SilentLogger, withLogContext } from '@flowboard/logger';
 
-import { OutboxDefaults } from './outbox.config.js';
+import { OutboxDefaults } from './outbox.config.ts';
 
-import type { OutboxSettings } from './outbox.config.js';
+import type { OutboxSettings } from './outbox.config.ts';
 import type { EventJobReference } from '@flowboard/contracts';
 import type { OutboxClaim, OutboxRepository } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';

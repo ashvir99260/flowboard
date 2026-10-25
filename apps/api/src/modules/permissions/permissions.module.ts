@@ -1,13 +1,13 @@
 import { SilentLogger } from '@flowboard/logger';
 import { Module } from '@nestjs/common';
 
-import { CursorCodec } from '../../core/common/cursor.js';
-import { LoggingModule } from '../../shared/logging/logging.module.js';
+import { CursorCodec } from '../../core/common/cursor.ts';
+import { LoggingModule } from '../../shared/logging/logging.module.ts';
 
-import { GrantsController } from './grants.controller.js';
-import { PermissionGuard } from './permission.guard.js';
-import { PermissionService } from './permission.service.js';
-import { PermissionsRuntimeKey } from './permissions.runtime.js';
+import { GrantsController } from './grants.controller.ts';
+import { PermissionGuard } from './permission.guard.ts';
+import { PermissionService } from './permission.service.ts';
+import { PermissionsRuntimeKey } from './permissions.runtime.ts';
 
 import type { Database } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
