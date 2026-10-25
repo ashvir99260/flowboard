@@ -1,6 +1,6 @@
 # Workspace authorization and backend contract design
 
-Status: planned implementation, reviewed 23 October 2026. This refinement follows the user's request for explicit workspace RBAC, workspace-defined custom fields, complete ER attributes, audit timestamps and decorator-driven DTO/Swagger generation. It updates [database design](DATABASE_DESIGN.md), [API catalog](API_CATALOG.md) and [implementation tasks](TASKS.md); it does not claim running endpoints or migrations.
+Status: the MVP contract design is implemented; see [API catalog](API_CATALOG.md), [LLD](LLD.md) and owning [task evidence](evidence/README.md) for current behavior and verification. This design originated on 23 October 2026 from the request for workspace RBAC, workspace-defined custom fields, complete ER attributes, audit timestamps and decorator-driven DTO/Swagger generation. Current schemas/OpenAPI remain authoritative for precise fields.
 
 ## 1. Workspace RBAC and container access
 

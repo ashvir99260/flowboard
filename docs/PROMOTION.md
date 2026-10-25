@@ -54,14 +54,14 @@ Each environment needs isolated database data and Redis/queue namespaces or inst
 
 ## Current implementation versus this target
 
-| Current component                                       | Compatibility                                                                                        |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Local Compose and per-app Dockerfiles                   | Keep for local use and optional portable packaging                                                   |
-| Independent release tags and digest manifests           | Reuse as the foundation                                                                              |
-| Northflank API/worker deployment by digest              | Preserves image identity for a given release                                                         |
-| Vercel deployment from `gitSource`                      | Builds the source again; **does not satisfy build-once promotion**                                   |
-| Shared-preview CD job and latest-release reconciliation | Does not implement ordered four-environment promotion of an explicitly selected candidate            |
-| Public runtime bootstrap                                | REST uses the runtime-only server proxy (P07-04); public Socket.IO configuration remains future work |
+| Current component                                       | Compatibility                                                                                                                                                             |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local Compose and per-app Dockerfiles                   | Keep for local use and optional portable packaging                                                                                                                        |
+| Independent release tags and digest manifests           | Reuse as the foundation                                                                                                                                                   |
+| Northflank API/worker deployment by digest              | Preserves image identity for a given release                                                                                                                              |
+| Vercel deployment from `gitSource`                      | Builds the source again; **does not satisfy build-once promotion**                                                                                                        |
+| Shared-preview CD job and latest-release reconciliation | Does not implement ordered four-environment promotion of an explicitly selected candidate                                                                                 |
+| Public runtime bootstrap                                | REST uses the runtime-only server proxy (P07-04); validated `REALTIME_PUBLIC_URL` is read at server request time for Socket.IO (P11-03). Full promotion remains separate. |
 
 The shared preview can be enabled with `CD_ENABLED=true` once its own targets and credentials are ready. It does not provide the four-environment contract above. P00-08 is historical evidence of the earlier production-only design; P00-13 supersedes its target without claiming future promotion is implemented.
 

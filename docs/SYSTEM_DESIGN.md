@@ -1,6 +1,6 @@
 # Flowboard UI, backend and database design
 
-**Status: target design, not implemented product behavior. Updated 23 October 2026.** The repository currently has application/build/delivery foundations; domain features and the browser proxy below remain future tasks. This document makes [PLAN.md](PLAN.md) concrete. [REQUIREMENTS.md](REQUIREMENTS.md) and [DECISIONS.md](DECISIONS.md) remain canonical. Vendor observations are separated into [REFERENCE_ARCHITECTURES.md](REFERENCE_ARCHITECTURES.md).
+**Historical design reference, originally written 23 October 2026.** The local MVP, domain features and browser proxy are now implemented. Use [HLD](HLD.md), [LLD](LLD.md) and the [delivery summary](DELIVERY_SUMMARY.md) for the P19 as-built snapshot and verification limits; future-tense sections here preserve the earlier design context. [REQUIREMENTS.md](REQUIREMENTS.md) and [DECISIONS.md](DECISIONS.md) remain canonical. Vendor observations are separated into [REFERENCE_ARCHITECTURES.md](REFERENCE_ARCHITECTURES.md).
 
 The implementation-ready [database and ER specification](DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 

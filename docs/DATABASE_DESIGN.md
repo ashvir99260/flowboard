@@ -1,6 +1,6 @@
 # Flowboard database and ER design
 
-Status: the schema and checked-in migration are implemented and verified in [P01-03](evidence/P01-03.md). Reviewed against the project brief on 23 October 2026. Tenant repository enforcement is P01-04; later service invariants below remain planned until their task evidence exists. [PLAN](PLAN.md), [DECISIONS](DECISIONS.md) and the original requirements remain the scope authority.
+Status: schema, migrations, tenant repositories and the MVP service invariants are implemented. [P01-03](evidence/P01-03.md), [P01-04](evidence/P01-04.md) and the later domain task records contain their verification; the [LLD](LLD.md) summarizes the as-built flows at the P19 snapshot. This detailed design originated on 23 October 2026; resolve implementation details against the current schema and task evidence. [PLAN](PLAN.md), [DECISIONS](DECISIONS.md) and the original requirements remain the scope authority.
 
 ## Storage boundary
 
