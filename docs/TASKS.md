@@ -1268,7 +1268,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `feat(workspaces): add archive and recovery API`.
   - **Evidence:** [P29-01](evidence/P29-01.md).
 
-- [ ] **P29-03 — Restore the form implementation guide**
+- [x] **P29-03 — Restore the form implementation guide**
   - **Goal:** Repair copied UI-design content in the form guide before adding workspace management forms.
   - **Requirements:** R138; preserve R135/R155.
   - **Files:** `docs/FORM_SYSTEM.md`, task/matrix, AI usage log and evidence.
@@ -1276,6 +1276,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Acceptance:** Restore the last correct RHF/Zod/JSON form guidance from c5b874a; retain the later UTC datetime-local adapter rules; verify source links and current widget support without altering runtime behavior.
   - **Validation:** Documentation purpose/links, source-backed consistency and Prettier; runtime checks not applicable.
   - **Commit:** `docs: restore form implementation guidance`.
+  - **Evidence:** [P29-03](evidence/P29-03.md).
 
 - [ ] **P29-02 — Add workspace lifecycle controls and live recovery**
   - **Goal:** Expose rename/archive/restore with clear confirmation and prevent archived workspace content remaining mounted in other clients.
