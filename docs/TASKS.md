@@ -1378,6 +1378,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** Feature-scoped implementation commit after source completion.
 
 - [ ] **P32-01 — Refresh the branded workspace shell**
+  - **Implementation:** Complete; final verification pending. [Evidence](evidence/P32-01.md).
   - **Goal:** Deliver a compact header/sidebar and readable task workspace using shared MUI presentation.
   - **Requirements:** R161; preserve navigation, roles, tokens and accessibility.
   - **Files:** Shared theme/layout/board/navigation components; workspace shell; design docs and stories.
@@ -1387,6 +1388,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `feat(ui): refresh workspace navigation and cards`.
 
 - [ ] **P32-02 — Add workspace list-board drag and drop**
+  - **Implementation:** Complete; final verification pending. [Evidence](evidence/P32-02.md).
   - **Goal:** Move task cards between visible lists from workspace home.
   - **Requirements:** R162; preserve status/field/permission validation and revisions.
   - **Files:** Workspace-board feature, home route, task editor integration and tests.
@@ -1396,6 +1398,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `feat(web): add workspace list board`.
 
 - [ ] **P32-03 — Add header quick actions and invitations**
+  - **Implementation:** Complete; final verification pending. [Evidence](evidence/P32-03.md).
   - **Goal:** Put task creation, workspace settings and real invitations in the header.
   - **Requirements:** R163; preserve generated API and form boundaries.
   - **Files:** Workspace action/invite components, hooks, shell integration and tests.
