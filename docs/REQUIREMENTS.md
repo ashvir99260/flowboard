@@ -191,3 +191,17 @@ Document exact API DTO filenames ending in `.dto.ts`, integration tests ending i
 ## Follow-up requirement — compact component styling (25 October 2026)
 
 Revisit shared components to more closely match the Tailwind/shadcn and Headless UI references: reduce overly large field heights, make field outlines consistent, use filled colored chips, and remove hardcoded application colors from the theme in favor of shared tokens. Preserve the chosen MUI/composition approach, accessibility, forms, light/dark behavior and rem/HSL conventions.
+
+## Follow-up requirements — richer demo and MVP alignment (25 October 2026)
+
+The user now authorizes recording the missing items identified in the MVP comparison and starting ordered implementation. These additions do not replace the original stack, real authentication, tenant isolation or existing implemented extensions.
+
+- R151: Expand the main demo workspace to at least 3 spaces, 4 folders, 6 lists/boards, 48 varied tasks and 5 members with demonstrably different permissions. Include every supported custom-field type, required values, multiple inherited/local status sets and accessible assignments. A board is a view of its list, not a separate stored entity. Preserve the second tenant for isolation tests. Demo accounts are fictional seeded users using the real login flow.
+- R152: Allow select-option colors to be omitted, with a neutral presentation fallback; retain validation for supplied colors.
+- R153: Open task details by clicking a non-interactive part of a list row, while retaining the accessible title button and avoiding duplicate actions from row controls.
+- R154: Add a concise AI usage/corrections log and an explicit day-5/week-2 roadmap to the README/documentation. Explain why earlier requirements already produced more than two stretch features; do not remove working features to meet a retrospective count.
+- R155: Align task due dates with the reviewed ISO datetime requirement through a separately tested cross-layer migration. Preserve existing dates as midnight UTC and document timezone presentation; custom-field dates remain calendar dates.
+
+Workspace rename/archive, one-level subtasks, full-text search, bulk task updates and a container/grant administration UI are considered enhancements (R156–R160). They are recorded for design/prioritization, not selected for immediate implementation. Workspace archival in particular needs an explicit session, membership and recovery policy. Existing hosting/release/promotion gates retain their own authorization and evidence; this request does not activate deployments.
+
+For R151, fresh demo databases receive the expanded fixture. Existing initialized databases remain unchanged; never reset a volume or rewrite user data to show new seed content. Document a separate fresh local preview. A future additive seed upgrade requires its own safety design and authorization. See [follow-up plan](MVP_FOLLOW_UPS.md) and [ordered tasks](TASKS.md).

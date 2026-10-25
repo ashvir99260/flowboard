@@ -345,3 +345,9 @@ P22-01 explains the actual CI/release/outbox implementation and the planned trun
 P23-01 adds a 30-diagram visual atlas grouped by system, security, domain, frontend, async work, delivery and planned hosting/promotion. Editable Mermaid sources and rendered SVGs explain distinct questions, with captions/source links and explicit current/planned labels. The atlas supplements existing canonical guides rather than changing runtime contracts.
 
 P24-01 makes the existing setup-free Compose preview explicit and verifies it. Keep the current local Compose defaults and hosted runtime boundaries. Test configuration in a temporary directory without `.env` or inherited application settings; change the real Docker acceptance run to use those defaults, with only isolated test ports and debug logging. Present the one-command preview before optional host-development setup; prove login/edit, automatic initialization and restart persistence before marking R147 verified.
+
+## 13. Richer demo and MVP alignment
+
+The user-approved follow-up is [MVP_FOLLOW_UPS.md](MVP_FOLLOW_UPS.md), with R151–R160 and sequential P28 tasks in [TASKS.md](TASKS.md). P28-01 records scope; P28-02 expands fresh demo data without rewriting existing installations. P28-03/P28-04 handle the small option-color/row-activation gaps; P28-05 documents AI contributions and the roadmap; P28-06 owns the due-date datetime migration. Proposed optional work remains unselected and does not change current runtime contracts until implemented and verified.
+
+D154 supersedes the fixture size for future fresh databases only. Current source still seeds the original dataset until P28-02 passes. The second tenant remains an isolation fixture, while the main demo workspace provides multiple independent list boards and five permission personas.
