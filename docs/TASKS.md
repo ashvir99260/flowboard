@@ -1621,3 +1621,22 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Source/contract and deployment-evidence cross-checks, changed diagram rendering and visual inspection, documentation links/inventory, shared formatting and whitespace checks. No app services, Docker builds or cloud mutations.
   - **Commit:** `docs: reconcile architecture with deployed services`.
   - **Completion evidence:** [P39-03](evidence/P39-03.md).
+
+- [x] **P39-04 — Enable Swagger on the hosted demo**
+  - **Goal:** Make the deployed `/docs` page and Try it out work through the existing API boundary.
+  - **Requirements:** R175; preserve R96–R99 and generated API contracts.
+  - **Files:** API Swagger/config/bootstrap tests and runtime wiring, API environment examples, Vercel routes, deployment routing tests, the existing frontend toast-dismissal regression fixture and documentation/evidence.
+  - **Dependencies:** P38-03, P39-03 and the user's explicit request to enable hosted Swagger.
+  - **Acceptance:** Explicitly opt in to Swagger; route only docs/assets/raw specs and public health probes to API. Runtime docs use `/api` for domain operations and `/` for health; canonical spec and local `/` behavior stay stable. Keep credentials enabled, authorization persistence off and existing route/Origin guards. P39-05 owns the live activation and browser acceptance.
+  - **Validation:** Failing HTTP/config/routing regressions, root build/lint/types/tests and applicable contract checks. No local application-image build or database reset.
+  - **Commit:** `fix(api): enable hosted swagger access`.
+  - **Completion evidence:** [P39-04](evidence/P39-04.md).
+
+- [ ] **P39-05 — Activate and verify hosted Swagger**
+  - **Goal:** Enable the tested Swagger configuration on the existing Vercel demo and provide its working URL.
+  - **Requirements:** R175.
+  - **Files:** Deployment evidence and task/matrix completion; server-side Vercel configuration stays outside Git.
+  - **Dependencies:** P39-04 and existing authorized Vercel access.
+  - **Acceptance:** Set only API_DOCS=true and API_DOCS_BASE_PATH=/api for the production-target demo, deploy a committed revision and verify page/assets/specs, health Try it out, login/refresh and protected-route rejection. Preserve API/worker health and all existing data; do not change the plan or activate automatic CD.
+  - **Validation:** Real deployment records, browser and HTTP checks; fixtures do not establish live acceptance.
+  - **Commit:** `docs: record hosted swagger verification`.

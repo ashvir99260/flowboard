@@ -32,6 +32,7 @@ async function bootstrap(): Promise<void> {
   const { app } = await createApplication(runtimeProbe(databaseUrl, redisUrl, logger), {
     auth: createAuthRuntime(databaseUrl, redisUrl, authSettings, logger),
     database: createDatabase(databaseUrl, logger),
+    docsBasePath: config.docsBasePath,
     exposeDocs: config.exposeDocs,
     realtime: { redisUrl },
     logger,

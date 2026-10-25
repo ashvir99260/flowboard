@@ -14,6 +14,7 @@ test('application configuration preserves defaults and explicit runtime settings
     host: 'localhost',
     port: 3001,
     demoSeed: false,
+    docsBasePath: '/',
     exposeDocs: true,
   });
   expect(
@@ -32,6 +33,7 @@ test('application configuration preserves defaults and explicit runtime settings
     host: '0.0.0.0',
     port: 0,
     demoSeed: true,
+    docsBasePath: '/',
     exposeDocs: false,
   });
 });
@@ -62,4 +64,20 @@ test('explicit docs flags override environment defaults including legacy empty v
   expect(readApplicationConfig({ ...environment, API_DOCS: 'false' }).exposeDocs).toBe(false);
   expect(readApplicationConfig({ ...environment, API_DOCS: '' }).exposeDocs).toBe(false);
   expect(readApplicationConfig({ ...environment, DEMO_SEED: '' }).demoSeed).toBe(false);
+});
+
+test('hosted documentation accepts only the direct or same-origin proxy base', () => {
+  expect(
+    readApplicationConfig({
+      ...environment,
+      NODE_ENV: 'production',
+      API_DOCS: 'true',
+      API_DOCS_BASE_PATH: '/api',
+    }),
+  ).toMatchObject({ docsBasePath: '/api', exposeDocs: true });
+  for (const base of ['', '//untrusted.example', 'https://untrusted.example', '/api/../secret']) {
+    expect(() => readApplicationConfig({ ...environment, API_DOCS_BASE_PATH: base })).toThrow(
+      'API_DOCS_BASE_PATH must be / or /api',
+    );
+  }
 });

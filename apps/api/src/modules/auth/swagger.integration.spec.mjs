@@ -21,6 +21,7 @@ test('local Swagger signs in, rotates and logs out while unlisted origins stay b
   const docsOrigin = 'http://localhost:3001';
   try {
     expect((await request(server).get('/docs/')).status).toBe(200);
+    expect((await request(server).get('/v1/workspaces')).status).toBe(401);
     const created = await request(server)
       .post('/v1/auth/signup')
       .set('Origin', 'http://localhost:3000')

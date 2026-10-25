@@ -8,15 +8,17 @@ Updated 26 October 2026. The target is one Vercel Hobby project containing the N
 
 Vercel [Services](https://vercel.com/docs/services) and [Daemons](https://vercel.com/docs/daemons) are available on Hobby. Daemons currently run **only in production deployments**, so the shared demo uses Vercel's production target. It remains a hobby/demo environment with separate credentials; a preview deployment cannot prove activity processing.
 
-| Component  | Configuration                              | Traffic                                                                |
-| ---------- | ------------------------------------------ | ---------------------------------------------------------------------- |
-| web        | Next.js service rooted at apps/web         | Public catch-all, pages and same-origin REST proxy                     |
-| api        | Container service using Dockerfile.api     | Private API binding; public /socket.io/*                               |
-| worker     | One daemon using Dockerfile.worker in iad1 | No public route; consumes Redis jobs and dispatches committed events   |
-| PostgreSQL | Neon Free                                  | Server-only pooled connection; direct connection for migrations        |
-| Redis      | Upstash Free                               | Server-only rediss:// connection for BullMQ, rate limiting and pub/sub |
+| Component  | Configuration                              | Traffic                                                                 |
+| ---------- | ------------------------------------------ | ----------------------------------------------------------------------- |
+| web        | Next.js service rooted at apps/web         | Public catch-all, pages and same-origin REST proxy                      |
+| api        | Container service using Dockerfile.api     | Private REST binding; public docs, exact health probes and /socket.io/* |
+| worker     | One daemon using Dockerfile.worker in iad1 | No public route; consumes Redis jobs and dispatches committed events    |
+| PostgreSQL | Neon Free                                  | Server-only pooled connection; direct connection for migrations         |
+| Redis      | Upstash Free                               | Server-only rediss:// connection for BullMQ, rate limiting and pub/sub  |
 
 The root [vercel.json](../vercel.json) owns this topology. The worker requests the minimum supported 1 GiB rather than inheriting Vercel's 2 GiB default. Web receives API_INTERNAL_URL through its private service binding; do not manually replace it with a public or loopback address. The proxy forwards /api/v1 to API /v1. Socket.IO uses the public project origin and WebSocket transport through the /socket.io rewrite. Auth, permission checks and domain logic remain in the API.
+
+Swagger is explicitly exposed at `/docs` (including assets), with raw `/docs-json` and `/docs-yaml` specs. `/health/live` and `/health/ready` also route directly to API; all other paths still go to web. The runtime-only Swagger document uses `/api` for `/v1` operations and `/` for the health probes, so Try it out follows the existing cookie/proxy boundary. The committed OpenAPI document is unchanged. Credentials are enabled for Swagger requests, but authorization persistence is disabled.
 
 Vercel's container build uses the Dockerfile's directory as its build context. [Dockerfile.api](../Dockerfile.api) and [Dockerfile.worker](../Dockerfile.worker) therefore live at the repository root, each pruning and packaging only its own production workspace dependencies. These same files serve Compose and independent image publication, without duplicated build definitions. A nested app Dockerfile would omit the root workspace manifest and packages even with the service `root` set to `.`. Both use literal filenames because the live builders reject the documented `#stage` suffix. The web Dockerfile remains in `apps/web` because its Vercel service uses the native Next.js builder.
 
@@ -37,7 +39,8 @@ Set these as production environment variables in the dedicated Vercel project. S
 | REALTIME_PUBLIC_URL      | The same HTTPS project origin; never the private API binding                  |
 | AUTH_ALLOW_INSECURE_HTTP | false                                                                         |
 | DEMO_SEED                | false; create your own account through signup                                 |
-| API_DOCS                 | false unless deliberately exposing the API documentation                      |
+| API_DOCS                 | true for this explicitly enabled demo; false remains the production default   |
+| API_DOCS_BASE_PATH       | /api for hosted Swagger Try it out; / for direct/local API access             |
 | NODE_ENV                 | production                                                                    |
 | HOST                     | 0.0.0.0; container listener                                                   |
 | PORT                     | 3001; Vercel container routing and API listener must agree                    |
