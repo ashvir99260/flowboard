@@ -38,7 +38,13 @@ export { default as FormHelperText } from '@mui/material/FormHelperText';
 
 export { default as InputLabel } from '@mui/material/InputLabel';
 
+export { default as IconButton } from '@mui/material/IconButton';
+
 export { default as Link } from '@mui/material/Link';
+
+export { default as Menu } from '@mui/material/Menu';
+
+export { default as MenuItem } from '@mui/material/MenuItem';
 
 export { default as Stack } from '@mui/material/Stack';
 

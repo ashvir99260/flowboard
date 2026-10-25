@@ -116,6 +116,24 @@ test('due dates distinguish unset, UTC instant, overdue and invalid values', () 
   assert.ok(screen.getByText('Invalid date'));
 });
 
+test('compact due dates keep the full UTC timestamp while showing a short calendar date', () => {
+  const date = '2024-03-01T00:20:30.123Z';
+  render(createElement(UI.DueDateLabel, { date, variant: 'compact' }));
+  const label = screen.getByText('Mar 1');
+  assert.equal(label.getAttribute('datetime'), date);
+  assert.equal(label.getAttribute('title'), 'Due · 2024-03-01 00:20:30 UTC');
+  assert.equal(label.getAttribute('aria-label'), 'Due · 2024-03-01 00:20:30 UTC');
+  cleanup();
+  render(createElement(UI.DueDateLabel, { date, overdue: true, variant: 'compact' }));
+  assert.ok(screen.getByText('Overdue · Mar 1'));
+  cleanup();
+  render(createElement(UI.DueDateLabel, { date: null, variant: 'compact' }));
+  assert.ok(screen.getByText('No due date'));
+  cleanup();
+  render(createElement(UI.DueDateLabel, { date: '2024-02-30', variant: 'compact' }));
+  assert.ok(screen.getByText('Invalid date'));
+});
+
 test('custom field displays preserve zero/false and resolve select values by ID', () => {
   const options = [
     { color: '#336699', id: 'a', label: 'Design' },

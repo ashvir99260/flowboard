@@ -341,7 +341,7 @@ test('board primitives expose status and task metadata without nesting action bu
   fireEvent.click(screen.getByRole('button', { name: 'Move task' }));
   fireEvent.click(screen.getByRole('button', { name: 'Add task' }));
   assert.deepEqual([opened, moved, added], [0, 1, 1]);
-  fireEvent.click(screen.getByRole('button', { name: 'A long title to review' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Open task: A long title to review' }));
   assert.equal(opened, 1);
   assert.equal(globalThis.document.querySelector('button button'), null);
 });
@@ -360,4 +360,41 @@ test('a read-only board card exposes a heading without an inactive title button'
   );
   assert.ok(screen.getByRole('heading', { level: 3, name: 'Read-only task' }));
   assert.equal(screen.queryByRole('button', { name: 'Read-only task' }), null);
+});
+
+test('compact board cards keep title, drag and move controls independent', () => {
+  const calls = [];
+  const title = 'Review a long task title that must retain its complete accessible name';
+  render(
+    createElement(UI.KanbanCard, {
+      task: {
+        id: 'compact',
+        title,
+        priority: 'high',
+        dueDate: '2024-03-01T00:20:30.123Z',
+        assignees: [],
+      },
+      onOpen: () => calls.push('open'),
+      dragHandle: createElement(
+        'button',
+        { 'aria-label': 'Drag task', onClick: () => calls.push('drag') },
+        'Drag',
+      ),
+      actions: createElement('button', { onClick: () => calls.push('move') }, 'Move task'),
+    }),
+  );
+  const open = screen.getByRole('button', { name: `Open task: ${title}` });
+  const heading = screen.getByRole('heading', { name: title, level: 3 });
+  const drag = screen.getByRole('button', { name: 'Drag task' });
+  assert.ok(heading.contains(open));
+  assert.equal(heading.parentElement, drag.parentElement.parentElement);
+  assert.equal(open.getAttribute('title'), title);
+  assert.equal(open.getAttribute('data-open-task'), 'compact');
+  assert.equal(globalThis.document.querySelector('button button'), null);
+  assert.ok(screen.getByText('Mar 1'));
+  fireEvent.click(drag);
+  fireEvent.click(screen.getByRole('button', { name: 'Move task' }));
+  assert.deepEqual(calls, ['drag', 'move']);
+  fireEvent.click(open);
+  assert.deepEqual(calls, ['drag', 'move', 'open']);
 });

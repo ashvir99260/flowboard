@@ -7,10 +7,17 @@ import { formatTimestamp } from '../../utils/formatDate.js';
 
 import type { Task } from '@flowboard/contracts';
 
+const calendar = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
 export function DueDateLabel({
   date,
   overdue = false,
-}: Readonly<{ date: Task['dueDate']; overdue?: boolean }>) {
+  variant = 'full',
+}: Readonly<{ date: Task['dueDate']; overdue?: boolean; variant?: 'full' | 'compact' }>) {
   if (date === null)
     return (
       <Typography color="text.secondary" component="span" variant="body2">
@@ -26,14 +33,21 @@ export function DueDateLabel({
       </Typography>
     );
 
+  const fullLabel = `${overdue ? 'Overdue' : 'Due'} · ${formatTimestamp(parsed.data)}`;
+  const compact = variant === 'compact';
+
   return (
     <Typography
+      aria-label={compact ? fullLabel : undefined}
       component="time"
       dateTime={date}
       color={overdue ? 'error' : 'text.secondary'}
+      title={compact ? fullLabel : undefined}
       variant="body2"
     >
-      {overdue ? 'Overdue' : 'Due'} · {formatTimestamp(parsed.data)}
+      {compact
+        ? `${overdue ? 'Overdue · ' : ''}${calendar.format(new Date(parsed.data))}`
+        : fullLabel}
     </Typography>
   );
 }

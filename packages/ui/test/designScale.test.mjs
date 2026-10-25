@@ -35,7 +35,11 @@ test('MUI uses ten-pixel rem calibration and direct rem spacing', () => {
 test('palette tokens are HSL while MUI receives valid RGB channels', () => {
   for (const palette of Object.values(UI.designTokens.palette))
     for (const color of Object.values(palette)) assert.match(color, /^hsl\(/);
-  assert.equal(UI.theme.colorSchemes.light.palette.primary.mainChannel, '24 24 27');
+  assert.equal(
+    UI.theme.colorSchemes.light.palette.primary.main,
+    UI.designTokens.palette.light.brand,
+  );
+  assert.equal(UI.theme.colorSchemes.light.palette.primary.mainChannel, '72 61 214');
   assert.equal(UI.theme.shape.borderRadius, 6);
 });
 

@@ -310,7 +310,7 @@ test('a board mutation settling after view navigation refreshes the task table',
   const board = page.getByRole('region', { exact: true, name: 'Task board' });
   const card = board
     .getByRole('article')
-    .filter({ has: page.getByRole('heading', { exact: true, name: 'Fix login' }) });
+    .filter({ has: page.getByRole('button', { exact: true, name: 'Open task: Fix login' }) });
   let release;
   api.controls.board.moveGates.set(
     '50000000-0000-4000-8000-000000000002',
