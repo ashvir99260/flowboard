@@ -30,7 +30,13 @@ function failure(view: ListView) {
   return null;
 }
 
-export function ListResult({ view }: { view: ListView }) {
+export function ListResult({
+  view,
+  selection,
+}: {
+  view: ListView;
+  selection?: { ids: readonly string[]; onChange: (ids: string[]) => void; disabled?: boolean };
+}) {
   const error = failure(view);
   if (error)
     return (
@@ -63,7 +69,12 @@ export function ListResult({ view }: { view: ListView }) {
       <Typography color="text.secondary" variant="body2">
         {result.items.length} loaded tasks
       </Typography>
-      <TaskTable items={result.items} fields={result.fields} statuses={result.statuses} />
+      <TaskTable
+        items={result.items}
+        fields={result.fields}
+        statuses={result.statuses}
+        selection={selection}
+      />
       {result.nextCursor && (
         <Button disabled={view.loadingMore || view.atLimit} onClick={view.loadMore}>
           {view.atLimit ? 'Page limit reached' : view.loadingMore ? 'Loading…' : 'Load more tasks'}

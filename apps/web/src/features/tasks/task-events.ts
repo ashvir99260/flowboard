@@ -36,9 +36,13 @@ export function isTaskBusy(client: QueryClient, scope: QueryScope, taskId: strin
   return (
     client.isMutating({
       predicate: (entry) => {
-        const variables = entry.state.variables as { taskId?: string } | undefined;
+        const variables = entry.state.variables as
+          { taskId?: string; tasks?: readonly { id: string }[] } | undefined;
 
-        return Boolean(sameScope(entry.options.mutationKey, scope) && variables?.taskId === taskId);
+        return Boolean(
+          sameScope(entry.options.mutationKey, scope) &&
+          (variables?.taskId === taskId || variables?.tasks?.some(({ id }) => id === taskId)),
+        );
       },
     }) > 0
   );

@@ -8,6 +8,11 @@ export function TaskTable(props: {
   fields: readonly ResolvedField[];
   items: readonly Task[];
   statuses: readonly ResolvedStatus[];
+  selection?: {
+    disabled?: boolean;
+    ids: readonly string[];
+    onChange: (ids: string[]) => void;
+  };
 }) {
   const openTask = useTaskEditor();
 

@@ -36,6 +36,36 @@ export const WithCustomColumns: Story = {
   },
 };
 
+function SelectionDemo({ onOpenTask }: { onOpenTask: (id: string) => void }) {
+  const [ids, setIds] = useState<string[]>([]);
+
+  return (
+    <TaskTable
+      items={[task]}
+      fields={[effort, approved]}
+      statuses={statuses}
+      onOpenTask={onOpenTask}
+      selection={{ ids, onChange: setIds }}
+    />
+  );
+}
+
+export const CheckboxSelection: Story = {
+  render: (args) => <SelectionDemo onOpenTask={args.onOpenTask} />,
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const checkbox = canvas.getAllByRole('checkbox')[1]!;
+    await userEvent.click(checkbox);
+    await expect(checkbox).toBeChecked();
+    await expect(args.onOpenTask).not.toHaveBeenCalled();
+    checkbox.focus();
+    await userEvent.keyboard(' ');
+    await expect(checkbox).not.toBeChecked();
+    await userEvent.click(canvas.getByRole('button', { name: `Open task: ${task.title}` }));
+    await expect(args.onOpenTask).toHaveBeenCalledWith(task.id);
+  },
+};
+
 export const RowBodyOpening: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);

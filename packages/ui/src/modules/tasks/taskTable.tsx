@@ -64,11 +64,17 @@ export function TaskTable({
   fields,
   statuses,
   onOpenTask,
+  selection,
 }: {
   fields: readonly ResolvedField[];
   items: readonly Task[];
   onOpenTask: (id: string) => void;
   statuses: readonly ResolvedStatus[];
+  selection?: {
+    disabled?: boolean;
+    ids: readonly string[];
+    onChange: (ids: string[]) => void;
+  };
 }) {
   const { ref: remRef, size: remSize } = useRemSize();
   const estimateRowHeight = useCallback(() => 6.4 * remSize, [remSize]);
@@ -205,6 +211,20 @@ export function TaskTable({
         disableColumnMenu
         disableColumnSelector
         disableRowSelectionOnClick
+        checkboxSelection={Boolean(selection)}
+        disableRowSelectionExcludeModel
+        keepNonExistentRowsSelected
+        rowSelectionModel={selection ? { type: 'include', ids: new Set(selection.ids) } : undefined}
+        isRowSelectable={({ id }) =>
+          !selection?.disabled &&
+          (!selection || selection.ids.includes(String(id)) || selection.ids.length < 50)
+        }
+        onRowSelectionModelChange={(model) => {
+          if (!selection || selection.disabled || model.type !== 'include' || model.ids.size > 50)
+            return;
+
+          selection.onChange([...model.ids].map(String));
+        }}
         onRowClick={openRow}
       />
     </Container>
