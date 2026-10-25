@@ -396,3 +396,9 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | ---- | ------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------- | ----------- |
 | R164 | Frontend organization follow-up | Common typed mutation hook and consistently named feature mutation hooks.                      | Web · P33-01             | [Mutation checks](evidence/P33-01.md); full regression acceptance remains pending. | In progress |
 | R165 | Frontend organization follow-up | Separate components with PascalCase files; camelCase hooks/utilities across web, UI and forms. | Frontend · P33-02/P33-03 | Imports, public exports, context identity, source-layout rules and UI regressions. | In progress |
+
+## Card interaction follow-up
+
+| ID   | Source                     | Requirement                                                                                         | Owner / tasks | Evidence required                                                                         | Status      |
+| ---- | -------------------------- | --------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------- | ----------- |
+| R166 | User interaction follow-up | Full-card dragging on workspace/list boards with independent native actions and keyboard operation. | Web · P34-01  | [Focused browser checks](evidence/P34-01.md); full regression acceptance remains pending. | In progress |

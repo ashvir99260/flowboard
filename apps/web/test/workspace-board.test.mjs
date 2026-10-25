@@ -58,7 +58,7 @@ test('workspace board does not request or render private list tasks for Bob', as
 test('keyboard drag moves across lists and a rejected move rolls back without losing another task', async (t) => {
   const { api, page, publicList, privateList } = await openWorkspace(t);
   const movingId = '50000000-0000-4000-8000-000000000002';
-  const handle = publicList.getByRole('button', {
+  const handle = publicList.getByRole('group', {
     name: 'Drag task: Review navigation',
     exact: true,
   });
@@ -99,7 +99,7 @@ test('a cross-list drop opens field correction, keeps the draft on denial, and s
   const movingId = '50000000-0000-4000-8000-000000000002';
   const before = api.requests.filter((entry) => entry.path.endsWith('/move')).length;
   await publicList
-    .getByRole('button', { name: 'Drag task: Review navigation', exact: true })
+    .getByRole('group', { name: 'Drag task: Review navigation', exact: true })
     .focus();
   await page.keyboard.press('Space');
   await page.keyboard.press('ArrowRight');

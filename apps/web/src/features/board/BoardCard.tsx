@@ -1,9 +1,11 @@
 'use client';
 
-import type { ResolvedField, Task } from '@flowboard/contracts';
 import { BoardItem, Button, CustomFieldChip, KanbanCard, WorkspaceIcon } from '@flowboard/ui';
 import { Draggable } from '@hello-pangea/dnd';
+
 import { useTaskEditor } from '../tasks/useTaskEditor';
+
+import type { ResolvedField, Task } from '@flowboard/contracts';
 
 export function BoardCard({
   task,
@@ -25,18 +27,20 @@ export function BoardCard({
   const field = fields.find(({ key }) => Object.hasOwn(task.customFields, key));
 
   return (
-    <Draggable
-      draggableId={task.id}
-      index={index}
-      isDragDisabled={pending}
-      disableInteractiveElementBlocking
-    >
+    <Draggable draggableId={task.id} index={index} isDragDisabled={pending}>
       {(provided, snapshot) => (
         <BoardItem
           ref={provided.innerRef}
           {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          role="group"
+          aria-label={`Drag task: ${task.title}`}
+          aria-roledescription="draggable task"
+          aria-disabled={pending}
+          data-drag-task={task.id}
           style={{
             ...provided.draggableProps.style,
+            cursor: pending ? 'default' : snapshot.isDragging ? 'grabbing' : 'grab',
             ...(reduced
               ? snapshot.isDropAnimating
                 ? { transitionDuration: '0.001s' }
@@ -47,18 +51,6 @@ export function BoardCard({
           <KanbanCard
             task={task}
             onOpen={() => openTask(task.id)}
-            dragHandle={
-              <Button
-                {...provided.dragHandleProps}
-                data-drag-task={task.id}
-                aria-label={`Drag task: ${task.title}`}
-                disabled={pending}
-                title="Drag task"
-                sx={{ touchAction: 'none', minWidth: '3.2rem', px: 0.4 }}
-              >
-                <WorkspaceIcon name="menu" />
-              </Button>
-            }
             metadata={
               field ? (
                 <CustomFieldChip field={field} value={task.customFields[field.key]} />
