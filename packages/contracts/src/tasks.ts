@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CalendarDateSchema } from './dates.js';
+import { TaskDueDateSchema } from './dates.js';
 import { PrioritySchema } from './enums.js';
 import { FieldValuesSchema } from './field-values.js';
 import {
@@ -74,8 +74,12 @@ export const TaskSchema = z
       .array(TaskAssigneeSchema)
       .max(20)
       .meta(meta('Assignees', 'Safe assigned member summaries in UUID order.', [])),
-    dueDate: CalendarDateSchema.nullable().meta(
-      meta('Due date', 'Calendar day or null when no due date is set.', null),
+    dueDate: TaskDueDateSchema.nullable().meta(
+      meta(
+        'Due date',
+        'ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.',
+        null,
+      ),
     ),
     customFields: FieldValuesSchema.meta(
       meta('Custom fields', 'Values keyed by the list resolved field schema.', {}),
@@ -232,7 +236,7 @@ export const TaskEnvelopeSchema = z
 
 export const TaskPositionSchema = z.discriminatedUnion('sort', [
   z.strictObject({ sort: z.literal('manual'), id: uuid, statusId: uuid, position: PositionSchema }),
-  z.strictObject({ sort: z.literal('dueDate'), id: uuid, dueDate: CalendarDateSchema.nullable() }),
+  z.strictObject({ sort: z.literal('dueDate'), id: uuid, dueDate: TaskDueDateSchema.nullable() }),
   z.strictObject({ sort: z.literal('priority'), id: uuid, priority: PrioritySchema }),
 ]);
 

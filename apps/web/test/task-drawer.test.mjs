@@ -9,7 +9,7 @@ import { ids } from './common/board-fixture.mjs';
 import { startWeb } from './common/proxy-fixture.mjs';
 import { mobileOption } from './common/table-fixture.mjs';
 
-async function openTask(t, extraFields = false) {
+async function openTask(t, extraFields = false, timezoneId = 'UTC') {
   const browser = await chromium.launch({ headless: true });
   t.after(() => browser.close());
   const api = await startAppApi(t);
@@ -21,7 +21,7 @@ async function openTask(t, extraFields = false) {
     'localhost',
     process.env.FLOWBOARD_WEB_DEV_TEST === '1',
   );
-  const page = await browser.newPage();
+  const page = await browser.newPage({ timezoneId });
   page.setDefaultTimeout(8000);
   await page.goto(`${web.origin}/login`);
   await page.getByLabel(/^Email/).fill('alice@example.test');
@@ -359,3 +359,29 @@ test('a failed background workspace refresh preserves the dirty drawer through r
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await expect(page.getByRole('dialog', { name: 'Discard unsaved changes?' })).toBeVisible();
 });
+
+for (const timezone of ['UTC', 'Asia/Kolkata', 'America/Los_Angeles'])
+  test(`due-time editing stays in UTC in ${timezone}`, async (t) => {
+    const { api, drawer } = await openTask(t, false, timezone);
+    const due = drawer.getByLabel(/^Due date \(UTC\)/);
+    await expect(due).toHaveValue('2026-11-01T00:00');
+    await due.fill('2026-11-02T13:45:12.123');
+    await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
+    await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
+    assert.equal(
+      api.requests.filter((request) => request.method === 'PATCH').at(-1).body.dueDate,
+      '2026-11-02T13:45:12.123Z',
+    );
+    await expect(due).toHaveValue('2026-11-02T13:45:12.123');
+    const count = api.requests.filter((request) => request.method === 'PATCH').length;
+    await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
+    await expect(drawer.getByRole('alert')).toContainText('No changes to save.');
+    assert.equal(api.requests.filter((request) => request.method === 'PATCH').length, count);
+    await due.fill('');
+    await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
+    await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
+    assert.equal(
+      api.requests.filter((request) => request.method === 'PATCH').at(-1).body.dueDate,
+      null,
+    );
+  });

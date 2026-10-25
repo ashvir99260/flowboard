@@ -43,7 +43,7 @@ const options = z
   });
 const text = z.strictObject({
   ...common,
-  kind: z.enum(['text', 'email', 'password', 'textarea', 'date']),
+  kind: z.enum(['text', 'email', 'password', 'textarea', 'date', 'datetime-local']),
   autoComplete: z.string().max(100).optional(),
   emptyValue: z.literal('null').optional(),
   minRows: z.number().int().min(1).max(30).optional(),

@@ -49,7 +49,7 @@ export const AllMetadata: Story = {
         ]}
       />
       <AssigneeAvatarGroup assignees={[]} />
-      <DueDateLabel date="2026-12-01" />
+      <DueDateLabel date="2026-12-01T00:00:00.000Z" />
       <DueDateLabel date={null} />
       <CustomFieldChip field={effort} value={0} />
       <CustomFieldChip field={approved} value={false} />

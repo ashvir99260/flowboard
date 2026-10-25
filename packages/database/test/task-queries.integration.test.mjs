@@ -127,10 +127,18 @@ test.each(['asc', 'desc'])(
   async (direction) => {
     const f = await setup();
     const rows = [];
-    for (const date of [null, '2026-01-02', '2026-01-02', null, '2026-01-01'])
+    for (const date of [
+      null,
+      '2026-01-02T13:00:00.123Z',
+      '2026-01-02T13:00:00.123Z',
+      null,
+      '2026-01-02T09:00:00.456Z',
+    ])
       rows.push({ ...(await task(f, { due_date: date })), date });
     const dates =
-      direction === 'asc' ? ['2026-01-01', '2026-01-02', null] : ['2026-01-02', '2026-01-01', null];
+      direction === 'asc'
+        ? ['2026-01-02T09:00:00.456Z', '2026-01-02T13:00:00.123Z', null]
+        : ['2026-01-02T13:00:00.123Z', '2026-01-02T09:00:00.456Z', null];
     const expected = dates.flatMap((date) =>
       rows
         .filter((row) => row.date === date)

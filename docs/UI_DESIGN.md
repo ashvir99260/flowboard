@@ -86,7 +86,7 @@ Due-date and priority sorting runs on the server and resets the cursor. Priority
 
 ### Task create/detail drawer
 
-The drawer contains title, safe Markdown description editor/preview, status, priority, multiple assignees selected from listWorkspaceMembers with assignableToListId, calendar due date and resolved custom inputs. Detail actions include Save, Cancel and Archive with confirmation. The route identifies the task; a direct link loads it after auth and checks that its list matches the route. If it moved elsewhere, use the authorized returned list metadata/ID to navigate or show a permission-safe unavailable state.
+The drawer contains title, safe Markdown description editor/preview, status, priority, multiple assignees selected from listWorkspaceMembers with assignableToListId, UTC due datetime and resolved custom inputs. Detail actions include Save, Cancel and Archive with confirmation. The route identifies the task; a direct link loads it after auth and checks that its list matches the route. If it moved elsewhere, use the authorized returned list metadata/ID to navigate or show a permission-safe unavailable state.
 
 Forms use typed React Hook Form with shared Zod and zodResolver, complete defaults and onBlur/onTouched validation. MUI controlled components use Controller; stable field-array IDs preserve option inputs. Keep form adapters data-aware in web, presentational input primitives in ui. The resolved schema supplements the static task contract for dynamic required/type rules; the API revalidates everything.
 
@@ -122,7 +122,7 @@ Keep `packages/ui` free of network/session knowledge. It receives plain values, 
 | ThemeProvider                     | App Router cache integration, CSS baseline, semantic theme            | Root providers                  |
 | StatusChip / PriorityBadge        | Chip/Box + accessible label; text and color cues                      | Board/table/detail              |
 | AssigneeAvatarGroup               | AvatarGroup with initials, names and overflow summary                 | Task presentation               |
-| DueDateLabel                      | Typography/time element; explicit overdue label and calendar date     | Task presentation               |
+| DueDateLabel                      | Typography/time element; explicit overdue label and UTC datetime      | Task presentation               |
 | CustomFieldChip                   | Type-aware compact read-only value                                    | Board/table                     |
 | CustomFieldInput / field wrappers | Controlled TextField/Select/Checkbox primitives and helper/error text | RHF task/config adapters        |
 | KanbanColumn / KanbanCard         | Paper/Box/Card structure with action slots and focus states           | Board drag/mutation coordinator |

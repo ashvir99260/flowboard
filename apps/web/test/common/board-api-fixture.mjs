@@ -112,7 +112,7 @@ export function createBoardApi(nodes) {
             ...scope,
             title: privateList ? 'Private board task' : 'Public board task'.padEnd(500, 'x'),
             priority: 'urgent',
-            dueDate: '2026-11-01',
+            dueDate: '2026-11-01T00:00:00.000Z',
             assigneeIds: [session.data.user.id],
             assignees: [{ id: session.data.user.id, name: session.data.user.name }],
           }),

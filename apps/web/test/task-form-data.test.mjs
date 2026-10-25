@@ -102,3 +102,18 @@ test('task drafts validate shared title/status rules and resolved required, opti
     );
   }
 });
+
+test('UTC datetime drafts preserve milliseconds and only send real due-time changes', () => {
+  const fixture = boardFixture();
+  const task = { ...fixture.pages[0].response.items[0], dueDate: '2026-06-10T12:45:30.123Z' };
+  const draft = taskDefaults([], fixture.statuses.items, task);
+  assert.equal(draft.dueDate, '2026-06-10T12:45:30.123');
+  assert.equal(updateTaskInput(draft, task, 7), null);
+  assert.equal(createTaskInput(draft, 7).dueDate, task.dueDate);
+  assert.equal(
+    updateTaskInput({ ...draft, dueDate: '2026-06-10T13:00' }, task, 7).dueDate,
+    '2026-06-10T13:00:00.000Z',
+  );
+  assert.equal(updateTaskInput({ ...draft, dueDate: null }, task, 7).dueDate, null);
+  assert.throws(() => createTaskInput({ ...draft, dueDate: '2026-06-10' }, 7));
+});

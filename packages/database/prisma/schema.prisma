@@ -283,7 +283,7 @@ model Task {
   description   String    @default("")
   statusId      String    @map("status_id") @db.Uuid
   priority      Priority  @default(none)
-  dueDate       DateTime? @map("due_date") @db.Date
+  dueDate       DateTime? @map("due_date") @db.Timestamptz(3)
   customFields  Json      @default("{}") @map("custom_fields") @db.JsonB
   position      Int       @default(0)
   primaryListId String    @map("primary_list_id") @db.Uuid

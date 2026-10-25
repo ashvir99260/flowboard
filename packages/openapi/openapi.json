@@ -874,10 +874,11 @@
           },
           "dueDate": {
             "default": null,
-            "description": "Calendar day or null when no due date is set.",
+            "description": "ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.",
             "example": null,
+            "format": "date-time",
             "nullable": true,
-            "pattern": "^(?!0000)\\d{4}-\\d{2}-\\d{2}$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "title": "Due date",
             "type": "string"
           },
@@ -5156,10 +5157,11 @@
                 "type": "string"
               },
               "dueDate": {
-                "description": "Calendar day or null when no due date is set.",
+                "description": "ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.",
                 "example": null,
+                "format": "date-time",
                 "nullable": true,
-                "pattern": "^(?!0000)\\d{4}-\\d{2}-\\d{2}$",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                 "title": "Due date",
                 "type": "string"
               },
@@ -5441,10 +5443,11 @@
                   "type": "string"
                 },
                 "dueDate": {
-                  "description": "Calendar day or null when no due date is set.",
+                  "description": "ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.",
                   "example": null,
+                  "format": "date-time",
                   "nullable": true,
-                  "pattern": "^(?!0000)\\d{4}-\\d{2}-\\d{2}$",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                   "title": "Due date",
                   "type": "string"
                 },
@@ -5755,10 +5758,11 @@
                 "type": "string"
               },
               "dueDate": {
-                "description": "Calendar day or null when no due date is set.",
+                "description": "ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.",
                 "example": null,
+                "format": "date-time",
                 "nullable": true,
-                "pattern": "^(?!0000)\\d{4}-\\d{2}-\\d{2}$",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
                 "title": "Due date",
                 "type": "string"
               },
@@ -6451,10 +6455,11 @@
             "type": "string"
           },
           "dueDate": {
-            "description": "Calendar day or null when no due date is set.",
+            "description": "ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.",
             "example": null,
+            "format": "date-time",
             "nullable": true,
-            "pattern": "^(?!0000)\\d{4}-\\d{2}-\\d{2}$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "title": "Due date",
             "type": "string"
           },

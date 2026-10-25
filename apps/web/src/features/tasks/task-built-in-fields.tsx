@@ -38,7 +38,13 @@ export function TaskBuiltInFields({
       label: 'Priority',
       options: PrioritySchema.options.map((value) => ({ value, label: value })),
     },
-    { kind: 'date', name: 'dueDate', label: 'Due date', emptyValue: 'null' },
+    {
+      kind: 'datetime-local',
+      name: 'dueDate',
+      label: 'Due date (UTC)',
+      hint: 'Enter the date and time in UTC.',
+      emptyValue: 'null',
+    },
     {
       kind: 'multi_select',
       name: 'assigneeIds',

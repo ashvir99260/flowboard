@@ -121,6 +121,22 @@ const create = async (extra = {}, actor = 'Alice', list = 221) => {
     });
 };
 
+test('due instants roundtrip in UTC and an equivalent offset update is a no-op', async () => {
+  const created = await create({ dueDate: '2026-11-30T08:00:00.123+05:30' });
+  expect(created.status).toBe(201);
+  expect(created.body.data.dueDate).toBe('2026-11-30T02:30:00.123Z');
+  const read = await api().get(`/v1/tasks/${created.body.data.id}`).set(headers.Alice);
+  expect(read.body.data.dueDate).toBe(created.body.data.dueDate);
+  const unchanged = await api().patch(`/v1/tasks/${created.body.data.id}`).set(headers.Alice).send({
+    dueDate: '2026-11-29T21:30:00.123-05:00',
+    expectedVersion: created.body.data.version,
+    expectedConfigVersion: created.body.configVersion,
+  });
+  expect(unchanged.status).toBe(200);
+  expect(unchanged.body.data.version).toBe(created.body.data.version);
+  expect(unchanged.body.dataVersion).toBe(created.body.dataVersion);
+});
+
 test.each([
   [{ title: 'x'.repeat(501) }, 400],
   [{ statusId: id(999) }, 400],
@@ -129,7 +145,12 @@ test.each([
   [{ customFields: { effort: '1' } }, 400],
   [{ customFields: { effort: 1, team: id(612) } }, 400],
   [{ customFields: { effort: 1, unknown: true } }, 400],
-  [{ dueDate: '2026-02-29' }, 400],
+  [{ dueDate: '2026-02-29T00:00:00.000Z' }, 400],
+  [{ dueDate: '2026-11-30' }, 400],
+  [{ dueDate: 'garbage' }, 400],
+  [{ dueDate: '2026-13-11T00:00:00Z' }, 400],
+  [{ dueDate: '2026-11-30T12:30:00' }, 400],
+  [{ dueDate: '2026-11-30T12:30:00.1234Z' }, 400],
   [{ assigneeIds: [id(104)] }, 404],
   [{ assigneeIds: [id(102), id(102)] }, 400],
   [{ assigneeIds: Array.from({ length: 21 }, (_, index) => id(1000 + index)) }, 400],
@@ -181,7 +202,7 @@ test('actor and assignee visibility cannot cross private or tenant boundaries', 
 test('complete edits preserve omissions, clear optional values and keep no-ops stable', async () => {
   const created = await create({
     assigneeIds: [id(102), id(101)],
-    dueDate: '2026-11-30',
+    dueDate: '2026-11-30T00:00:00.000Z',
     customFields: { effort: 3, team: id(611), release_date: '2026-11-20' },
   });
   expect(created.status).toBe(201);

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CalendarDateSchema, TimestampSchema } from './dates.js';
+import { TaskDueDateSchema, TimestampSchema } from './dates.js';
 import { PrioritySchema } from './enums.js';
 import { FieldKeySchema, PositionSchema, UuidSchema, VersionSchema } from './identifiers.js';
 
@@ -37,8 +37,8 @@ export const TaskUpdatedEventSchema = z
         priority: z.strictObject({ before: PrioritySchema, after: PrioritySchema }).optional(),
         dueDate: z
           .strictObject({
-            before: CalendarDateSchema.nullable(),
-            after: CalendarDateSchema.nullable(),
+            before: TaskDueDateSchema.nullable(),
+            after: TaskDueDateSchema.nullable(),
           })
           .optional(),
         position: z.strictObject({ before: PositionSchema, after: PositionSchema }).optional(),

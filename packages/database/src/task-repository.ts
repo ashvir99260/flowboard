@@ -67,7 +67,7 @@ function present(row: TaskRow): Task {
     description: row.description,
     statusId: row.statusId,
     priority: row.priority,
-    dueDate: row.dueDate?.toISOString().slice(0, 10) ?? null,
+    dueDate: row.dueDate?.toISOString() ?? null,
     customFields: row.customFields as Task['customFields'],
     position: row.position,
     primaryListId: row.primaryListId,
@@ -208,7 +208,7 @@ export function taskRepository(
           continuation =
             cursor.dueDate === null
               ? Prisma.sql`AND t.due_date IS NULL AND t.id>${cursor.id}::uuid`
-              : Prisma.sql`AND (t.due_date IS NULL OR t.due_date ${comparison} ${cursor.dueDate}::date OR (t.due_date=${cursor.dueDate}::date AND t.id>${cursor.id}::uuid))`;
+              : Prisma.sql`AND (t.due_date IS NULL OR t.due_date ${comparison} ${cursor.dueDate}::timestamptz OR (t.due_date=${cursor.dueDate}::timestamptz AND t.id>${cursor.id}::uuid))`;
         } else {
           const index = PrioritySchema.options.indexOf(cursor.priority) + 1;
           continuation = Prisma.sql`AND (${priorityRank} ${comparison} ${index} OR (${priorityRank}=${index} AND t.id>${cursor.id}::uuid))`;
@@ -475,7 +475,7 @@ export function taskRepository(
           description: data.description,
           statusId: data.statusId,
           priority: data.priority,
-          dueDate: data.dueDate ? new Date(`${data.dueDate}T00:00:00.000Z`) : null,
+          dueDate: data.dueDate ? new Date(data.dueDate) : null,
           customFields: values.values,
           position: await position(listId, data.statusId),
           createdAt: clock.now,
@@ -573,7 +573,7 @@ export function taskRepository(
           description: next.description,
           statusId: next.statusId,
           priority: next.priority,
-          dueDate: next.dueDate ? new Date(`${next.dueDate}T00:00:00.000Z`) : null,
+          dueDate: next.dueDate ? new Date(next.dueDate) : null,
           customFields: next.customFields,
           position: nextPosition,
           version: { increment: 1 },

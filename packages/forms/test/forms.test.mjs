@@ -343,3 +343,32 @@ test('generic select descriptors retain large workspace member lists', () => {
   const fields = [{ kind: 'multi_select', name: 'assigneeIds', label: 'Assignees', options }];
   assert.equal(Forms.parseFormFields(fields, ['assigneeIds'])[0].options.length, 5100);
 });
+
+test('datetime controls preserve milliseconds and clear to null', async () => {
+  const submissions = [];
+  function DatetimeForm() {
+    const form = Forms.useZodForm(z.object({ due: z.string().nullable() }), {
+      defaultValues: { due: '2026-06-10T12:45:30.123' },
+    });
+
+    return h(
+      'form',
+      { onSubmit: form.handleSubmit((value) => submissions.push(value)) },
+      h(Forms.FormFields, {
+        control: form.control,
+        fields: [{ emptyValue: 'null', kind: 'datetime-local', label: 'Due time', name: 'due' }],
+      }),
+      h('button', { type: 'submit' }, 'Save time'),
+    );
+  }
+  render(h(DatetimeForm));
+  const input = screen.getByLabelText('Due time');
+  assert.equal(input.type, 'datetime-local');
+  assert.equal(input.step, '0.001');
+  assert.equal(input.value, '2026-06-10T12:45:30.123');
+  fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
+  await waitFor(() => assert.deepEqual(submissions[0], { due: '2026-06-10T12:45:30.123' }));
+  fireEvent.change(input, { target: { value: '' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save time' }));
+  await waitFor(() => assert.deepEqual(submissions[1], { due: null }));
+});

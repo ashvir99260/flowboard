@@ -3,12 +3,15 @@ import {
   CreateTaskSchema,
   FieldKeySchema,
   FieldValueSchema,
+  TaskDueDateSchema,
   TaskSchema,
   UpdateTaskSchema,
 } from '@flowboard/contracts';
 import { z } from 'zod';
 
 import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
+
+const utcInput = (value: string) => `${value.length === 16 ? `${value}:00` : value}Z`;
 
 const DraftSchema = TaskSchema.pick({
   assigneeIds: true,
@@ -17,7 +20,16 @@ const DraftSchema = TaskSchema.pick({
   priority: true,
   statusId: true,
   title: true,
-}).extend({ customFields: z.record(FieldKeySchema, FieldValueSchema.nullable()) });
+}).extend({
+  customFields: z.record(FieldKeySchema, FieldValueSchema.nullable()),
+  dueDate: z
+    .string()
+    .refine(
+      (value) => TaskDueDateSchema.safeParse(utcInput(value)).success,
+      'Enter a valid UTC date and time.',
+    )
+    .nullable(),
+});
 
 export type TaskDraft = z.infer<typeof DraftSchema>;
 
@@ -59,7 +71,7 @@ export function taskDefaults(
       task?.statusId ?? statuses.find((status) => status.category === 'not_started')?.id ?? '',
     priority: task?.priority ?? 'none',
     assigneeIds: [...(task?.assigneeIds ?? [])],
-    dueDate: task?.dueDate ?? null,
+    dueDate: task?.dueDate ? TaskDueDateSchema.parse(task.dueDate).slice(0, -1) : null,
     customFields: Object.fromEntries(
       fields.map(({ key }) => [key, task?.customFields[key] ?? null]),
     ),
@@ -70,9 +82,18 @@ const sameValue = (left: unknown, right: unknown) =>
   JSON.stringify(Array.isArray(left) ? left.toSorted() : left) ===
   JSON.stringify(Array.isArray(right) ? right.toSorted() : right);
 
+function parseTaskDraft(draft: TaskDraft) {
+  const parsed = DraftSchema.parse(draft);
+
+  return {
+    ...parsed,
+    dueDate: parsed.dueDate === null ? null : TaskDueDateSchema.parse(utcInput(parsed.dueDate)),
+  };
+}
+
 export function createTaskInput(draft: TaskDraft, configVersion: number) {
   return CreateTaskSchema.parse({
-    ...DraftSchema.parse(draft),
+    ...parseTaskDraft(draft),
     customFields: Object.fromEntries(
       Object.entries(draft.customFields).filter(([, value]) => value !== null),
     ),
@@ -81,7 +102,7 @@ export function createTaskInput(draft: TaskDraft, configVersion: number) {
 }
 
 export function updateTaskInput(draft: TaskDraft, task: Task, configVersion: number) {
-  const parsed = DraftSchema.parse(draft);
+  const parsed = parseTaskDraft(draft);
   const builtins = (
     ['title', 'description', 'statusId', 'priority', 'dueDate', 'assigneeIds'] as const
   )

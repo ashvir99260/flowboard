@@ -165,8 +165,8 @@ export function Playground() {
         </Section>
         <Section description="Calendar days stay stable across time zones." title="Due dates">
           <Stack spacing={1.2}>
-            <DueDateLabel date="2026-01-01" />
-            <DueDateLabel date="2024-02-29" overdue />
+            <DueDateLabel date="2026-01-01T00:00:00.000Z" />
+            <DueDateLabel date="2024-02-29T00:00:00.000Z" overdue />
             <DueDateLabel date={null} />
           </Stack>
         </Section>

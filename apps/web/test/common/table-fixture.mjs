@@ -36,9 +36,17 @@ export function tableTasks(node, session) {
         : 200;
 
   return [
-    ['Plan release', 'normal', '2026-11-02', 0, ids.option, false, [ids.option]],
-    ['Fix login', 'urgent', '2026-11-01', 5, mobileOption, true, [mobileOption]],
-    ['Review scope', 'high', '2026-11-01', 3, ids.option, false, [ids.option, mobileOption]],
+    ['Plan release', 'normal', '2026-11-02T00:00:00.000Z', 0, ids.option, false, [ids.option]],
+    ['Fix login', 'urgent', '2026-11-01T00:00:00.000Z', 5, mobileOption, true, [mobileOption]],
+    [
+      'Review scope',
+      'high',
+      '2026-11-01T00:00:00.000Z',
+      3,
+      ids.option,
+      false,
+      [ids.option, mobileOption],
+    ],
     ['Unscheduled work', 'low', null, 8, ids.option, true, []],
     ['Archive notes', 'none', null, 0, mobileOption, false, [ids.option, mobileOption]],
   ].map(([title, priority, dueDate, effort, area, approved, tags], index) =>

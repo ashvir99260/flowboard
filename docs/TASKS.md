@@ -1224,7 +1224,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: explain ai usage and delivery priorities`.
   - **Evidence:** [P28-05](evidence/P28-05.md).
 
-- [ ] **P28-06 — Migrate task due dates to ISO datetimes**
+- [x] **P28-06 — Migrate task due dates to ISO datetimes**
   - **Goal:** Preserve a due time and timezone-independent instant instead of only a calendar day.
   - **Requirements:** R155.
   - **Files:** Task contracts, Prisma migration/repositories, DTO/spec/generated client, forms/display, pagination tests and date documentation.
@@ -1232,6 +1232,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Nullable ISO datetime end to end; old dates migrate to midnight UTC; date custom fields remain calendar values; reject invalid instants; sorting/cursors handle ties/nulls and timezone crossings; UI clearly identifies timezone; stale clients fail clearly rather than silently losing time.
   - **Validation:** G01–G10; migration preservation, contracts, real PostgreSQL/API, browser timezone/roundtrip tests, generated drift and root gates.
   - **Commit:** `feat(tasks): support datetime due dates`.
+  - **Evidence:** [P28-06](evidence/P28-06.md).
 
 ## Selected local enhancements — design before implementation
 

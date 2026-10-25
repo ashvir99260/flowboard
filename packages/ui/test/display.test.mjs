@@ -102,12 +102,15 @@ test('assignees expose every full name even when avatars overflow, and empty tas
   assert.ok(screen.getByText('+2'));
 });
 
-test('due dates distinguish unset, calendar-day, overdue and invalid values', () => {
+test('due dates distinguish unset, UTC instant, overdue and invalid values', () => {
   render(createElement(UI.DueDateLabel, { date: null }));
   assert.ok(screen.getByText('No due date'));
   cleanup();
-  render(createElement(UI.DueDateLabel, { date: '2024-02-29', overdue: true }));
-  assert.equal(screen.getByText('Overdue · Feb 29, 2024').getAttribute('datetime'), '2024-02-29');
+  render(createElement(UI.DueDateLabel, { date: '2024-02-29T10:20:30.123Z', overdue: true }));
+  assert.equal(
+    screen.getByText('Overdue · 2024-02-29 10:20:30 UTC').getAttribute('datetime'),
+    '2024-02-29T10:20:30.123Z',
+  );
   cleanup();
   render(createElement(UI.DueDateLabel, { date: '2024-02-30' }));
   assert.ok(screen.getByText('Invalid date'));

@@ -112,7 +112,7 @@ Controllers translate HTTP and call services; they contain no business rules or 
 
 ## 3. Data model
 
-Every stored model has immutable createdAt and server-maintained updatedAt, including joins, sessions, events and seed metadata. All IDs are opaque UUIDs. API dates are ISO UTC timestamps, except due dates and date custom fields which are calendar dates (`YYYY-MM-DD`). Ordered positions are integers managed by explicit move APIs. All tenant-owned records and join tables carry `workspaceId`; global `User` and global credential/session identity are exceptions by definition.
+Every stored model has immutable createdAt and server-maintained updatedAt, including joins, sessions, events and seed metadata. All IDs are opaque UUIDs. API dates are ISO UTC timestamps, except date custom fields which remain calendar dates (`YYYY-MM-DD`). Task due dates are ISO instants normalized to UTC milliseconds (D156). Ordered positions are integers managed by explicit move APIs. All tenant-owned records and join tables carry `workspaceId`; global `User` and global credential/session identity are exceptions by definition.
 
 | Entity          | Important fields and constraints                                                                                                                                                                                        |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

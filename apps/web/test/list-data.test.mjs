@@ -22,8 +22,8 @@ const input = (pages, query = { direction: 'asc', sort: 'dueDate' }) => ({
 });
 
 test('table pages retain server order, null dates last and complete resolved field columns', () => {
-  const first = task(1, undefined, 0, { dueDate: '2026-10-24' });
-  const second = task(2, undefined, 1, { dueDate: '2026-10-24' });
+  const first = task(1, undefined, 0, { dueDate: '2026-10-24T00:00:00.000Z' });
+  const second = task(2, undefined, 1, { dueDate: '2026-10-24T00:00:00.000Z' });
   const last = task(3);
   const pages = [
     { response: response([first, second], 'next-page') },
@@ -130,9 +130,9 @@ test('broken or repeated cursor chains never get silently joined', () => {
 });
 
 test('descending dates still keep nulls last and equal-date IDs ascending', () => {
-  const first = task(1, undefined, 0, { dueDate: '2026-10-25' });
-  const second = task(2, undefined, 0, { dueDate: '2026-10-25' });
-  const older = task(3, undefined, 0, { dueDate: '2026-10-24' });
+  const first = task(1, undefined, 0, { dueDate: '2026-10-25T00:00:00.000Z' });
+  const second = task(2, undefined, 0, { dueDate: '2026-10-25T00:00:00.000Z' });
+  const older = task(3, undefined, 0, { dueDate: '2026-10-24T00:00:00.000Z' });
   const missing = task(4);
   const query = { direction: 'desc', sort: 'dueDate' };
   assert.equal(

@@ -149,7 +149,13 @@ export function ControlledField<T extends FieldValues, Output extends FieldValue
       required={config.required}
       type={config.kind === 'textarea' ? 'text' : config.kind}
       value={field.value ?? ''}
-      slotProps={config.kind === 'date' ? { inputLabel: { shrink: true } } : undefined}
+      slotProps={
+        config.kind === 'datetime-local'
+          ? { inputLabel: { shrink: true }, htmlInput: { step: 0.001 } }
+          : config.kind === 'date'
+            ? { inputLabel: { shrink: true } }
+            : undefined
+      }
     />
   );
 }

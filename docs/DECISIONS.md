@@ -266,7 +266,7 @@ Grant commands require a live resource, a current member and expected configurat
 
 ## D106 — Reorder placement and no-op behavior
 
-P03-03 follows the catalog's single placement union: start, end, beforeId or afterId; no numeric position or simultaneous anchors. Administrators can reorder within the same parent only. Both node and workspace revisions are required; target and anchor access are rechecked after the workspace lock. Missing, archived and foreign targets/anchors return404; self or wrong-parent anchors return400 INVALID_ANCHOR.
+P03-03 follows the catalog's single placement union: start, end, beforeId or afterId; no numeric position or simultaneous anchors. Administrators can reorder within the same parent only. Both node and workspace revisions are required; target and anchor access are rechecked after the workspace lock. Missing, archived and foreign targets/anchors return404; self or wrong-parent anchors return 400 INVALID_ANCHOR.
 
 Read all live siblings by position then UUID, remove the target, insert it at the selected location, and assign dense positions from zero. Only rows whose stored position changes advance version and timestamp and emit node.updated. The workspace configuration/data revisions advance once if any row changes. A fully canonical no-op changes nothing; legacy tied/gapped positions normalize even if the relative order is unchanged. Reuse the existing hierarchy service and repository instead of adding a forwarding ordering service.
 
@@ -669,3 +669,9 @@ R155 will replace task calendar dates with ISO UTC datetimes in a dedicated cont
 Date: 2026-10-25. The user's instruction to complete all tasks selects the remaining P28 work and the considered local enhancements for design followed by implementation. Keep one task/commit at a time, safe defaults and explicit acceptance tests. External hosted activation still requires provider configuration and is not inferred from local feature completion. No database or volume reset is authorized.
 
 P28-03 makes option colors optional without broadening valid supplied colors. Form-only empty input becomes an omitted property; the API rejects empty strings/null/malformed colors. Uncolored options keep their labels and a neutral filled appearance. No schema migration is needed because the database stores validated option JSON.
+
+## D156 — Task due instants and UTC editing
+
+P28-06 implements R155 as millisecond-precision instants. Requests accept ISO datetimes with seconds and an explicit Z/offset, up to three fractional digits; contracts normalize them to UTC with three digits. Date-only and timezone-less task due dates return 400. Years must remain within 0001–9999 after normalization. Custom fields of type date keep calendar-day semantics.
+
+The task editor explicitly labels its datetime-local control as UTC and preserves milliseconds, so browser timezone does not silently alter a value. Existing PostgreSQL DATE values migrate to midnight UTC, including historical task.updated outbox before/after values. Deploy this schema change with API/worker consumers upgraded together; old date-only clients receive validation errors, and old cursors are invalid. The migration preserves task revisions and all unrelated event content. No developer dataset is reset.

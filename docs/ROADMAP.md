@@ -10,7 +10,7 @@ Typed custom-field filtering, optimistic rollback, activity/realtime and Swagger
 
 ## Day-5 priorities
 
-1. **Finish datetime alignment — P28-06 / R155.** Preserve task due times end to end, migrate existing calendar dates to midnight UTC, keep custom date fields as calendar dates, and test cursor/timezone behavior and pending events.
+1. **Datetime alignment — complete, P28-06 / R155.** [Verified](evidence/P28-06.md): UTC millisecond roundtrips, old calendar dates migrated to midnight UTC, unchanged custom date fields, and cursor/timezone/pending-event coverage.
 2. **Workspace lifecycle — NEXT-02 / R156.** Design and implement administrator rename/archive/recovery with safe session behavior, retained history and tenant isolation.
 
 The day label expresses the next useful increment after the existing MVP. Each implementation still requires its own tests, evidence and commit.
