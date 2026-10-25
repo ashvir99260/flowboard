@@ -1,6 +1,6 @@
 # Flowboard high-level design
 
-As-built reference, 25 October 2026. Implementation baseline: `3cc62b0` (P19-01). This describes the local application, not a claim of live cloud deployment. Start with the [application guide](APPLICATION_GUIDE.md) for a product tour, or the [low-level design](LLD.md) for implementation details. The [delivery summary](DELIVERY_SUMMARY.md) distinguishes completed work from open gates.
+As-built reference, 25 October 2026. Core implementation baseline: `3cc62b0` (P19-01); runtime and deployment direction updated 26 October 2026 under D171. [P38-03](evidence/P38-03.md) records the temporary live demo; future ECR production remains planned. Start with the [application guide](APPLICATION_GUIDE.md) for a product tour, or the [low-level design](LLD.md) for implementation details. The [delivery summary](DELIVERY_SUMMARY.md) distinguishes completed work from open gates.
 
 Current source links follow the P21-01 UI module layout; the described public behavior is unchanged by that refactor.
 
@@ -87,22 +87,20 @@ Every tenant-owned record carries `workspaceId`, and composite relationships pre
 
 ## Runtime and deployment topology
 
-Local Compose runs `web`, `api`, `worker`, `postgres` and `redis`, with dependency-aware healthchecks, persistent data and migration/seed initialization. Multi-stage app images use Turbo pruning and non-root runners. Development overrides provide code reload and optional local datastore ports. Public local URLs use `localhost`; internal container connections use service names.
+[Run modes](RUN_AND_DEPLOY.md) defines four distinct workflows. Everyday development runs web, API and worker natively with PostgreSQL/Redis in Docker. The complete local preview uses five Compose services, healthchecks, persistent data and automatic migrations/seed without mandatory env files in a clean checkout. The verified Vercel deployment is a temporary demo with Neon and Upstash.
 
 ```mermaid
 flowchart LR
-  Commit[Pull request or main commit] --> Checks[Parallel build, lint, types, tests and format]
-  Commit --> Images[Parallel Compose checks]
-  Checks --> Release[Affected app releases on main]
-  Images --> Release
-  Release --> Gate[Explicit preview activation gate]
-  Gate -.-> Vercel[Vercel: web source at released SHA]
-  Gate -.-> Northflank[Northflank: API and worker image digests]
-  Northflank -.-> Neon[Neon PostgreSQL]
-  Northflank -.-> PrivateRedis[Private Redis]
+  Developer[Developer] --> Native[pnpm run dev: web, API and worker on host]
+  Native --> Data[Only PostgreSQL and Redis in Docker]
+  Preview[Local preview] --> Compose[docker compose up --build: all five services]
+  Main[main after parallel checks] --> Publish[Current images and manifests: GHCR]
+  Publish --> Demo[Temporary Vercel source build]
+  Main -. planned .-> ECR[Per-app Docker images in ECR]
+  ECR -. same digests and runtime settings .-> AWS[Future AWS application runtime]
 ```
 
-Dashed hosting edges describe the legacy Vercel/Northflank adapter, not a verified live deployment. The selected [Vercel Services topology](VERCEL.md) is configured in the repository; the deployment workflow has not yet been reconciled to it. Release planning/publication and preview orchestration are implemented; first real publication and provider activation remain open. Current Vercel preview deployment rebuilds released source. Promoting a single immutable artifact through dev/qa/stage/prod remains planned. See [delivery](DELIVERY.md), [CI/CD](CI_CD.md), [promotion](PROMOTION.md) and the [open-gate list](DELIVERY_SUMMARY.md#open-gates-and-limits).
+Future production uses the Docker images stored in ECR. ECR publishing and the AWS service that runs the containers are not implemented or selected. The future promoter will reuse each selected digest across dev/qa/stage/prod with separate runtime settings and data. Current GHCR publication and Vercel source-based demo deployment remain accurately documented; neither is proof of ECR activation or unchanged-image promotion. See [delivery](DELIVERY.md), [CI/CD](CI_CD.md), and [promotion](PROMOTION.md).
 
 ## Scale, reliability and tradeoffs
 

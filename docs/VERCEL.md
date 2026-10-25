@@ -1,5 +1,7 @@
 # Vercel Hobby deployment
 
+Vercel is the **temporary hosted demo**. The long-term target is independently versioned Docker images in Amazon ECR with runtime configuration; that integration remains planned. [Run modes](RUN_AND_DEPLOY.md) is the current operating contract. These instructions describe only the demo and do not change local development or the future production target.
+
 Updated 26 October 2026. The target is one Vercel Hobby project containing the Next.js web service, NestJS API container service and BullMQ worker daemon. PostgreSQL uses the existing Neon Free project; Redis uses Upstash Free over TLS. The live demo is https://flowboard-two-gilt.vercel.app. [P38-03](evidence/P38-03.md) records the verified Git deployment; configuration tests alone do not establish live behavior.
 
 ## Deployment target and routing

@@ -1590,3 +1590,24 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** `npm run build`, migration result, native API/worker/web startup and hosted-service smoke tests; record errors and unavailable checks.
   - **Commit:** `feat: connect existing neon postgres project`.
   - **Completion evidence:** [P38-05](evidence/P38-05.md).
+
+## Phase 39 — Environment modes and long-term hosting
+
+- [x] **P39-01 — Clarify development, preview, demo and production targets**
+  - **Goal:** Keep temporary Vercel hosting distinct from the long-term Docker/ECR target and make the two local workflows unambiguous.
+  - **Requirements:** R173; clarify R98/R99 and preserve R147.
+  - **Files:** Run/deploy guide, README, architecture/plan/agent instructions, hosting/release/promotion references, requirement matrix, decisions and evidence.
+  - **Dependencies:** P38-01–05; existing Compose defaults, native dev scripts and release tooling.
+  - **Acceptance:** Document zero-env full Compose preview; native web/API/worker development with only PostgreSQL/Redis in Docker, including first-database initialization; label Vercel temporary; distinguish current GHCR publication from planned ECR and unchanged-image promotion. Do not claim ECR is implemented or alter cloud resources.
+  - **Validation:** Clean-env Compose configuration and port/default checks without building or starting services; script/source review; documentation links, consistency, formatting and whitespace checks.
+  - **Commit:** `docs: clarify runtime and deployment targets`.
+  - **Completion evidence:** [P39-01](evidence/P39-01.md).
+
+- [ ] **P39-02 — Integrate ECR as the production image registry**
+  - **Goal:** Publish independently versioned application images to the selected AWS ECR repositories.
+  - **Requirements:** R99 and D171; future work.
+  - **Files:** Release-tool image publisher/config/tests, CI identity/login steps, environment examples and deployment documentation.
+  - **Dependencies:** P39-01; chosen AWS account, region, repositories, least-privilege IAM/OIDC configuration and authorization for provisioning.
+  - **Acceptance:** Preserve per-app versioning, immutable digests, retry safety and current release manifests; verify ECR authentication and image publication without embedded credentials. Select the application runtime separately. Reuse P00-11/P00-12 for promotion by digest instead of adding duplicate promotion tooling.
+  - **Validation:** Provider failure/retry tests and an authorized real ECR publication; no AWS implementation or activation is claimed by P39-01.
+  - **Commit:** `feat(release): publish application images to ecr`.
