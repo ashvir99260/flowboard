@@ -1257,14 +1257,33 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Validation:** Permission-safe search, update/archive/reindex and failure recovery tests defined with the selected design; not a current completion claim.
   - **Commit:** Chosen when the task is authorized.
 
-- [ ] **NEXT-02 — Design workspace rename and archive/recovery**
-  - **Goal:** Decide root lifecycle separately from space/folder/list CRUD.
+- [x] **NEXT-02 — Design workspace rename and archive/recovery**
+  - **Goal:** Define reversible root lifecycle and a session-safe administrator recovery path.
   - **Requirements:** R156.
-  - **Files:** Lifecycle design, workspace contracts/API/UI/migration/tests after selection.
-  - **Dependencies:** P28-01 and explicit selection.
-  - **Acceptance:** Define admin authority, membership/session behavior, archive/restore policy, retained history and cross-tenant isolation before endpoint implementation.
-  - **Validation:** Design review first; actual lifecycle/race/recovery and root gates on implementation.
-  - **Commit:** Chosen after design selection.
+  - **Files:** `docs/WORKSPACE_LIFECYCLE.md`, decisions, plan, task/matrix and design evidence.
+  - **Dependencies:** P28-01, P28-07; selection D155.
+  - **Acceptance:** Root-only archive preserves individual archive flags/history; ordinary tenant/socket access fails closed; session selection and explicit target-admin recovery remain usable; versions, lock ordering and browser invalidation are specified.
+  - **Validation:** Source-backed design review, Markdown links and formatting; implementation evidence belongs to P29-01/P29-02.
+  - **Commit:** `docs: define workspace lifecycle recovery`.
+  - **Evidence:** [NEXT-02](evidence/NEXT-02.md).
+
+- [ ] **P29-01 — Implement workspace lifecycle API and recovery**
+  - **Goal:** Administrators rename/archive/restore workspaces through versioned, authorized endpoints while existing session recovery remains usable.
+  - **Requirements:** R156; preserve R08–R16/R31/R52/R59/R60/R78.
+  - **Files:** Contracts; database schema/migration, root repository, tenant/identity layer; API workspaces/auth/permissions/response filter; generated spec/client; focused contract/database/API/socket tests and documentation.
+  - **Dependencies:** NEXT-02.
+  - **Acceptance:** Implement the four documented root endpoints; all writes validate live DB authority/revision; root archive preserves descendants/history; ordinary reads/writes/socket auth deny archived roots; fresh and existing sessions can recover with target-admin checks; rejected invitations/switches and concurrent/failed writes leave no partial data or events.
+  - **Validation:** G01–G08/G11; failure-first contract tests, real PostgreSQL and REST denial/rollback/lock races; root build/lint/test/type/format and generated-contract checks.
+  - **Commit:** `feat(workspaces): add archive and recovery API`.
+
+- [ ] **P29-02 — Add workspace lifecycle controls and live recovery**
+  - **Goal:** Expose rename/archive/restore with clear confirmation and prevent archived workspace content remaining mounted in other clients.
+  - **Requirements:** R156; preserve R70/R76/R80/R134/R137/R140.
+  - **Files:** Web workspace settings/picker/hooks, session/realtime providers and browser tests; shared presentation only where needed; lifecycle docs/evidence.
+  - **Dependencies:** P29-01.
+  - **Acceptance:** Generated operations + RHF/Zod forms; stale drafts remain recoverable; archive state clears scoped queries/notifications and unmounts board/drawer; initial/revoked sockets refresh safely without Redis-error loops; sole-workspace/null-selection restoration and explicit switch work; keyboard/cancel/double-submit behavior tested.
+  - **Validation:** G01–G05/G09–G11; browser recovery and Redis reconnect coverage; root gates and React review.
+  - **Commit:** `feat(web): manage workspace lifecycle`.
 
 - [ ] **NEXT-03 — Design one-level subtasks**
   - **Goal:** Consider parentTaskId without changing current task ownership accidentally.
