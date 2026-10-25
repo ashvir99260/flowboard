@@ -28,7 +28,7 @@ P02-07 applies the user's blank-line convention after exported declarations, inc
 
 Deliver all requested hierarchy, authentication, tenancy, permissions, tasks, inherited configuration, board/list/drawer views, realtime, activity, generated contracts, seed data, and tests. The release runs with `docker compose up --build` and needs no host Node installation. Docker itself is a prerequisite.
 
-Do not add billing, teams, email delivery, full-text search, file uploads, offline sync, production OIDC, public sharing, or a webhook delivery service. Invitations are expiring links returned to an admin for manual sharing; documentation contains webhook-shaped event examples. The search-index stub must be explicitly labeled and tracked; it must never claim searchable indexing exists.
+Do not add billing, teams, email delivery, file uploads, offline sync, production OIDC, public sharing, or a webhook delivery service. D155/D159 separately select list-scoped full-text search. Invitations are expiring links returned to an admin for manual sharing; documentation contains webhook-shaped event examples. Search indexing belongs to PostgreSQL; the worker remains responsible for activity and invalidations.
 
 ## 2. Architecture and trust boundaries
 

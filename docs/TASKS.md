@@ -1338,6 +1338,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Evidence:** [NEXT-01](evidence/NEXT-01.md).
 
 - [ ] **P31-01 — Add indexed task search**
+  - **Implementation:** Complete; final verification pending.
   - **Goal:** Search live task titles/descriptions through existing scoped list operations.
   - **Files:** Task contracts/API/cursor/repository, GIN migration, generated spec/client, tests and worker stub removal.
   - **Requirements:** R158; preserve R07/R14/R16–R22/R29/R31/R75/R83/R85.
@@ -1347,6 +1348,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `feat(tasks): add indexed text search`.
 
 - [ ] **P31-02 — Add URL-backed task search controls**
+  - **Implementation:** Complete; final verification pending.
   - **Goal:** Search/Clear in List view while retaining sort/filter and stale-response safety.
   - **Files:** List location/forms/hooks/tests, Next logging configuration and docs.
   - **Requirements:** R158; preserve R65/R68–R70/R76/R134/R137/R140.
@@ -1356,19 +1358,21 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `feat(web): add task search controls`.
 
 - [ ] **NEXT-04 — Implement bounded bulk task updates**
-  - **Goal:** Consider multi-task status/assignee/field edits without partial unauthorized writes.
+  - **Implementation:** Complete; final verification pending.
+  - **Goal:** Implement atomic multi-task status/priority/assignee/field edits without partial unauthorized writes.
   - **Requirements:** R159.
-  - **Files:** Bulk command design, contracts/API/database/UI/tests after selection.
-  - **Dependencies:** P28-01 and explicit selection.
+  - **Files:** BULK_TASKS.md, shared bulk contracts, task controller/service/DTOs, generated client, DataGrid selection, bulk forms/hooks and regression tests.
+  - **Dependencies:** P28-01 and D155 selection.
   - **Acceptance:** Bound batch size; define all-or-nothing semantics, per-task versions, mixed-list validation, access checks and retry behavior.
   - **Validation:** Design review and chosen rollback/denial/concurrency tests before implementation.
   - **Commit:** Feature-scoped implementation commit after source completion.
 
 - [ ] **NEXT-05 — Implement container and grant administration screens**
-  - **Goal:** Consider UI controls for existing guarded administration APIs.
+  - **Implementation:** Complete; final verification pending.
+  - **Goal:** Provide administrator controls for existing guarded container and grant APIs.
   - **Requirements:** R160.
-  - **Files:** Admin UI design and web/UI/forms/tests after selection.
-  - **Dependencies:** P28-01 and explicit selection.
+  - **Files:** CONTAINER_ADMIN.md, administration web module/route, shared MemberAccess and stories, navigation and regression tests.
+  - **Dependencies:** P28-01 and D155 selection.
   - **Acceptance:** Define create/edit/archive/reorder/reparent and grants UX, confirmations, permission changes and stale drafts; use generated operations.
   - **Validation:** Design review and chosen role/keyboard/rollback browser tests before implementation.
   - **Commit:** Feature-scoped implementation commit after source completion.

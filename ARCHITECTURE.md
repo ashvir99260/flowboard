@@ -204,7 +204,7 @@ Every response's data and `configVersion` come from the same snapshot; matching 
 | Socket disconnect or duplicate delivery                 | Deduplicate event/version; refetch on reconnect; never claim Pub/Sub replay or browser delivery acknowledgment                                          |
 | Invalid generated contract or service exception         | Reject/sanitize output with request ID; generation checks detect drift; never expose secrets or task content in default logs                            |
 
-The search-index worker stub is intentionally deferred as `NEXT-01`; it must not report working search. OIDC, teams, email/webhook delivery, general container/task restoration and other listed future features remain outside MVP scope.
+Task title/description search uses a PostgreSQL GIN expression index inside the existing tenant-scoped list query; see [search design](docs/SEARCH.md). OIDC, teams, email/webhook delivery, general container/task restoration and other listed future features remain outside MVP scope.
 
 ## Change-impact guide
 
