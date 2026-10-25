@@ -18,6 +18,13 @@ test('workspace quick actions create a private invitation and the recipient can 
   await expect(task.getByLabel(/^Title/)).toBeVisible();
   await task.getByRole('button', { exact: true, name: 'Close task' }).click();
 
+  await page.getByRole('button', { exact: true, name: 'Product backlog' }).click();
+  await expect(page.getByRole('heading', { exact: true, name: 'Product backlog' })).toBeVisible();
+  await expect(page.getByRole('button', { exact: true, name: 'New task' })).toHaveCount(1);
+  await actions.getByRole('button', { exact: true, name: 'New task' }).click();
+  await expect(task.getByLabel(/^Title/)).toBeVisible();
+  await task.getByRole('button', { exact: true, name: 'Close task' }).click();
+
   await actions.getByRole('button', { exact: true, name: 'Invite' }).click();
   const invite = page.getByRole('dialog', { name: 'Invite to workspace' });
   await invite.getByLabel(/^Email address/).fill('not-an-email');
