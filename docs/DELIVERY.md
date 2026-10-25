@@ -38,6 +38,8 @@ API and worker expose HTTP liveness at `/health/live` and dependency-aware readi
 
 Local PostgreSQL stays in Docker. A localhost-only port override supports running Node development servers on the host. Hosted PostgreSQL uses Neon: pooled `DATABASE_URL` for application traffic and direct `DATABASE_URL_UNPOOLED` for migrations. Both remain server-side environment variables. Seed data is opt-in for a hosted environment and must never be applied implicitly to production.
 
+The future ECR path adds selective per-service deployment to existing independent publication. Deploy only the affected runtime consumers; keep unchanged app versions and digests in each target. Promote the selected images unchanged through dev/qa/stage/prod with runtime settings. [D173's selection and promotion contract](PROMOTION.md#which-services-deploy) defines no-op changes, shared packages and compatibility; the current Vercel adapter remains a full-project source deployment.
+
 ## Hosted services
 
 The temporary demo uses [Vercel Services](VERCEL.md) for web/API/worker, [Neon](#neon-preview-setup) for PostgreSQL and Upstash Free for Redis. P38-03 records the live verification; its quota limits still apply. Future production uses Docker images in ECR with a separately selected application runtime. This documentation change provisions no resources and changes no credentials or paid capacity.

@@ -20,7 +20,7 @@
 
 ## C30 — Selected-candidate promotion
 
-**Status: Planned.** The future ECR promoter selects compatible manifests and preserves exact image identity with runtime settings. A new main commit must not replace a candidate already in testing.
+**Status: Planned.** The planned ECR promoter pins selected app digests, updates only changed image/configuration states and retains unselected services in every environment. New main commits never replace an in-flight candidate; compatibility and runtime settings are checked at each target.
 
 ![Selected-candidate promotion. Planned.](svg/c30-selected-candidate-promotion.svg)
 

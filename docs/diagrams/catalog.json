@@ -384,7 +384,7 @@
       "chapter": "07-hosting",
       "title": "Selected-candidate promotion",
       "status": "Planned",
-      "description": "The future ECR promoter selects compatible manifests and preserves exact image identity with runtime settings. A new main commit must not replace a candidate already in testing.",
+      "description": "The planned ECR promoter pins selected app digests, updates only changed image/configuration states and retains unselected services in every environment. New main commits never replace an in-flight candidate; compatibility and runtime settings are checked at each target.",
       "references": [
         ["Build-once contract", "../PROMOTION.md"],
         ["Runtime operations", "../DELIVERY_OPERATIONS.md#data-promotion-and-rollback"]

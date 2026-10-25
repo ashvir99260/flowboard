@@ -2,15 +2,20 @@
 title: "C30 — Selected-candidate promotion · Planned"
 ---
 flowchart TD
-  ECR[Future per-app ECR images by digest] -. candidates .-> Release[Select compatible app manifests]
-  Release -. same digests .-> Dev[dev acceptance]
-  Dev -. pass .-> QA[qa acceptance]
-  QA -. pass and approval .-> Stage[stage acceptance]
-  Stage -. pass and approval .-> Prod[prod acceptance]
+  Release[Pinned selected app manifests and ECR digests] -. apply selected services .-> Dev[dev acceptance]
+  Dev -. same selected digests .-> QA[qa acceptance]
+  QA -. same digests and approval .-> Stage[stage acceptance]
+  Stage -. same digests and approval .-> Prod[prod acceptance]
+  Config[Inject each target's runtime settings] -.-> Dev
+  Config -.-> QA
+  Config -.-> Stage
+  Config -.-> Prod
+  Keep[Retain unselected services in every target] -.-> Dev
+  Keep -.-> Prod
+  Skip[Skip a service already at desired digest and config] -. idempotent apply .-> QA
   Dev -. fail .-> Stop[Stop advancement]
   QA -. fail .-> Stop
   Stage -. fail .-> Stop
-  NewMain[New main creates a separate candidate] -. does not replace selected candidate .-> Release
-  Config[Runtime settings and isolated data per environment] -. no rebuild .-> Dev
-  Previous[Known compatible images and config] -. deliberate rollback .-> Prod
-  Schema[Assess database compatibility separately] -. no automatic reverse migration .-> Previous
+  NewMain[New main creates a separate candidate] -. never replace selected candidate .-> Release
+  Previous[Known compatible selected images and config] -. explicit rollback .-> Prod
+  Schema[Check API, event and database compatibility] -. before each promotion .-> Release

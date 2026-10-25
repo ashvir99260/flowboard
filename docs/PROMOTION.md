@@ -1,6 +1,6 @@
 # Build once, promote unchanged
 
-Status: D171 selects Docker images stored in ECR for future production. Four-environment execution and ECR integration are planned, not implemented. Deploying the same Git commit is not sufficient proof of artifact promotion. [Run modes](RUN_AND_DEPLOY.md) defines development, local preview, temporary demo and production separately.
+Status: D171 selects Docker images stored in ECR for future production; D173 requires selective per-service deployment. Four-environment execution and ECR integration are planned, not implemented. Deploying the same Git commit is not sufficient proof of artifact promotion. [Run modes](RUN_AND_DEPLOY.md) defines development, local preview, temporary demo and production separately.
 
 ## Shared demo comes first
 
@@ -10,18 +10,66 @@ The current temporary demo uses [Vercel Services](VERCEL.md), Neon and Upstash. 
 
 Full Docker Compose is the local preview/test environment. Everyday development runs web/API/worker through `pnpm run dev` with only PostgreSQL and Redis in Docker. Future hosted environments run the selected immutable Docker images from ECR. The AWS application runtime is not yet selected; ECR is the image registry, not a container scheduler.
 
-The target trunk-based development model means one `main` trunk and short-lived feature branches. `dev`, `qa`, `stage` and `prod` are deployment targets, not long-lived source branches. Their configuration and approval rules do not create new application versions.
+The target trunk-based development model means one `main` trunk and short-lived feature branches. Selective delivery and promotion are policies layered on that branching model. `dev`, `qa`, `stage` and `prod` are deployment targets, not long-lived source branches. Their configuration and approval rules do not create new application versions. Repository CI may still validate all apps/packages in parallel; passing CI does not require deploying every service.
 
 ```mermaid
 flowchart LR
   PR[Short-lived branch / PR checks] --> Main[main]
-  Main --> Build[Build release candidate once]
-  Build --> Artifact[Docker image in ECR + digest + source manifest: planned]
-  Artifact --> Dev[dev: runtime configuration]
-  Dev --> QA[qa: same digest + runtime configuration]
-  QA --> Stage[stage: same digest + runtime configuration]
-  Stage --> Prod[prod: same digest + runtime configuration]
+  Main --> Plan[Compare per-app production inputs and runtime dependencies]
+  Plan --> Changed{Affected apps?}
+  Changed -->|none| ConfigChanged{Runtime configuration changed?}
+  Settings[Runtime configuration update] --> ConfigChanged
+  ConfigChanged -->|no| Skip[No new image or deployment]
+  ConfigChanged -->|yes| Reuse[Reuse existing app image and version]
+  Reuse --> Artifact
+  Changed -->|selected apps| Build[Build each affected app image once]
+  Build --> Artifact[ECR digests and pinned selected release set: planned]
+  Artifact --> Dev[dev: update selected services]
+  Dev --> QA[qa: promote the same selected digests]
+  QA --> Stage[stage: promote the same selected digests]
+  Stage --> Prod[prod: promote the same selected digests]
+  Config[Inject each environment's settings at runtime] -.-> Dev
+  Config -.-> QA
+  Config -.-> Stage
+  Config -.-> Prod
+  Keep[Keep unselected services unchanged in each environment] -.-> Dev
+  Keep -.-> Prod
 ```
+
+## Which services deploy
+
+Use the existing [release planner](../packages/release-tools/src/index.ts) and committed package manifests. Compare each app with its own last published baseline, following direct/transitive runtime dependencies and relevant build inputs. Commit scope text or a rule that only examines the most recent commit is insufficient. The first publication/bootstrap has no baseline and initializes the required services; later unchanged fingerprints produce no new version or image.
+
+| Production change                                                   | Affected services under the current graph                                                |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| API implementation only                                             | API                                                                                      |
+| Worker implementation only                                          | Worker                                                                                   |
+| Web implementation, shared UI, forms or generated API client        | Web                                                                                      |
+| Shared jobs, database or logger                                     | API and worker                                                                           |
+| Shared contracts                                                    | Web, API and worker; all currently consume contracts, including worker job/event schemas |
+| One app's Dockerfile                                                | Its owning app                                                                           |
+| Shared compiler/toolchain or runtime dependency lock change         | Only apps whose production fingerprints change; this can be all three                    |
+| Documentation, tests or lint-only changes with no production effect | None                                                                                     |
+
+API changes do not deploy web merely because OpenAPI generation builds API. When a change also changes the committed generated client or shared runtime contracts, include their actual consumers. The current graph is conservative at package granularity; this plan does not claim field-level contract impact analysis. Thus the requested contracts → web/API case also includes worker while it consumes that package.
+
+## Deploy selected services and retain the rest
+
+A future ECR deployment plan contains the selected app versions/digests, source identities and compatibility constraints. Each environment also records its complete deployed app/configuration state. Apply only the selected changes to that environment; do not copy unrelated services from dev into QA, stage or production.
+
+For a jobs change, for example:
+
+| Service | Deployment action                                     | Image identity                                    |
+| ------- | ----------------------------------------------------- | ------------------------------------------------- |
+| Web     | Keep the version already deployed in that environment | Unchanged                                         |
+| API     | Deploy the new selected API release                   | The same API digest in dev, QA, stage and prod    |
+| Worker  | Deploy the new selected worker release                | The same worker digest in dev, QA, stage and prod |
+
+Before each step, compare selected desired digests and configuration revisions with the target's recorded state. Skip services already at that state; deploy only the remaining differences. A configuration-only change restarts/redeploys only its affected service with the existing image and version. If neither image nor configuration changed, do not redeploy it. Service URLs, database/Redis credentials, secrets and other environment settings are injected at startup or the documented dynamic server boundary; they are not new build inputs.
+
+Promotion stays pinned to that selected release set after it enters dev. A newer merge to main creates a separate candidate and must not invalidate, replace or expand the one moving through QA/stage/prod. The current demo adapter's current-main guard is not the future promoter's selection policy. Serialize mutations per environment, validate the expected target state, enforce prior-stage acceptance/approvals, resume partial failures without redeploying completed services, and retain per-service rollback history.
+
+Independence does not remove compatibility requirements. Check selected API/worker releases against unselected web versions, event consumers and database migrations. Use backward-compatible changes or explicitly include a compatible additional release; never silently upgrade unrelated services. Preserve isolated data and Redis for each environment. No executable ECR selector/deployer/promoter is claimed by this document: P39-02 and P00-11/P00-12 implement and verify it.
 
 ## Artifact contract
 

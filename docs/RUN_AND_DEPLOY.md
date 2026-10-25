@@ -62,19 +62,26 @@ The selected long-term artifact is a Docker image for each independently version
 
 Current release automation publishes to **GHCR**. It has not been switched to ECR. [P39-02](TASKS.md#phase-39--environment-modes-and-long-term-hosting) tracks that integration; [PROMOTION.md](PROMOTION.md) and P00-11/P00-12 track promotion and its verification.
 
+D173 makes ECR deployment selective: jobs changes affect API/worker, UI changes affect web, and shared contracts affect their actual runtime consumers (currently all three). Compare each app with its own published baseline. Build/version only affected apps; skip an unchanged service entirely. [The promotion contract](PROMOTION.md#which-services-deploy) defines the full mapping, config-only updates and compatibility checks.
+
+Pin the selected app digests through dev → qa → stage → prod. Each target keeps its unselected services; do not copy an unrelated new web release from dev when promoting only API/worker. Inject that target's settings at runtime, without rebuilding or retagging the images. Current GHCR publication is selective; current Vercel demo deployment still replaces the whole project when it runs.
+
 ```mermaid
 flowchart LR
-  Main[Merge to main after parallel checks] --> Current[Current per-app publication: GHCR]
-  Main -. planned registry integration .-> ECR[Build changed app once and publish to ECR]
+  Main[Merge to main after parallel checks] --> Plan[Select apps by production fingerprints and runtime dependencies]
+  Plan -->|affected apps| Current[Current per-app publication: GHCR]
+  Plan -->|none| Skip[No new app tag or image]
+  Plan -. planned selected apps only .-> ECR[Build each selected app once and publish to ECR]
   ECR -. exact image digest .-> Dev[dev]
   Dev -. same digest .-> QA[qa]
   QA -. same digest .-> Stage[stage]
   Stage -. same digest .-> Prod[prod]
   Env[Per-environment runtime settings and secrets] -. inject at startup .-> Dev
+  Env -. config-only change: reuse existing ECR digest .-> Dev
   Env -. inject at startup .-> QA
   Env -. inject at startup .-> Stage
   Env -. inject at startup .-> Prod
-  Main --> Demo[Separate temporary Vercel source build]
+  Main --> Demo[Current temporary Vercel source build: full project when enabled]
 ```
 
 For future `dev → qa → stage → prod`, promote the same selected image bytes without rebuilding. Runtime configuration, credentials and data differ by environment; app versions and digests do not change during promotion. Preserve independent app releases, compatibility checks, approvals and rollback history. See [delivery operations](DELIVERY_OPERATIONS.md) for the current implementation boundary.
