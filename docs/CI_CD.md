@@ -27,6 +27,8 @@ flowchart LR
 
 The temporary Vercel/Neon/Upstash deployment was verified in P38-03. Protected CI activation remains separate. The dotted ECR path represents future work; current jobs still authenticate and publish to GHCR.
 
+D173 distinguishes verification from delivery: CI may still check every app/package in parallel, but the future ECR release/deploy path acts only on changed production fingerprints and their runtime consumers. No changed image inputs means no app tag or new image; skip deployment only when neither the selected image nor runtime configuration changed. Each selected image is built once for release, then promoted unchanged with target runtime settings; unselected services stay at their target's current versions. The existing Vercel adapter still deploys a complete temporary project, so this selective deployment policy is planned rather than current Vercel behavior.
+
 ## Parallel checks and free runners
 
 Five matrix jobs cover build, lint, tests, types and formatting. The test leg runs `pnpm test --filter='!@flowboard/ui'`; a sixth independent job runs `pnpm test --filter=@flowboard/ui` for components and Storybook. This preserves every package suite while isolating browser component tests from backend/browser integration load. The other matrix commands use Turbo across all applicable apps and packages. Turbo still builds required dependencies inside a job before a dependent check can use them; database type checking waits for its Prisma-generating build. No check waits for another check job. Fail-fast is disabled, so one failed lane does not cancel the remaining results. Workflow lint runs within the lint lane.

@@ -184,6 +184,8 @@ Gateways authenticate JWTs, validate Origins, authorize subscriptions and rechec
 
 See [run modes](RUN_AND_DEPLOY.md) for exact local commands. The current [root API](../Dockerfile.api) and [worker](../Dockerfile.worker) Dockerfiles use Turbo pruning and repository-root build context for both Compose and Vercel. The [web Dockerfile](../apps/web/Dockerfile) supports Compose/image releases; the Vercel web service instead uses the native Next.js source builder. Current release publication targets GHCR, so the temporary source-built demo does not prove future ECR image promotion.
 
+The planned ECR deployer consumes the existing per-app release plan: jobs/database/logger changes select API and worker, UI/forms/client changes select web, and contracts currently select all three. Build-only API/spec generation does not select web by itself. Pin the selected app versions and digests, compare them with each target's recorded image/configuration state, and update only differences. Retain unselected services at their existing target versions. Promote the same selected digests through dev/qa/stage/prod; a configuration-only change reuses its service's existing image. Compatibility checks, serialized target writes and resumable partial failures belong to the future deployer/promoter, not the current Vercel adapter. [The promotion contract](PROMOTION.md) specifies those requirements; P39-02/P00-11/P00-12 remain open.
+
 ### Public requests and private bindings
 
 1. Browser requests use the generated client with base `/api`, producing `/api/v1/...` on the web origin. The [Next.js proxy](../apps/web/src/server/apiProxy.ts) forwards only the allowed request shape to `/v1/...` on runtime `API_INTERNAL_URL`; it owns no domain logic.

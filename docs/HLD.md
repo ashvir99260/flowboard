@@ -106,6 +106,8 @@ flowchart LR
 
 Future production uses the Docker images stored in ECR. ECR publishing and the AWS service that runs the containers are not implemented or selected. The future promoter will reuse each selected digest across dev/qa/stage/prod with separate runtime settings and data. Current GHCR publication and Vercel source-based demo deployment remain accurately documented; neither is proof of ECR activation or unchanged-image promotion. See [delivery](DELIVERY.md), [CI/CD](CI_CD.md), and [promotion](PROMOTION.md).
 
+D173 adds selective deployment to the future ECR path. A change releases only its affected runtime consumers, while each environment retains unselected services. Jobs affect API/worker; UI affects web; shared contracts currently affect all three. The same selected app digests advance through dev/QA/stage/prod with runtime settings. Trunk-based development supplies the single-main/short-branch model; it does not require deploying every service after every commit. [Promotion policy](PROMOTION.md#which-services-deploy) owns the selection, compatibility and retry rules.
+
 ### Temporary hosted request paths
 
 ```mermaid

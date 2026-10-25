@@ -38,19 +38,26 @@ Both existing release/CD jobs serialize their own work. Publication verifies the
 
 The planner in [release-tools](../packages/release-tools/src/index.ts) compares each app with **its own latest published release**, using committed files and dependency fingerprints. It does not simply look at the last commit or the Conventional Commit scope. Runtime dependencies, relevant build inputs and locked transitive packages count; docs/tests/lint-only changes do not. The API-to-OpenAPI build edge does not by itself make the browser a runtime consumer of API internals.
 
-| Example change                                                 | Expected release effect                                    |
-| -------------------------------------------------------------- | ---------------------------------------------------------- |
-| API service logic; no generated-client/runtime contract change | API only.                                                  |
-| Web page or shared UI presentation used by web                 | Web only.                                                  |
-| Worker processing logic                                        | Worker only.                                               |
-| Shared database package consumed by API and worker             | Both consumers, if their fingerprints change.              |
-| Shared contract or generated client change                     | Every affected runtime consumer; inspect the release plan. |
-| Documentation, test or ESLint-only change                      | No application release.                                    |
-| Change completely reverted before release                      | No release when the final fingerprint matches.             |
+| Example change                                                 | Expected release effect                                  |
+| -------------------------------------------------------------- | -------------------------------------------------------- |
+| API service logic; no generated-client/runtime contract change | API only.                                                |
+| Web page or shared UI presentation used by web                 | Web only.                                                |
+| Worker processing logic                                        | Worker only.                                             |
+| Shared jobs, database or logger consumed by API and worker     | API and worker, if their production fingerprints change. |
+| Shared contracts                                               | API, web and worker under the current runtime graph.     |
+| Generated API client                                           | Web only.                                                |
+| Documentation, test or ESLint-only change                      | No application release.                                  |
+| Change completely reverted before release                      | No release when the final fingerprint matches.           |
 
 Each app begins at `0.1.0`. Tags use `api/v…`, `web/v…` and `worker/v…`. Relevant shipped commits select the highest bump: breaking change → major, `feat` → minor, otherwise patch. A commit's scope is a label, not authority to ignore affected files. Public assets and actual source changes still count even when a commit is called `docs` or `style`.
 
 The [publisher](../packages/release-tools/src/publisher.ts) publishes each affected app's `linux/amd64` image, creates the tag and draft release, uploads `release.json`, then publishes the release. The manifest records app, version, Git SHA, image and digest. Version and full-SHA image tags help navigation; the digest identifies the actual bytes. Conflicting tags fail rather than being overwritten. Retries finish the same pending identity; they do not mint a replacement version. See [release recovery](DELIVERY.md#github-release-setup-and-recovery).
+
+## Future selective ECR deployment
+
+Use the [runtime dependency mapping](PROMOTION.md#which-services-deploy) to select app releases, then compare the selected desired digests/configuration revisions with each target's deployed state. Shared jobs changes deploy API/worker; a UI change deploys web; contracts currently reach all three. Preserve unchanged services and never expand a selected release set just because another commit reached main. A configuration-only update redeploys the same image for its affected service.
+
+Promote each pinned app digest through dev → qa → stage → prod with per-environment settings and isolated data. If a target already has the selected image/configuration, skip it; if compatibility fails, stop and resolve it explicitly. This future ECR deployer is distinct from the current full-project Vercel adapter. The existing planner/publication logic is reusable, but selective environment execution remains unimplemented.
 
 ## Build once means one image per app candidate
 

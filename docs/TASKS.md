@@ -276,20 +276,20 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 - [ ] **P00-11 — Implement environment-neutral artifacts and runtime config**
   - **Goal:** Build each application candidate once and keep all target-specific settings out of its bytes.
-  - **Requirements:** R99.
+  - **Requirements:** R99/R176.
   - **Files:** App packaging/build scripts, runtime-config schemas and web bootstrap, deployment artifact tooling and tests; exact files selected with the hosting decision.
   - **Dependencies:** P00-10 and explicit request to implement the future promotion path.
-  - **Acceptance:** One immutable digest per app candidate; no target-specific build inputs; validated server settings and a safe dynamic public bootstrap. Two runtime configurations use identical bytes. The selected host supports the artifact without rebuilding it.
+  - **Acceptance:** One immutable digest per affected app candidate; no target-specific build inputs; validated server settings and a safe dynamic public bootstrap. Two runtime configurations use identical bytes. Config-only updates reuse the existing image; the selected host supports the artifact without rebuilding it.
   - **Validation:** Missing/invalid config, browser secret exclusion, runtime changes, cache isolation, artifact hash equality and build-toolchain-disabled deployment; standard gates.
   - **Commit:** `feat: build environment-neutral app artifacts`.
 
 - [ ] **P00-12 — Promote selected artifacts across deployment environments**
   - **Goal:** Add trunk-based `dev → qa → stage → prod` deployment without environment branches or rebuilds.
-  - **Requirements:** R99.
+  - **Requirements:** R99/R176.
   - **Files:** Promotion workflow/tooling, environment configuration documentation and tests.
   - **Dependencies:** P00-11; selected hosts and environment approval policy.
-  - **Acceptance:** Every promotion names an existing artifact digest and verifies the previous environment's acceptance for it; serialize per environment, preserve version identity, record configuration revision and support safe retry/rollback. No source-based build occurs during promotion.
-  - **Validation:** Same-digest progression, approval/ordering violations, concurrent or stale candidates, failed retry and rollback; standard and workflow gates. Live verification needs connected targets.
+  - **Acceptance:** Every promotion pins the selected per-app digests and verifies the previous environment's acceptance; preserve unselected services and update only changed digests/configuration. Serialize per environment, check compatible target versions, preserve identity and support retry/rollback without repeating completed service deployments. New main commits do not replace an in-flight candidate. No source-based build occurs during promotion.
+  - **Validation:** Selective service updates/no-ops, same-digest progression, config-only redeploy, compatibility/approval/ordering violations, concurrent candidates, failed retry and rollback; standard and workflow gates. Live verification needs connected targets.
   - **Commit:** `ci: promote immutable artifacts across environments`.
 
 - [ ] **P00-09 — Connect and verify production deployment**
@@ -1605,11 +1605,11 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
 
 - [ ] **P39-02 — Integrate ECR as the production image registry**
   - **Goal:** Publish independently versioned application images to the selected AWS ECR repositories.
-  - **Requirements:** R99 and D171; future work.
+  - **Requirements:** R99/R176 and D171/D173; future work.
   - **Files:** Release-tool image publisher/config/tests, CI identity/login steps, environment examples and deployment documentation.
   - **Dependencies:** P39-01; chosen AWS account, region, repositories, least-privilege IAM/OIDC configuration and authorization for provisioning.
-  - **Acceptance:** Preserve per-app versioning, immutable digests, retry safety and current release manifests; verify ECR authentication and image publication without embedded credentials. Select the application runtime separately. Reuse P00-11/P00-12 for promotion by digest instead of adding duplicate promotion tooling.
-  - **Validation:** Provider failure/retry tests and an authorized real ECR publication; no AWS implementation or activation is claimed by P39-01.
+  - **Acceptance:** Consume the affected-app release plan and publish only selected images, preserving per-app versioning, immutable digests, retry safety and manifests. No production-image input change means no image/tag. Verify ECR authentication and publication without embedded credentials. Select the application runtime separately. Reuse P00-11/P00-12 for promotion by digest instead of adding duplicate promotion tooling.
+  - **Validation:** Jobs → API/worker, UI → web, contracts → actual consumers, build-only edges, no-op/reverted changes, provider failure/retry tests and an authorized real ECR publication; no AWS implementation or activation is claimed by P39-01.
   - **Commit:** `feat(release): publish application images to ecr`.
 
 - [x] **P39-03 — Reconcile architecture and operating documentation after deployment**
@@ -1641,3 +1641,13 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Real deployment records, browser and HTTP checks; fixtures do not establish live acceptance.
   - **Commit:** `docs: record hosted swagger verification`.
   - **Completion evidence:** [P39-05](evidence/P39-05.md).
+
+- [x] **P39-06 — Specify selective ECR deployment and unchanged-image promotion**
+  - **Goal:** Make the future deployment policy explicit: release only affected runtime consumers and promote selected per-app images without rebuilding.
+  - **Requirements:** R176; clarifies R94/R95/R99 and D171.
+  - **Files:** Promotion/run/deployment guides, README/HLD/architecture/plan, selected-candidate diagram source/catalog/preview, task/matrix/decision/evidence records.
+  - **Dependencies:** P39-01/P39-03; current release planner and workspace manifests. Stacked on the open Swagger PR for review only.
+  - **Acceptance:** Document jobs → API/worker, UI → web, and all actual contracts consumers; distinguish build-only dependencies from deployed consumers. No image or runtime configuration change means no publication/deployment; configuration-only updates reuse the existing image. Preserve unaffected services and pin selected digests across dev/qa/stage/prod with runtime settings, compatibility checks, retry/rollback and per-environment serialization. Distinguish current GHCR publication/full-project Vercel deployment from planned selective ECR deployment; do not change workflows or cloud resources.
+  - **Validation:** Manifest/planner review, diagram rendering, links, shared formatting and whitespace checks. Application suites and live deployments are not applicable to this documentation-only task.
+  - **Commit:** `docs: define selective ecr deployment policy`.
+  - **Completion evidence:** [P39-06](evidence/P39-06.md).
