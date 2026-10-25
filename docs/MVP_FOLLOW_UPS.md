@@ -4,7 +4,7 @@
 
 **Goal:** Expand the main demo workspace, close confirmed MVP gaps and keep optional ideas explicit.
 
-**Architecture:** Preserve the modular NestJS/Next.js system, tenant repositories and generated contracts. A board is a list view. The fixture expansion uses the existing opt-in, seed-once transaction; it never overwrites an initialized database. Optional enhancements require their own design selection before implementation.
+**Architecture:** Preserve the modular NestJS/Next.js system, tenant repositories and generated contracts. A board is a list view. The fixture expansion uses the existing opt-in, seed-once transaction; it never overwrites an initialized database. The subsequent complete-all-tasks instruction selects local enhancements; each still requires a safe design before implementation.
 
 **Tech stack:** Existing TypeScript/ESM, Prisma/PostgreSQL, Nest/Express, Next/MUI, Zod, generated Hey API/TanStack, Redis/BullMQ and existing test runners.
 
@@ -12,7 +12,7 @@
 
 ## Global constraints
 
-Keep real login and the second tenant. Use public package exports and exact dependency versions; no new framework or duplicate board entity. Preserve existing IDs, assignments, status identities and field keys. Existing databases remain unchanged by seed retries. No destructive volume reset, cloud deployment or automatic optional-feature implementation is authorized by this plan.
+Keep real login and the second tenant. Use public package exports and exact dependency versions; no new framework or duplicate board entity. Preserve existing IDs, assignments, status identities and field keys. Existing databases remain unchanged by seed retries. No destructive volume reset or cloud deployment is authorized. D155 selects the local enhancement backlog for sequential design and implementation.
 
 ## Review focus
 
@@ -49,9 +49,9 @@ Keep the original four fields and add optional Research customer text in Design,
 
 Existing `demo-v1` markers continue to prevent all writes. Fresh databases get the expanded fixture atomically. Document a separate Compose project and unused host ports to inspect fresh data; do not delete or modify an existing volume. A later additive upgrade is a separate design because user-edited field schemas, access and IDs may conflict with new fixtures.
 
-## Considered enhancements
+## Selected local enhancements — design first
 
-| Task    | Consideration; not implementation approval                                                                                 |
+| Task    | Selected scope; design required                                                                                            |
 | ------- | -------------------------------------------------------------------------------------------------------------------------- |
 | NEXT-02 | Workspace rename/archive: decide membership/session recovery, retained history and restoration first.                      |
 | NEXT-03 | One-level subtasks: parent/list ownership, no cycles/depth >1, parent archival and cross-list moves.                       |

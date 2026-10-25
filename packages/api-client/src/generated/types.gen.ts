@@ -332,9 +332,9 @@ export type CreateScopeFieldDto = {
         /**
          * Option color
          *
-         * Six-digit hexadecimal display color.
+         * Optional six-digit hexadecimal display color; omission uses a neutral appearance.
          */
-        color: string;
+        color?: string;
         /**
          * Option ID
          *
@@ -1444,9 +1444,9 @@ export type ResolvedFieldResponseDtoOutput = {
             /**
              * Option color
              *
-             * Six-digit hexadecimal display color.
+             * Optional six-digit hexadecimal display color; omission uses a neutral appearance.
              */
-            color: string;
+            color?: string;
             /**
              * Option ID
              *
@@ -1860,9 +1860,9 @@ export type ScopeFieldMutationResponseDtoOutput = {
             /**
              * Option color
              *
-             * Six-digit hexadecimal display color.
+             * Optional six-digit hexadecimal display color; omission uses a neutral appearance.
              */
-            color: string;
+            color?: string;
             /**
              * Option ID
              *
@@ -1991,9 +1991,9 @@ export type ScopeFieldResponseDtoOutput = {
             /**
              * Option color
              *
-             * Six-digit hexadecimal display color.
+             * Optional six-digit hexadecimal display color; omission uses a neutral appearance.
              */
-            color: string;
+            color?: string;
             /**
              * Option ID
              *
@@ -3141,9 +3141,9 @@ export type UpdateScopeFieldDto = {
         /**
          * Option color
          *
-         * Six-digit hexadecimal display color.
+         * Optional six-digit hexadecimal display color; omission uses a neutral appearance.
          */
-        color: string;
+        color?: string;
         /**
          * Option ID
          *

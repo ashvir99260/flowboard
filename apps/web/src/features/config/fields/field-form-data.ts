@@ -1,8 +1,10 @@
 import {
   CreateScopeFieldSchema,
+  CustomFieldOptionSchema,
   resolveFields,
   UpdateScopeFieldSchema,
 } from '@flowboard/contracts';
+import { z } from 'zod';
 
 import type { readFieldConfiguration } from './field-configuration';
 import type { CreateScopeField, UpdateScopeField } from '@flowboard/contracts';
@@ -32,8 +34,14 @@ export function fieldDefaults(configuration: FieldConfiguration, targetKey?: str
   };
 }
 
+const optionDraftSchema = CustomFieldOptionSchema.extend({
+  color: CustomFieldOptionSchema.shape.color.or(z.literal('')),
+}).transform(({ color, ...option }) => (color ? { color, ...option } : option));
+
 export function fieldDraftSchema(targetKey?: string) {
-  return CreateScopeFieldSchema.superRefine((draft, context) => {
+  return CreateScopeFieldSchema.safeExtend({
+    options: z.array(optionDraftSchema).max(100),
+  }).superRefine((draft, context) => {
     if (targetKey && draft.key !== targetKey)
       context.addIssue({
         code: 'custom',

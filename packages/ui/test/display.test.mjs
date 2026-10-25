@@ -191,3 +191,22 @@ test('both themes provide readable text and primary controls on their surfaces',
       );
   }
 });
+
+test('known uncolored select options retain their labels with neutral filled badges', () => {
+  for (const [type, value] of [
+    ['single_select', 'a'],
+    ['multi_select', ['a']],
+  ]) {
+    const { container } = render(
+      createElement(UI.CustomFieldChip, {
+        field: { name: 'Team', type, options: [{ id: 'a', label: 'Support' }] },
+        value,
+      }),
+    );
+    const chip = container.querySelector('.MuiChip-filled');
+    assert.ok(chip);
+    assert.equal(chip.style.backgroundColor, '');
+    assert.ok(screen.getByText('Team: Support'));
+    cleanup();
+  }
+});

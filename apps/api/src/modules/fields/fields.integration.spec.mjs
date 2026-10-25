@@ -113,6 +113,52 @@ const definition = (key, expectedConfigVersion, extra = {}) => ({
 });
 const option = { id: id(950), label: 'Selected', color: '#ABCDEF' };
 
+test('optional colors survive create/read/update and invalid supplied colors do not change configuration', async () => {
+  const path = scopeUrl('list', 226);
+  let revision = (await config('list', 226)).configVersion;
+  const uncolored = { id: id(951), label: 'Neutral' };
+  const created = await api()
+    .post(path)
+    .set(headers.Alice)
+    .send(definition('optional_color', revision, { type: 'single_select', options: [uncolored] }));
+  expect(created.status).toBe(201);
+  expect(created.body.data.options).toEqual([uncolored]);
+  const target = `${path}/${created.body.data.id}`;
+  revision = created.body.configVersion;
+  const colored = await api()
+    .patch(target)
+    .set(headers.Alice)
+    .send({ options: [{ ...uncolored, color: '#123456' }], expectedConfigVersion: revision });
+  expect(colored.status).toBe(200);
+  revision = colored.body.configVersion;
+  const cleared = await api()
+    .patch(target)
+    .set(headers.Alice)
+    .send({ options: [uncolored], expectedConfigVersion: revision });
+  expect(cleared.status).toBe(200);
+  expect(cleared.body.data.options).toEqual([uncolored]);
+  revision = cleared.body.configVersion;
+  for (const color of ['', null, 'red']) {
+    const rejected = await api()
+      .patch(target)
+      .set(headers.Alice)
+      .send({ options: [{ ...uncolored, color }], expectedConfigVersion: revision });
+    expect(rejected.status).toBe(400);
+    expect(
+      rejected.body.error.details.some((issue) => issue.path.join('.') === 'options.0.color'),
+    ).toBe(true);
+  }
+  const saved = await config('list', 226);
+  expect(saved.configVersion).toBe(revision);
+  expect(saved.items.find((field) => field.id === created.body.data.id).options).toEqual([
+    uncolored,
+  ]);
+  expect(
+    (await api().delete(target).set(headers.Alice).send({ expectedConfigVersion: revision }))
+      .status,
+  ).toBe(204);
+});
+
 test('all six types support create, update, stable no-op and safe unused removal', async () => {
   for (const [type, ownerType, owner] of [
     ['text', 'workspace', 1],

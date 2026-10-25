@@ -4,8 +4,9 @@ import { ColorSchema, NameSchema, UuidSchema } from './identifiers.js';
 
 export const CustomFieldOptionSchema = z
   .strictObject({
-    color: ColorSchema.meta({
-      description: 'Six-digit hexadecimal display color.',
+    color: ColorSchema.optional().meta({
+      description:
+        'Optional six-digit hexadecimal display color; omission uses a neutral appearance.',
       example: '#334455',
       title: 'Option color',
     }),

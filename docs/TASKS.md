@@ -1194,7 +1194,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat(database): expand demo workspace fixtures`.
   - **Evidence:** [P28-02](evidence/P28-02.md).
 
-- [ ] **P28-03 — Accept select options without a color**
+- [x] **P28-03 — Accept select options without a color**
   - **Goal:** Match the optional color contract while preserving existing colored options.
   - **Requirements:** R152.
   - **Files:** Contracts/field validation, API DTO/OpenAPI, generated client, field editor/display, tests and evidence.
@@ -1202,6 +1202,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Acceptance:** Missing color is valid and renders neutral; invalid supplied color fails at its field path; updates preserve omission versus explicit values; existing payloads, forms and generation work.
   - **Validation:** G01–G10 as applicable; red/green contracts/API/UI tests, generation/drift and root gates.
   - **Commit:** `feat(fields): allow optional option colors`.
+  - **Evidence:** [P28-03](evidence/P28-03.md).
 
 - [ ] **P28-04 — Open task details from table rows**
   - **Goal:** Support clicking non-interactive row content in addition to the accessible title action.
@@ -1230,9 +1231,9 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** G01–G10; migration preservation, contracts, real PostgreSQL/API, browser timezone/roundtrip tests, generated drift and root gates.
   - **Commit:** `feat(tasks): support datetime due dates`.
 
-## Considered optional work — not selected for implementation
+## Selected local enhancements — design before implementation
 
-R156–R160 record consideration only. Do not start these tasks without selecting a design and confirming their priority. Existing live-hosting gates remain separate.
+D155 records the subsequent instruction to complete all local tasks. R156–R160 are selected for sequential design and implementation after P28; establish each safe design before coding. Existing live-hosting gates remain separate.
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**
   - **Goal:** Supply real indexing/query behavior only after product scope includes search.

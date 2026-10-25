@@ -96,3 +96,28 @@ test(
     ).toBeChecked();
   },
 );
+
+test(
+  'option color can be cleared and stays absent after save and reload',
+  { timeout: 120000 },
+  async (t) => {
+    const { page } = await openSettings(t, 'Field');
+    await choose(page, 'List: Product backlog');
+    await page.getByRole('button', { exact: true, name: 'Edit Team' }).click();
+    const form = page.getByRole('form', { name: 'Field editor' });
+    await form.getByLabel(/^Option 1 color/).fill('');
+    const save = page.waitForResponse(
+      (response) => response.request().method() === 'POST' && response.url().endsWith('/fields'),
+    );
+    await form.getByRole('button', { exact: true, name: 'Save field' }).click();
+    const response = await save;
+    assert.equal(response.status(), 201);
+    assert.equal(Object.hasOwn((await response.json()).data.options[0], 'color'), false);
+    await page.reload();
+    await choose(page, 'List: Product backlog');
+    await page.getByRole('button', { exact: true, name: 'Edit Team' }).click();
+    await expect(form.getByLabel(/^Option 1 color/)).toHaveValue('');
+    await form.getByRole('button', { exact: true, name: 'Save field' }).click();
+    await expect(form.getByText('No changes to save.', { exact: true })).toBeVisible();
+  },
+);

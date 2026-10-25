@@ -115,7 +115,7 @@ The later [P14 form system](FORM_SYSTEM.md) puts reusable React Hook Form bindin
 
 P27-01/D153 revises the former 4.4rem desktop control height toward the compact shadcn reference. Text fields and selects explicitly default to small outlined controls; single-line text and native menus are 3.6rem, while multiline fields grow with content. Coarse-pointer targets remain at least 4.4rem. Actual input padding/line height are normalized, since a smaller minimum alone cannot override MUI padding.
 
-Status chips fill with their stored color; a selected field option uses its option color. Text chooses the more readable black/white contrast token. Missing/invalid options and mixed multi-select values use neutral fill. Priority fills use error/warning/info/success semantics. Labels keep names/categories so color is never the only cue. Application palette values, including severity and contrast choices, live in `tokens.ts`; `theme.ts` maps them to MUI.
+Status chips fill with their stored color; a selected field option uses its optional option color. An omitted option color uses the neutral filled variant. Text chooses the more readable black/white contrast token. Missing/invalid options and mixed multi-select values use neutral fill. Priority fills use error/warning/info/success semantics. Labels keep names/categories so color is never the only cue. Application palette values, including severity and contrast choices, live in `tokens.ts`; `theme.ts` maps them to MUI.
 
 ## Action and live notifications
 

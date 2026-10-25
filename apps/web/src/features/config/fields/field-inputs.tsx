@@ -98,8 +98,7 @@ export function FieldInputs({
                         kind: 'text',
                         name: `options.${index}.color`,
                         label: `Option ${index + 1} color`,
-                        required: true,
-                        hint: 'Six-digit hex color, for example #334455.',
+                        hint: 'Optional six-digit hex color; leave blank for neutral.',
                       },
                     ]}
                   />
@@ -163,7 +162,7 @@ export function FieldInputs({
             disabled={busy || rows.length >= 100}
             onClick={() =>
               append(
-                { id: crypto.randomUUID(), label: '', color: '#334455' },
+                { id: crypto.randomUUID(), label: '' },
                 { focusName: `options.${rows.length}.label` },
               )
             }

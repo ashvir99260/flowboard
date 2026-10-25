@@ -663,3 +663,9 @@ Expand the main workspace to 3 spaces, 4 folders, 6 lists, 48 tasks and five mem
 Keep the seed-once guard: already initialized databases retain their data, credentials, grants and audit times. The richer fixture applies to fresh databases and is previewed in a separate Compose project with separate host ports. Do not reset or merge into an existing user-edited database. An automatic additive upgrade would need current-schema validation, collision policy, shared locks, revision invalidation and rollback; it is outside this first seed slice.
 
 R155 will replace task calendar dates with ISO UTC datetimes in a dedicated contract/database/UI migration; old calendar days become midnight UTC, not a guessed local time. Until that task passes, existing date-only behavior remains explicitly documented. Workspace rename/archive and optional enhancements remain considered, with design gates before implementation.
+
+## D155 — Complete the local backlog with sequential design and implementation
+
+Date: 2026-10-25. The user's instruction to complete all tasks selects the remaining P28 work and the considered local enhancements for design followed by implementation. Keep one task/commit at a time, safe defaults and explicit acceptance tests. External hosted activation still requires provider configuration and is not inferred from local feature completion. No database or volume reset is authorized.
+
+P28-03 makes option colors optional without broadening valid supplied colors. Form-only empty input becomes an omitted property; the API rejects empty strings/null/malformed colors. Uncolored options keep their labels and a neutral filled appearance. No schema migration is needed because the database stores validated option JSON.
