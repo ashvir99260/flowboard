@@ -1,12 +1,15 @@
 // HTTP contract fixture for browser state/race tests. Real authorization stays in API/Postgres suites.
 import {
   AuthExamples,
+  ExpectedConfigSchema,
   LogInSchema,
   NodeExamples,
   NodeSchema,
   SessionEnvelopeSchema,
   SignUpSchema,
   TreePageSchema,
+  UpdateWorkspaceSchema,
+  WorkspaceEnvelopeSchema,
 } from '@flowboard/contracts';
 
 import { createBoardApi } from './board-api-fixture.mjs';
@@ -17,6 +20,8 @@ export async function startAppApi(t) {
   const access = new Map();
   const requests = [];
   const controls = {
+    lifecycleConflict: false,
+    lifecycleGate: null,
     logoutFailures: 0,
     malformedTree: false,
     nodeGate: null,
@@ -26,6 +31,8 @@ export async function startAppApi(t) {
   };
   let sequence = 0;
   const workspace = { ...AuthExamples.session.data.activeWorkspace, name: 'Engineering' };
+  const lifecycle = { configVersion: 1, dataVersion: 1 };
+  controls.lifecycle = lifecycle;
   const secondWorkspace = {
     ...workspace,
     id: '10000000-0000-4000-8000-000000000003',
@@ -84,6 +91,19 @@ export async function startAppApi(t) {
     response.setHeader('Set-Cookie', `flowboard_refresh=${cookie}; HttpOnly; Path=/; SameSite=Lax`);
     send(response, status, session);
   };
+  const currentWorkspace = (session) =>
+    session.data.activeWorkspace === null
+      ? null
+      : {
+          ...session.data.activeWorkspace,
+          ...(session.data.activeWorkspace.id === workspace.id ? workspace : secondWorkspace),
+          role: session.data.activeWorkspace.role,
+        };
+  const rootEnvelope = () => {
+    const { role: _role, ...data } = workspace;
+
+    return WorkspaceEnvelopeSchema.parse({ data, ...lifecycle });
+  };
   const origin = await startUpstream(t, async (request, response) => {
     try {
       const url = new URL(request.url, 'http://localhost');
@@ -95,7 +115,8 @@ export async function startAppApi(t) {
       const chunks = [];
       for await (const chunk of request) chunks.push(chunk);
       const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString()) : {};
-      if (url.pathname.startsWith('/v1/tasks/')) requests.at(-1).body = body;
+      if (url.pathname.startsWith('/v1/tasks/') || url.pathname.startsWith('/v1/workspaces/'))
+        requests.at(-1).body = body;
 
       const cookie = request.headers.cookie?.match(/flowboard_refresh=([^;]+)/)?.[1];
       const session = access.get(request.headers.authorization?.replace(/^Bearer /, ''));
@@ -116,12 +137,15 @@ export async function startAppApi(t) {
             email: parsed.data.email,
             name: parsed.data.email.startsWith('bob') ? 'Bob' : 'Alice',
           },
-          { ...workspace, role: parsed.data.email.startsWith('bob') ? 'member' : 'admin' },
+          workspace.archivedAt
+            ? null
+            : { ...workspace, role: parsed.data.email.startsWith('bob') ? 'member' : 'admin' },
         );
       }
 
       if (url.pathname === '/v1/auth/signup') {
         const parsed = SignUpSchema.parse(body);
+        workspace.name = parsed.workspaceName;
 
         return issue(
           response,
@@ -140,7 +164,7 @@ export async function startAppApi(t) {
 
         cookies.delete(cookie);
 
-        return issue(response, previous.data.user, previous.data.activeWorkspace);
+        return issue(response, previous.data.user, currentWorkspace(previous));
       }
 
       if (url.pathname === '/v1/auth/logout') {
@@ -167,11 +191,45 @@ export async function startAppApi(t) {
           error: { code: 'UNAUTHENTICATED', message: 'Sign in to continue' },
         });
 
+      const rootMatch = url.pathname.match(/^\/v1\/workspaces\/([^/]+)(?:\/(archive|restore))?$/);
+      if (rootMatch) {
+        if (rootMatch[1] !== workspace.id)
+          return send(response, 404, {
+            error: { code: 'NOT_FOUND', message: 'Workspace not found' },
+          });
+
+        if (request.method === 'GET') return send(response, 200, rootEnvelope());
+
+        if (session.data.user.name === 'Bob')
+          return send(response, 403, { error: { code: 'FORBIDDEN', message: 'Access denied' } });
+
+        if (controls.lifecycleGate) await controls.lifecycleGate;
+
+        const input = (rootMatch[2] ? ExpectedConfigSchema : UpdateWorkspaceSchema).parse(body);
+        if (controls.lifecycleConflict || input.expectedConfigVersion !== lifecycle.configVersion)
+          return send(response, 409, {
+            error: { code: 'CONFIG_CONFLICT', message: 'Workspace configuration changed' },
+          });
+
+        if (rootMatch[2] === 'archive') {
+          workspace.archivedAt = new Date().toISOString();
+          lifecycle.dataVersion++;
+        } else if (rootMatch[2] === 'restore') {
+          workspace.archivedAt = null;
+          lifecycle.dataVersion++;
+        } else workspace.name = input.name;
+
+        lifecycle.configVersion++;
+        workspace.updatedAt = new Date().toISOString();
+
+        return send(response, 200, rootEnvelope());
+      }
+
       if (await board.respond({ url, session, response, body, method: request.method })) return;
 
       if (url.pathname === '/v1/me')
         return send(response, 200, {
-          data: { user: session.data.user, activeWorkspace: session.data.activeWorkspace },
+          data: { user: session.data.user, activeWorkspace: currentWorkspace(session) },
         });
 
       if (url.pathname === '/v1/auth/switch-workspace') {
@@ -192,8 +250,9 @@ export async function startAppApi(t) {
         return send(response, 200, {
           items: [
             {
-              ...(url.searchParams.has('cursor') ? secondWorkspace : session.data.activeWorkspace),
-              configVersion: 1,
+              ...(url.searchParams.has('cursor') ? secondWorkspace : workspace),
+              role: session.data.user.name === 'Bob' ? 'member' : 'admin',
+              configVersion: lifecycle.configVersion,
             },
           ],
           pageInfo: { hasNextPage: more, nextCursor: more ? 'workspaces-next' : null },

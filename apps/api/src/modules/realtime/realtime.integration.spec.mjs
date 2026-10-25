@@ -549,5 +549,6 @@ test('workspace archive disconnects existing sockets and refuses new handshakes'
   sockets.push(denied);
   const [error] = await once(denied, 'connect_error', { signal: AbortSignal.timeout(3000) });
   expect(error.message).toBe('Authentication required');
+  expect(error.data).toEqual({ code: 'WORKSPACE_ARCHIVED' });
   expect(denied.connected).toBe(false);
 });

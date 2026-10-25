@@ -11,7 +11,7 @@ Typed custom-field filtering, optimistic rollback, activity/realtime and Swagger
 ## Day-5 priorities
 
 1. **Datetime alignment — complete, P28-06 / R155.** [Verified](evidence/P28-06.md): UTC millisecond roundtrips, old calendar dates migrated to midnight UTC, unchanged custom date fields, and cursor/timezone/pending-event coverage.
-2. **Workspace lifecycle — NEXT-02 / R156.** Design and implement administrator rename/archive/recovery with safe session behavior, retained history and tenant isolation.
+2. **Workspace lifecycle — complete, P29-01/P29-02 / R156.** [API](evidence/P29-01.md) and [browser](evidence/P29-02.md) verification cover administrator rename/archive/recovery, retained history, stale drafts and other open clients losing access.
 
 The day label expresses the next useful increment after the existing MVP. Each implementation still requires its own tests, evidence and commit.
 

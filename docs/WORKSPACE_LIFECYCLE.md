@@ -1,6 +1,6 @@
 # Workspace lifecycle design
 
-R156 is selected by D155. This design is the NEXT-02 outcome; P29-01 and P29-02 own implementation and verification. It does not claim that lifecycle endpoints already exist.
+R156 is selected by D155. NEXT-02 defines the policy; P29-01 implements and verifies the API, and P29-02 implements the management screens and live client recovery. Their evidence records distinguish design from executed verification.
 
 ## Behavior and data
 
@@ -50,6 +50,8 @@ Active-workspace session metadata adds archive state. Picker entries also expose
 ## Browser behavior
 
 The workspace settings page uses generated operations and RHF/Zod forms. Rename has explicit save. Archive confirmation names the workspace and explains retained data and blocked access. It returns to the picker after success. Only archived administrator cards expose Restore. Failed or stale mutations preserve the draft and require an explicit reload; no automatic stale-write retry.
+
+Administrators open **Workspace settings** in the sidebar (`/w/:workspaceId/settings/workspace`). The form keeps its original configuration revision until a successful save or explicit reload. Background reads cannot silently advance a dirty form's precondition. Reload confirms discarding edits, disables inputs while pending, and retains the draft if the read fails. A stale restore in the picker offers **Reload workspaces** before retrying. A fresh login with no live workspace can restore an administrator membership, then explicitly select it.
 
 Treat a selected workspace's archive-state change as a client scope change: cancel/clear queries, clear pending notifications, advance the local revision and unmount cached workspace children. Do this before rendering another board/drawer. Do not create sockets for an archived selection.
 

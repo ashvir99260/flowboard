@@ -162,6 +162,18 @@ function VerifiedWorkspace({
     );
 
   const { user, activeWorkspace } = parsed.data.data;
+  if (activeWorkspace.archivedAt)
+    return (
+      <ErrorState
+        title="Workspace archived"
+        description="Choose a workspace to continue, or restore it if you are an administrator."
+        action={
+          <Button component={NextLink} href="/workspaces">
+            Choose workspace
+          </Button>
+        }
+      />
+    );
 
   return (
     <TaskEditorProvider listId={listId} runtime={runtime} scope={scope}>
@@ -195,6 +207,13 @@ function VerifiedWorkspace({
             </Button>
             {activeWorkspace.role === 'admin' && (
               <>
+                <Button
+                  component={NextLink}
+                  href={`/w/${scope.workspaceId}/settings/workspace`}
+                  onClick={() => setOpen(false)}
+                >
+                  Workspace settings
+                </Button>
                 <Button
                   component={NextLink}
                   href={`/w/${scope.workspaceId}/settings/statuses`}
@@ -247,7 +266,7 @@ export function WorkspaceShell({
   workspaceId: string;
 }) {
   const { listId } = useParams<{ listId?: string }>();
-  const { runtime, scope, status, switchWorkspace } = useSession();
+  const { runtime, scope, status, switchWorkspace, session } = useSession();
   const [error, setError] = useState<string | null>(null);
   const pending = useRef<string | null>(null);
   const target = useRef(workspaceId);
@@ -289,7 +308,17 @@ export function WorkspaceShell({
 
   return (
     <SessionGate>
-      {runtime && scope?.workspaceId === workspaceId ? (
+      {session?.data.activeWorkspace?.archivedAt && scope?.workspaceId === workspaceId ? (
+        <ErrorState
+          title="Workspace archived"
+          description="This workspace is archived. Choose a workspace to restore it or continue elsewhere."
+          action={
+            <Button component={NextLink} href="/workspaces">
+              Choose workspace
+            </Button>
+          }
+        />
+      ) : runtime && scope?.workspaceId === workspaceId ? (
         <VerifiedWorkspace
           key={JSON.stringify(scope)}
           runtime={runtime}

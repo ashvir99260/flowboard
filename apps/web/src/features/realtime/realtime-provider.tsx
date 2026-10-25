@@ -29,7 +29,13 @@ export function RealtimeProvider({
   const notifications = useNotifications();
 
   useEffect(() => {
-    if (!runtime || !session?.data.activeWorkspace || !url) return;
+    if (
+      !runtime ||
+      !session?.data.activeWorkspace ||
+      session.data.activeWorkspace.archivedAt ||
+      !url
+    )
+      return;
 
     let active = true;
     let retry: ReturnType<typeof setTimeout> | undefined;
@@ -40,6 +46,11 @@ export function RealtimeProvider({
       query: { notifications: 'v1' },
       auth: (done) => done({ token: runtime.getSession()?.data.accessToken }),
     });
+    const synchronize = () => {
+      void Promise.resolve()
+        .then(() => (active ? runtime.refresh() : undefined))
+        .catch(() => undefined);
+    };
     let subscribed = new Set<string>();
     const subscriptions = () => {
       if (!socket.connected) return;
@@ -89,14 +100,20 @@ export function RealtimeProvider({
     socket.on('exception', () => {
       if (active) bus.dispatch({ kind: 'resync' });
     });
-    socket.on('connect_error', reconnect);
+    socket.on('connect_error', (error: Error & { data?: { code?: string } }) => {
+      if (error.data?.code === 'WORKSPACE_ARCHIVED') synchronize();
+      else reconnect();
+    });
     socket.on('disconnect', (reason) => {
-      if (reason === 'io server disconnect') reconnect();
+      if (reason === 'io server disconnect') {
+        synchronize();
+        reconnect();
+      }
     });
     socket.connect();
     const refresh = setTimeout(
       () => {
-        void runtime.refresh().catch(() => undefined);
+        synchronize();
       },
       Math.max(1000, Date.parse(session.data.expiresAt) - Date.now() - 30000),
     );

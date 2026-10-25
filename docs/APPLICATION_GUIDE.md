@@ -4,18 +4,19 @@ Source snapshot: `3cc62b0`, 25 October 2026. This guide explains what the applic
 
 ## What a user can do
 
-| Feature              | Current behavior                                                                                                                                               |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Account/session      | Sign up or log in, restore a cookie-backed session, choose a workspace and log out. Signup creates an initial workspace.                                       |
-| Workspace navigation | Browse only visible spaces/folders/lists in a collapsible sidebar. Roles and grants are workspace-specific.                                                    |
-| Board                | See the list's resolved status columns and task metadata. Drag with pointer or keyboard; use an explicit Move dialog for accessible placement or another list. |
-| Table                | Use MUI Data Grid with built-in and resolved custom columns. Sort/filter on the server, load cursor pages, and page through loaded rows locally.               |
-| Task editor          | Create/edit/archive tasks, edit resolved custom fields, preview safe Markdown and see status-change activity. Invalid saves retain the draft.                  |
-| Configuration        | Admins manage scoped status/field definitions and inspect inherited/local previews. Unsafe changes are rejected without discarding the draft.                  |
-| Collaboration        | Authorized open clients refetch after edits/moves. Action results and eligible remote changes appear as Toastify notifications.                                |
-| API access           | The same operations are available through the typed REST API, Swagger and the executable curl cookbook.                                                        |
+| Feature              | Current behavior                                                                                                                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Account/session      | Sign up or log in, restore a cookie-backed session, choose a workspace and log out. Signup creates an initial workspace.                                                                       |
+| Workspace navigation | Browse only visible spaces/folders/lists in a collapsible sidebar. Roles and grants are workspace-specific.                                                                                    |
+| Workspace management | Administrators rename or archive the selected workspace in sidebar settings, then restore archived workspaces from the picker. Archive retains data and closes other clients' workspace views. |
+| Board                | See the list's resolved status columns and task metadata. Drag with pointer or keyboard; use an explicit Move dialog for accessible placement or another list.                                 |
+| Table                | Use MUI Data Grid with built-in and resolved custom columns. Sort/filter on the server, load cursor pages, and page through loaded rows locally.                                               |
+| Task editor          | Create/edit/archive tasks, edit resolved custom fields, preview safe Markdown and see status-change activity. Invalid saves retain the draft.                                                  |
+| Configuration        | Admins manage scoped status/field definitions and inspect inherited/local previews. Unsafe changes are rejected without discarding the draft.                                                  |
+| Collaboration        | Authorized open clients refetch after edits/moves. Action results and eligible remote changes appear as Toastify notifications.                                                                |
+| API access           | The same operations are available through the typed REST API, Swagger and the executable curl cookbook.                                                                                        |
 
-The web app does not expose a dedicated screen for every API operation. Workspace read/rename/archive/restore are available through the API (P29-01); their management UI remains P29-02. Member/invitation/grant/container administration is available through the API where implemented; do not infer management screens from endpoint availability. Invitations are manually shared and accepted through the API: there is no email sender or invitation-acceptance web form. Search is a tracked stub, not a usable feature.
+The web app does not expose a dedicated screen for every API operation. Workspace read/rename/archive/restore are available through the API and management UI; see [workspace lifecycle](WORKSPACE_LIFECYCLE.md). Member/invitation/grant/container administration is available through the API where implemented; do not infer management screens from endpoint availability. Invitations are manually shared and accepted through the API: there is no email sender or invitation-acceptance web form. Search is a tracked stub, not a usable feature.
 
 ## A normal working session
 
