@@ -1,6 +1,6 @@
 # Flowboard application guide
 
-Source snapshot: `3cc62b0`, 25 October 2026. This guide explains what the application contains and how the parts work together. Read [HLD](HLD.md) for system-level decisions, [LLD](LLD.md) for implementation details and [delivery summary](DELIVERY_SUMMARY.md) for requirement coverage and remaining work.
+Core baseline: `3cc62b0`; deployment/runtime review: `507a0a8`, 26 October 2026. This guide explains what the application contains and how the parts work together. Read [HLD](HLD.md), [LLD](LLD.md) and [delivery summary](DELIVERY_SUMMARY.md) for architecture and evidence. [Run modes](RUN_AND_DEPLOY.md) is the current environment contract.
 
 ## What a user can do
 
@@ -33,7 +33,7 @@ Admins can bypass container visibility inside their own workspace and change con
 
 ## Workspace packages
 
-The repository has three apps and twelve shared/tooling packages. Versions and exports are authoritative in each linked `package.json`; this table explains purpose rather than copying a version list that can drift.
+The repository has three apps and thirteen shared/tooling packages. Versions and exports are authoritative in each linked `package.json`; this table explains purpose rather than copying a version list that can drift.
 
 | Workspace                                                                | Purpose                                                                                                         | Main consumers                                   |
 | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |

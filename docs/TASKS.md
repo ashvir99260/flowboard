@@ -1611,3 +1611,13 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** Preserve per-app versioning, immutable digests, retry safety and current release manifests; verify ECR authentication and image publication without embedded credentials. Select the application runtime separately. Reuse P00-11/P00-12 for promotion by digest instead of adding duplicate promotion tooling.
   - **Validation:** Provider failure/retry tests and an authorized real ECR publication; no AWS implementation or activation is claimed by P39-01.
   - **Commit:** `feat(release): publish application images to ecr`.
+
+- [x] **P39-03 — Reconcile architecture and operating documentation after deployment**
+  - **Goal:** Bring HLD, LLD, architecture, diagram atlas and affected operating guides in line with the completed P38 deployment and D171 run modes.
+  - **Requirements:** R174; preserve R96–R99, R144/R145 and R173.
+  - **Files:** Architecture/HLD/LLD/system design, affected README/operating/agent guides, diagram sources/catalog/generated previews, plan/task/matrix and evidence.
+  - **Dependencies:** P38-02–05 and P39-01. P39-02 is future infrastructure work and is not a dependency for this documentation correction.
+  - **Acceptance:** Runtime ownership matches source: worker-owned shared outbox dispatch, API request/socket boundaries, Neon pooled/direct connections, TLS Redis and runtime-only service binding. Diagrams and captions agree on the verified temporary demo, current GHCR publication and planned ECR/promotion. Preserve historical decisions/evidence; do not imply new live checks, AWS provisioning or changed application behavior.
+  - **Validation:** Source/contract and deployment-evidence cross-checks, changed diagram rendering and visual inspection, documentation links/inventory, shared formatting and whitespace checks. No app services, Docker builds or cloud mutations.
+  - **Commit:** `docs: reconcile architecture with deployed services`.
+  - **Completion evidence:** [P39-03](evidence/P39-03.md).

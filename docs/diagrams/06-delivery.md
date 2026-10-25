@@ -1,6 +1,6 @@
 # CI and independent releases
 
-[Atlas index](../DIAGRAMS.md). Source snapshot: `cc0e3d6`; render/update details are in the [diagram guide](README.md).
+[Atlas index](../DIAGRAMS.md). Original baseline: `cc0e3d6`; deployment review: `507a0a8`, 26 October 2026. Render details are in the [diagram guide](README.md).
 
 ## C23 — Trunk and review flow
 
@@ -10,11 +10,11 @@
 
 [Editable Mermaid source](sources/c23-trunk-and-review-flow.mmd). References: [Trunk-based guide](../DELIVERY_OPERATIONS.md#trunk-based-development-in-flowboard), [Workflow](../DEVELOPMENT_WORKFLOW.md).
 
-## C24 — Seven CI lanes and release gates
+## C24 — Eight CI lanes and release gates
 
-**Status: Implemented.** In public repositories, all seven check instances start independently; each lane still respects its own build dependencies. Current gated CD targets the legacy providers, not Render.
+**Status: Implemented.** Five workspace checks, UI tests and two Compose checks start independently. Main publication targets GHCR; protected settings gate the temporary Vercel source deployment.
 
-![Seven CI lanes and release gates. Implemented.](svg/c24-seven-ci-lanes-and-release-gates.svg)
+![Eight CI lanes and release gates. Implemented.](svg/c24-seven-ci-lanes-and-release-gates.svg)
 
 [Editable Mermaid source](sources/c24-seven-ci-lanes-and-release-gates.mmd). References: [GitHub workflow](../../.github/workflows/delivery.yml), [CI details](../CI_CD.md).
 
@@ -36,8 +36,8 @@
 
 ## C27 — One image with different runtime configuration
 
-**Status: Runtime seams implemented; promotion planned.** The runtime seams and image publication exist. End-to-end ordered multi-environment promotion is still planned. Each environment needs isolated data and Redis; config changes restart the same image rather than rebuild it.
+**Status: Runtime seams implemented; ECR and promotion planned.** Runtime configuration seams and current GHCR publication exist. ECR integration and ordered unchanged-image promotion remain planned, with isolated data and Redis per environment.
 
-![One image with different runtime configuration. Runtime seams implemented; promotion planned.](svg/c27-one-image-with-different-runtime-configuration.svg)
+![One image with different runtime configuration. Runtime seams implemented; ECR and promotion planned.](svg/c27-one-image-with-different-runtime-configuration.svg)
 
 [Editable Mermaid source](sources/c27-one-image-with-different-runtime-configuration.mmd). References: [Runtime injection](../DELIVERY_OPERATIONS.md#where-environment-settings-enter), [Promotion contract](../PROMOTION.md).

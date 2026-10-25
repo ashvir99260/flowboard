@@ -1,6 +1,6 @@
 # Redis, BullMQ and realtime in Flowboard
 
-Source snapshot: `1ae096b`, 25 October 2026. PostgreSQL is authoritative for tasks, permissions, sessions, outbox intent and activity. Redis provides coordination and transport; it is not the database for boards or a cache of resolved statuses/custom fields.
+Core baseline: `1ae096b`; worker/deployment review: `507a0a8`, 26 October 2026. PostgreSQL is authoritative for tasks, permissions, sessions, outbox intent and activity. Redis provides coordination and transport; it is not the database for boards or a cache of resolved statuses/custom fields.
 
 ## Four roles, separate responsibilities
 
@@ -70,7 +70,7 @@ Local [Compose](../compose.yaml) runs Redis with append-only persistence, `noevi
 
 Each environment must have its own Redis instance and PostgreSQL database/branch. Queue, channel and auth prefixes are fixed in the current code. Using the same Redis server with different logical database numbers does not isolate Pub/Sub channels. Environment-prefix support would be a separate code change, not a runtime setting that exists today.
 
-Keep Redis private and configure API/worker `REDIS_URL` at process startup. Web does not receive it. Redis uses Upstash Free for the shared demo; TLS, memory and command quotas must be checked before activation. The selected compute topology is described in [Vercel Services](VERCEL.md).
+Keep Redis private and configure API/worker `REDIS_URL` at process startup. Web does not receive it. The temporary demo uses Upstash Free over TLS and was verified in [P38-03](evidence/P38-03.md). That result does not guarantee month-long free operation: polling consumes Redis commands and Neon compute. [Vercel Services](VERCEL.md) records limits; [run modes](RUN_AND_DEPLOY.md) separates local Redis from the hosted demo and future environments.
 
 ## Health and operational checks
 

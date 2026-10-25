@@ -1,10 +1,12 @@
 # Flowboard database and ER design
 
-Status: schema, migrations, tenant repositories and the MVP service invariants are implemented. [P01-03](evidence/P01-03.md), [P01-04](evidence/P01-04.md) and the later domain task records contain their verification; the [LLD](LLD.md) summarizes the as-built flows at the P19 snapshot. This detailed design originated on 23 October 2026; resolve implementation details against the current schema and task evidence. [PLAN](PLAN.md), [DECISIONS](DECISIONS.md) and the original requirements remain the scope authority.
+Status: schema, migrations, tenant repositories and the MVP service invariants are implemented. [P01-03](evidence/P01-03.md), [P01-04](evidence/P01-04.md) and the later domain task records contain their verification; the [LLD](LLD.md) summarizes current flows and the P38 deployment/runtime changes. This detailed design originated on 23 October 2026; resolve implementation details against the current schema and task evidence. [PLAN](PLAN.md), [DECISIONS](DECISIONS.md) and the original requirements remain the scope authority.
 
 ## Storage boundary
 
 Use Prisma with PostgreSQL, locally in Docker and hosted on Neon. `packages/database` owns the Prisma client, schema, migrations, seed, SQL and scoped repositories. API/worker code receives repositories, not a raw client. Redis carries jobs and invalidations; it is not authoritative storage.
+
+The Node runtime uses Prisma with `@prisma/adapter-pg` and `pg`, not a Neon HTTP driver. Runtime repositories use pooled `DATABASE_URL`; `DATABASE_URL_UNPOOLED` provides the direct migration/advisory-lock connection when present. API startup runs checked-in migrations under the initialization lock before serving; hosted demo seeding is disabled. The worker consumes already-initialized tables. See [database connection setup](../packages/database/README.md) and [LLD startup](LLD.md#runtime-startup-and-deployment-wiring).
 
 There are 15 logical records. Workspace is the tenant root. User and RefreshSession are global identity records; SeedState is global operational metadata. Every other record carries `workspaceId`, even joins and events. Membership.role supplies built-in workspace RBAC: the same User may be admin in one Workspace and member in another. There is no separate Board table: Board and List are views of tasks in a List node.
 

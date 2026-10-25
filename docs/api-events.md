@@ -54,7 +54,7 @@ List movement must agree with both endpoint IDs and `changes.primaryListId`. A t
 
 ## Delivery and browser visibility
 
-The API commits the domain mutation and outbox record in one PostgreSQL transaction. Its dispatcher leases and enqueues a stable reference to that record. BullMQ workers verify the stored event and lease identity, write status-change activity idempotently by event ID, publish on private Redis, then complete delivery. A crash can cause repeated delivery; consumers must tolerate duplicates. Queue acceptance and activity insertion do not by themselves mean a browser received an event.
+The API commits the domain mutation and outbox record in one PostgreSQL transaction. The worker-owned dispatcher leases and enqueues a stable reference to that committed record. BullMQ workers verify the stored event and lease identity, write status-change activity idempotently by event ID, publish on private Redis, then complete delivery. A crash can cause repeated delivery; consumers must tolerate duplicates. Queue acceptance and activity insertion do not by themselves mean a browser received an event.
 
 The Nest Socket.IO gateway uses the Redis adapter to fan out signals between API instances. JWT signature, session, membership, Origin and current list access are checked at connection/subscription/delivery boundaries. Public `invalidate` messages follow `RealtimeInvalidationSchema`, with only these shapes:
 

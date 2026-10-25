@@ -3,13 +3,19 @@ title: "C01 — System context · Implemented"
 ---
 flowchart LR
   Person[Workspace member] --> Browser[Browser UI]
-  Operator[API client or operator] --> REST[REST API]
+  Operator[API client] --> REST[REST API]
   Browser --> Web[Next.js web server]
   Web -->|Same-origin proxy| REST
   Browser <-->|Authenticated Socket.IO| Gateway[API gateway]
   REST --> DB[(PostgreSQL: source of truth)]
-  REST --> Queue[(Redis: coordination and jobs)]
-  Queue <--> Worker[BullMQ worker]
+  REST -->|Auth and rate limits| Redis[(Redis: coordination and jobs)]
+  subgraph WorkerProcess[Worker process]
+    Dispatch[Shared jobs outbox dispatcher]
+    Worker[Activity consumer]
+  end
+  DB --> Dispatch
+  Dispatch --> Redis
+  Redis --> Worker
   Worker --> DB
-  Worker --> Queue
-  Queue --> Gateway
+  Worker --> Redis
+  Redis --> Gateway

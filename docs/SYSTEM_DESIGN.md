@@ -1,6 +1,6 @@
 # Flowboard UI, backend and database design
 
-**Historical design reference, originally written 23 October 2026.** The local MVP, domain features and browser proxy are now implemented. Use [HLD](HLD.md), [LLD](LLD.md) and the [delivery summary](DELIVERY_SUMMARY.md) for the P19 as-built snapshot and verification limits; future-tense sections here preserve the earlier design context. [REQUIREMENTS.md](REQUIREMENTS.md) and [DECISIONS.md](DECISIONS.md) remain canonical. Vendor observations are separated into [REFERENCE_ARCHITECTURES.md](REFERENCE_ARCHITECTURES.md).
+**Historical design reference, originally written 23 October 2026; deployment sections reconciled to `507a0a8` on 26 October 2026.** The local MVP, domain features and browser proxy are implemented. Use [HLD](HLD.md), [LLD](LLD.md) and the [delivery summary](DELIVERY_SUMMARY.md) for current ownership and verification limits. Remaining future-tense design sections preserve their historical context. [REQUIREMENTS.md](REQUIREMENTS.md) and [DECISIONS.md](DECISIONS.md) remain canonical; vendor observations are in [REFERENCE_ARCHITECTURES.md](REFERENCE_ARCHITECTURES.md).
 
 The implementation-ready [database and ER specification](DATABASE_DESIGN.md) defines all records, tenant keys, migrations and transaction invariants.
 
@@ -26,7 +26,7 @@ flowchart LR
   Permission --> Domain[Domain modules and pure resolvers]
   Domain --> Repos[TenantDatabase and locked transactions]
   Repos --> PG[(PostgreSQL)]
-  PG --> Outbox[API outbox dispatcher]
+  PG --> Outbox[Worker-owned shared outbox dispatcher]
   Outbox --> Redis[(Redis and BullMQ)]
   Redis --> Worker[Activity worker]
   Worker --> PG
@@ -34,20 +34,20 @@ flowchart LR
   Redis --> Gateway
 ```
 
-Local Docker has `web`, `api`, `worker`, `postgres`, `redis`. The selected hosted topology places web and API in one Vercel Services project, runs the queue consumer as a Vercel Daemon, keeps PostgreSQL on Neon and expects Redis from an external managed provider. The repository contains configuration, not evidence of a live deployment; the existing deployment adapter still needs reconciliation. API instances share PostgreSQL/Redis; no sticky in-process task state is authoritative.
+The setup-free local preview runs `web`, `api`, `worker`, `postgres` and `redis` in Compose; daily development runs the apps natively with only PostgreSQL/Redis in Docker. The verified temporary demo uses Vercel web/API services, a worker daemon, Neon PostgreSQL and Upstash TLS Redis. API instances share PostgreSQL/Redis; no sticky in-process task state is authoritative. Current releases publish images to GHCR; ECR and unchanged-image promotion are planned. [Run modes](RUN_AND_DEPLOY.md) and [P38-03](evidence/P38-03.md) separate implementation, live proof and future work.
 
-### Browser auth across separate hosts
+### Browser auth and the private API boundary
 
-The browser uses one Vercel project origin: web handles pages and same-origin REST proxying, while `/socket.io/*` routes to the API. The web service uses a private runtime binding for REST requests to API; `SameSite=Lax` cookies remain same-site without relying on cross-site credentials or CORS. [Cookie semantics](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie) See the [Vercel topology and gaps](VERCEL.md).
+The browser uses one Vercel project origin: web handles pages and same-origin REST proxying, while `/socket.io/*` routes to the API. The web service uses a private runtime binding for REST requests to API; `SameSite=Lax` cookies remain same-site without relying on cross-site credentials or CORS. [Cookie semantics](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie) See the [temporary Vercel topology](VERCEL.md).
 
-| Boundary              | Planned behavior                                                                                                                                                                                                                                                                                                 |
+| Boundary              | Implemented behavior                                                                                                                                                                                                                                                                                             |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Browser → web         | Generated SDK base URL `/api`; OpenAPI paths retain `/v1`. Requests become `/api/v1/...` on the web origin.                                                                                                                                                                                                      |
 | Web → API             | One server-only route forwards to a fixed runtime `API_INTERNAL_URL` and `/v1/...`; it contains no business logic, Prisma or duplicated DTOs.                                                                                                                                                                    |
 | Cookie handling       | API emits a host-only refresh cookie, Path=/, httpOnly, SameSite=Lax and Secure under HTTPS. Forward only the named refresh cookie upstream; accept only approved Set-Cookie names and preserve each header separately. The browser stores it for the web host. No Domain attribute or token in browser storage. |
 | Origin and forwarding | Validate allowed browser Origin on cookie mutations; preserve it to the API. Allowlist forwarded headers, strip caller-supplied forwarding headers, disallow arbitrary destinations/redirects, propagate cancellation and use no shared cache.                                                                   |
 | WebSocket             | Connect directly to API using a short-lived access JWT in Socket.IO auth. Validate membership and each subscription; never put refresh credentials or tokens in the URL.                                                                                                                                         |
-| Other clients         | The same API remains directly available at `/v1`; curl uses its own token/cookie jar and documented Origin for cookie mutations.                                                                                                                                                                                 |
+| Other clients         | Local direct clients use API `/v1`; hosted clients use the same REST contracts through public `/api/v1`, because Vercel REST is private behind web. They maintain their own token/cookie jar and send the documented Origin for cookie mutations.                                                                |
 
 Next.js Route Handlers provide the server request/response boundary. The generic proxy is the narrowly documented transport exception to the no-handwritten-API-call rule; feature code still uses only generated SDK operations. Runtime upstream configuration is server-only and must not be baked into a public bundle. **P07-04 implements and tests this design.** [Next.js Route Handlers](https://nextjs.org/docs/app/api-reference/file-conventions/route)
 
@@ -105,16 +105,17 @@ A page boundary is not the end of a column. Reordering uses server-validated anc
 
 ## 3. Backend modules and request contract
 
-| Module                             | Responsibility                                                  | Storage boundary                                                  |
-| ---------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `platform`                         | Configuration, health, request IDs, global error serialization  | Infrastructure state only                                         |
-| `auth` / `workspaces`              | Credentials/session rotation; membership/invitations/switching  | Narrow global identity repository; tenant membership repositories |
-| `permissions`                      | One guard/service; hierarchy visibility and admin policy        | Tenant nodes, grants and current membership                       |
-| `hierarchy`                        | Parent rules, tree/reorder/reparent/archive                     | Node subtree operations                                           |
-| `statuses` / `fields`              | Scope configuration; validate affected descendants              | Identities/overrides/definitions plus affected tasks              |
-| `tasks`                            | CRUD, move/reorder, assignees, status and custom values         | Transaction-bound task repositories                               |
-| `outbox` / `realtime` / `activity` | Durable dispatch, authorized subscriptions, feed reads          | Outbox and stored activity; Redis is transport                    |
-| Worker process                     | Verify event, idempotently write activity, publish invalidation | Same tenant repositories, no import of API application            |
+| Module                  | Responsibility                                                  | Storage boundary                                                              |
+| ----------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `platform`              | Configuration, health, request IDs, global error serialization  | Infrastructure state only                                                     |
+| `auth` / `workspaces`   | Credentials/session rotation; membership/invitations/switching  | Narrow global identity repository; tenant membership repositories             |
+| `permissions`           | One guard/service; hierarchy visibility and admin policy        | Tenant nodes, grants and current membership                                   |
+| `hierarchy`             | Parent rules, tree/reorder/reparent/archive                     | Node subtree operations                                                       |
+| `statuses` / `fields`   | Scope configuration; validate affected descendants              | Identities/overrides/definitions plus affected tasks                          |
+| `tasks`                 | CRUD, move/reorder, assignees, status and custom values         | Transaction-bound task repositories                                           |
+| `realtime` / `activity` | Authorized subscriptions and feed reads                         | Stored activity; Redis is transport                                           |
+| Shared jobs / worker    | Durable dispatch, event verification, activity and publication  | Internal outbox repositories; API outbox exports are compatibility seams only |
+| Worker process          | Verify event, idempotently write activity, publish invalidation | Same tenant repositories, no import of API application                        |
 
 Write request path: authenticated identity/current membership → guarded resource resolution → DTO validation → domain service → transaction → locked permission/configuration recheck → pure validation → repository writes + outbox → commit → typed response. Guard-safe identifier checks precede full DTO pipes; malformed input never bypasses authentication. Every endpoint also needs operationId, spec/client generation and a real behavioral test.
 

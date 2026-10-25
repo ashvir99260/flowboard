@@ -1,6 +1,6 @@
 # Flowboard architecture reference
 
-**Status: local MVP and P12 operational acceptance are implemented and verified; subsequent UI refinements are tracked through P19. External activation remains separately tracked.** Updated 25 October 2026.
+**Status: local MVP and P12 operational acceptance are verified; later UI refinements retain their own evidence. P38 verifies the temporary Vercel/Neon/Upstash demo. Main-branch CD activation, first release publication and future ECR/promotion retain separate gates.** Deployment review: 26 October 2026, source `507a0a8`.
 This is a navigation and change-impact reference for the agreed design, not evidence that its controls run today.
 The complete behavior lives in [PLAN.md](docs/PLAN.md), the original brief in [REQUIREMENTS.md](docs/REQUIREMENTS.md), and chosen defaults in [DECISIONS.md](docs/DECISIONS.md).
 Use the [agent guide map](docs/agents/README.md) and [naming conventions](docs/NAMING_CONVENTIONS.md). Follow [AGENTS.md](AGENTS.md) and the ordered [task backlog](docs/TASKS.md) when implementing. Task evidence records distinguish observed behavior from remaining release/deployment work.
@@ -45,9 +45,13 @@ flowchart LR
     Gateway[Authenticated Socket.IO gateway] --> Guards
   end
   Tenant --> PG[(PostgreSQL)]
-  PG --> Dispatcher[Worker outbox dispatcher]
+  subgraph WorkerProcess[Worker process]
+    Dispatcher[Shared jobs outbox dispatcher]
+    Worker[Activity consumer]
+  end
+  PG --> Dispatcher
   Dispatcher --> Redis[(Redis / BullMQ)]
-  Redis --> Worker[Activity worker]
+  Redis --> Worker
   Worker --> PG
   Worker --> Redis
   Redis --> Gateway
@@ -91,22 +95,23 @@ Features live under `apps/api/src/modules/` (D93). Auth and platform remain flat
 
 ## Module responsibility and data ownership
 
-| Owner                                                          | What belongs here                                                                             |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| API `core/config` / `core/utils`                               | Reusable application/Redis settings / pure helpers                                            |
-| API `shared`                                                   | SharedModule validation/serialization/filter wiring and shared logging providers              |
-| API `core/common`                                              | HTTP decorators, tokens, DTO helpers, sanitized errors/filters and Swagger support            |
-| API `modules/platform`                                         | Liveness/readiness and dependency probes                                                      |
-| API `modules/auth`                                             | Credentials, session rotation, JWT verification; narrow global identity repository            |
-| API `modules/workspaces`                                       | Membership, invitations, verified workspace switching, last-admin protection                  |
-| API `modules/permissions`                                      | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions            |
-| API `modules/hierarchy`                                        | Typed parent relationships, container ordering/reparenting and subtree archive                |
-| API `modules/statuses` / `modules/fields`                      | Scoped configuration changes and validation of affected descendants                           |
-| API `modules/tasks`                                            | Task CRUD/moves/reorders, composing shared validation inside a transaction                    |
-| API `modules/activity` / `modules/realtime` / `modules/outbox` | Authorized feed reads / safe subscriptions and fanout / durable dispatch retries              |
-| Worker                                                         | Verify persisted event identity, idempotent activity insertion and retryable publication      |
-| Database package                                               | Tenant filters, relation checks, storage operations, locks and transaction-bound repositories |
-| Contracts / UI / web                                           | Deterministic domain rules / plain presentation / data and interaction coordination           |
+| Owner                                       | What belongs here                                                                             |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| API `core/config` / `core/utils`            | Reusable application/Redis settings / pure helpers                                            |
+| API `shared`                                | SharedModule validation/serialization/filter wiring and shared logging providers              |
+| API `core/common`                           | HTTP decorators, tokens, DTO helpers, sanitized errors/filters and Swagger support            |
+| API `modules/platform`                      | Liveness/readiness and dependency probes                                                      |
+| API `modules/auth`                          | Credentials, session rotation, JWT verification; narrow global identity repository            |
+| API `modules/workspaces`                    | Membership, invitations, verified workspace switching, last-admin protection                  |
+| API `modules/permissions`                   | One PermissionGuard/PermissionService for HTTP, locked mutations and subscriptions            |
+| API `modules/hierarchy`                     | Typed parent relationships, container ordering/reparenting and subtree archive                |
+| API `modules/statuses` / `modules/fields`   | Scoped configuration changes and validation of affected descendants                           |
+| API `modules/tasks`                         | Task CRUD/moves/reorders, composing shared validation inside a transaction                    |
+| API `modules/activity` / `modules/realtime` | Authorized feed reads, safe subscriptions and fanout                                          |
+| API `modules/outbox`                        | Compatibility exports and optional test injection; no normal API polling                      |
+| Worker and jobs package                     | Dispatch committed events, verify persisted identity, insert activity and retry publication   |
+| Database package                            | Tenant filters, relation checks, storage operations, locks and transaction-bound repositories |
+| Contracts / UI / web                        | Deterministic domain rules / plain presentation / data and interaction coordination           |
 
 Controllers translate transport and call services. Services orchestrate policy and transactions; repositories own persistence. Pure contracts functions accept plain data, so both backend validation and UI previews use the same rules.
 
@@ -218,7 +223,7 @@ Use this table to identify the smallest complete slice, then follow the correspo
 | Task edit, move or reorder              | Shared validation, task transaction, outbox, generated mutation and affected UI; relation/anchor/tenant denials, stale versions, rollback and browser flow (P06, P09)                            |
 | Membership, grant or auth change        | Auth/workspaces/permissions, tenant repository, cache/session and socket lifecycle; ancestor denials, cross-tenant isolation, last-admin/refresh races, revocation (P02/P03, P07-03, P11-03)     |
 | Persistence model, seed or migration    | Database package plus all affected repositories/contracts; real migration/constraint tests, repeatable seed and startup/restart checks (P01-03–05)                                               |
-| Queue, activity or realtime change      | Event contracts, API outbox, worker, gateway and web subscriptions; Redis/Postgres crash/retry/dedup and two-client authorization tests (P11)                                                    |
+| Queue, activity or realtime change      | Event contracts, shared jobs/worker runtime, gateway and web subscriptions; Redis/Postgres crash/retry/dedup and two-client authorization tests (P11/P38)                                        |
 | Shared component or view                | Presentational UI and web coordination; accessible component tests, 320/768/1024/1440px, long content/reduced motion and relevant browser path (P08–P10, P12-01)                                 |
 | Build, dependency or Docker change      | Package manifests/exports, Turbo graph, generation and image inputs; boundary fixtures, clean frozen build, drift checks and five-service health/restart (P00, P07, P12-03)                      |
 

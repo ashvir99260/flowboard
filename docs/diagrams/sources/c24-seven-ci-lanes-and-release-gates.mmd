@@ -1,24 +1,26 @@
 ---
-title: "C24 — Seven CI lanes and release gates · Implemented"
+title: "C24 — Eight CI lanes and release gates · Implemented"
 ---
 flowchart TD
   Trigger[PR, main push or manual workflow] --> Build[Workspace build]
-  Trigger --> Lint[Workspace lint plus commitlint and Actionlint]
-  Trigger --> Test[Workspace test]
+  Trigger --> Lint[Workspace lint, commitlint and Actionlint]
+  Trigger --> Test[Workspace test excluding UI package]
+  Trigger --> UI[UI components and Storybook tests]
   Trigger --> Types[Workspace typecheck]
   Trigger --> Format[Workspace format check]
   Trigger --> Prod[Compose production check]
   Trigger --> Dev[Compose live-update check]
-  Build --> Join[Both matrices must pass]
+  Build --> Join[All eight checks must pass]
   Lint --> Join
   Test --> Join
+  UI --> Join
   Types --> Join
   Format --> Join
   Prod --> Join
   Dev --> Join
   Join --> MainOnly{Non-PR main run?}
-  MainOnly -->|Yes| Publish[Publish affected apps]
+  MainOnly -->|Yes| Publish[Publish affected app images to GHCR]
   MainOnly -->|No| Complete[PR checks complete]
-  Publish --> Enabled{CD_ENABLED true?}
-  Enabled -->|Yes| Legacy[Existing legacy preview adapter]
+  Publish --> Enabled{CD_ENABLED and protected settings?}
+  Enabled -->|Yes| Demo[Temporary Vercel source deployment]
   Enabled -->|No| Skip[Deployment skipped]

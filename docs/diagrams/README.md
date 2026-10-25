@@ -10,7 +10,7 @@ Start at the [atlas](../DIAGRAMS.md). Each chapter embeds SVG images so readers 
 - `render-config.json`: shared neutral theme and readable typography; no remote fonts or resources.
 - Chapter Markdown: context and links around the rendered diagrams.
 
-The catalog is an inventory, not a claim about test coverage. Preserve a diagram's ID when updating it. If a new diagram answers a distinct question, assign a new ID and update the index; avoid duplicating the same flow just to increase the count.
+The catalog is an inventory, not a claim about test coverage. Preserve a diagram's ID when updating it. Source/image filenames are stable links: C24 retains its original seven-lane filename while now showing eight lanes; C28/C29 retain historical Render filenames while describing the temporary Vercel demo. Titles, status and captions describe current meaning. If a new diagram answers a distinct question, assign a new ID and update the index; avoid duplicating the same flow just to increase the count.
 
 ## Render a changed source
 

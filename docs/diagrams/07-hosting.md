@@ -1,26 +1,26 @@
 # Runtime hosting and promotion
 
-[Atlas index](../DIAGRAMS.md). Source snapshot: `cc0e3d6`; render/update details are in the [diagram guide](README.md).
+[Atlas index](../DIAGRAMS.md). Original baseline: `cc0e3d6`; deployment review: `507a0a8`, 26 October 2026. Render details are in the [diagram guide](README.md).
 
-## C28 — Selected Vercel Services topology
+## C28 — Temporary Vercel demo topology
 
-**Status: Configured; not deployed.** The repository config routes public web and Socket.IO traffic to Vercel Services and runs the worker as a Daemon. The legacy deployment adapter is not reconciled; preview worker processing and external Redis capacity remain open.
+**Status: Verified in P38-03.** The temporary demo routes public pages/REST to web and Socket.IO to API; web uses the private binding. Neon, Upstash TLS Redis and the worker daemon were exercised in P38-03. This is not future ECR production.
 
-![Selected Vercel Services topology. Configured; not deployed.](svg/c28-planned-render-topology.svg)
+![Temporary Vercel demo topology. Verified in P38-03.](svg/c28-planned-render-topology.svg)
 
 [Editable Mermaid source](sources/c28-planned-render-topology.mmd). References: [Vercel setup](../VERCEL.md).
 
-## C29 — Vercel activation gates
+## C29 — Demo verification and remaining gates
 
-**Status: Planned.** The plan has explicit infrastructure, implementation and live-verification gates. A successful API trigger or a source diagram cannot substitute for running-digest and product acceptance evidence.
+**Status: Demo verified; CI activation pending.** P38 implementation and manual live checks are complete. Protected main-branch CD activation remains separate; ECR publication and unchanged-image promotion are future work.
 
-![Vercel activation gates. Planned.](svg/c29-render-activation-gates.svg)
+![Demo verification and remaining gates. Demo verified; CI activation pending.](svg/c29-render-activation-gates.svg)
 
-[Editable Mermaid source](sources/c29-render-activation-gates.mmd). References: [Vercel deployment gaps](../VERCEL.md#build-deployment-and-current-gaps), [Open tasks](../TASKS.md).
+[Editable Mermaid source](sources/c29-render-activation-gates.mmd). References: [Live demo evidence](../evidence/P38-03.md), [Current gates](../VERCEL.md#one-project-deployment-and-ci), [Open tasks](../TASKS.md).
 
 ## C30 — Selected-candidate promotion
 
-**Status: Planned.** The future promoter must select explicit manifests, preserve image identity and record environment/configuration evidence. A new main commit must not silently replace a candidate already in testing.
+**Status: Planned.** The future ECR promoter selects compatible manifests and preserves exact image identity with runtime settings. A new main commit must not replace a candidate already in testing.
 
 ![Selected-candidate promotion. Planned.](svg/c30-selected-candidate-promotion.svg)
 
