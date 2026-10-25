@@ -10,8 +10,8 @@ import { readBoardStatuses } from '../board/boardData.ts';
 
 import { readListFilter } from './listFilter.ts';
 
-import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
 import type { TaskTableQuery } from './listLocation';
+import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
 
 export type TaskListResult =
   | { state: 'pending' | 'stale' | 'invalid' }

@@ -1,14 +1,16 @@
 'use client';
 
-import type { InvitationContext, InvitationFormState } from './invitationTypes';
-
-import type { InvitationEnvelope } from '@flowboard/contracts';
 import { FormFields, useZodForm } from '@flowboard/forms';
 import { Alert, Button, Stack, TextField, Typography } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
+
 import { useNotifications } from '../notifications/useNotifications';
+
 import { InvitationDraftSchema, invitationLink } from './invitationData';
 import { useCreateWorkspaceInvitationMutation } from './useCreateWorkspaceInvitationMutation';
+
+import type { InvitationContext, InvitationFormState } from './invitationTypes';
+import type { CreateInvitation, InvitationEnvelope } from '@flowboard/contracts';
 
 export function InvitationForm({
   runtime,
@@ -56,7 +58,7 @@ export function InvitationForm({
     return () => window.removeEventListener('beforeunload', prevent);
   }, [created, isDirty]);
 
-  const save = handleSubmit(async (draft) => {
+  const save = async (draft: Omit<CreateInvitation, 'expectedConfigVersion'>) => {
     if (pending.current || conflict || created) return;
 
     pending.current = true;
@@ -86,7 +88,7 @@ export function InvitationForm({
       pending.current = false;
       setBusy(false);
     }
-  });
+  };
   const reload = async () => {
     if (pending.current) return;
 
@@ -147,7 +149,7 @@ export function InvitationForm({
       component="form"
       aria-label="Invite member"
       noValidate
-      onSubmit={save}
+      onSubmit={(event) => void handleSubmit(save)(event)}
       aria-busy={busy}
       spacing={1.2}
     >

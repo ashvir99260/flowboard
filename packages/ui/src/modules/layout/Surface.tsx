@@ -1,8 +1,8 @@
 'use client';
 
 import { styled } from '@mui/material/styles';
-
 import { default as Typography } from '@mui/material/Typography';
+
 import { Paper } from '../primitives/Paper.js';
 
 import type { ComponentPropsWithRef, ComponentType } from 'react';

@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+
 import { useSession } from '../../providers/useSession';
+
 import { SessionLoading } from './SessionLoading';
 
 export function HomeRedirect() {

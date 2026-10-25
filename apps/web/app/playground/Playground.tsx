@@ -16,8 +16,8 @@ import {
   Typography,
   useThemeMode,
 } from '@flowboard/ui';
-import type { ComponentProps } from 'react';
 import { useState } from 'react';
+
 import { CompactControlsExample } from './CompactControlsExample';
 import { CompositionExamples } from './CompositionExamples';
 import { FieldPreviewExample } from './FieldPreviewExample';
@@ -25,6 +25,8 @@ import { FormExamples } from './FormExamples';
 import { InteractionExamples } from './InteractionExamples';
 import { PlaygroundSection } from './PlaygroundSection';
 import { StatusPreviewExample } from './StatusPreviewExample';
+
+import type { ComponentProps } from 'react';
 
 const options = [
   { id: 'design', label: 'Design', color: '#245CC5' },

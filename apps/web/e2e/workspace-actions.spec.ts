@@ -20,6 +20,8 @@ test('workspace quick actions create a private invitation and the recipient can 
   await task.getByRole('button', { exact: true, name: 'Close task' }).click();
 
   await page.getByRole('button', { exact: true, name: 'Product backlog' }).click();
+  await expect(page).toHaveURL(/\/lists\/f1000000-0000-4000-8000-000000000221$/);
+  await expect(page.getByRole('region', { exact: true, name: 'Task board' })).toBeVisible();
   await expect(page.getByRole('heading', { exact: true, name: 'Product backlog' })).toBeVisible();
   await expect(page.getByRole('button', { exact: true, name: 'New task' })).toHaveCount(1);
   await actions.getByRole('button', { exact: true, name: 'New task' }).click();

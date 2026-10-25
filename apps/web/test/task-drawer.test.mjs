@@ -56,7 +56,7 @@ test('task drawer loads authoritative built-ins and resolved fields and returns 
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await expect(drawer).toHaveCount(0);
   await expect(button).toBeFocused();
-  await page.getByRole('link', { exact: true, name: 'List' }).click();
+  await page.getByRole('link', { exact: true, name: 'List view' }).click();
   await page.getByRole('button', { exact: true, name: 'Open task: Fix login' }).click();
   await expect(drawer.getByLabel(/^Title/)).toHaveValue('Fix login');
 });

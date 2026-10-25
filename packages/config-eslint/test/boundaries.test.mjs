@@ -148,14 +148,14 @@ test('only the server-only API proxy may perform direct web fetches', async () =
   assert.equal(
     (
       await check(
-        'apps/web/src/server/api-proxy.ts',
+        'apps/web/src/server/apiProxy.ts',
         "import 'server-only'; fetch('https://fixed.example/v1/tasks');",
       )
     ).length,
     0,
   );
   assert.equal(
-    (await check('apps/web/src/server/api-proxy.ts', "fetch('https://fixed.example/v1/tasks');"))
+    (await check('apps/web/src/server/apiProxy.ts', "fetch('https://fixed.example/v1/tasks');"))
       .length,
     1,
   );
@@ -163,6 +163,15 @@ test('only the server-only API proxy may perform direct web fetches', async () =
     (
       await check(
         'apps/web/src/server/other-proxy.ts',
+        "import 'server-only'; fetch('https://fixed.example/v1/tasks');",
+      )
+    ).length,
+    1,
+  );
+  assert.equal(
+    (
+      await check(
+        'apps/web/src/server/api-proxy.ts',
         "import 'server-only'; fetch('https://fixed.example/v1/tasks');",
       )
     ).length,

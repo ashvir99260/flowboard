@@ -14,10 +14,10 @@ import { configurationChanged } from '../configurationEvents';
 
 import { readStatusWriteResponse } from './statusWriteData';
 
-import type { StatusScope } from '@flowboard/contracts';
+import type { statusCommand } from './statusFormData';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
-import type { statusCommand } from './statusFormData';
+import type { StatusScope } from '@flowboard/contracts';
 
 type Command =
   | NonNullable<ReturnType<typeof statusCommand>>

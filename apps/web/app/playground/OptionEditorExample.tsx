@@ -1,12 +1,14 @@
 'use client';
 
-import type { CreateScopeField } from '@flowboard/contracts';
 import { CreateScopeFieldSchema } from '@flowboard/contracts';
 import { ControlledField, useZodForm } from '@flowboard/forms';
 import { Box, Button, Paper, Stack, Typography } from '@flowboard/ui';
 import { useState } from 'react';
 import { useFieldArray } from 'react-hook-form';
+
 import { options } from './formExampleData';
+
+import type { CreateScopeField } from '@flowboard/contracts';
 
 export function OptionEditorExample() {
   const [saved, setSaved] = useState<CreateScopeField | null>(null);

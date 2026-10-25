@@ -60,6 +60,7 @@ function mutationViolations(file, text) {
       const imported = (item.propertyName ?? item.name).text;
       if (tanstack && imported === 'useMutation' && !commonHook)
         violations.push(`${file}: import useMutation through useApiMutation`);
+
       if (imported === 'useApiMutation') mutationHooks.add(item.name.text);
     }
   }

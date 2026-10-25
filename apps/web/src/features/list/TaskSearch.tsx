@@ -21,6 +21,7 @@ export function TaskSearch({
   const { control, handleSubmit, reset } = useZodForm(SearchSchema, {
     defaultValues: { q: query.q ?? '' },
   });
+
   const withoutSearch = { ...query };
   delete withoutSearch.q;
 
@@ -37,11 +38,12 @@ export function TaskSearch({
         disabled={pending}
         fields={[{ kind: 'text', name: 'q', label: 'Search tasks' }]}
       />
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
         Search
       </Button>
       <Button
         disabled={pending || !query.q}
+        sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
         onClick={() => {
           reset({ q: '' });
           onChange(withoutSearch);

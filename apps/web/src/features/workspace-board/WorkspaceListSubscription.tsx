@@ -10,7 +10,7 @@ export function WorkspaceListSubscription({
   refresh: () => void;
 }) {
   useRealtime(listId, (event) => {
-    if (event.kind === 'list') refresh();
+    if (event.kind === 'list' || event.kind === 'resync') refresh();
   });
 
   return null;

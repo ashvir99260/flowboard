@@ -122,19 +122,15 @@ test('administrators arrange containers and manage allow, deny and removed grant
 
   await page.getByRole('button', { exact: true, name: 'Change parent' }).click();
   const parent = editor(page).getByLabel(/^Parent container/);
-  const current = await parent.inputValue();
-  await parent.click();
-  await parent.fill('');
-  const destination = (await page.getByRole('option').allTextContents()).find(
-    (label) => label !== current && label !== 'Choose a parent',
-  );
-  expect(destination).toBeTruthy();
-  await selectAutocomplete(parent, destination!);
+  await selectAutocomplete(parent, 'folder: Engineering / Delivery');
   const moved = page.waitForResponse(
     (item) => item.request().method() === 'POST' && item.url().endsWith('/move'),
   );
   await editor(page).getByRole('button', { exact: true, name: 'Move container' }).click();
   expect((await moved).status()).toBe(200);
+  await expect(page.getByLabel(/^Selected container/)).toHaveValue(
+    'list: Engineering / Delivery / Admin browser sibling',
+  );
 
   await selectAutocomplete(page.getByLabel(/^Selected container/), 'space: Admin browser space');
   await page.getByRole('button', { exact: true, name: 'Archive container' }).click();
@@ -149,8 +145,9 @@ test('administrators arrange containers and manage allow, deny and removed grant
   );
   await dialog.getByRole('button', { exact: true, name: 'Archive subtree' }).click();
   expect((await archived).status()).toBe(204);
-  await page.getByLabel(/^Selected container/).click();
-  await page.getByLabel(/^Selected container/).fill('Admin browser space');
+  const selectedContainer = page.getByRole('combobox', { exact: true, name: 'Selected container' });
+  await selectedContainer.click();
+  await selectedContainer.fill('Admin browser space');
   await expect(
     page.getByRole('option', { exact: true, name: 'space: Admin browser space' }),
   ).toHaveCount(0);
@@ -164,11 +161,9 @@ test('members cannot open administration controls through a direct URL', async (
   );
   const workspace = new URL(page.url()).pathname.split('/')[2];
   await page.goto(`/w/${workspace}/settings/administration`);
-  await expect(
-    page.getByText('Only workspace administrators can manage containers and grants.', {
-      exact: true,
-    }),
-  ).toBeVisible();
+  await expect(page.getByRole('alert', { exact: true, name: 'Access denied' })).toContainText(
+    'Only workspace administrators can manage containers and grants.',
+  );
   await expect(editor(page)).toHaveCount(0);
 });
 

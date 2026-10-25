@@ -14,10 +14,10 @@ import { configurationChanged } from '../configurationEvents';
 
 import { readFieldWriteResponse } from './fieldWriteData';
 
-import type { FieldScope } from '@flowboard/contracts';
+import type { fieldCommand } from './fieldFormData';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
-import type { fieldCommand } from './fieldFormData';
+import type { FieldScope } from '@flowboard/contracts';
 
 type Command =
   | NonNullable<ReturnType<typeof fieldCommand>>

@@ -5,8 +5,8 @@ import { FormFields } from '@flowboard/forms';
 import { Box, Button, Stack, Typography } from '@flowboard/ui';
 import { useFieldArray, useWatch } from 'react-hook-form';
 
-import type { UseFormReturn } from 'react-hook-form';
 import type { FieldDraft } from './fieldFormData';
+import type { UseFormReturn } from 'react-hook-form';
 
 export function FieldInputs({
   form,

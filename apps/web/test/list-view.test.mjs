@@ -10,37 +10,49 @@ import { startWeb } from './common/proxy-fixture.mjs';
 import { selectAutocomplete } from './common/selectAutocomplete.mjs';
 import { mobileOption } from './common/table-fixture.mjs';
 
-async function openList(t) {
+async function openList(t, { extraFields = false } = {}) {
   const browser = await chromium.launch({ headless: true });
   t.after(() => browser.close());
   const api = await startAppApi(t);
   api.controls.board.tableMode = true;
-  const { origin } = await startWeb(t, api.origin);
+  api.controls.board.extraFields = extraFields;
+  const { origin } = await startWeb(
+    t,
+    api.origin,
+    'localhost',
+    process.env.FLOWBOARD_WEB_DEV_TEST === '1',
+  );
   const page = await browser.newPage();
   page.setDefaultTimeout(8000);
+  page.setDefaultNavigationTimeout(60000);
   await page.goto(`${origin}/login`);
   await page.getByLabel(/^Email/).fill('alice@example.test');
   await page.getByLabel(/^Password/).fill('browser-test-password');
   await page.getByRole('button', { exact: true, name: 'Sign in' }).click();
   await page.getByRole('button', { name: /Engineering/ }).click();
   await page.getByRole('button', { exact: true, name: 'Public list' }).click();
-  await page.getByRole('link', { exact: true, name: 'List' }).click();
+  await page.getByRole('region', { exact: true, name: 'Task board' }).waitFor();
+  const requestStart = api.requests.length;
+  await page.getByRole('link', { exact: true, name: 'List view' }).click();
   const table = page.getByRole('grid', { name: 'List tasks' });
   await table.waitFor();
-  await expect(page.getByRole('button', { exact: true, name: 'Apply filter' })).toBeEnabled();
+  await expect(page.getByRole('button', { exact: true, name: 'Filters' })).toBeEnabled();
+  await expect(
+    table.getByRole('button', { exact: true, name: 'Open task: Fix login' }),
+  ).toBeVisible();
 
-  return { page, api, table };
+  return { page, api, table, requestStart };
 }
 
 test('list view renders resolved columns and requests cursor pages in server due-date order', async (t) => {
-  const { page, api, table } = await openList(t);
+  const { page, api, table, requestStart } = await openList(t);
   for (const name of ['Title', 'Status', 'Assignees', 'Priority', 'Due date', 'Effort', 'Area'])
     await expect(table.getByRole('columnheader', { name, exact: false })).toBeVisible();
   await expect(table.getByRole('row').nth(1)).toContainText('Fix login');
   await expect(table.getByRole('row').nth(2)).toContainText('Review scope');
-  const first = api.requests.find(
-    (request) => request.path.endsWith('/tasks') && !request.query.statusId,
-  );
+  const first = api.requests
+    .slice(requestStart)
+    .find((request) => request.path.endsWith('/tasks') && !request.query.statusId);
   assert.equal(first.query.sort, 'dueDate');
   assert.equal(first.query.direction, 'asc');
   await page.getByRole('button', { exact: true, name: 'Load more tasks' }).click();
@@ -63,7 +75,9 @@ test('valid uppercase option IDs display normally while cursor requests preserve
   }).toString();
   await page.goto(url.toString());
   await expect(table).toBeVisible();
-  await expect(page.getByLabel(/^Tags/)).toHaveValue('Mobile');
+  await page.getByRole('button', { exact: true, name: 'Filters' }).click();
+  await expect(page.getByRole('combobox', { exact: true, name: 'Value' })).toContainText('Mobile');
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { exact: true, name: 'Load more tasks' }).click();
   await expect(table.getByRole('row').nth(3)).toContainText('Archive notes');
   const requests = api.requests.filter((request) => request.query.fieldKey === 'tags');
@@ -81,35 +95,45 @@ test('manual refresh restarts the complete list at its first page', async (t) =>
   await expect(table.getByText('Plan release', { exact: true })).toHaveCount(0);
 });
 
-test('sort and typed filters run on the server, retaining unsaved field values across sort changes', async (t) => {
+async function filterField(page, field, value) {
+  await page.getByRole('button', { exact: true, name: 'Filters' }).click();
+  await page.getByRole('combobox', { exact: true, name: 'Column' }).click();
+  await page.getByRole('option', { name: field, exact: true }).click();
+  if (field === 'Effort')
+    await page.getByRole('spinbutton', { exact: true, name: 'Value' }).fill(value);
+  else {
+    await page.getByRole('combobox', { exact: true, name: 'Value' }).click();
+    await page.getByRole('option', { name: value, exact: true }).click();
+  }
+}
+
+test('native column sorting and typed filters run on the server across cursor pages', async (t) => {
   const { page, api, table } = await openList(t);
-  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Effort');
-  await page.getByLabel(/^Effort/).fill('0');
-  await selectAutocomplete(page.getByLabel('Sort by', { exact: true }), 'Priority');
-  await expect(page.getByLabel(/^Effort/)).toHaveValue('0');
-  await selectAutocomplete(page.getByLabel('Direction', { exact: true }), 'Descending');
+  await table.getByRole('columnheader', { exact: true, name: 'Priority' }).click();
+  await expect(table.getByRole('columnheader', { name: /Priority/ })).toHaveAttribute(
+    'aria-sort',
+    'ascending',
+  );
+  await table.getByRole('columnheader', { name: /Priority/ }).click();
   await expect(table.getByRole('row').nth(1)).toContainText('Archive notes');
   await expect(table.getByRole('row').nth(2)).toContainText('Unscheduled work');
-  await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
+  await filterField(page, 'Effort', '0');
   await expect(table.getByRole('row').nth(2)).toContainText('Plan release');
   assert.equal(new URL(page.url()).searchParams.get('fieldValue'), '0');
 
-  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Area');
-  await selectAutocomplete(page.getByLabel(/^Area/), 'Mobile');
-  await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
+  await filterField(page, 'Area', 'Mobile');
   await expect(table.getByRole('row').nth(2)).toContainText('Fix login');
 
-  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Approved');
-  await expect(page.getByLabel(/^Approved/)).not.toBeChecked();
-  await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
+  await filterField(page, 'Approved', 'false');
   await expect.poll(() => new URL(page.url()).searchParams.get('fieldValue')).toBe('false');
   await page.getByRole('button', { exact: true, name: 'Load more tasks' }).click();
   await expect(table.getByRole('row').nth(3)).toContainText('Review scope');
 
-  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Tags');
-  await selectAutocomplete(page.getByLabel(/^Tags/), 'Web');
-  await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
+  await filterField(page, 'Tags', 'Web');
   await expect.poll(() => new URL(page.url()).searchParams.get('fieldOperator')).toBe('contains');
+  await expect
+    .poll(() => api.requests.filter((request) => request.query.fieldKey === 'tags').length)
+    .toBeGreaterThan(0);
   const query = api.requests.filter((request) => request.query.fieldKey === 'tags').at(-1).query;
   assert.equal(query.fieldValue, JSON.stringify(ids.option));
   assert.equal(query.fieldOperator, 'contains');
@@ -122,22 +146,28 @@ test('browser history, sorting and filtering reset cursor chains instead of reus
   await page.getByRole('button', { exact: true, name: 'Load more tasks' }).click();
   await expect(table.getByRole('row')).toHaveCount(5);
   const beforeSort = calls().length;
-  await selectAutocomplete(page.getByLabel('Sort by', { exact: true }), 'Priority');
+  await table.getByRole('columnheader', { exact: true, name: 'Priority' }).click();
   await expect(table.getByRole('row')).toHaveCount(3);
   await expect.poll(() => calls().length).toBeGreaterThan(beforeSort);
   assert.equal(calls().at(-1).query.cursor, undefined);
   assert.equal(calls().at(-1).query.sort, 'priority');
-  await selectAutocomplete(page.getByLabel('Direction', { exact: true }), 'Descending');
+  await table.getByRole('columnheader', { name: /Priority/ }).click();
   await expect(table.getByRole('row').nth(1)).toContainText('Archive notes');
   await page.goBack();
-  await expect(page.getByLabel('Direction', { exact: true })).toHaveValue('Ascending');
+  await expect(table.getByRole('columnheader', { name: /Priority/ })).toHaveAttribute(
+    'aria-sort',
+    'ascending',
+  );
   await expect(table.getByRole('row').nth(1)).toContainText('Fix login');
   await expect(table.getByRole('row')).toHaveCount(3);
   await page.goBack();
-  await expect(page.getByLabel('Sort by', { exact: true })).toHaveValue('Due date');
+  await expect(table.getByRole('columnheader', { name: /Due date/ })).toHaveAttribute(
+    'aria-sort',
+    'ascending',
+  );
   await expect(table.getByRole('row')).toHaveCount(3);
   assert.equal(calls().at(-1).query.cursor, undefined);
-  await page.getByRole('link', { exact: true, name: 'Board' }).click();
+  await page.getByRole('link', { exact: true, name: 'Board view' }).click();
   await expect.poll(() => new URL(page.url()).search).toBe('');
   await expect(page.getByRole('region', { exact: true, name: 'Task board' })).toBeVisible();
   await page.goBack();
@@ -149,14 +179,10 @@ test('invalid filter inputs stay local and invalid URLs recover without issuing 
   const { page, api, table } = await openList(t);
   const queries = () =>
     api.requests.filter((request) => request.path.endsWith('/tasks') && !request.query.statusId);
-  await selectAutocomplete(page.getByLabel('Filter field', { exact: true }), 'Effort');
-  await page.getByLabel(/^Effort/).fill('not a number');
+  await page.getByRole('button', { exact: true, name: 'Filters' }).click();
   const before = queries().length;
-  await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
-  await expect(
-    page.getByText('The filter value does not match this field.', { exact: true }),
-  ).toBeVisible();
-  await expect(page.getByLabel(/^Effort/)).toBeFocused();
+  await page.getByRole('spinbutton', { exact: true, name: 'Value' }).fill('');
+  await page.keyboard.press('Escape');
   assert.equal(queries().length, before);
 
   const invalidFilter = new URL(page.url());
@@ -169,9 +195,8 @@ test('invalid filter inputs stay local and invalid URLs recover without issuing 
   await page.goto(invalidFilter.toString());
   await expect(page.getByRole('alert', { name: 'Invalid filter' })).toBeVisible();
   assert.equal(queries().length, before);
-  await selectAutocomplete(page.getByLabel(/^Area/), 'Mobile');
-  await page.getByRole('button', { exact: true, name: 'Apply filter' }).click();
-  await expect(table).toBeVisible();
+  await page.getByRole('button', { exact: true, name: 'Clear filter' }).click();
+  await expect(table.getByRole('row')).toHaveCount(3);
   const beforeUnknown = queries().length;
   const invalidView = new URL(page.url());
   invalidView.search = 'view=calendar';
@@ -251,12 +276,6 @@ test('table controls fit all target widths and the table remains keyboard-scroll
       row && row.height < 96,
       'Short task rows must not grow tall from compressed date columns',
     );
-    const label = await page.locator('label').filter({ hasText: 'Filter field' }).boundingBox();
-    const select = await page.getByLabel('Filter field', { exact: true }).boundingBox();
-    assert.ok(
-      label && select && label.y + label.height <= select.y + 12,
-      'The floating filter label must not overlap the selected value',
-    );
     const bounds = await page.evaluate(() => ({
       viewport: innerWidth,
       width: document.documentElement.scrollWidth,
@@ -274,6 +293,13 @@ test('table controls fit all target widths and the table remains keyboard-scroll
       path: new URL(`../../../.ai-local/p0903/table-${width}.png`, import.meta.url).pathname,
       fullPage: true,
     });
+    await page.getByRole('button', { exact: true, name: 'Filters' }).click();
+    const panel = await page.getByRole('dialog').boundingBox();
+    assert.ok(
+      panel && panel.width <= width && panel.x >= 0 && panel.x + panel.width <= width,
+      `Filter panel must stay within the ${width}px viewport`,
+    );
+    await page.keyboard.press('Escape');
   }
   await expect(table.getByRole('columnheader', { name: /Area/ })).toContainText('Inherited');
   await expect(table.getByRole('columnheader', { name: /Approved/ })).toContainText('Local');
@@ -294,7 +320,7 @@ test('changing lists discards delayed old pages and starts a fresh cursor chain'
   await page.getByRole('button', { exact: true, name: 'Refresh tasks' }).click();
   await request;
   await page.getByRole('button', { exact: true, name: 'Private list' }).click();
-  await page.getByRole('link', { exact: true, name: 'List' }).click();
+  await page.getByRole('link', { exact: true, name: 'List view' }).click();
   await expect(table.getByRole('row').nth(1)).toContainText('Private Fix login');
   await expect(table.getByRole('row')).toHaveCount(3);
   release();
@@ -307,7 +333,7 @@ test('changing lists discards delayed old pages and starts a fresh cursor chain'
 
 test('a board mutation settling after view navigation refreshes the task table', async (t) => {
   const { page, api, table } = await openList(t);
-  await page.getByRole('link', { exact: true, name: 'Board' }).click();
+  await page.getByRole('link', { exact: true, name: 'Board view' }).click();
   const board = page.getByRole('region', { exact: true, name: 'Task board' });
   const card = board
     .getByRole('article')
@@ -361,4 +387,100 @@ test('row body opens the task once and restores its title focus, while text sele
   await title.press('Enter');
   await expect(drawer.getByLabel(/^Title/)).toHaveValue('Fix login');
   await expect(drawer).toHaveCount(1);
+});
+
+test('slow native text filtering keeps the filter focused across successful query updates', async (t) => {
+  const { page, table } = await openList(t, { extraFields: true });
+  await page.getByRole('button', { exact: true, name: 'Filters' }).click();
+  await page.getByRole('combobox', { exact: true, name: 'Column' }).click();
+  await page.getByRole('option', { exact: true, name: 'Notes' }).click();
+  const input = page.getByRole('textbox', { exact: true, name: 'Value' });
+  const matchingReply = (value) =>
+    page.waitForResponse((response) => {
+      const url = new URL(response.url());
+
+      return (
+        url.pathname.endsWith('/tasks') &&
+        url.searchParams.get('fieldKey') === 'notes' &&
+        url.searchParams.get('fieldValue') === JSON.stringify(value) &&
+        response.status() === 200
+      );
+    });
+  const first = matchingReply('a');
+  await input.pressSequentially('a');
+  await first;
+  await expect(table.getByText('No matching tasks', { exact: true })).toBeVisible();
+  await expect(input).toBeFocused();
+  await expect(input).toHaveValue('a');
+  const second = matchingReply('ab');
+  await input.pressSequentially('b');
+  await second;
+  await expect(input).toBeFocused();
+  await expect(input).toHaveValue('ab');
+  await expect.poll(() => new URL(page.url()).searchParams.get('fieldValue')).toBe('"ab"');
+});
+
+test('overlapping text filters keep the latest draft and clear hidden bulk targets', async (t) => {
+  const { page, table } = await openList(t, { extraFields: true });
+  const selected = table.getByRole('row').filter({ hasText: 'Fix login' }).getByRole('checkbox');
+  await selected.click();
+  await expect(selected).toBeChecked();
+  await expect(
+    page.getByRole('button', { exact: true, name: 'Edit selected tasks' }),
+  ).toBeEnabled();
+  let release;
+  let arrived;
+  const firstQuery = new Promise((resolve) => {
+    arrived = resolve;
+  });
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  t.after(() => release());
+  await page.route('**/api/v1/lists/*/tasks?*', async (route) => {
+    const url = new URL(route.request().url());
+    if (
+      url.searchParams.get('fieldKey') === 'notes' &&
+      url.searchParams.get('fieldValue') === '"a"'
+    ) {
+      arrived();
+      await gate;
+      await route.continue().catch(() => {});
+
+      return;
+    }
+
+    await route.continue();
+  });
+  const navigations = [];
+  page.on('request', (request) => {
+    if (new URL(request.url()).searchParams.has('_rsc')) navigations.push(request.url());
+  });
+  await page.getByRole('button', { exact: true, name: 'Filters' }).click();
+  await page.getByRole('combobox', { exact: true, name: 'Column' }).click();
+  await page.getByRole('option', { exact: true, name: 'Notes' }).click();
+  const input = page.getByRole('textbox', { exact: true, name: 'Value' });
+  await input.pressSequentially('a');
+  await firstQuery;
+  await expect(input).toBeFocused();
+  await expect(page.getByRole('button', { exact: true, name: 'Edit selected tasks' })).toHaveCount(
+    0,
+  );
+  const latest = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+
+    return (
+      url.pathname.endsWith('/tasks') &&
+      url.searchParams.get('fieldValue') === '"ab"' &&
+      response.status() === 200
+    );
+  });
+  await input.pressSequentially('b');
+  await latest;
+  release();
+  await expect(table.getByText('No matching tasks', { exact: true })).toBeVisible();
+  await expect(input).toBeFocused();
+  await expect(input).toHaveValue('ab');
+  await expect.poll(() => new URL(page.url()).searchParams.get('fieldValue')).toBe('"ab"');
+  assert.deepEqual(navigations, [], 'query-only edits do not start delayed server navigations');
 });

@@ -3,8 +3,8 @@ import { useState } from 'react';
 
 import { FormField } from './FormField.js';
 
-import type { FieldValue } from '@flowboard/contracts';
 import type { CustomFieldInputProps } from './customFieldTypes.js';
+import type { FieldValue } from '@flowboard/contracts';
 
 const numberPattern = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i;
 const numberValue = (value: string): FieldValue | null => {

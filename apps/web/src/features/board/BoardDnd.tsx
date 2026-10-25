@@ -1,12 +1,14 @@
 'use client';
 
-import type { Placement, ResolvedField, Task } from '@flowboard/contracts';
 import { BoardDropzone, BoardGrid, EmptyState, KanbanColumn, useMediaQuery } from '@flowboard/ui';
-import type { DraggableLocation, DropResult, ResponderProvided } from '@hello-pangea/dnd';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
-import type { ReactNode } from 'react';
+
 import { BoardCard } from './BoardCard';
+
 import type { BoardColumn } from './boardData';
+import type { Placement, ResolvedField, Task } from '@flowboard/contracts';
+import type { DraggableLocation, DropResult, ResponderProvided } from '@hello-pangea/dnd';
+import type { ReactNode } from 'react';
 
 type Props = {
   action: (column: BoardColumn) => ReactNode;

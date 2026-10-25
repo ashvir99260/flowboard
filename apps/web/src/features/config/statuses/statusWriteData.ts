@@ -1,7 +1,7 @@
 import { ScopeStatusEnvelopeSchema } from '@flowboard/contracts';
 
-import type { StatusScope } from '@flowboard/contracts';
 import type { statusCommand } from './statusFormData';
+import type { StatusScope } from '@flowboard/contracts';
 
 export function readStatusWriteResponse(
   value: unknown,

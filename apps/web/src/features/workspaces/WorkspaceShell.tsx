@@ -3,13 +3,16 @@
 import { Box, Button, ErrorState } from '@flowboard/ui';
 import NextLink from 'next/link';
 import { useParams } from 'next/navigation';
-import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
+
 import { apiError } from '../../lib/apiError';
 import { useSession } from '../../providers/useSession';
 import { SessionGate } from '../auth/SessionGate';
 import { SessionLoading } from '../auth/SessionLoading';
+
 import { VerifiedWorkspace } from './VerifiedWorkspace';
+
+import type { ReactNode } from 'react';
 
 export function WorkspaceShell({
   workspaceId,

@@ -108,7 +108,7 @@ export function createEventConsumerRepository(connectionString: string): EventCo
           SELECT id FROM outbox_events
           WHERE id = ${reference.eventId}::uuid AND workspace_id = ${reference.workspaceId}::uuid
             AND (state IN ('pending', 'dispatching', 'queued') OR (state = 'processing' AND lease_until <= clock_timestamp()))
-          FOR UPDATE SKIP LOCKED
+          FOR UPDATE
         )
         UPDATE outbox_events AS event SET state = 'processing', lease_owner = gen_random_uuid()::text,
           lease_until = clock_timestamp() + ${leaseMs} * INTERVAL '1 millisecond',

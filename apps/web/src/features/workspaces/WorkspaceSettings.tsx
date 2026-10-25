@@ -1,8 +1,10 @@
 'use client';
 
 import { ErrorState } from '@flowboard/ui';
+
 import { useSession } from '../../providers/useSession';
 import { SessionLoading } from '../auth/SessionLoading';
+
 import { WorkspaceSettingsContent } from './WorkspaceSettingsContent';
 
 export function WorkspaceSettings() {

@@ -26,10 +26,10 @@ import { assembleTaskList, readListFields } from './listData';
 import { readListFilter } from './listFilter';
 import { writeListLocation } from './listLocation';
 
-import type { QueryClient } from '@tanstack/react-query';
+import type { TaskTableQuery } from './listLocation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { TaskTableQuery } from './listLocation';
+import type { QueryClient } from '@tanstack/react-query';
 
 const pagePolicy = {
   staleTime: Infinity,
@@ -89,15 +89,30 @@ export function useListQuery({
 
   const signature = writeListLocation(query);
 
-  const [attempt, setAttempt] = useState({ signature, generation: 0, restarts: 0 });
+  const [attempt, setAttempt] = useState({
+    signature,
+    generation: 0,
+    queryRevision: 0,
+    restarts: 0,
+  });
 
   useRealtime(listId, () =>
-    setAttempt((current) => ({ signature, generation: current.generation + 1, restarts: 0 })),
+    setAttempt((current) => ({
+      ...current,
+      signature,
+      generation: current.generation + 1,
+      restarts: 0,
+    })),
   );
 
   const changed = attempt.signature !== signature;
   const retry = () =>
-    setAttempt((current) => ({ signature, generation: current.generation + 1, restarts: 0 }));
+    setAttempt((current) => ({
+      ...current,
+      signature,
+      generation: current.generation + 1,
+      restarts: 0,
+    }));
 
   useEffect(
     () =>
@@ -107,7 +122,8 @@ export function useListQuery({
     [client, listId, scope],
   );
 
-  const tags = [`list:${instance}:${signature}:${attempt.generation}`];
+  const tags = [`list:${instance}:${attempt.generation}`];
+  const taskTags = [`list:${instance}:${signature}:${attempt.generation}:${attempt.queryRevision}`];
 
   const statusesQuery = useQuery({
     ...withQueryScope(
@@ -142,7 +158,7 @@ export function useListQuery({
         query: { ...query, limit: '50' },
       }),
       scope,
-      tags,
+      taskTags,
     ),
     ...pagePolicy,
     enabled: configured && filter?.ok === true && !changed,
@@ -180,7 +196,7 @@ export function useListQuery({
   };
 
   if (changed) {
-    setAttempt({ signature, generation: attempt.generation + 1, restarts: 0 });
+    setAttempt({ ...attempt, signature, queryRevision: attempt.queryRevision + 1, restarts: 0 });
   } else if (stale && attempt.restarts < 2) {
     setAttempt({ ...attempt, generation: attempt.generation + 1, restarts: attempt.restarts + 1 });
   }
@@ -189,6 +205,7 @@ export function useListQuery({
 
   return {
     fields: fields.state === 'ready' ? fields.items : [],
+    statuses: statuses.state === 'ready' ? statuses.items : [],
     configured,
     result: restarting ? { state: 'pending' as const } : result,
     error: restarting ? null : error,

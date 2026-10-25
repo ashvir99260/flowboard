@@ -36,6 +36,24 @@ test('realtime listeners follow list scope and unsubscribe without retaining rem
   stopChanges();
 });
 
+test('joining a list refreshes its consumers without reloading the tree or sibling lists', () => {
+  const bus = createRealtimeBus();
+  const received = [];
+  bus.listen(undefined, (event) => received.push(['tree', event]));
+  bus.listen(id(1), (event) => received.push(['joined', event]));
+  bus.listen(id(2), (event) => received.push(['sibling', event]));
+
+  bus.resyncList(id(1));
+  assert.deepEqual(received, [['joined', { kind: 'resync' }]]);
+
+  received.length = 0;
+  bus.dispatch({ kind: 'resync' });
+  assert.deepEqual(
+    received.map(([name]) => name),
+    ['tree', 'joined', 'sibling'],
+  );
+});
+
 test('browser socket origin is runtime configuration independent of the internal API route', () => {
   assert.equal(readRealtimeUrl(undefined), null);
   assert.equal(

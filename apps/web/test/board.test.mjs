@@ -50,7 +50,9 @@ test(
     assert.equal(await todo.getByRole('heading', { level: 3 }).count(), 2);
     await todo.getByText('Urgent', { exact: true }).waitFor();
     await todo.getByText('Effort: 0', { exact: true }).first().waitFor();
-    await todo.getByText(/2026-11-01 00:00:00 UTC/).waitFor();
+    const dueDate = todo.getByLabel('Due · 2026-11-01 00:00:00 UTC', { exact: true });
+    await expect(dueDate).toHaveText('Nov 1');
+    await expect(dueDate).toHaveAttribute('datetime', '2026-11-01T00:00:00.000Z');
     await todo.getByLabel('Alice').waitFor();
     assert.equal(
       await board.getByRole('region', { name: 'Done column' }).getByRole('article').count(),

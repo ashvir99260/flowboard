@@ -56,5 +56,9 @@ export function createRealtimeBus() {
       for (const listener of listeners)
         if (event.kind !== 'list' || listener.listId === event.listId) listener.handler(event);
     },
+    resyncList(listId: string) {
+      for (const listener of listeners)
+        if (listener.listId === listId) listener.handler({ kind: 'resync' });
+    },
   };
 }

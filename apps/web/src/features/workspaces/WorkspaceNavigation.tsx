@@ -37,7 +37,6 @@ export function WorkspaceNavigation({
       <Button
         component={NextLink}
         href="/workspaces"
-        aria-label="Switch workspace"
         onClick={onSelect}
         sx={{ justifyContent: 'space-between', gap: 1, py: 1.2, mb: 1.2, textTransform: 'none' }}
       >

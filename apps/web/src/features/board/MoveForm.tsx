@@ -14,10 +14,10 @@ import { z } from 'zod';
 
 import { prepareMoveFields } from './taskPlacement';
 
-import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
-import type { FieldPath } from 'react-hook-form';
 import type { BoardColumn } from './boardData';
 import type { useTaskPlacementMutation } from './useTaskPlacementMutation';
+import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
+import type { FieldPath } from 'react-hook-form';
 
 const DraftSchema = z.strictObject({
   statusId: UuidSchema,

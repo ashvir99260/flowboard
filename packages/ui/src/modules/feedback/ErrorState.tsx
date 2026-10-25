@@ -1,9 +1,8 @@
 'use client';
 
+import { default as Alert } from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import { styled } from '@mui/material/styles';
-
-import { default as Alert } from '@mui/material/Alert';
 
 import type { ReactNode } from 'react';
 

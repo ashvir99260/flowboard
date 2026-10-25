@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./tokens": {
+      "types": "./dist/modules/theme/tokens.d.ts",
+      "import": "./dist/modules/theme/tokens.js"
     }
   },
   "files": [

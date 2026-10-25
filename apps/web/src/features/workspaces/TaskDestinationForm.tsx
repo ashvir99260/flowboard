@@ -15,9 +15,11 @@ export function TaskDestinationForm({
   onSelect: (listId: string) => void;
 }) {
   const lists = nodes.filter(({ type }) => type === 'list');
+
   const { control, handleSubmit } = useZodForm(DestinationSchema, {
     defaultValues: { listId: lists[0]?.id ?? '' },
   });
+
   const label = (node: ContainerNode) => {
     const parent = nodes.find(({ id }) => id === node.parentId);
     const space = nodes.find(({ id }) => id === parent?.parentId);
@@ -28,8 +30,8 @@ export function TaskDestinationForm({
   if (!lists.length)
     return (
       <EmptyState
-        title="No available lists"
         description="Ask a workspace administrator to create a list or grant you access."
+        title="No available lists"
       />
     );
 

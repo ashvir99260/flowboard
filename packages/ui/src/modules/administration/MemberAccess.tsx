@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { default as Stack } from '@mui/material/Stack';
 import { default as Table } from '@mui/material/Table';
 import { default as TableBody } from '@mui/material/TableBody';
@@ -9,6 +7,8 @@ import { default as TableCell } from '@mui/material/TableCell';
 import { default as TableHead } from '@mui/material/TableHead';
 import { default as TableRow } from '@mui/material/TableRow';
 import { default as Typography } from '@mui/material/Typography';
+import { useState } from 'react';
+
 import { Button } from '../primitives/Button.js';
 
 import type { Grant, Member } from '@flowboard/contracts';
@@ -25,6 +25,7 @@ export function MemberAccess({
   onEdit: (userId: string) => void;
 }) {
   const [page, setPage] = useState(0);
+
   const lastPage = Math.max(0, Math.ceil(members.length / 20) - 1);
   const current = Math.min(page, lastPage);
   const rows = members.slice(current * 20, (current + 1) * 20);
@@ -39,7 +40,7 @@ export function MemberAccess({
         ancestor also needs an allow. Administrators bypass all grants.
       </Typography>
       <Typography>
-        Removing a grant restores the container's public/private policy and ancestor checks.
+        Removing a grant restores the container&apos;s public/private policy and ancestor checks.
       </Typography>
       <Table aria-label="Workspace member grants" size="small">
         <TableHead>
@@ -56,7 +57,7 @@ export function MemberAccess({
               <TableCell>
                 {member.name}
                 {member.email && (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography color="text.secondary" variant="body2">
                     {member.email}
                   </Typography>
                 )}

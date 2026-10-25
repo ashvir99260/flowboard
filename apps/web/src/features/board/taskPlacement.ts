@@ -1,7 +1,7 @@
 import { applyTaskFieldPatch } from '@flowboard/contracts';
 
-import type { FieldValues, MoveTask, Placement, ResolvedField } from '@flowboard/contracts';
 import type { BoardColumn } from './boardData';
+import type { FieldValues, MoveTask, Placement, ResolvedField } from '@flowboard/contracts';
 
 export interface TaskPlacement {
   readonly request: MoveTask & { statusId: string };

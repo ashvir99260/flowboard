@@ -9,15 +9,15 @@ export const BulkTaskTargetSchema = z
   .strictObject({
     id: TaskSchema.shape.id,
     expectedVersion: VersionSchema.meta({
-      title: 'Expected task version',
       description: 'Version of this selected task when the batch was prepared.',
       example: 1,
+      title: 'Expected task version',
     }),
   })
   .meta({
     title: 'Bulk task target',
     description: 'One live task identity and its optimistic revision.',
-    example: { id: '10000000-0000-4000-8000-000000000100', expectedVersion: 1 },
+    example: { expectedVersion: 1, id: '10000000-0000-4000-8000-000000000100' },
   });
 
 export const BulkTaskPatchSchema = z
@@ -58,7 +58,7 @@ export const BulkUpdateTasksSchema = z
       .meta({
         title: 'Selected tasks',
         description: 'Between one and fifty unique tasks, in the desired response order.',
-        example: [{ id: '10000000-0000-4000-8000-000000000100', expectedVersion: 1 }],
+        example: [{ expectedVersion: 1, id: '10000000-0000-4000-8000-000000000100' }],
       }),
     patch: BulkTaskPatchSchema,
   })
@@ -68,7 +68,7 @@ export const BulkUpdateTasksSchema = z
       'Atomically update selected live tasks in the active workspace. Any denied, stale or invalid target rejects the complete batch.',
     example: {
       expectedConfigVersion: 1,
-      tasks: [{ id: '10000000-0000-4000-8000-000000000100', expectedVersion: 1 }],
+      tasks: [{ expectedVersion: 1, id: '10000000-0000-4000-8000-000000000100' }],
       patch: { priority: 'high' },
     },
   });
@@ -90,9 +90,9 @@ export const BulkTaskMutationEnvelopeSchema = z
       }),
     configVersion: ConfigVersionSchema,
     dataVersion: VersionSchema.meta({
-      title: 'Final workspace data version',
       description: 'Workspace data revision after all changed targets commit.',
       example: 2,
+      title: 'Final workspace data version',
     }),
     changedTaskIds: z
       .array(TaskSchema.shape.id)

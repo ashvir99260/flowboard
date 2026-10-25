@@ -2,19 +2,29 @@
 
 import { Alert, AuthPanel, Button, Stack, Typography } from '@flowboard/ui';
 import NextLink from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
+
 import { useSession } from '../../providers/useSession';
 import { SessionLoading } from '../auth/SessionLoading';
+
 import { AcceptInvitationAction } from './AcceptInvitationAction';
 import { readInvitationFragment } from './invitationData';
 
+const readToken = () => readInvitationFragment(window.location.hash);
+const serverToken = () => undefined;
+const subscribeToken = (notify: () => void) => {
+  window.addEventListener('hashchange', notify);
+
+  return () => window.removeEventListener('hashchange', notify);
+};
+
 export function AcceptInvitation() {
   const { runtime, scope, status } = useSession();
-  const [token, setToken] = useState<string | null | undefined>(undefined);
+  const fragmentToken = useSyncExternalStore(subscribeToken, readToken, serverToken);
+  const [token, setToken] = useState(fragmentToken);
 
-  useEffect(() => {
-    setToken(readInvitationFragment(window.location.hash));
-  }, []);
+  // Keep the invitation after successful acceptance clears its URL fragment.
+  if (token === undefined && fragmentToken !== undefined) setToken(fragmentToken);
 
   if (status === 'booting' || !runtime || token === undefined) return <SessionLoading />;
 

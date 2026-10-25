@@ -1,10 +1,11 @@
 'use client';
-import { useId, useRef } from 'react';
 
 import { default as Checkbox } from '@mui/material/Checkbox';
 import { default as FormControl } from '@mui/material/FormControl';
 import { default as FormControlLabel } from '@mui/material/FormControlLabel';
 import { default as FormHelperText } from '@mui/material/FormHelperText';
+import { useId, useRef } from 'react';
+
 import { Button } from '../primitives/Button.js';
 
 import type { CustomFieldInputProps } from './customFieldTypes.js';

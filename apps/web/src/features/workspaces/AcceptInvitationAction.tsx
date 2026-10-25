@@ -1,12 +1,14 @@
 'use client';
 
-import type { AcceptedInvitationEnvelope } from '@flowboard/contracts';
 import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 import NextLink from 'next/link';
 import { useRef, useState } from 'react';
+
+import { useAcceptWorkspaceInvitationMutation } from './useAcceptWorkspaceInvitationMutation';
+
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import { useAcceptWorkspaceInvitationMutation } from './useAcceptWorkspaceInvitationMutation';
+import type { AcceptedInvitationEnvelope } from '@flowboard/contracts';
 
 export function AcceptInvitationAction({
   runtime,
@@ -22,6 +24,7 @@ export function AcceptInvitationAction({
   const [message, setMessage] = useState<string | null>(null);
   const [accepted, setAccepted] = useState<AcceptedInvitationEnvelope | null>(null);
   const pending = useRef(false);
+
   const accept = async () => {
     if (pending.current || accepted) return;
 
@@ -32,6 +35,7 @@ export function AcceptInvitationAction({
       const result = await submit(token);
       if (!result.success) {
         setMessage(result.error.message);
+
         return;
       }
 

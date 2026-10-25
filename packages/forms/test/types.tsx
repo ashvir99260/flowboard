@@ -30,7 +30,7 @@ export function TypedExample() {
   const colorField = (
     <ControlledField
       control={form.control}
-      config={{ kind: 'color', name: 'profile.name', label: 'Color', clearable: true }}
+      config={{ clearable: true, kind: 'color', label: 'Color', name: 'profile.name' }}
     />
   );
 

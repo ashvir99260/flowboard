@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from '../../providers/useSession';
+
 import { ConnectedWorkspaceBoard } from './ConnectedWorkspaceBoard';
 
 export function WorkspaceBoard() {

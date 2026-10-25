@@ -5,8 +5,8 @@ import { createPortal } from 'react-dom';
 import { RegionContext } from './toastContext.js';
 import { ToastDisplay } from './ToastDisplay.js';
 
-import type { ReactNode } from 'react';
 import type { ToastMessage } from './toastTypes.js';
+import type { ReactNode } from 'react';
 
 export function ToastHost({
   children,

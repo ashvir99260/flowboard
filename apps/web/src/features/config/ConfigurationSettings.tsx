@@ -4,6 +4,7 @@ import { ErrorState } from '@flowboard/ui';
 
 import { useSession } from '../../providers/useSession';
 import { SessionLoading } from '../auth/SessionLoading';
+
 import { ConnectedConfigurationSettings } from './ConnectedConfigurationSettings';
 
 import type { ConfigurationSettingsProps } from './configurationTypes';

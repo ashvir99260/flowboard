@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 
 import { startUpstream, startWeb } from './common/proxy-fixture.mjs';
 
@@ -60,7 +60,7 @@ test(
     await effort.fill('0');
     const team = form.getByRole('combobox', { name: /^Team\b/ });
     await team.hover();
-    await team.locator('..').getByRole('button', { exact: true, name: 'Clear' }).click();
+    await form.getByRole('button', { exact: true, name: 'Clear Team' }).click();
     await form.getByRole('button', { name: 'Preview fields' }).click();
     assert.equal(
       await form.getByRole('combobox', { name: /^Team\b/ }).getAttribute('aria-invalid'),
@@ -83,14 +83,12 @@ test(
     await dialog.waitFor();
     await page.waitForFunction(() => document.activeElement?.textContent === 'Cancel');
     await page.keyboard.press('Shift+Tab');
-    assert.ok(
-      await dialog
-        .getByRole('button', { exact: true, name: 'Move card' })
-        .evaluate((element) => element === document.activeElement),
-    );
+    await expect(dialog.getByRole('button', { exact: true, name: 'Close dialog' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(dialog.getByRole('button', { exact: true, name: 'Move card' })).toBeFocused();
     await page.keyboard.press('Escape');
     await dialog.waitFor({ state: 'hidden' });
-    assert.ok(await move.evaluate((element) => element === document.activeElement));
+    await expect(move).toBeFocused();
     await page.getByRole('button', { name: 'Collapse Example space' }).click();
     assert.equal(
       await page.getByRole('button', { exact: true, name: 'Example list' }).isVisible(),

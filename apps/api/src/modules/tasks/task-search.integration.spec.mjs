@@ -102,7 +102,7 @@ test('search combines typed field, status and parent filters before pagination',
 test('search cursors bind the normalized query and reject a changed query or changed data', async () => {
   const first = await create('CursorGalaxy first');
   const second = await create('CursorGalaxy second');
-  const page = await search({ q: 'CursorGalaxy', limit: 1 });
+  const page = await search({ limit: 1, q: 'CursorGalaxy' });
   expect(page.status).toBe(200);
   expect(page.body.pageInfo.hasNextPage).toBe(true);
   expect(page.body.items.map((task) => task.id)).toEqual([first.id]);
@@ -120,14 +120,11 @@ test('search cursors bind the normalized query and reject a changed query or cha
   });
   expect(changedQuery.status).toBe(400);
   expect(changedQuery.body.error.code).toBe('INVALID_CURSOR');
-  const update = await api()
-    .patch(`/v1/tasks/${first.id}`)
-    .set(headers.Alice)
-    .send({
-      description: 'Updated text',
-      expectedVersion: first.version,
-      expectedConfigVersion: 1,
-    });
+  const update = await api().patch(`/v1/tasks/${first.id}`).set(headers.Alice).send({
+    description: 'Updated text',
+    expectedVersion: first.version,
+    expectedConfigVersion: 1,
+  });
   expect(update.status).toBe(200);
   const changedData = await search({
     q: 'CursorGalaxy',

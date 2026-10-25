@@ -80,6 +80,8 @@ test('auth panel and toolbar remain content-driven instead of selecting modes', 
 });
 
 test('the shared theme uses the agreed neutral surfaces in both modes', () => {
-  assert.equal(UI.theme.colorSchemes.light.palette.background.default, 'hsl(0, 0%, 98.0392%)');
-  assert.equal(UI.theme.colorSchemes.dark.palette.background.default, 'hsl(240, 10%, 3.9216%)');
+  assert.equal(UI.theme.colorSchemes.light.palette.background.default, 'hsl(220, 25%, 97.5%)');
+  assert.equal(UI.theme.colorSchemes.light.palette.background.paper, 'hsl(0, 0%, 100%)');
+  assert.equal(UI.theme.colorSchemes.dark.palette.background.default, 'hsl(222, 24%, 9%)');
+  assert.equal(UI.theme.colorSchemes.dark.palette.background.paper, 'hsl(222, 22%, 12%)');
 });

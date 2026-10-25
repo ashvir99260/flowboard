@@ -1,10 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import type { ReactNode } from 'react';
 import { useEffect } from 'react';
+
 import { useSession } from '../../providers/useSession';
+
 import { SessionLoading } from './SessionLoading';
+
+import type { ReactNode } from 'react';
 
 export function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
   const { status } = useSession();

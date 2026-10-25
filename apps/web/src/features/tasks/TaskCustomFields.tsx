@@ -3,9 +3,9 @@
 import { ControlledField, customFieldConfig } from '@flowboard/forms';
 import { Stack, Typography } from '@flowboard/ui';
 
+import type { TaskDraft } from './taskFormData';
 import type { ResolvedField } from '@flowboard/contracts';
 import type { Control } from 'react-hook-form';
-import type { TaskDraft } from './taskFormData';
 
 export function TaskCustomFields({
   fields,

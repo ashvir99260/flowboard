@@ -1,27 +1,32 @@
 'use client';
 
-import { Button } from '@flowboard/ui';
+import { IconButton, Tooltip, WorkspaceIcon } from '@flowboard/ui';
 import NextLink from 'next/link';
-
-import type { ReactNode } from 'react';
 
 export function ListViewLink({
   active,
   href,
-  children,
+  view,
 }: {
   active: boolean;
-  children: ReactNode;
   href: string;
+  view: 'board' | 'list';
 }) {
+  const label = view === 'board' ? 'Board view' : 'List view';
+
   return (
-    <Button
-      component={NextLink}
-      href={href}
-      aria-current={active ? 'page' : undefined}
-      variant={active ? 'contained' : 'outlined'}
-    >
-      {children}
-    </Button>
+    <Tooltip title={label} describeChild>
+      <IconButton
+        component={NextLink}
+        href={href}
+        prefetch={false}
+        aria-label={label}
+        aria-current={active ? 'page' : undefined}
+        color={active ? 'primary' : 'default'}
+        sx={{ bgcolor: active ? 'action.selected' : undefined, borderRadius: 1 }}
+      >
+        <WorkspaceIcon name={view} />
+      </IconButton>
+    </Tooltip>
   );
 }

@@ -6,10 +6,10 @@ import { useWatch } from 'react-hook-form';
 
 import { useListRelatedTasksInfiniteQuery } from './useListRelatedTasksInfiniteQuery';
 
-import type { Control } from 'react-hook-form';
+import type { TaskDraft } from './taskFormData';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { TaskDraft } from './taskFormData';
+import type { Control } from 'react-hook-form';
 
 export function TaskParentField({
   control,

@@ -5,11 +5,11 @@ import { FormFields } from '@flowboard/forms';
 
 import { TaskDescription } from './TaskDescription';
 
+import type { assembleTaskDetail } from './taskDetailData';
+import type { TaskDraft } from './taskFormData';
 import type { Task } from '@flowboard/contracts';
 import type { FormFieldConfig } from '@flowboard/forms';
 import type { Control } from 'react-hook-form';
-import type { assembleTaskDetail } from './taskDetailData';
-import type { TaskDraft } from './taskFormData';
 
 type Detail = Extract<ReturnType<typeof assembleTaskDetail>, { state: 'ready' }>;
 

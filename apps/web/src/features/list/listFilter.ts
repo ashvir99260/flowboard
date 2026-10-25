@@ -1,7 +1,7 @@
 import { ListTasksQuerySchema, validateTaskFields } from '@flowboard/contracts';
 
-import type { ResolvedField } from '@flowboard/contracts';
 import type { TaskTableQuery } from './listLocation';
+import type { ResolvedField } from '@flowboard/contracts';
 
 export function readListFilter(
   query: TaskTableQuery,

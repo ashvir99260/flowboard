@@ -73,7 +73,7 @@ export default {
     const inSource = /(^|[/\\])(src|app)[/\\]/.test(path.relative(owner.directory, filename));
     const isApiProxy =
       path.relative(root, filename).split(path.sep).join('/') ===
-        'apps/web/src/server/api-proxy.ts' &&
+        'apps/web/src/server/apiProxy.ts' &&
       context.sourceCode.ast.body.some(
         (node) => node.type === 'ImportDeclaration' && node.source.value === 'server-only',
       );

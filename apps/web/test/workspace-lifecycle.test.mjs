@@ -56,7 +56,10 @@ test(
     await page.getByRole('link', { exact: true, name: 'Workspace settings' }).click();
     await page.getByLabel(/^Workspace name/).fill('Operations');
     await page.getByRole('button', { exact: true, name: 'Save workspace' }).click();
-    await page.getByRole('heading', { exact: true, name: 'Operations' }).waitFor();
+    await page
+      .getByRole('link', { name: /Switch workspace$/ })
+      .getByText('Operations', { exact: true })
+      .waitFor();
     await page.getByRole('button', { exact: true, name: 'Archive workspace' }).click();
     await page
       .getByRole('dialog', { name: 'Archive this workspace?' })
@@ -71,7 +74,10 @@ test(
     await page.getByRole('heading', { name: 'Choose a workspace' }).waitFor();
     await page.getByRole('button', { exact: true, name: 'Restore Operations' }).click();
     await page.getByRole('navigation', { name: 'Workspace navigation' }).waitFor();
-    await page.getByRole('heading', { exact: true, name: 'Operations' }).waitFor();
+    await page
+      .getByRole('link', { name: /Switch workspace$/ })
+      .getByText('Operations', { exact: true })
+      .waitFor();
     assert.equal(api.workspace.archivedAt, null);
   },
 );
@@ -223,7 +229,10 @@ test(
     );
     assert.equal(api.requests.filter((entry) => entry.method === 'PATCH').length, 1);
     release();
-    await page.getByRole('heading', { exact: true, name: 'One submission' }).waitFor();
+    await page
+      .getByRole('link', { name: /Switch workspace$/ })
+      .getByText('One submission', { exact: true })
+      .waitFor();
   },
 );
 

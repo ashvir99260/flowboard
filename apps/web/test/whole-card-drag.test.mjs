@@ -10,19 +10,23 @@ async function cardInteractions(page, card, title) {
   await expect(card).toHaveAttribute('data-rfd-drag-handle-draggable-id', /.+/);
   await expect(card.locator('[data-rfd-drag-handle-draggable-id]')).toHaveCount(0);
   await expect(card).toHaveAttribute('tabindex', '0');
-  await card.getByRole('button', { name: `Open task: ${title}`, exact: true }).click();
+  const titleButton = card.getByRole('button', { name: `Open task: ${title}`, exact: true });
+  await titleButton.click();
   const drawer = page.getByRole('dialog', { name: 'Task details' });
   await expect(drawer).toBeVisible();
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await expect(drawer).not.toBeVisible();
+  await expect(titleButton).toBeFocused();
   await card.getByRole('article').click({ position: { x: 4, y: 24 } });
   await expect(drawer).toBeVisible();
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await expect(drawer).not.toBeVisible();
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
 
   const move = card.getByRole('button', { name: `Move task: ${title}`, exact: true });
   await move.focus();
-  await page.keyboard.press('Space');
+  await expect(move).toBeFocused();
+  await move.press('Space');
   const dialog = page.getByRole('dialog', { exact: true, name: 'Move task' });
   await expect(dialog).toBeVisible();
   await expect(drawer).not.toBeVisible();

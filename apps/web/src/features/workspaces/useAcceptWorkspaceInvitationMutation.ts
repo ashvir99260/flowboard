@@ -1,7 +1,7 @@
 'use client';
 
 import { acceptWorkspaceInvitationMutation } from '@flowboard/api-client/tanstack-query';
-import { AcceptInvitationSchema, AcceptedInvitationEnvelopeSchema } from '@flowboard/contracts';
+import { AcceptedInvitationEnvelopeSchema, AcceptInvitationSchema } from '@flowboard/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { apiError } from '../../lib/apiError';
@@ -16,7 +16,9 @@ class InvitationResponseError extends Error {}
 export function useAcceptWorkspaceInvitationMutation(runtime: ClientRuntime, scope: QueryScope) {
   const notifications = useNotifications();
   const client = useQueryClient();
+
   const generated = acceptWorkspaceInvitationMutation({ client: runtime.client });
+
   const mutation = useApiMutation({
     mutationKey: ['accept-invitation', scope.revision, scope.userId],
     mutationFn: async (token: string, context) => {

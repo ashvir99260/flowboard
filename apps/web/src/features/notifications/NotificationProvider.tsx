@@ -1,10 +1,12 @@
 'use client';
 
 import { ToastHost } from '@flowboard/ui';
-import type { ReactNode } from 'react';
 import { useState, useSyncExternalStore } from 'react';
+
 import { NotificationContext } from './notificationContext';
 import { createNotificationStore } from './notificationStore';
+
+import type { ReactNode } from 'react';
 
 const empty: ReturnType<ReturnType<typeof createNotificationStore>['snapshot']> = [];
 

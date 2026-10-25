@@ -1,7 +1,7 @@
 import { ScopeFieldEnvelopeSchema } from '@flowboard/contracts';
 
-import type { FieldScope } from '@flowboard/contracts';
 import type { fieldCommand } from './fieldFormData';
+import type { FieldScope } from '@flowboard/contracts';
 
 export function readFieldWriteResponse(
   value: unknown,

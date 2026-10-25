@@ -1,13 +1,16 @@
 'use client';
 
-import type { FieldValues, ResolvedField } from '@flowboard/contracts';
 import { applyTaskFieldPatch, ResolvedFieldSchema } from '@flowboard/contracts';
 import { ControlledField, customFieldConfig, useZodForm } from '@flowboard/forms';
 import { Box, Button, CustomFieldChip, Paper, Stack, Typography } from '@flowboard/ui';
 import { useState } from 'react';
-import type { TaskFieldsDraft } from '../../src/forms/taskFieldsSchema';
+
 import { taskFieldsSchema } from '../../src/forms/taskFieldsSchema';
+
 import { options } from './formExampleData';
+
+import type { TaskFieldsDraft } from '../../src/forms/taskFieldsSchema';
+import type { FieldValues, ResolvedField } from '@flowboard/contracts';
 
 const baseField = ResolvedFieldSchema.parse(ResolvedFieldSchema.meta()?.example);
 

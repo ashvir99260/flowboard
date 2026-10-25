@@ -2,7 +2,6 @@
 
 import { ResolvedStatusSchema } from '@flowboard/contracts';
 import { Stack } from '@flowboard/ui';
-
 import { StatusPreview } from '@flowboard/ui';
 
 // Isolated presentational examples; no API requests or persisted configuration.

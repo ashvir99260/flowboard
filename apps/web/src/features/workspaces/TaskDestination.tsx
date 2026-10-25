@@ -1,10 +1,13 @@
 'use client';
 
 import { Alert, Button, Stack, Typography } from '@flowboard/ui';
+
+import { useTree } from '../tree/useTree';
+
+import { TaskDestinationForm } from './TaskDestinationForm';
+
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import { useTree } from '../tree/useTree';
-import { TaskDestinationForm } from './TaskDestinationForm';
 
 export function TaskDestination({
   runtime,
@@ -19,7 +22,7 @@ export function TaskDestination({
 
   if (tree.state === 'loading')
     return (
-      <Typography role="status" aria-label="Loading destination lists">
+      <Typography aria-label="Loading destination lists" role="status">
         Loading your lists…
       </Typography>
     );

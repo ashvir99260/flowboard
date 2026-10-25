@@ -2,10 +2,10 @@
 
 import { useZodForm } from '@flowboard/forms';
 import { Alert, Button, ConfirmDialog, Stack, Typography } from '@flowboard/ui';
+import { StatusPreview } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
-import { StatusPreview } from '@flowboard/ui';
 import { StatusFields } from './StatusFields';
 import {
   previewStatusEdit,
@@ -16,11 +16,11 @@ import {
 } from './statusFormData';
 import { useStatusMutation } from './useStatusMutation';
 
-import type { FormEvent } from 'react';
-import type { FieldPath } from 'react-hook-form';
+import type { StatusConfiguration, StatusDraft } from './statusFormData';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
-import type { StatusConfiguration, StatusDraft } from './statusFormData';
+import type { FormEvent } from 'react';
+import type { FieldPath } from 'react-hook-form';
 
 export function StatusForm({
   active,

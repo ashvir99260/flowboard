@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import test from 'node:test';
 
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 
 import { startAppApi } from './common/app-api-fixture.mjs';
 import { startWeb } from './common/proxy-fixture.mjs';
@@ -201,7 +201,7 @@ test(
     await page.getByRole('button', { exact: true, name: 'Research plan' }).click();
     await page.getByRole('heading', { exact: true, name: 'Research plan' }).waitFor();
     await open.waitFor();
-    await page.waitForFunction(() => document.activeElement?.textContent === 'Open navigation');
+    await expect(open).toBeFocused();
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
     for (const width of [320, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
