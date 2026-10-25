@@ -120,38 +120,44 @@ Provider accounts, credentials, resources and current free-tier availability are
 
 This index makes omissions visible without duplicating the detailed matrix rows. Each range refers to the stable IDs in [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md); the tables above give the implementation/evidence context.
 
-| IDs       | Topic                                                                                      |
-| --------- | ------------------------------------------------------------------------------------------ |
-| R01–R07   | Process, tests and honest execution.                                                       |
-| R08–R10   | Workspace architecture and boundaries.                                                     |
-| R11–R13   | Shared contracts, DTOs and pure algorithms.                                                |
-| R14–R15   | Database and async infrastructure.                                                         |
-| R16–R22   | Generated client and OpenAPI pipeline.                                                     |
-| R23       | Shared presentational UI.                                                                  |
-| R24–R27   | Docker, health and initialization.                                                         |
-| R28–R35   | Auth, membership and tenant identity.                                                      |
-| R36–R43   | Hierarchy, access and concurrency.                                                         |
-| R44–R49   | Task data and operations.                                                                  |
-| R50–R55   | Status resolution and safety.                                                              |
-| R56–R61   | Custom fields and validation.                                                              |
-| R62–R71   | Web views, state and accessibility.                                                        |
-| R72–R76   | Realtime, activity and reliable delivery.                                                  |
-| R77–R82   | Second channel and seed.                                                                   |
-| R83–R90   | Verification, documentation and evidence.                                                  |
-| R91–R93   | API standards and shared tooling.                                                          |
-| R94–R99   | Releases, hosting and future promotion.                                                    |
-| R100–R107 | AI tooling, research and quality.                                                          |
-| R108–R115 | Detailed design, field contracts and Swagger.                                              |
-| R116–R128 | Backend layout, logging, ESM and style.                                                    |
-| R129–R133 | Local environment and development fixes.                                                   |
-| R134–R140 | Later UI/form/notification/tooling refinements.                                            |
-| R141      | This reader-facing documentation set.                                                      |
-| R142–R143 | UI module/camelCase organization and the subsequent React readability rules.               |
-| R144–R145 | Delivery/runtime/Redis explanations and the Render hosting plan; no live deployment claim. |
-| R146      | Rendered diagram atlas with editable sources, status labels and source references.         |
-| R147      | One-command local Docker preview without env files or manual data initialization.          |
-| R148      | Named feature query hooks separated from frontend view components.                         |
-| R149      | Explicit API DTO/test/module rules and UI component/naming/token creation guidance.        |
-| R150      | Compact outlined controls, filled metadata chips and token-owned application colors.       |
+| IDs       | Topic                                                                                             |
+| --------- | ------------------------------------------------------------------------------------------------- |
+| R01–R07   | Process, tests and honest execution.                                                              |
+| R08–R10   | Workspace architecture and boundaries.                                                            |
+| R11–R13   | Shared contracts, DTOs and pure algorithms.                                                       |
+| R14–R15   | Database and async infrastructure.                                                                |
+| R16–R22   | Generated client and OpenAPI pipeline.                                                            |
+| R23       | Shared presentational UI.                                                                         |
+| R24–R27   | Docker, health and initialization.                                                                |
+| R28–R35   | Auth, membership and tenant identity.                                                             |
+| R36–R43   | Hierarchy, access and concurrency.                                                                |
+| R44–R49   | Task data and operations.                                                                         |
+| R50–R55   | Status resolution and safety.                                                                     |
+| R56–R61   | Custom fields and validation.                                                                     |
+| R62–R71   | Web views, state and accessibility.                                                               |
+| R72–R76   | Realtime, activity and reliable delivery.                                                         |
+| R77–R82   | Second channel and seed.                                                                          |
+| R83–R90   | Verification, documentation and evidence.                                                         |
+| R91–R93   | API standards and shared tooling.                                                                 |
+| R94–R99   | Releases, hosting and future promotion.                                                           |
+| R100–R107 | AI tooling, research and quality.                                                                 |
+| R108–R115 | Detailed design, field contracts and Swagger.                                                     |
+| R116–R128 | Backend layout, logging, ESM and style.                                                           |
+| R129–R133 | Local environment and development fixes.                                                          |
+| R134–R140 | Later UI/form/notification/tooling refinements.                                                   |
+| R141      | This reader-facing documentation set.                                                             |
+| R142–R143 | UI module/camelCase organization and the subsequent React readability rules.                      |
+| R144–R145 | Delivery/runtime/Redis explanations and the Render hosting plan; no live deployment claim.        |
+| R146      | Rendered diagram atlas with editable sources, status labels and source references.                |
+| R147      | One-command local Docker preview without env files or manual data initialization.                 |
+| R148      | Named feature query hooks separated from frontend view components.                                |
+| R149      | Explicit API DTO/test/module rules and UI component/naming/token creation guidance.               |
+| R150      | Compact outlined controls, filled metadata chips and token-owned application colors.              |
+| R151–R155 | Rich demo data, optional colors, row activation, AI/roadmap documentation and datetime alignment. |
+| R156–R160 | Considered workspace lifecycle, subtasks, search, bulk updates and admin screens.                 |
 
 When a feature or provider gate changes, update the owning task/evidence and matrix first, then this summary and the relevant HLD/LLD/application section. A document's existence alone is never evidence that a feature works.
+
+## Approved MVP alignment follow-up
+
+P28/R151–R160 is planned in [MVP_FOLLOW_UPS.md](MVP_FOLLOW_UPS.md). Richer fresh-demo data is the first implementation slice, followed by optional option colors, row activation, submission documentation and task datetime support. Proposed workspace lifecycle, subtasks, search, bulk edits and administration screens remain considered, not implemented. P28-01 records scope only; later task evidence establishes runtime acceptance.

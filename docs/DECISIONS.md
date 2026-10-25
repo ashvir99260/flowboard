@@ -651,3 +651,15 @@ Date: 2026-10-25. Source: user request to more closely replicate shadcn/Headless
 Use shadcn's [input](https://ui.shadcn.com/docs/components/input), [select](https://ui.shadcn.com/docs/components/select) and [badge](https://ui.shadcn.com/docs/components/badge) as the concrete visual references: a 36px-equivalent single-line desktop control, restrained rounded outline and compact filled badge. [Headless UI](https://headlessui.com/react/input) is unstyled, so retain its composition/native-state principles rather than claiming a unique visual replica. Keep MUI/Emotion and existing component contracts.
 
 Use 3.6rem desktop and 4.4rem coarse-pointer control targets, preserving the 62.5% root calibration and user font scaling. Explicit outlined defaults and rem padding replace MUI's large default input padding; multiline controls remain content-driven. Store all application palette values, including severity/secondary/info and colored-fill foreground choices, in tokens. Status/single-select chips use the persisted color with a computed black-or-white token foreground for contrast; mixed multi-select and unset values use neutral fill. Keep domain color values and API contracts unchanged.
+
+## D154 — Ordered MVP alignment and safe richer demo
+
+Date: 2026-10-25. Source: user request to record missing MVP work, expand one demo workspace and consider optional features.
+
+Start with richer fresh-demo fixtures, then optional option colors, row activation, the submission documentation and a separately reviewed datetime migration. Keep the existing real authentication, multiple tenants, generated clients, realtime/activity and conflict handling. Optional consideration is not authorization to implement all enhancements at once.
+
+Expand the main workspace to 3 spaces, 4 folders, 6 lists, 48 tasks and five members: Alice, Bob, Carol, Eve and Frank. Keep all existing IDs, names and original task data; Dan remains administrator of the second tenant. Add a private Operations space so existing Bob/Carol visibility is unchanged, while Eve/Frank have distinct allowed/denied descendants. Boards remain views of lists. New scoped field definitions exercise text, multi-select and checkbox alongside existing number, date and single-select fields.
+
+Keep the seed-once guard: already initialized databases retain their data, credentials, grants and audit times. The richer fixture applies to fresh databases and is previewed in a separate Compose project with separate host ports. Do not reset or merge into an existing user-edited database. An automatic additive upgrade would need current-schema validation, collision policy, shared locks, revision invalidation and rollback; it is outside this first seed slice.
+
+R155 will replace task calendar dates with ISO UTC datetimes in a dedicated contract/database/UI migration; old calendar days become midnight UTC, not a guessed local time. Until that task passes, existing date-only behavior remains explicitly documented. Workspace rename/archive and optional enhancements remain considered, with design gates before implementation.

@@ -1172,14 +1172,110 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `style(ui): compact controls and fill metadata chips`.
   - **Evidence:** [P27-01](evidence/P27-01.md).
 
-## Explicitly deferred work
+## Phase 28 — Richer demo and MVP alignment
+
+- [x] **P28-01 — Record the approved follow-up scope and optional backlog**
+  - **Goal:** Turn the comparison into an ordered, reviewable plan without claiming missing behavior is implemented.
+  - **Requirements:** R151–R160 planning only.
+  - **Files:** Requirements, matrix, plan, decisions, task ledger, MVP_FOLLOW_UPS.md, delivery summary and task evidence.
+  - **Dependencies:** P27-01 and the user's follow-up authorization.
+  - **Acceptance:** Distinguish selected work from considered enhancements; state fresh-only seed safety and retained tenant/auth behavior; each selected task has boundaries and failure cases.
+  - **Validation:** G01; document links/anchors, matrix coverage, formatting and diff checks. Runtime checks not applicable.
+  - **Commit:** `docs: plan richer demo and mvp alignment`.
+  - **Evidence:** [P28-01](evidence/P28-01.md).
+
+- [ ] **P28-02 — Expand the fresh demo workspace and permission personas**
+  - **Goal:** Make one workspace demonstrate multiple boards, all field types and meaningful access differences.
+  - **Requirements:** R151.
+  - **Files:** Database seed and seed integration tests; API permission/task-invariant tests; Compose assertion; current README/plan/seed guidance and evidence.
+  - **Dependencies:** P28-01.
+  - **Acceptance:** Fresh main workspace has 3 spaces, 4 folders, 6 lists, 48 tasks and 5 members; all six field types and valid resolved values; Eve/Frank demonstrate private-ancestor and deny behavior; Alice/Bob/Carol IDs/data and second tenant preserved. Existing seed markers skip all writes. Concurrent/repeated starts are idempotent; disabled seed writes nothing; insertion failures roll back. No developer database reset.
+  - **Validation:** G01–G05/G07/G08/G11; failing fresh-data and permission assertions first, isolated PostgreSQL/HTTP tests, root build/lint/typecheck/test/format. Host processes plus Docker datastores follow the user's development workflow; final image acceptance remains separate.
+  - **Commit:** `feat(database): expand demo workspace fixtures`.
+
+- [ ] **P28-03 — Accept select options without a color**
+  - **Goal:** Match the optional color contract while preserving existing colored options.
+  - **Requirements:** R152.
+  - **Files:** Contracts/field validation, API DTO/OpenAPI, generated client, field editor/display, tests and evidence.
+  - **Dependencies:** P28-02.
+  - **Acceptance:** Missing color is valid and renders neutral; invalid supplied color fails at its field path; updates preserve omission versus explicit values; existing payloads, forms and generation work.
+  - **Validation:** G01–G10 as applicable; red/green contracts/API/UI tests, generation/drift and root gates.
+  - **Commit:** `feat(fields): allow optional option colors`.
+
+- [ ] **P28-04 — Open task details from table rows**
+  - **Goal:** Support clicking non-interactive row content in addition to the accessible title action.
+  - **Requirements:** R153.
+  - **Files:** UI task table, web list interaction tests/stories and evidence.
+  - **Dependencies:** P28-03.
+  - **Acceptance:** Row body opens the correct task once; title remains keyboard accessible; nested links/buttons/inputs, text selection and pagination do not trigger duplicate or unrelated opens.
+  - **Validation:** G01–G05/G09/G10; behavioral browser/component regressions, Storybook and root gates.
+  - **Commit:** `feat(ui): open task details from table rows`.
+
+- [ ] **P28-05 — Document AI contributions and a prioritized roadmap**
+  - **Goal:** Complete the submission narrative with concrete, inspectable examples.
+  - **Requirements:** R154.
+  - **Files:** README, focused AI usage log, roadmap links and evidence.
+  - **Dependencies:** P28-04.
+  - **Acceptance:** Name tools and their roles; cite actual corrections to AI-generated code/tests from history without invented attribution; separate delivered extensions, next work and optional ideas; explain day-5/week-2 priorities and earlier scope superseding the two-stretch limit.
+  - **Validation:** G01; source/history/links/format consistency, no runtime claims from documentation.
+  - **Commit:** `docs: explain ai usage and delivery priorities`.
+
+- [ ] **P28-06 — Migrate task due dates to ISO datetimes**
+  - **Goal:** Preserve a due time and timezone-independent instant instead of only a calendar day.
+  - **Requirements:** R155.
+  - **Files:** Task contracts, Prisma migration/repositories, DTO/spec/generated client, forms/display, pagination tests and date documentation.
+  - **Dependencies:** P28-05.
+  - **Acceptance:** Nullable ISO datetime end to end; old dates migrate to midnight UTC; date custom fields remain calendar values; reject invalid instants; sorting/cursors handle ties/nulls and timezone crossings; UI clearly identifies timezone; stale clients fail clearly rather than silently losing time.
+  - **Validation:** G01–G10; migration preservation, contracts, real PostgreSQL/API, browser timezone/roundtrip tests, generated drift and root gates.
+  - **Commit:** `feat(tasks): support datetime due dates`.
+
+## Considered optional work — not selected for implementation
+
+R156–R160 record consideration only. Do not start these tasks without selecting a design and confirming their priority. Existing live-hosting gates remain separate.
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**
   - **Goal:** Supply real indexing/query behavior only after product scope includes search.
   - **Files:** `apps/worker/src/search-index.stub.ts` replacement, future search contracts/API/UI/tests.
-  - **Dependencies:** P12-03 and an explicit search request/design.
+  - **Requirements:** R158.
+  - **Dependencies:** P28-01 and explicit search selection/design.
   - **Acceptance:** Search backend, access filtering, update/delete/reindex semantics and failure recovery are designed and tested; remove stub TODO only when real behavior exists.
-  - **Validation:** Defined with the future design; this is intentionally not part of MVP completion.
+  - **Validation:** Permission-safe search, update/archive/reindex and failure recovery tests defined with the selected design; not a current completion claim.
   - **Commit:** Chosen when the task is authorized.
+
+- [ ] **NEXT-02 — Design workspace rename and archive/recovery**
+  - **Goal:** Decide root lifecycle separately from space/folder/list CRUD.
+  - **Requirements:** R156.
+  - **Files:** Lifecycle design, workspace contracts/API/UI/migration/tests after selection.
+  - **Dependencies:** P28-01 and explicit selection.
+  - **Acceptance:** Define admin authority, membership/session behavior, archive/restore policy, retained history and cross-tenant isolation before endpoint implementation.
+  - **Validation:** Design review first; actual lifecycle/race/recovery and root gates on implementation.
+  - **Commit:** Chosen after design selection.
+
+- [ ] **NEXT-03 — Design one-level subtasks**
+  - **Goal:** Consider parentTaskId without changing current task ownership accidentally.
+  - **Requirements:** R157.
+  - **Files:** Hierarchy design, task contracts/database/API/UI/tests after selection.
+  - **Dependencies:** P28-01 and explicit selection.
+  - **Acceptance:** Maximum depth one; define list moves, permissions, parent archival and ordering; reject cycles and cross-tenant parents.
+  - **Validation:** Design review and chosen behavioral tests before implementation.
+  - **Commit:** Chosen after design selection.
+
+- [ ] **NEXT-04 — Design bounded bulk task updates**
+  - **Goal:** Consider multi-task status/assignee/field edits without partial unauthorized writes.
+  - **Requirements:** R159.
+  - **Files:** Bulk command design, contracts/API/database/UI/tests after selection.
+  - **Dependencies:** P28-01 and explicit selection.
+  - **Acceptance:** Bound batch size; define all-or-nothing semantics, per-task versions, mixed-list validation, access checks and retry behavior.
+  - **Validation:** Design review and chosen rollback/denial/concurrency tests before implementation.
+  - **Commit:** Chosen after design selection.
+
+- [ ] **NEXT-05 — Design container and grant administration screens**
+  - **Goal:** Consider UI controls for existing guarded administration APIs.
+  - **Requirements:** R160.
+  - **Files:** Admin UI design and web/UI/forms/tests after selection.
+  - **Dependencies:** P28-01 and explicit selection.
+  - **Acceptance:** Define create/edit/archive/reorder/reparent and grants UX, confirmations, permission changes and stale drafts; use generated operations.
+  - **Validation:** Design review and chosen role/keyboard/rollback browser tests before implementation.
+  - **Commit:** Chosen after design selection.
 
 Other future capabilities (OIDC integration, teams, webhook delivery, restore, billing, uploads) are design notes, not disguised incomplete MVP implementations. Add tasks only if those features are requested.
