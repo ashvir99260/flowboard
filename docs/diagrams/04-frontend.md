@@ -16,7 +16,7 @@
 
 ![Load a consistent board. Implemented.](svg/c15-load-a-consistent-board.svg)
 
-[Editable Mermaid source](sources/c15-load-a-consistent-board.mmd). References: [Board queries](../../apps/web/src/features/board/use-board.ts), [Architecture board flow](../../ARCHITECTURE.md#load-a-board-then-drag-a-card).
+[Editable Mermaid source](sources/c15-load-a-consistent-board.mmd). References: [Board queries](../../apps/web/src/features/board/useBoard.ts), [Architecture board flow](../../ARCHITECTURE.md#load-a-board-then-drag-a-card).
 
 ## C16 — Optimistic drag lifecycle
 
@@ -24,7 +24,7 @@
 
 ![Optimistic drag lifecycle. Implemented.](svg/c16-optimistic-drag-lifecycle.svg)
 
-[Editable Mermaid source](sources/c16-optimistic-drag-lifecycle.mmd). References: [Mutation coordination](../../apps/web/src/features/board/use-task-mutation.ts), [Board drag adapter](../../apps/web/src/features/board/board-dnd.tsx).
+[Editable Mermaid source](sources/c16-optimistic-drag-lifecycle.mmd). References: [Mutation coordination](../../apps/web/src/features/board/useTaskPlacementMutation.ts), [Board drag adapter](../../apps/web/src/features/board/BoardDnd.tsx).
 
 ## C17 — Form submit and recovery
 
@@ -32,4 +32,4 @@
 
 ![Form submit and recovery. Implemented.](svg/c17-form-submit-and-recovery.svg)
 
-[Editable Mermaid source](sources/c17-form-submit-and-recovery.mmd). References: [Task form](../../apps/web/src/features/tasks/task-form.tsx), [Task writes](../../apps/web/src/features/tasks/use-task-write.ts), [Form system](../FORM_SYSTEM.md).
+[Editable Mermaid source](sources/c17-form-submit-and-recovery.mmd). References: [Task form](../../apps/web/src/features/tasks/TaskForm.tsx), [Task writes](../../apps/web/src/features/tasks/useTaskWriteMutation.ts), [Form system](../FORM_SYSTEM.md).

@@ -8,7 +8,7 @@ D140 and P15-01 define the shared UI scale. Author reusable presentation in `pac
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | [tokens.ts](../packages/ui/src/modules/theme/tokens.ts)                 | Shared semantic palette inputs, spacing scale, control height and radius values               |
 | [theme.ts](../packages/ui/src/modules/theme/theme.ts)                   | MUI light/dark mapping, typography, spacing function, global defaults and component overrides |
-| [themeProvider.tsx](../packages/ui/src/modules/theme/themeProvider.tsx) | The public provider, Next/Emotion cache and CssBaseline                                       |
+| [themeProvider.tsx](../packages/ui/src/modules/theme/ThemeProvider.tsx) | The public provider, Next/Emotion cache and CssBaseline                                       |
 
 Components read semantic values through `(theme.vars ?? theme).palette` and `theme.spacing(...)`; they do not define a second palette/provider. Add a shared token only when it expresses a reusable design decision. Preserve the public `ThemeProvider` so server rendering and client hydration share the same styling setup.
 

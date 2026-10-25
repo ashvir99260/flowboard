@@ -1410,6 +1410,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
 Other future capabilities (OIDC integration, teams, webhook delivery, general container/task restoration, billing, uploads) are design notes, not disguised incomplete MVP implementations. Add tasks only if those features are requested.
 
 - [ ] **P33-01 — Centralize frontend mutation execution**
+  - **Implementation:** Complete; final acceptance verification pending.
   - **Goal:** Use one typed mutation hook with existing execution policy, preserving feature behavior.
   - **Requirements:** R164.
   - **Files:** Web lib hook, feature mutation hooks and mutation ownership/type regressions.
@@ -1419,6 +1420,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `refactor(web): centralize mutation execution`.
 
 - [ ] **P33-02 — Separate frontend component implementations**
+  - **Implementation:** Complete; final acceptance verification pending.
   - **Goal:** Put independently named components in their own modules while preserving state and context lifetime.
   - **Requirements:** R165.
   - **Files:** Web feature/providers, shared UI/forms components and relevant stories/tests.
@@ -1428,6 +1430,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `refactor(ui): split frontend component modules`.
 
 - [ ] **P33-03 — Apply frontend naming and guardrails**
+  - **Implementation:** Complete; final acceptance verification pending.
   - **Goal:** Consistently name component files PascalCase and hooks/helpers camelCase, including future authoring rules.
   - **Requirements:** R165.
   - **Files:** Frontend source paths/imports, tests/stories, source-layout checks, scoped AGENTS and naming/component/frontend docs.
