@@ -38,6 +38,8 @@
     "@ast-grep/cli": "0.51.0",
     "@flowboard/config-eslint": "workspace:*",
     "@flowboard/config-prettier": "workspace:*",
+    "@neon/config": "1.9.4",
+    "@neon/env": "1.6.5",
     "eslint": "9.39.5",
     "prettier": "3.9.10",
     "turbo": "2.11.10",

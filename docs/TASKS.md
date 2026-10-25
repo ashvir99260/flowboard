@@ -1580,7 +1580,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `fix(worker): own outbox dispatch in the daemon`.
   - **Completion evidence:** [P38-04](evidence/P38-04.md).
 
-- [ ] **P38-05 — Connect the existing Neon production database**
+- [x] **P38-05 — Connect the existing Neon production database**
   - **Goal:** Use the user-selected Neon project with the current Prisma architecture and prove real hosted-service behavior.
   - **Requirements:** R96–R98; preserve central tenancy and the existing authentication boundary.
   - **Files:** `neon.ts`, exact CLI configuration dependencies/lockfile, installed Neon skills, ignored environment files, hosting guide and evidence.
@@ -1588,3 +1588,4 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** `neon deploy` applies only Postgres configuration and pulls runtime variables; pooled connections serve requests and direct connections run checked-in migrations. No public demo credentials, provider secrets or local CLI context enter Git. Prove signup/session, task persistence and worker activity through real Neon/Redis services without changing the application to Neon Auth.
   - **Validation:** `npm run build`, migration result, native API/worker/web startup and hosted-service smoke tests; record errors and unavailable checks.
   - **Commit:** `feat: connect existing neon postgres project`.
+  - **Completion evidence:** [P38-05](evidence/P38-05.md).
