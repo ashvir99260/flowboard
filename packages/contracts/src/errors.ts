@@ -44,6 +44,7 @@ export const ErrorCodeSchema = z
     'CURSOR_STALE',
     'STATUS_IN_USE',
     'FIELD_IN_USE',
+    'TASK_RELATION_IN_USE',
     'CONFIG_INVALIDATES_TASKS',
     'LAST_ADMIN',
     'EMAIL_IN_USE',

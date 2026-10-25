@@ -45,6 +45,7 @@ const taskSelect = {
   customFields: true,
   position: true,
   primaryListId: true,
+  parentTaskId: true,
   version: true,
   archivedAt: true,
   createdAt: true,
@@ -71,6 +72,7 @@ function present(row: TaskRow): Task {
     customFields: row.customFields as Task['customFields'],
     position: row.position,
     primaryListId: row.primaryListId,
+    parentTaskId: row.parentTaskId,
     version: row.version,
     archivedAt: row.archivedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
@@ -166,6 +168,15 @@ export function taskRepository(
 
       const query = parsed.data;
       await scopes.path({ ownerType: 'list', ownerId: listId });
+      if (query.parentTaskId && (await find(query.parentTaskId)).primaryListId !== listId)
+        throw new DatabaseError('INVALID_PARENT', 'Parent must belong to the selected list', [
+          {
+            code: 'invalid_parent',
+            path: ['parentTaskId'],
+            message: 'Choose a parent in this list',
+          },
+        ]);
+
       const resolved = await statuses.resolved(listId);
       const statusIds = resolved.items.map((item) => item.id);
       if (query.statusId && !statusIds.includes(query.statusId))
@@ -218,6 +229,7 @@ export function taskRepository(
       const ids = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`
         SELECT t.id FROM tasks t WHERE t.workspace_id=${workspaceId}::uuid AND t.primary_list_id=${listId}::uuid AND t.archived_at IS NULL
         ${query.statusId ? Prisma.sql`AND t.status_id=${query.statusId}::uuid` : Prisma.empty}
+        ${query.parentTaskId ? Prisma.sql`AND t.parent_task_id=${query.parentTaskId}::uuid` : Prisma.empty}
         ${query.priority ? Prisma.sql`AND t.priority::text=${query.priority}` : Prisma.empty}
         ${query.assigneeId ? Prisma.sql`AND EXISTS (SELECT 1 FROM task_assignees a WHERE a.workspace_id=t.workspace_id AND a.task_id=t.id AND a.user_id=${query.assigneeId}::uuid)` : Prisma.empty}
         ${await filter(listId, query)} ${continuation} ORDER BY ${orders[query.sort]} LIMIT ${query.limit + 1}`);
@@ -292,6 +304,31 @@ export function taskRepository(
     if (issues.length)
       throw new DatabaseError('FIELD_VALUE_INVALID', 'Task field values are invalid', issues);
   }
+  async function validateParent(listId: string, parentTaskId: string | null, taskId?: string) {
+    if (parentTaskId === null) return;
+
+    const parent = await find(parentTaskId);
+    const hasChildren = taskId
+      ? await tx.task.findFirst({
+          where: { workspaceId, parentTaskId: taskId },
+          select: { id: true },
+        })
+      : null;
+    if (
+      parent.id === taskId ||
+      parent.primaryListId !== listId ||
+      parent.parentTaskId !== null ||
+      hasChildren
+    )
+      throw new DatabaseError('INVALID_PARENT', 'Choose a top-level parent in the same list', [
+        {
+          code: 'invalid_parent',
+          path: ['parentTaskId'],
+          message:
+            'Subtasks must have a distinct top-level parent in the same list and cannot have children',
+        },
+      ]);
+  }
   async function place(taskId: string, input: MoveTask | ReorderTask) {
     const moving = 'destinationListId' in input;
     const command: ReorderTask &
@@ -306,6 +343,19 @@ export function taskRepository(
     );
     const destinationListId = command.destinationListId ?? previous.primaryListId;
     await scopes.path({ ownerType: 'list', ownerId: destinationListId });
+    if (
+      destinationListId !== previous.primaryListId &&
+      (previous.parentTaskId !== null ||
+        (await tx.task.findFirst({
+          where: { workspaceId, parentTaskId: previous.id },
+          select: { id: true },
+        })))
+    )
+      throw new DatabaseError(
+        'TASK_RELATION_IN_USE',
+        'Detach live subtasks before moving; archived child references also prevent moving their parent',
+      );
+
     const sourceStatuses = await statuses.resolved(previous.primaryListId);
     const sourceStatus = sourceStatuses.items.find((status) => status.id === previous.statusId);
     if (!sourceStatus)
@@ -447,6 +497,7 @@ export function taskRepository(
       await scopes.path({ ownerType: 'list', ownerId: listId });
       const { expectedConfigVersion, ...data } = CreateTaskSchema.parse(input);
       await preconditions(expectedConfigVersion);
+      await validateParent(listId, data.parentTaskId);
       const schema = await fields.resolved(listId);
       const values = applyTaskFieldPatch({
         fields: schema.items,
@@ -471,6 +522,7 @@ export function taskRepository(
         data: {
           workspaceId,
           primaryListId: listId,
+          parentTaskId: data.parentTaskId,
           title: data.title,
           description: data.description,
           statusId: data.statusId,
@@ -523,9 +575,12 @@ export function taskRepository(
         statusId: parsed.statusId ?? previous.statusId,
         priority: parsed.priority ?? previous.priority,
         dueDate: parsed.dueDate === undefined ? previous.dueDate : parsed.dueDate,
+        parentTaskId:
+          parsed.parentTaskId === undefined ? previous.parentTaskId : parsed.parentTaskId,
         customFields: values.values,
         assigneeIds: [...(parsed.assigneeIds ?? previous.assigneeIds)].sort(),
       };
+      await validateParent(previous.primaryListId, next.parentTaskId, previous.id);
       await validate(previous.primaryListId, {
         ...next,
         assigneeIds: parsed.assigneeIds ?? previous.assigneeIds,
@@ -543,6 +598,9 @@ export function taskRepository(
 
       if (next.dueDate !== previous.dueDate)
         changes.dueDate = { before: previous.dueDate, after: next.dueDate };
+
+      if (next.parentTaskId !== previous.parentTaskId)
+        changes.parentTaskId = { before: previous.parentTaskId, after: next.parentTaskId };
 
       if (JSON.stringify(next.assigneeIds) !== JSON.stringify(previous.assigneeIds))
         changes.assigneeIds = { before: previous.assigneeIds, after: next.assigneeIds };
@@ -574,6 +632,7 @@ export function taskRepository(
           statusId: next.statusId,
           priority: next.priority,
           dueDate: next.dueDate ? new Date(next.dueDate) : null,
+          parentTaskId: next.parentTaskId,
           customFields: next.customFields,
           position: nextPosition,
           version: { increment: 1 },
@@ -606,6 +665,17 @@ export function taskRepository(
       const previous = await find(taskId);
       const parsed = ArchiveTaskSchema.parse(input);
       await preconditions(parsed.expectedConfigVersion, previous, parsed.expectedVersion);
+      if (
+        await tx.task.findFirst({
+          where: { workspaceId, parentTaskId: previous.id, archivedAt: null },
+          select: { id: true },
+        })
+      )
+        throw new DatabaseError(
+          'TASK_RELATION_IN_USE',
+          'Archive or detach live subtasks before archiving their parent',
+        );
+
       const [clock] = await tx.$queryRaw<
         { now: Date }[]
       >`SELECT clock_timestamp()::timestamptz(3) AS now`;

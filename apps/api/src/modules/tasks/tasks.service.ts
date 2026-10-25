@@ -67,10 +67,20 @@ export class TasksService {
     );
   }
   create(identity: IdentitySession, listId: string, input: CreateTask) {
-    return this.write(identity, { listId }, (store) => store.tasks.create(listId, input));
+    return this.write(identity, { listId }, async (store) => {
+      if (input.parentTaskId)
+        await this.permissions.assertTask(store, input.parentTaskId, 'task.read');
+
+      return store.tasks.create(listId, input);
+    });
   }
   update(identity: IdentitySession, taskId: string, input: UpdateTask) {
-    return this.write(identity, { taskId }, (store) => store.tasks.update(taskId, input));
+    return this.write(identity, { taskId }, async (store) => {
+      if (input.parentTaskId)
+        await this.permissions.assertTask(store, input.parentTaskId, 'task.read');
+
+      return store.tasks.update(taskId, input);
+    });
   }
   archive(identity: IdentitySession, taskId: string, input: ArchiveTask) {
     return this.write(identity, { taskId }, (store) => store.tasks.archive(taskId, input));
@@ -120,6 +130,7 @@ export class TasksService {
           direction: query.direction,
           statusId: query.statusId,
           assigneeId: query.assigneeId,
+          parentTaskId: query.parentTaskId,
           priority: query.priority,
           fieldKey: query.fieldKey,
           fieldOperator: query.fieldOperator,
@@ -138,6 +149,9 @@ export class TasksService {
     return this.logger.observe('tasks.list', () =>
       database.read(context, async (store) => {
         await this.permissions.assertNode(store, listId, 'task.read');
+        if (query.parentTaskId)
+          await this.permissions.assertTask(store, query.parentTaskId, 'task.read');
+
         const previous = cursor.decodeTask(query.cursor, binding);
         const revisions = await store.tasks.revisions();
         if (

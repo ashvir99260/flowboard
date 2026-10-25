@@ -1298,7 +1298,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `docs: define one-level subtask behavior`.
   - **Evidence:** [NEXT-03](evidence/NEXT-03.md).
 
-- [ ] **P30-01 — Implement subtask relations and guarded task operations**
+- [x] **P30-01 — Implement subtask relations and guarded task operations**
   - **Goal:** Persist one-level task relationships through existing APIs without invalid links, data loss or unscoped events.
   - **Requirements:** R157; preserve tenant/permission/task/configuration/cursor contracts.
   - **Files:** Task/query/event/error contracts; Prisma migration/schema and task/event repositories; API task service/Swagger/error mapping; generated spec/client, strict fixtures, database/API/contract tests and field documentation.
@@ -1306,6 +1306,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Acceptance:** Nullable same-list parent, maximum depth one, omission/clear semantics, guarded parent-filtered pagination, documented move/archive restrictions, no-op and historical event compatibility; failed/racing commands cannot leave partial state.
   - **Validation:** G01–G08/G11; failure-first contracts, real PostgreSQL/REST migration/FK/denial/rollback/race tests, root gates and generated drift checks.
   - **Commit:** `feat(tasks): add one-level subtask relations`.
+  - **Evidence:** [P30-01](evidence/P30-01.md).
 
 - [ ] **P30-02 — Add subtask creation and navigation to the drawer**
   - **Goal:** Create, attach/detach and navigate related tasks while retaining flat board/list behavior and dirty drafts.

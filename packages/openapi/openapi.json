@@ -902,6 +902,16 @@
             "title": "Configuration version",
             "type": "integer"
           },
+          "parentTaskId": {
+            "default": null,
+            "description": "Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.",
+            "example": null,
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "title": "Parent task ID",
+            "type": "string"
+          },
           "priority": {
             "default": "none",
             "description": "Urgent, high, normal, low or none.",
@@ -1203,6 +1213,7 @@
                   "CURSOR_STALE",
                   "STATUS_IN_USE",
                   "FIELD_IN_USE",
+                  "TASK_RELATION_IN_USE",
                   "CONFIG_INVALIDATES_TASKS",
                   "LAST_ADMIN",
                   "EMAIL_IN_USE",
@@ -5033,6 +5044,7 @@
             "description": "Review the latest design.",
             "dueDate": null,
             "id": "10000000-0000-4000-8000-000000000100",
+            "parentTaskId": null,
             "position": 0,
             "primaryListId": "10000000-0000-4000-8000-000000000010",
             "priority": "normal",
@@ -5079,6 +5091,7 @@
               "description": "Review the latest design.",
               "dueDate": null,
               "id": "10000000-0000-4000-8000-000000000100",
+              "parentTaskId": null,
               "position": 0,
               "primaryListId": "10000000-0000-4000-8000-000000000010",
               "priority": "normal",
@@ -5212,6 +5225,15 @@
                 "title": "Task ID",
                 "type": "string"
               },
+              "parentTaskId": {
+                "description": "Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.",
+                "example": null,
+                "format": "uuid",
+                "nullable": true,
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Parent task ID",
+                "type": "string"
+              },
               "position": {
                 "description": "Server-controlled order within the current status column.",
                 "example": 0,
@@ -5295,6 +5317,7 @@
               "customFields",
               "position",
               "primaryListId",
+              "parentTaskId",
               "version",
               "archivedAt",
               "createdAt",
@@ -5365,6 +5388,7 @@
                 "description": "Review the latest design.",
                 "dueDate": null,
                 "id": "10000000-0000-4000-8000-000000000100",
+                "parentTaskId": null,
                 "position": 0,
                 "primaryListId": "10000000-0000-4000-8000-000000000010",
                 "priority": "normal",
@@ -5498,6 +5522,15 @@
                   "title": "Task ID",
                   "type": "string"
                 },
+                "parentTaskId": {
+                  "description": "Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.",
+                  "example": null,
+                  "format": "uuid",
+                  "nullable": true,
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "title": "Parent task ID",
+                  "type": "string"
+                },
                 "position": {
                   "description": "Server-controlled order within the current status column.",
                   "example": 0,
@@ -5581,6 +5614,7 @@
                 "customFields",
                 "position",
                 "primaryListId",
+                "parentTaskId",
                 "version",
                 "archivedAt",
                 "createdAt",
@@ -5648,6 +5682,7 @@
             "description": "Review the latest design.",
             "dueDate": null,
             "id": "10000000-0000-4000-8000-000000000100",
+            "parentTaskId": null,
             "position": 0,
             "primaryListId": "10000000-0000-4000-8000-000000000010",
             "priority": "normal",
@@ -5680,6 +5715,7 @@
               "description": "Review the latest design.",
               "dueDate": null,
               "id": "10000000-0000-4000-8000-000000000100",
+              "parentTaskId": null,
               "position": 0,
               "primaryListId": "10000000-0000-4000-8000-000000000010",
               "priority": "normal",
@@ -5813,6 +5849,15 @@
                 "title": "Task ID",
                 "type": "string"
               },
+              "parentTaskId": {
+                "description": "Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.",
+                "example": null,
+                "format": "uuid",
+                "nullable": true,
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Parent task ID",
+                "type": "string"
+              },
               "position": {
                 "description": "Server-controlled order within the current status column.",
                 "example": 0,
@@ -5896,6 +5941,7 @@
               "customFields",
               "position",
               "primaryListId",
+              "parentTaskId",
               "version",
               "archivedAt",
               "createdAt",
@@ -6517,6 +6563,15 @@
             "minimum": 1,
             "title": "Expected task version",
             "type": "integer"
+          },
+          "parentTaskId": {
+            "description": "Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.",
+            "example": null,
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "title": "Parent task ID",
+            "type": "string"
           },
           "priority": {
             "description": "Urgent, high, normal, low or none.",
@@ -9818,7 +9873,7 @@
     },
     "/v1/lists/{listId}/tasks": {
       "get": {
-        "description": "Read authorized live tasks using typed filters, stable sort and a cursor bound to the query and both workspace revisions.",
+        "description": "Read authorized live tasks using typed filters, including an optional visible parent task, stable sort and a cursor bound to every filter and both workspace revisions.",
         "operationId": "listTasks",
         "parameters": [
           {
@@ -9857,6 +9912,19 @@
               "example": "50",
               "pattern": "^(?:[1-9]\\d?|100)$",
               "title": "Page limit",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only live children of this visible task in the selected list.",
+            "in": "query",
+            "name": "parentTaskId",
+            "required": false,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000100",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Parent task filter",
               "type": "string"
             }
           },
@@ -10212,7 +10280,7 @@
         ]
       },
       "post": {
-        "description": "Validate current list status, fields and visible member assignments under the workspace lock; append within the status column and record an outbox event.",
+        "description": "Validate current list status, fields, visible assignments and an optional top-level parent in the same list under the workspace lock; append within the status column and record an outbox event.",
         "operationId": "createTask",
         "parameters": [
           {
@@ -10237,6 +10305,15 @@
                   "summary": "Create a task",
                   "value": {
                     "expectedConfigVersion": 1,
+                    "statusId": "10000000-0000-4000-8000-000000000101",
+                    "title": "Review delivery"
+                  }
+                },
+                "subtask": {
+                  "summary": "Create a child in the same list",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "parentTaskId": "10000000-0000-4000-8000-000000000100",
                     "statusId": "10000000-0000-4000-8000-000000000101",
                     "title": "Review delivery"
                   }
@@ -10266,6 +10343,7 @@
                     "description": "Review the latest design.",
                     "dueDate": null,
                     "id": "10000000-0000-4000-8000-000000000100",
+                    "parentTaskId": null,
                     "position": 0,
                     "primaryListId": "10000000-0000-4000-8000-000000000010",
                     "priority": "normal",
@@ -15241,7 +15319,7 @@
     },
     "/v1/tasks/{taskId}": {
       "delete": {
-        "description": "Soft-delete a live task and atomically record its data revision and event; retained assignments and values remain historical.",
+        "description": "Soft-delete a live task and atomically record its data revision and event. A parent with live children is rejected with TASK_RELATION_IN_USE; archived child links and other retained values remain historical.",
         "operationId": "archiveTask",
         "parameters": [
           {
@@ -15529,6 +15607,7 @@
                     "description": "Review the latest design.",
                     "dueDate": null,
                     "id": "10000000-0000-4000-8000-000000000100",
+                    "parentTaskId": null,
                     "position": 0,
                     "primaryListId": "10000000-0000-4000-8000-000000000010",
                     "priority": "normal",
@@ -15762,7 +15841,7 @@
         ]
       },
       "patch": {
-        "description": "Patch supplied fields and revalidate the complete task, current permissions and expected revisions; omitted values are preserved and changed status appends to its column.",
+        "description": "Patch supplied fields and revalidate the complete task, parent relation, permissions and expected revisions. Omitted values are preserved; parentTaskId null explicitly detaches. Subtasks cannot have children.",
         "operationId": "updateTask",
         "parameters": [
           {
@@ -15783,6 +15862,14 @@
           "content": {
             "application/json": {
               "examples": {
+                "detach": {
+                  "summary": "Detach a child from its parent",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "expectedVersion": 1,
+                    "parentTaskId": null
+                  }
+                },
                 "update": {
                   "summary": "Rename a task",
                   "value": {
@@ -15816,6 +15903,7 @@
                     "description": "Review the latest design.",
                     "dueDate": null,
                     "id": "10000000-0000-4000-8000-000000000100",
+                    "parentTaskId": null,
                     "position": 0,
                     "primaryListId": "10000000-0000-4000-8000-000000000010",
                     "priority": "normal",
@@ -16301,7 +16389,7 @@
     },
     "/v1/tasks/{taskId}/move": {
       "post": {
-        "description": "Validate permissions, configuration and column placement under the workspace lock; update all affected task positions and durable events atomically.",
+        "description": "Validate permissions, configuration and column placement under the workspace lock; update positions and events atomically. Cross-list moves reject linked children and parents with any children, including archived references.",
         "operationId": "moveTask",
         "parameters": [
           {
@@ -16358,6 +16446,7 @@
                     "description": "Review the latest design.",
                     "dueDate": null,
                     "id": "10000000-0000-4000-8000-000000000100",
+                    "parentTaskId": null,
                     "position": 0,
                     "primaryListId": "10000000-0000-4000-8000-000000000010",
                     "priority": "normal",
@@ -16649,6 +16738,7 @@
                     "description": "Review the latest design.",
                     "dueDate": null,
                     "id": "10000000-0000-4000-8000-000000000100",
+                    "parentTaskId": null,
                     "position": 0,
                     "primaryListId": "10000000-0000-4000-8000-000000000010",
                     "priority": "normal",

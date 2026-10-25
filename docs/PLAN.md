@@ -357,3 +357,5 @@ Workspace lifecycle R156 is designed in [WORKSPACE_LIFECYCLE.md](WORKSPACE_LIFEC
 P29-03 repairs the overwritten form guide used by the lifecycle controls. This documentation correction preserves existing runtime form behavior. Continue with NEXT-03 subtask design and its implementation slices.
 
 NEXT-03 defines [one-level subtasks](SUBTASKS.md) and D158: same-list nullable task relations, flat views, explicit move/archive restrictions and retained history. P30-01 owns the migration/contracts/guarded API; P30-02 owns drawer creation and navigation. R157 remains unverified until both implementation slices pass.
+
+[P30-01](evidence/P30-01.md) verifies the subtask API, migration and event compatibility. P30-02 is the next implementation slice.

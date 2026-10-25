@@ -506,6 +506,12 @@ export type CreateTaskDto = {
      */
     expectedConfigVersion: number;
     /**
+     * Parent task ID
+     *
+     * Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.
+     */
+    parentTaskId?: string | null;
+    /**
      * Priority
      *
      * Urgent, high, normal, low or none.
@@ -646,7 +652,7 @@ export type ErrorResponseDtoOutput = {
          *
          * Stable machine-readable error identifier. Clients should branch on this value rather than message text.
          */
-        code: 'VALIDATION_FAILED' | 'STATUS_NOT_AVAILABLE' | 'FIELD_VALUE_INVALID' | 'INVALID_PARENT' | 'INVALID_ANCHOR' | 'INVALID_CURSOR' | 'UNAUTHENTICATED' | 'SESSION_EXPIRED' | 'REFRESH_REUSED' | 'FORBIDDEN' | 'MEMBERSHIP_REQUIRED' | 'WORKSPACE_ARCHIVED' | 'MEMBERSHIP_EXISTS' | 'ORIGIN_REJECTED' | 'NOT_FOUND' | 'VERSION_CONFLICT' | 'CONFIG_CONFLICT' | 'CURSOR_STALE' | 'STATUS_IN_USE' | 'FIELD_IN_USE' | 'CONFIG_INVALIDATES_TASKS' | 'LAST_ADMIN' | 'EMAIL_IN_USE' | 'INVITATION_UNAVAILABLE' | 'PAYLOAD_TOO_LARGE' | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE';
+        code: 'VALIDATION_FAILED' | 'STATUS_NOT_AVAILABLE' | 'FIELD_VALUE_INVALID' | 'INVALID_PARENT' | 'INVALID_ANCHOR' | 'INVALID_CURSOR' | 'UNAUTHENTICATED' | 'SESSION_EXPIRED' | 'REFRESH_REUSED' | 'FORBIDDEN' | 'MEMBERSHIP_REQUIRED' | 'WORKSPACE_ARCHIVED' | 'MEMBERSHIP_EXISTS' | 'ORIGIN_REJECTED' | 'NOT_FOUND' | 'VERSION_CONFLICT' | 'CONFIG_CONFLICT' | 'CURSOR_STALE' | 'STATUS_IN_USE' | 'FIELD_IN_USE' | 'TASK_RELATION_IN_USE' | 'CONFIG_INVALIDATES_TASKS' | 'LAST_ADMIN' | 'EMAIL_IN_USE' | 'INVITATION_UNAVAILABLE' | 'PAYLOAD_TOO_LARGE' | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE';
         /**
          * Validation details
          *
@@ -2592,6 +2598,12 @@ export type TaskMutationResponseDtoOutput = {
          */
         id: string;
         /**
+         * Parent task ID
+         *
+         * Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.
+         */
+        parentTaskId: string | null;
+        /**
          * Position
          *
          * Server-controlled order within the current status column.
@@ -2735,6 +2747,12 @@ export type TaskPageResponseDtoOutput = {
          * Stable task identity.
          */
         id: string;
+        /**
+         * Parent task ID
+         *
+         * Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.
+         */
+        parentTaskId: string | null;
         /**
          * Position
          *
@@ -2886,6 +2904,12 @@ export type TaskResponseDtoOutput = {
          * Stable task identity.
          */
         id: string;
+        /**
+         * Parent task ID
+         *
+         * Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.
+         */
+        parentTaskId: string | null;
         /**
          * Position
          *
@@ -3277,6 +3301,12 @@ export type UpdateTaskDto = {
      * Task revision loaded by the caller.
      */
     expectedVersion: number;
+    /**
+     * Parent task ID
+     *
+     * Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.
+     */
+    parentTaskId?: string | null;
     /**
      * Priority
      *
@@ -4086,6 +4116,12 @@ export type ListTasksData = {
          * Maximum returned items, from 1 to 100.
          */
         limit?: string;
+        /**
+         * Parent task filter
+         *
+         * Return only live children of this visible task in the selected list.
+         */
+        parentTaskId?: string;
         /**
          * Task sort
          *

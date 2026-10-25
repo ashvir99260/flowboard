@@ -29,6 +29,9 @@ export const TaskUpdatedEventSchema = z
     changes: z
       .strictObject({
         primaryListId: z.strictObject({ before: UuidSchema, after: UuidSchema }).optional(),
+        parentTaskId: z
+          .strictObject({ before: UuidSchema.nullable(), after: UuidSchema.nullable() })
+          .optional(),
         assigneeIds: z
           .strictObject({ before: z.array(UuidSchema), after: z.array(UuidSchema) })
           .optional(),
@@ -73,6 +76,21 @@ export const TaskUpdatedEventSchema = z
         code: 'custom',
         path: ['changes', 'statusId'],
         message: 'Status change must use different identities',
+      });
+
+    const parent = event.changes.parentTaskId;
+    if (
+      parent &&
+      (parent.before?.toLowerCase() === parent.after?.toLowerCase() ||
+        [parent.before, parent.after].some(
+          (id) => id?.toLowerCase() === event.taskId.toLowerCase(),
+        ))
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['changes', 'parentTaskId'],
+        message:
+          'Parent changes must use different identities and cannot reference the task itself',
       });
   });
 

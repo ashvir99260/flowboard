@@ -90,6 +90,15 @@ export const TaskSchema = z
     primaryListId: uuid.meta(
       meta('Primary list ID', 'Live list owning the task.', '10000000-0000-4000-8000-000000000010'),
     ),
+    parentTaskId: uuid
+      .nullable()
+      .meta(
+        meta(
+          'Parent task ID',
+          'Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.',
+          null,
+        ),
+      ),
     version: NodeSchema.shape.version.meta(
       meta('Task version', 'Optimistic task revision advanced by changed commands.', 1),
     ),
@@ -113,6 +122,7 @@ export const TaskSchema = z
       customFields: {},
       position: 0,
       primaryListId: '10000000-0000-4000-8000-000000000010',
+      parentTaskId: null,
       version: 1,
       archivedAt: null,
       createdAt: '2026-10-24T10:00:00.000Z',
@@ -125,6 +135,15 @@ export const TaskSortSchema = z
   .meta(meta('Task sort', 'Manual column order, due date or explicit priority rank.', 'manual'));
 
 export const ListTasksQuerySchema = PaginationQuerySchema.extend({
+  parentTaskId: uuid
+    .optional()
+    .meta(
+      meta(
+        'Parent task filter',
+        'Return only live children of this visible task in the selected list.',
+        '10000000-0000-4000-8000-000000000100',
+      ),
+    ),
   sort: TaskSortSchema.default('manual'),
   direction: z
     .enum(['asc', 'desc'])

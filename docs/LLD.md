@@ -140,6 +140,8 @@ sequenceDiagram
 
 [TasksService](../apps/api/src/modules/tasks/tasks.service.ts) coordinates authorization. [task-repository.ts](../packages/database/src/task-repository.ts) checks expected task/configuration versions, validates the resulting values, applies dense ordering and updates task versions. [task-events.ts](../packages/database/src/task-events.ts) advances workspace `dataVersion` and records those supplied task versions in outbox intent within the transaction. Renumbered siblings are included in `changedTaskIds`; canonical no-ops do not manufacture versions/history. Cross-list moves revalidate status, required fields and source-only values before writing either list.
 
+Subtasks use nullable `parentTaskId` in this same repository. The composite self-FK preserves workspace/list ownership; locked validation permits only a live top-level parent and rejects nesting a task with children. Submitted parent IDs pass PermissionService, and the child-page filter is part of the cursor fingerprint. Cross-list moves reject linked tasks; task-only parent archive rejects live children. Historical parent references remain after archive and are validated by workspace when consuming events. See [subtask policy and rollout](SUBTASKS.md).
+
 ## Pagination and web state
 
 [Cursor encoding](../apps/api/src/core/common/cursor.ts) authenticates bounded opaque cursors. Task cursors bind actor, workspace, list, query and configuration/data revisions; they expire after 15 minutes. Collection APIs use cursor/limit, not offset/page. A changed snapshot returns `CURSOR_STALE` and restarts from the first page. Due-date sorting puts nulls last; stable IDs break ties.
