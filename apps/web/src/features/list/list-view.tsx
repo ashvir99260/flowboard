@@ -15,6 +15,8 @@ import { readListLocation, writeListLocation } from './list-location';
 import { ListResult } from './list-result';
 import { ListToolbar } from './list-toolbar';
 import { useListQuery } from './use-list-query';
+import { BulkTaskActions } from './bulk-task-actions';
+import { useBulkTaskSelection } from './use-bulk-task-selection';
 
 import type { TaskTableQuery } from './list-location';
 import type { QueryScope } from '../../lib/query-scope';
@@ -37,6 +39,7 @@ function ConnectedList({
   scope: QueryScope;
 }) {
   const view = useListQuery({ listId, runtime, scope, query });
+  const selection = useBulkTaskSelection(view.result.state === 'ready' ? view.result.items : []);
 
   return (
     <Stack spacing={1.2} sx={{ minWidth: 0 }}>
@@ -58,7 +61,18 @@ function ConnectedList({
         onChange={onChange}
         pending={pending}
       />
-      <ListResult view={view} />
+      <BulkTaskActions
+        listId={listId}
+        runtime={runtime}
+        scope={scope}
+        tasks={selection.selectedTasks}
+        onSaved={selection.clear}
+        onClear={selection.clear}
+      />
+      <ListResult
+        view={view}
+        selection={{ ids: selection.selectedIds, onChange: selection.select, disabled: pending }}
+      />
     </Stack>
   );
 }
@@ -120,7 +134,7 @@ function ViewContent({
 
   return (
     <ConnectedList
-      key={`${scope.revision}:${scope.userId}:${scope.workspaceId}:${listId}`}
+      key={`${scope.revision}:${scope.userId}:${scope.workspaceId}:${listId}:${writeListLocation(location.query)}`}
       listId={listId}
       runtime={runtime}
       scope={scope}

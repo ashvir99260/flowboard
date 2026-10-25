@@ -228,6 +228,7 @@ export function taskRepository(
 
       const ids = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`
         SELECT t.id FROM tasks t WHERE t.workspace_id=${workspaceId}::uuid AND t.primary_list_id=${listId}::uuid AND t.archived_at IS NULL
+        ${query.q ? Prisma.sql`AND to_tsvector('simple', coalesce(t.title, '') || ' ' || coalesce(t.description, '')) @@ websearch_to_tsquery('simple', ${query.q})` : Prisma.empty}
         ${query.statusId ? Prisma.sql`AND t.status_id=${query.statusId}::uuid` : Prisma.empty}
         ${query.parentTaskId ? Prisma.sql`AND t.parent_task_id=${query.parentTaskId}::uuid` : Prisma.empty}
         ${query.priority ? Prisma.sql`AND t.priority::text=${query.priority}` : Prisma.empty}

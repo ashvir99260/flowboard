@@ -687,3 +687,15 @@ R157 uses nullable `Task.parentTaskId` and the existing task operations. Enforce
 Reject cross-list moves for attached children and parents with any child references, including archived children. Reject task-only parent archival while live children remain; preserve child relations when archived. Container archive still processes its whole subtree atomically. Archived child references deliberately continue to prevent moving or nesting their parent. General restoration/purging is not added implicitly.
 
 Optional parent-filtered reads remain cursor-paginated and permission-checked. Attachment/detachment emits the existing task update with an optional parent change; unchanged links are no-ops. Historical parent references are validated by workspace, not by their current list/archive state. [Subtask design](SUBTASKS.md) defines rollout, failure tests and P30-01/P30-02.
+
+## D159 — List-scoped PostgreSQL task search
+
+R158 uses PostgreSQL's simple text-search configuration, web-search query parser and a live-row GIN expression index over title and description. Preserve existing sort/filter/cursor and tenant/permission behavior; include trimmed q in the cursor binding. The List view exposes explicit Search/Clear controls backed by the URL. PostgreSQL maintains the index atomically; remove the unused worker stub when implemented. [Search design](SEARCH.md) defines matching, privacy and failure cases.
+
+## D160 — Bounded atomic bulk task updates
+
+R159 uses one PATCH /v1/tasks command with 1–50 unique task IDs and expected versions, one expected workspace configuration version and a nonempty shared status/priority/assignee/custom-field patch. Authorize every target and reuse ordinary task validation in one workspace transaction. Return input-ordered results and changed task IDs; any denial/conflict/invalid value rolls back the whole batch. The List view captures selected versions, uses shared form controls and emits one result notification.
+
+## D161 — Administration over existing container and grant APIs
+
+R160 exposes the existing guarded container and grant operations in an administrator workspace screen, with paginated hierarchy/member data, versioned mutations, dirty-draft handling and explicit archive confirmation. Reuse existing generated operations and shared forms; no second permission model or raw API transport is added.

@@ -135,6 +135,15 @@ export const TaskSortSchema = z
   .meta(meta('Task sort', 'Manual column order, due date or explicit priority rank.', 'manual'));
 
 export const ListTasksQuerySchema = PaginationQuerySchema.extend({
+  q: textSchema(200, 1, true)
+    .optional()
+    .meta(
+      meta(
+        'Search query',
+        'Word or quoted-phrase search over task title and description, up to 200 Unicode characters. Omit to clear.',
+        'release notes',
+      ),
+    ),
   parentTaskId: uuid
     .optional()
     .meta(

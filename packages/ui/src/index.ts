@@ -32,6 +32,8 @@ export { KanbanColumn } from './modules/board/kanbanColumn.js';
 
 export * from './primitives.js';
 
+export { MemberAccess } from './modules/administration/memberAccess.js';
+
 export { AuthPanel } from './modules/layout/authPanel.js';
 
 export { Surface } from './modules/layout/surface.js';

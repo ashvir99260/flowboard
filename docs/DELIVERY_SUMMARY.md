@@ -105,14 +105,14 @@ Latest recorded implementation verification is [P19-01](evidence/P19-01.md): **1
 
 ## Open gates and limits
 
-| Open task     | What remains                                                                                                     | Related status                                   |
-| ------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| P00-07        | Observe the first real main-branch publication: tags, releases, images, manifests and digests.                   | R94–R95 In progress.                             |
-| P22-02/P22-03 | Implement the Render adapter and verify the Render/Neon shared preview; replaces the old P00-14 provider target. | R96–R98 remain open until live acceptance.       |
-| P00-11        | Complete environment-neutral artifact/runtime configuration requirements for the future promotion model.         | R99 Planned.                                     |
-| P00-12        | Promote an explicitly selected unchanged artifact through dev/qa/stage/prod.                                     | R99 Planned.                                     |
-| P00-09        | Later live production activation under the selected promotion/hosting approach.                                  | R98 retains a future activation gate.            |
-| NEXT-01       | Replace the explicit search-index stub and design real search/access/filter/reindex behavior when requested.     | Deferred scope; no working search is advertised. |
+| Open task     | What remains                                                                                                     | Related status                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| P00-07        | Observe the first real main-branch publication: tags, releases, images, manifests and digests.                   | R94–R95 In progress.                              |
+| P22-02/P22-03 | Implement the Render adapter and verify the Render/Neon shared preview; replaces the old P00-14 provider target. | R96–R98 remain open until live acceptance.        |
+| P00-11        | Complete environment-neutral artifact/runtime configuration requirements for the future promotion model.         | R99 Planned.                                      |
+| P00-12        | Promote an explicitly selected unchanged artifact through dev/qa/stage/prod.                                     | R99 Planned.                                      |
+| P00-09        | Later live production activation under the selected promotion/hosting approach.                                  | R98 retains a future activation gate.             |
+| NEXT-01 / P31 | PostgreSQL title/description search with scoped cursors and List controls.                                       | Implementation added; final verification pending. |
 
 Provider accounts, credentials, resources and current free-tier availability are external prerequisites, not completed product behavior. Ordinary future extensions are separate: OIDC, teams, invitation email/UI, restore, uploads and outbound webhook delivery. Scalability tradeoffs include workspace-wide write locks, dense reordering, graph reads and no universal JSON-field index. See [HLD tradeoffs](HLD.md#scale-reliability-and-tradeoffs).
 
@@ -161,3 +161,5 @@ When a feature or provider gate changes, update the owning task/evidence and mat
 ## Approved MVP alignment follow-up
 
 P28/R151–R160 is tracked in [MVP_FOLLOW_UPS.md](MVP_FOLLOW_UPS.md). Richer fresh-demo data is implemented and verified in [P28-02](evidence/P28-02.md): 3 spaces, 4 folders, 6 lists, 48 tasks, 5 main-workspace members and 9 field definitions. Optional option colors are implemented and verified in [P28-03](evidence/P28-03.md). Row activation is verified in [P28-04](evidence/P28-04.md). [AI usage](AI_USAGE.md) and the [roadmap](ROADMAP.md) provide the submission narrative; task datetime support is verified in [P28-06](evidence/P28-06.md). D155 selects workspace lifecycle, subtasks, search, bulk edits and administration screens for design and implementation; they are not implemented by this selection. P28-01 records scope only; later task evidence establishes runtime acceptance.
+
+Search (P31-01/P31-02), atomic bulk updates (NEXT-04), and container/grant administration (NEXT-05) now have code and regression cases. Their final validation remains open; implementation status is not a passing-test claim.

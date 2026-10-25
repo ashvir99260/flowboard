@@ -242,6 +242,222 @@ export type ArchiveTaskDto = {
 };
 
 /**
+ * Bulk task update response
+ *
+ * Complete atomic batch result and final workspace revisions. There is no partial success response.
+ */
+export type BulkTaskMutationResponseDtoOutput = {
+    /**
+     * Changed task identities
+     *
+     * Only targets actually changed; an all-no-op batch returns an empty array.
+     */
+    changedTaskIds: Array<string>;
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Resulting tasks
+     *
+     * Safe task projections in the input order, including unchanged targets.
+     */
+    data: Array<{
+        /**
+         * Archived at
+         *
+         * Archive timestamp or null for a live task.
+         */
+        archivedAt: string | null;
+        /**
+         * Assignee IDs
+         *
+         * Assigned member identities in ascending UUID order.
+         */
+        assigneeIds: Array<string>;
+        /**
+         * Assignees
+         *
+         * Safe assigned member summaries in UUID order.
+         */
+        assignees: Array<{
+            /**
+             * Assignee ID
+             *
+             * Workspace member assigned to the task.
+             */
+            id: string;
+            /**
+             * Assignee name
+             *
+             * Public display name without email or account details.
+             */
+            name: string;
+        }>;
+        /**
+         * Created at
+         *
+         * Immutable creation time from the database clock.
+         */
+        createdAt: string;
+        /**
+         * Custom fields
+         *
+         * Values keyed by the list resolved field schema.
+         */
+        customFields: {
+            [key: string]: string | number | boolean | Array<string>;
+        };
+        /**
+         * Description
+         *
+         * Markdown content; clients render without raw HTML.
+         */
+        description: string;
+        /**
+         * Due date
+         *
+         * ISO datetime with seconds and explicit Z/offset, at most three fractional digits, and UTC years 0001–9999. Normalized to UTC milliseconds; null means unset.
+         */
+        dueDate: string | null;
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        id: string;
+        /**
+         * Parent task ID
+         *
+         * Top-level parent in the same workspace and list; null for a top-level task. Subtasks cannot have children.
+         */
+        parentTaskId: string | null;
+        /**
+         * Position
+         *
+         * Server-controlled order within the current status column.
+         */
+        position: number;
+        /**
+         * Primary list ID
+         *
+         * Live list owning the task.
+         */
+        primaryListId: string;
+        /**
+         * Priority
+         *
+         * Urgent, high, normal, low or none.
+         */
+        priority: 'urgent' | 'high' | 'normal' | 'low' | 'none';
+        /**
+         * Status ID
+         *
+         * Canonical status identity available in the primary list.
+         */
+        statusId: string;
+        /**
+         * Task title
+         *
+         * Task title, at most 500 characters.
+         */
+        title: string;
+        /**
+         * Updated at
+         *
+         * Database-maintained time of the last changed command.
+         */
+        updatedAt: string;
+        /**
+         * Task version
+         *
+         * Optimistic task revision advanced by changed commands.
+         */
+        version: number;
+        /**
+         * Workspace ID
+         *
+         * Tenant owning the task.
+         */
+        workspaceId: string;
+    }>;
+    /**
+     * Final workspace data version
+     *
+     * Workspace data revision after all changed targets commit.
+     */
+    dataVersion: number;
+};
+
+/**
+ * Bulk update tasks request
+ *
+ * Atomically update selected live tasks in the active workspace. Any denied, stale or invalid target rejects the complete batch.
+ */
+export type BulkUpdateTasksDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Shared task patch
+     *
+     * Apply supplied fields to every target. Empty assignments clear them; field null clears an optional value. Every resulting task must remain valid in its own list.
+     */
+    patch: {
+        /**
+         * Assignee IDs
+         *
+         * Assigned member identities in ascending UUID order.
+         */
+        assigneeIds?: Array<string>;
+        /**
+         * Custom-field patch
+         *
+         * Omitted keys retain values; explicit null removes a key before full validation.
+         */
+        customFields?: {
+            [key: string]: string | null | number | null | boolean | null | Array<string> | null;
+        };
+        /**
+         * Priority
+         *
+         * Urgent, high, normal, low or none.
+         */
+        priority?: 'urgent' | 'high' | 'normal' | 'low' | 'none';
+        /**
+         * Status ID
+         *
+         * Canonical status identity available in the primary list.
+         */
+        statusId?: string;
+    };
+    /**
+     * Selected tasks
+     *
+     * Between one and fifty unique tasks, in the desired response order.
+     */
+    tasks: Array<{
+        /**
+         * Expected task version
+         *
+         * Version of this selected task when the batch was prepared.
+         */
+        expectedVersion: number;
+        /**
+         * Task ID
+         *
+         * Stable task identity.
+         */
+        id: string;
+    }>;
+};
+
+/**
  * Create invitation request
  *
  * Create a 48-hour single-use invitation for this email and role.
@@ -4117,6 +4333,12 @@ export type ListTasksData = {
          */
         limit?: string;
         /**
+         * Search query
+         *
+         * Word or quoted-phrase search over task title and description, up to 200 Unicode characters. Omit to clear.
+         */
+        q?: string;
+        /**
          * Parent task filter
          *
          * Return only live children of this visible task in the selected list.
@@ -5398,6 +5620,60 @@ export type UpdateScopeStatusResponses = {
 };
 
 export type UpdateScopeStatusResponse = UpdateScopeStatusResponses[keyof UpdateScopeStatusResponses];
+
+export type BulkUpdateTasksData = {
+    /**
+     * Selected task revisions, common configuration revision and shared patch.
+     */
+    body: BulkUpdateTasksDto;
+    path?: never;
+    query?: never;
+    url: '/v1/tasks';
+};
+
+export type BulkUpdateTasksErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The requested resource was not found in the selected workspace.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type BulkUpdateTasksError = BulkUpdateTasksErrors[keyof BulkUpdateTasksErrors];
+
+export type BulkUpdateTasksResponses = {
+    /**
+     * Atomic batch outcome in the input order; no partial success response.
+     *
+     * All resulting safe task projections, final revisions and changed identities.
+     */
+    200: BulkTaskMutationResponseDtoOutput;
+};
+
+export type BulkUpdateTasksResponse = BulkUpdateTasksResponses[keyof BulkUpdateTasksResponses];
 
 export type ArchiveTaskData = {
     /**

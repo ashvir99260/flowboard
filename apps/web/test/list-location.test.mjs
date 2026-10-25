@@ -40,6 +40,8 @@ test('URL changes omit cursors, preserve scalar encoding and reset table options
 
 test('unknown, repeated and malformed URL options never become API queries', () => {
   for (const search of [
+    'view=list&q=',
+    'view=list&q=one&q=two',
     'view=calendar',
     'view=list&offset=20',
     'view=list&cursor=untrusted',
@@ -52,4 +54,25 @@ test('unknown, repeated and malformed URL options never become API queries', () 
     'view=list&statusId=foreign',
   ])
     assert.equal(readListLocation(search).ok, false, search);
+});
+
+test('search URLs preserve query text independently of sorting and field filters', () => {
+  const query = {
+    q: '"Release notes" -draft',
+    sort: 'priority',
+    direction: 'desc',
+    fieldKey: 'effort',
+    fieldOperator: 'eq',
+    fieldValue: '0',
+  };
+  expectSearch(query);
+  function expectSearch(value) {
+    assert.deepEqual(readListLocation(writeListLocation(value)), {
+      ok: true,
+      view: 'list',
+      query: value,
+    });
+  }
+  assert.equal(readListLocation('q=release').ok, false);
+  assert.equal(readListLocation('view=list&q=%20release%20').query.q, 'release');
 });

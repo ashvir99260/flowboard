@@ -80,4 +80,4 @@ Keep Redis private and configure API/worker `REDIS_URL` at process startup. Web 
 - The 500 ms dispatcher and database readiness probes generate regular PostgreSQL traffic. Consider this when evaluating Neon suspension/usage; no automatic idle optimization is implemented.
 - Test a real status change: REST returns success, one activity is stored, a second authorized client refreshes, and a denied client receives no protected details. Test worker restart and Redis interruption using disposable data.
 
-The worker's [search index stub](../apps/worker/src/search-index.stub.ts) remains explicitly deferred. This pipeline does not implement outgoing webhooks, email delivery or a user-search index. See [event contracts](api-events.md) for public contracts and separately labeled examples.
+Task search uses PostgreSQL's live-row expression index, maintained atomically with writes; see [search design](SEARCH.md). The worker does not duplicate that index. This pipeline does not implement outgoing webhooks or email delivery. See [event contracts](api-events.md) for public contracts and separately labeled examples.
