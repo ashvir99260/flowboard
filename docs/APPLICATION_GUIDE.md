@@ -15,7 +15,7 @@ Source snapshot: `3cc62b0`, 25 October 2026. This guide explains what the applic
 | Collaboration        | Authorized open clients refetch after edits/moves. Action results and eligible remote changes appear as Toastify notifications.                                |
 | API access           | The same operations are available through the typed REST API, Swagger and the executable curl cookbook.                                                        |
 
-The web app does not expose a dedicated screen for every API operation. Workspace/member/invitation/grant/container administration is available through the API where implemented; do not infer management screens from endpoint availability. Invitations are manually shared and accepted through the API: there is no email sender or invitation-acceptance web form. Search is a tracked stub, not a usable feature.
+The web app does not expose a dedicated screen for every API operation. Workspace read/rename/archive/restore are available through the API (P29-01); their management UI remains P29-02. Member/invitation/grant/container administration is available through the API where implemented; do not infer management screens from endpoint availability. Invitations are manually shared and accepted through the API: there is no email sender or invitation-acceptance web form. Search is a tracked stub, not a usable feature.
 
 ## A normal working session
 

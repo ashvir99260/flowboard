@@ -17,6 +17,7 @@ export const AuthExamples = {
     data: {
       accessToken: 'example-only.access-token.not-valid',
       activeWorkspace: {
+        archivedAt: null,
         createdAt: '2026-10-23T10:00:00.000Z',
         id: '10000000-0000-4000-8000-000000000002',
         name: 'Alex workspace',
@@ -113,6 +114,12 @@ export const UserSelfSchema = z
 
 export const ActiveWorkspaceSchema = z
   .strictObject({
+    archivedAt: TimestampSchema.nullable().meta({
+      description:
+        'Root archive timestamp, or null when live. Archived selections retain identity for recovery only.',
+      example: null,
+      title: 'Workspace archived at',
+    }),
     createdAt,
     id: UuidSchema.meta({
       title: 'Workspace ID',

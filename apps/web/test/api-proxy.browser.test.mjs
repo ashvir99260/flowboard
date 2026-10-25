@@ -20,6 +20,7 @@ const session = (token) => ({
       updatedAt: '2026-10-24T00:00:00.000Z',
     },
     activeWorkspace: {
+      archivedAt: null,
       createdAt: '2026-10-24T00:00:00.000Z',
       id: '10000000-0000-4000-8000-000000000002',
       name: 'Workspace',

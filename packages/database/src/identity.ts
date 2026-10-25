@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
-import { LogInSchema, SignUpSchema, UuidSchema } from '@flowboard/contracts';
+import { ExpectedConfigSchema, LogInSchema, SignUpSchema, UuidSchema } from '@flowboard/contracts';
 import { SilentLogger } from '@flowboard/logger';
 
 import { createClient } from './client.js';
@@ -8,6 +8,7 @@ import { validateMembershipPage } from './membership-repository.js';
 import { hashPassword, verifyPassword } from './password.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
 import { recordWorkspaceChange } from './workspace-events.js';
+import { workspaceSelect as lifecycleSelect, presentWorkspace } from './workspace-repository.js';
 
 import type { Prisma, RefreshSession } from './generated/client.js';
 import type {
@@ -23,7 +24,13 @@ import type { LogIn, SignUp } from '@flowboard/contracts';
 import type { Logger } from '@flowboard/logger';
 
 const userSelect = { createdAt: true, email: true, id: true, name: true, updatedAt: true } as const;
-const workspaceSelect = { createdAt: true, id: true, name: true, updatedAt: true } as const;
+const workspaceSelect = {
+  archivedAt: true,
+  createdAt: true,
+  id: true,
+  name: true,
+  updatedAt: true,
+} as const;
 
 function validateCredential(value: SessionCredential) {
   exactKeys(value, ['expiresAt', 'familyId', 'tokenDigest']);
@@ -93,7 +100,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
   }
   async function open(tx: Prisma.TransactionClient, userId: string, credential: SessionCredential) {
     const membership = await tx.membership.findFirst({
-      where: { userId },
+      where: { userId, workspace: { archivedAt: null } },
       orderBy: [{ createdAt: 'asc' }, { workspaceId: 'asc' }],
     });
     const workspaceId = membership?.workspaceId ?? null;
@@ -165,7 +172,77 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
     if (input.workspaceId !== null) UuidSchema.parse(input.workspaceId);
   }
 
+  async function withRecovery<T>(
+    identity: SessionIdentity,
+    workspaceId: string,
+    action: (tx: Prisma.TransactionClient) => Promise<T>,
+  ) {
+    validateIdentity(identity);
+    const target = UuidSchema.parse(workspaceId).toLowerCase();
+
+    return available(() =>
+      client.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${identity.userId}::uuid FOR NO KEY UPDATE`;
+        await tx.$queryRaw`SELECT id FROM workspaces WHERE id = ${target}::uuid FOR UPDATE`;
+        const [clock] = await tx.$queryRaw<
+          { now: Date }[]
+        >`SELECT clock_timestamp()::timestamptz(3) AS now`;
+        if (!clock) throw new Error('Database clock unavailable');
+
+        const session = await tx.refreshSession.findFirst({
+          where: {
+            userId: identity.userId,
+            familyId: identity.familyId,
+            activeWorkspaceId: identity.workspaceId,
+            usedAt: null,
+            revokedAt: null,
+            expiresAt: { gt: clock.now },
+          },
+        });
+        if (!session) throw new DatabaseError('UNAUTHENTICATED', 'Session is unavailable');
+
+        const membership = await tx.membership.findUnique({
+          where: { workspaceId_userId: { userId: identity.userId, workspaceId: target } },
+        });
+        if (!membership) throw new DatabaseError('NOT_FOUND', 'Workspace not found');
+
+        if (membership.role !== 'admin') throw new DatabaseError('FORBIDDEN', 'Access denied');
+
+        return action(tx);
+      }),
+    );
+  }
+
   return {
+    async authorizeWorkspaceRestore(identity: SessionIdentity, workspaceId: string): Promise<void> {
+      await withRecovery(identity, workspaceId, async () => undefined);
+    },
+    async restoreWorkspace(
+      identity: SessionIdentity,
+      workspaceId: string,
+      input: { expectedConfigVersion: number },
+    ) {
+      const value = ExpectedConfigSchema.parse(input);
+      const target = UuidSchema.parse(workspaceId).toLowerCase();
+
+      return withRecovery(identity, target, async (tx) => {
+        const current = await tx.workspace.findUniqueOrThrow({
+          where: { id: target },
+          select: lifecycleSelect,
+        });
+        if (current.configVersion !== value.expectedConfigVersion)
+          throw new DatabaseError('CONFIG_CONFLICT', 'Workspace configuration changed');
+
+        if (!current.archivedAt) return presentWorkspace(current);
+
+        await tx.workspace.update({ where: { id: target }, data: { archivedAt: null } });
+        await recordWorkspaceChange(tx, target, identity.userId, 'hierarchy', true);
+
+        return presentWorkspace(
+          await tx.workspace.findUniqueOrThrow({ where: { id: target }, select: lifecycleSelect }),
+        );
+      });
+    },
     async acceptInvitation(
       identity: SessionIdentity,
       tokenDigest: string,
@@ -201,6 +278,13 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
             },
           });
           if (!credential) throw new DatabaseError('UNAUTHENTICATED', 'Session is unavailable');
+
+          const target = await tx.workspace.findUnique({
+            where: { id: candidate.workspaceId },
+            select: { archivedAt: true },
+          });
+          if (!target || target.archivedAt)
+            throw new DatabaseError('INVITATION_UNAVAILABLE', 'Invitation is unavailable');
 
           const user = await tx.user.findUniqueOrThrow({
             where: { id: identity.userId },
@@ -271,6 +355,13 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
         });
         if (!member) throw new DatabaseError('NOT_FOUND', 'Workspace not found');
 
+        const target = await tx.workspace.findUnique({
+          where: { id: workspaceId },
+          select: { archivedAt: true },
+        });
+        if (target?.archivedAt)
+          throw new DatabaseError('WORKSPACE_ARCHIVED', 'Workspace is archived');
+
         const [clock] = await tx.$queryRaw<
           { now: Date }[]
         >`SELECT clock_timestamp()::timestamptz(3) AS now`;
@@ -284,7 +375,9 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
     async listWorkspaces(
       userId: string,
       query: MembershipPageQuery,
-    ): Promise<{ membershipCreatedAt: Date; workspace: IdentityWorkspace }[]> {
+    ): Promise<
+      { membershipCreatedAt: Date; workspace: IdentityWorkspace & { configVersion: number } }[]
+    > {
       UuidSchema.parse(userId);
       validateMembershipPage(query);
 
@@ -292,6 +385,7 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
         const members = await client.membership.findMany({
           where: {
             userId,
+            AND: [{ OR: [{ workspace: { archivedAt: null } }, { role: 'admin' }] }],
             ...(query.after
               ? {
                   OR: [
@@ -303,7 +397,11 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
           },
           orderBy: [{ createdAt: 'asc' }, { workspaceId: 'asc' }],
           take: query.limit + 1,
-          select: { createdAt: true, role: true, workspace: { select: workspaceSelect } },
+          select: {
+            createdAt: true,
+            role: true,
+            workspace: { select: { ...workspaceSelect, configVersion: true } },
+          },
         });
 
         return members.map(({ workspace, role, createdAt }) => ({
@@ -431,8 +529,18 @@ export function createIdentityRepository(databaseUrl: string, logger: Logger = S
             if (!row || row.activeWorkspaceId !== input.workspaceId)
               throw new DatabaseError('UNAUTHENTICATED', 'Session is unavailable');
 
+            const described = await describe(
+              tx,
+              row.userId,
+              row,
+              row.activeWorkspaceId,
+              sessionOnly,
+            );
+            if (!sessionOnly && described.activeWorkspace?.archivedAt)
+              throw new DatabaseError('WORKSPACE_ARCHIVED', 'Workspace is archived');
+
             return {
-              ...(await describe(tx, row.userId, row, row.activeWorkspaceId, sessionOnly)),
+              ...described,
               selectedWorkspaceId: row.activeWorkspaceId,
             };
           },

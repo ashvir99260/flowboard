@@ -353,3 +353,5 @@ The user-approved follow-up is [MVP_FOLLOW_UPS.md](MVP_FOLLOW_UPS.md), with R151
 D154 supersedes the fixture size for future fresh databases only. P28-02 implements the expanded fresh dataset; existing initialized databases remain unchanged. The second tenant remains an isolation fixture, while the main demo workspace provides multiple independent list boards and five permission personas.
 
 Workspace lifecycle R156 is designed in [WORKSPACE_LIFECYCLE.md](WORKSPACE_LIFECYCLE.md), selected by D157. NEXT-02 completes design only; P29-01 implements the root API/recovery boundary and P29-02 implements management and live browser recovery. Both remain unverified until their task evidence passes.
+
+P29-01 implements the lifecycle API and is verified independently of the UI. P29-03 repairs the overwritten form guide before P29-02 builds the lifecycle controls. This documentation correction preserves existing runtime form behavior.

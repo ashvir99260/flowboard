@@ -4,6 +4,7 @@ import {
   MemberPageQuerySchema,
   MemberParamsSchema,
   UpdateMemberSchema,
+  UpdateWorkspaceSchema,
   WorkspacePageQuerySchema,
   WorkspaceParamsSchema,
 } from '@flowboard/contracts';
@@ -27,3 +28,5 @@ export class CreateInvitationDto extends createZodDto(CreateInvitationSchema) {}
 export class AcceptInvitationDto extends createZodDto(AcceptInvitationSchema) {}
 
 export class MemberPageQueryDto extends createZodDto(MemberPageQuerySchema) {}
+
+export class UpdateWorkspaceDto extends createZodDto(UpdateWorkspaceSchema) {}

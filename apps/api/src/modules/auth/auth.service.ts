@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import { ApiException } from '../../core/common/errors/api-exception.ts';
 import { ApiLoggerKey } from '../../core/common/tokens/logger.token.ts';
+import { serializeWorkspace } from '../../core/utils/serialize-workspace.ts';
 
 import { clearRefreshCookie, readRefreshCookie, refreshCookie } from './cookie-policy.ts';
 import { AuthRuntimeKey } from './runtime.ts';
@@ -90,7 +91,9 @@ export class AuthService {
     const body: SessionEnvelope = {
       data: {
         accessToken,
-        activeWorkspace: session.activeWorkspace ? serializeAudit(session.activeWorkspace) : null,
+        activeWorkspace: session.activeWorkspace
+          ? serializeWorkspace(session.activeWorkspace)
+          : null,
         expiresAt: expiresAt.toISOString(),
         user: serializeAudit(session.user),
       },

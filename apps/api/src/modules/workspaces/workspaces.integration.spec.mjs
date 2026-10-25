@@ -123,7 +123,7 @@ test('workspace and member pages expose only current memberships with bounded cu
   const auth = { Authorization: `Bearer ${session.accessToken}` };
   const workspaces = await request(server).get('/v1/workspaces?limit=1').set(auth);
   expect(workspaces.status).toBe(200);
-  expect(workspaces.body.items).toEqual([session.activeWorkspace]);
+  expect(workspaces.body.items).toEqual([{ ...session.activeWorkspace, configVersion: 1 }]);
   expect(workspaces.body.pageInfo).toEqual({ hasNextPage: false, nextCursor: null });
   const members = await request(server)
     .get(`/v1/workspaces/${session.activeWorkspace.id}/members?limit=1`)

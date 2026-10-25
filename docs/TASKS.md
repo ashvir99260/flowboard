@@ -1248,15 +1248,6 @@ The checklist above is a reusable protocol, not a task to mark globally complete
 
 D155 records the subsequent instruction to complete all local tasks. R156–R160 are selected for sequential design and implementation after P28; establish each safe design before coding. Existing live-hosting gates remain separate.
 
-- [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**
-  - **Goal:** Supply real indexing/query behavior only after product scope includes search.
-  - **Files:** `apps/worker/src/search-index.stub.ts` replacement, future search contracts/API/UI/tests.
-  - **Requirements:** R158.
-  - **Dependencies:** P28-01 and explicit search selection/design.
-  - **Acceptance:** Search backend, access filtering, update/delete/reindex semantics and failure recovery are designed and tested; remove stub TODO only when real behavior exists.
-  - **Validation:** Permission-safe search, update/archive/reindex and failure recovery tests defined with the selected design; not a current completion claim.
-  - **Commit:** Chosen when the task is authorized.
-
 - [x] **NEXT-02 — Design workspace rename and archive/recovery**
   - **Goal:** Define reversible root lifecycle and a session-safe administrator recovery path.
   - **Requirements:** R156.
@@ -1267,7 +1258,7 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `docs: define workspace lifecycle recovery`.
   - **Evidence:** [NEXT-02](evidence/NEXT-02.md).
 
-- [ ] **P29-01 — Implement workspace lifecycle API and recovery**
+- [x] **P29-01 — Implement workspace lifecycle API and recovery**
   - **Goal:** Administrators rename/archive/restore workspaces through versioned, authorized endpoints while existing session recovery remains usable.
   - **Requirements:** R156; preserve R08–R16/R31/R52/R59/R60/R78.
   - **Files:** Contracts; database schema/migration, root repository, tenant/identity layer; API workspaces/auth/permissions/response filter; generated spec/client; focused contract/database/API/socket tests and documentation.
@@ -1275,12 +1266,22 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Acceptance:** Implement the four documented root endpoints; all writes validate live DB authority/revision; root archive preserves descendants/history; ordinary reads/writes/socket auth deny archived roots; fresh and existing sessions can recover with target-admin checks; rejected invitations/switches and concurrent/failed writes leave no partial data or events.
   - **Validation:** G01–G08/G11; failure-first contract tests, real PostgreSQL and REST denial/rollback/lock races; root build/lint/test/type/format and generated-contract checks.
   - **Commit:** `feat(workspaces): add archive and recovery API`.
+  - **Evidence:** [P29-01](evidence/P29-01.md).
+
+- [ ] **P29-03 — Restore the form implementation guide**
+  - **Goal:** Repair copied UI-design content in the form guide before adding workspace management forms.
+  - **Requirements:** R138; preserve R135/R155.
+  - **Files:** `docs/FORM_SYSTEM.md`, task/matrix, AI usage log and evidence.
+  - **Dependencies:** P29-01.
+  - **Acceptance:** Restore the last correct RHF/Zod/JSON form guidance from c5b874a; retain the later UTC datetime-local adapter rules; verify source links and current widget support without altering runtime behavior.
+  - **Validation:** Documentation purpose/links, source-backed consistency and Prettier; runtime checks not applicable.
+  - **Commit:** `docs: restore form implementation guidance`.
 
 - [ ] **P29-02 — Add workspace lifecycle controls and live recovery**
   - **Goal:** Expose rename/archive/restore with clear confirmation and prevent archived workspace content remaining mounted in other clients.
   - **Requirements:** R156; preserve R70/R76/R80/R134/R137/R140.
   - **Files:** Web workspace settings/picker/hooks, session/realtime providers and browser tests; shared presentation only where needed; lifecycle docs/evidence.
-  - **Dependencies:** P29-01.
+  - **Dependencies:** P29-01, P29-03.
   - **Acceptance:** Generated operations + RHF/Zod forms; stale drafts remain recoverable; archive state clears scoped queries/notifications and unmounts board/drawer; initial/revoked sockets refresh safely without Redis-error loops; sole-workspace/null-selection restoration and explicit switch work; keyboard/cancel/double-submit behavior tested.
   - **Validation:** G01–G05/G09–G11; browser recovery and Redis reconnect coverage; root gates and React review.
   - **Commit:** `feat(web): manage workspace lifecycle`.
@@ -1293,6 +1294,15 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Acceptance:** Maximum depth one; define list moves, permissions, parent archival and ordering; reject cycles and cross-tenant parents.
   - **Validation:** Design review and chosen behavioral tests before implementation.
   - **Commit:** Chosen after design selection.
+
+- [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**
+  - **Goal:** Supply real indexing/query behavior only after product scope includes search.
+  - **Files:** `apps/worker/src/search-index.stub.ts` replacement, future search contracts/API/UI/tests.
+  - **Requirements:** R158.
+  - **Dependencies:** P28-01 and explicit search selection/design.
+  - **Acceptance:** Search backend, access filtering, update/delete/reindex semantics and failure recovery are designed and tested; remove stub TODO only when real behavior exists.
+  - **Validation:** Permission-safe search, update/archive/reindex and failure recovery tests defined with the selected design; not a current completion claim.
+  - **Commit:** Chosen when the task is authorized.
 
 - [ ] **NEXT-04 — Design bounded bulk task updates**
   - **Goal:** Consider multi-task status/assignee/field edits without partial unauthorized writes.

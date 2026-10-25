@@ -27,6 +27,8 @@ export const VisibilitySchema = z.enum(['public', 'private']);
 
 export const PermissionActionSchema = z.enum([
   'workspace.read',
+  'workspace.manage',
+  'workspace.restore',
   'member.list',
   'member.manage',
   'grant.manage',

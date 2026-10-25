@@ -9,7 +9,7 @@ import { PermissionGuard } from './permission.guard.ts';
 import { PermissionService } from './permission.service.ts';
 import { PermissionsRuntimeKey } from './permissions.runtime.ts';
 
-import type { Database } from '@flowboard/database';
+import type { Database, IdentityRepository } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
 import type { DynamicModule } from '@nestjs/common';
 
@@ -23,6 +23,7 @@ export class PermissionsModule {
     database?: Database,
     secret?: Uint8Array,
     logger: Logger = SilentLogger,
+    identities?: IdentityRepository,
   ): DynamicModule {
     return {
       module: PermissionsModule,
@@ -30,7 +31,7 @@ export class PermissionsModule {
       providers: [
         {
           provide: PermissionsRuntimeKey,
-          useValue: { database, cursor: secret ? new CursorCodec(secret) : undefined },
+          useValue: { database, identities, cursor: secret ? new CursorCodec(secret) : undefined },
         },
       ],
     };

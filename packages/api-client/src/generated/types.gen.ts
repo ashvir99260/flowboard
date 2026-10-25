@@ -17,6 +17,12 @@ export type AcceptedInvitationResponseDtoOutput = {
      */
     data: {
         /**
+         * Workspace archived at
+         *
+         * Root archive timestamp, or null when live. Archived selections retain identity for recovery only.
+         */
+        archivedAt: string | null;
+        /**
          * Created at
          *
          * Server-owned creation timestamp in UTC with millisecond precision.
@@ -538,6 +544,12 @@ export type CurrentUserResponseDtoOutput = {
          */
         activeWorkspace: {
             /**
+             * Workspace archived at
+             *
+             * Root archive timestamp, or null when live. Archived selections retain identity for recovery only.
+             */
+            archivedAt: string | null;
+            /**
              * Created at
              *
              * Server-owned creation timestamp in UTC with millisecond precision.
@@ -634,7 +646,7 @@ export type ErrorResponseDtoOutput = {
          *
          * Stable machine-readable error identifier. Clients should branch on this value rather than message text.
          */
-        code: 'VALIDATION_FAILED' | 'STATUS_NOT_AVAILABLE' | 'FIELD_VALUE_INVALID' | 'INVALID_PARENT' | 'INVALID_ANCHOR' | 'INVALID_CURSOR' | 'UNAUTHENTICATED' | 'SESSION_EXPIRED' | 'REFRESH_REUSED' | 'FORBIDDEN' | 'MEMBERSHIP_REQUIRED' | 'MEMBERSHIP_EXISTS' | 'ORIGIN_REJECTED' | 'NOT_FOUND' | 'VERSION_CONFLICT' | 'CONFIG_CONFLICT' | 'CURSOR_STALE' | 'STATUS_IN_USE' | 'FIELD_IN_USE' | 'CONFIG_INVALIDATES_TASKS' | 'LAST_ADMIN' | 'EMAIL_IN_USE' | 'INVITATION_UNAVAILABLE' | 'PAYLOAD_TOO_LARGE' | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE';
+        code: 'VALIDATION_FAILED' | 'STATUS_NOT_AVAILABLE' | 'FIELD_VALUE_INVALID' | 'INVALID_PARENT' | 'INVALID_ANCHOR' | 'INVALID_CURSOR' | 'UNAUTHENTICATED' | 'SESSION_EXPIRED' | 'REFRESH_REUSED' | 'FORBIDDEN' | 'MEMBERSHIP_REQUIRED' | 'WORKSPACE_ARCHIVED' | 'MEMBERSHIP_EXISTS' | 'ORIGIN_REJECTED' | 'NOT_FOUND' | 'VERSION_CONFLICT' | 'CONFIG_CONFLICT' | 'CURSOR_STALE' | 'STATUS_IN_USE' | 'FIELD_IN_USE' | 'CONFIG_INVALIDATES_TASKS' | 'LAST_ADMIN' | 'EMAIL_IN_USE' | 'INVITATION_UNAVAILABLE' | 'PAYLOAD_TOO_LARGE' | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE';
         /**
          * Validation details
          *
@@ -2370,6 +2382,12 @@ export type SessionResponseDtoOutput = {
          */
         activeWorkspace: {
             /**
+             * Workspace archived at
+             *
+             * Root archive timestamp, or null when live. Archived selections retain identity for recovery only.
+             */
+            archivedAt: string | null;
+            /**
              * Created at
              *
              * Server-owned creation timestamp in UTC with millisecond precision.
@@ -3280,6 +3298,26 @@ export type UpdateTaskDto = {
 };
 
 /**
+ * Rename workspace request
+ *
+ * Administrator rename with an optimistic configuration precondition.
+ */
+export type UpdateWorkspaceDto = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    expectedConfigVersion: number;
+    /**
+     * Workspace name
+     *
+     * Trimmed workspace display name, up to 120 characters.
+     */
+    name: string;
+};
+
+/**
  * Set grant request
  *
  * Admin-only grant change with workspace revision precondition.
@@ -3317,6 +3355,18 @@ export type WorkspacePageResponseDtoOutput = {
      * Authorized items in stable order.
      */
     items: Array<{
+        /**
+         * Workspace archived at
+         *
+         * Root archive timestamp, or null when live. Archived selections retain identity for recovery only.
+         */
+        archivedAt: string | null;
+        /**
+         * Configuration version
+         *
+         * Workspace configuration revision. Mutations must send the version last read.
+         */
+        configVersion: number;
         /**
          * Created at
          *
@@ -3367,6 +3417,63 @@ export type WorkspacePageResponseDtoOutput = {
          */
         nextCursor: string | null;
     };
+};
+
+/**
+ * Workspace root response
+ *
+ * Workspace metadata and authoritative configuration/data revisions.
+ */
+export type WorkspaceResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Workspace root
+     *
+     * Safe workspace root metadata. Archiving retains descendants and history.
+     */
+    data: {
+        /**
+         * Workspace archived at
+         *
+         * Root archive timestamp, or null when live. Archived selections retain identity for recovery only.
+         */
+        archivedAt: string | null;
+        /**
+         * Created at
+         *
+         * Server-owned creation timestamp in UTC with millisecond precision.
+         */
+        createdAt: string;
+        /**
+         * Workspace ID
+         *
+         * Identifier of the workspace selected for this login family.
+         */
+        id: string;
+        /**
+         * Workspace name
+         *
+         * Display name of the selected workspace.
+         */
+        name: string;
+        /**
+         * Updated at
+         *
+         * Server-owned last modification timestamp in UTC with millisecond precision.
+         */
+        updatedAt: string;
+    };
+    /**
+     * Data version
+     *
+     * Current workspace data revision.
+     */
+    dataVersion: number;
 };
 
 /**
@@ -5733,6 +5840,180 @@ export type ListWorkspacesResponses = {
 
 export type ListWorkspacesResponse = ListWorkspacesResponses[keyof ListWorkspacesResponses];
 
+export type GetWorkspaceData = {
+    body?: never;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
+         */
+        workspaceId: string;
+    };
+    query?: never;
+    url: '/v1/workspaces/{workspaceId}';
+};
+
+export type GetWorkspaceErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type GetWorkspaceError = GetWorkspaceErrors[keyof GetWorkspaceErrors];
+
+export type GetWorkspaceResponses = {
+    /**
+     * Safe workspace metadata and authoritative revisions.
+     */
+    200: WorkspaceResponseDtoOutput;
+};
+
+export type GetWorkspaceResponse = GetWorkspaceResponses[keyof GetWorkspaceResponses];
+
+export type UpdateWorkspaceData = {
+    /**
+     * Last-read configuration revision and requested change.
+     */
+    body: UpdateWorkspaceDto;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
+         */
+        workspaceId: string;
+    };
+    query?: never;
+    url: '/v1/workspaces/{workspaceId}';
+};
+
+export type UpdateWorkspaceErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type UpdateWorkspaceError = UpdateWorkspaceErrors[keyof UpdateWorkspaceErrors];
+
+export type UpdateWorkspaceResponses = {
+    /**
+     * Safe workspace metadata and authoritative revisions.
+     */
+    200: WorkspaceResponseDtoOutput;
+};
+
+export type UpdateWorkspaceResponse = UpdateWorkspaceResponses[keyof UpdateWorkspaceResponses];
+
+export type ArchiveWorkspaceData = {
+    /**
+     * Last-read configuration revision and requested change.
+     */
+    body: ExpectedConfigDto;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
+         */
+        workspaceId: string;
+    };
+    query?: never;
+    url: '/v1/workspaces/{workspaceId}/archive';
+};
+
+export type ArchiveWorkspaceErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type ArchiveWorkspaceError = ArchiveWorkspaceErrors[keyof ArchiveWorkspaceErrors];
+
+export type ArchiveWorkspaceResponses = {
+    /**
+     * Safe workspace metadata and authoritative revisions.
+     */
+    200: WorkspaceResponseDtoOutput;
+};
+
+export type ArchiveWorkspaceResponse = ArchiveWorkspaceResponses[keyof ArchiveWorkspaceResponses];
+
 export type CreateWorkspaceInvitationData = {
     /**
      * Invited account email, target role and configuration revision.
@@ -5742,7 +6023,7 @@ export type CreateWorkspaceInvitationData = {
         /**
          * Workspace ID
          *
-         * Must equal the authenticated session’s active workspace.
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
          */
         workspaceId: string;
     };
@@ -5798,7 +6079,7 @@ export type ListWorkspaceMembersData = {
         /**
          * Workspace ID
          *
-         * Must equal the authenticated session’s active workspace.
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
          */
         workspaceId: string;
     };
@@ -5876,7 +6157,7 @@ export type AddWorkspaceMemberData = {
         /**
          * Workspace ID
          *
-         * Must equal the authenticated session’s active workspace.
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
          */
         workspaceId: string;
     };
@@ -5935,7 +6216,7 @@ export type RemoveWorkspaceMemberData = {
         /**
          * Workspace ID
          *
-         * Must equal the authenticated session’s active workspace.
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
          */
         workspaceId: string;
         /**
@@ -6000,7 +6281,7 @@ export type UpdateWorkspaceMemberData = {
         /**
          * Workspace ID
          *
-         * Must equal the authenticated session’s active workspace.
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
          */
         workspaceId: string;
         /**
@@ -6055,3 +6336,62 @@ export type UpdateWorkspaceMemberResponses = {
 };
 
 export type UpdateWorkspaceMemberResponse = UpdateWorkspaceMemberResponses[keyof UpdateWorkspaceMemberResponses];
+
+export type RestoreWorkspaceData = {
+    /**
+     * Last-read configuration revision and requested change.
+     */
+    body: ExpectedConfigDto;
+    path: {
+        /**
+         * Workspace ID
+         *
+         * Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.
+         */
+        workspaceId: string;
+    };
+    query?: never;
+    url: '/v1/workspaces/{workspaceId}/restore';
+};
+
+export type RestoreWorkspaceErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * Email or password is incorrect. The same response is used for unknown accounts.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * The current membership cannot perform this action.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * The workspace or member is not available to the caller.
+     */
+    404: ErrorResponseDtoOutput;
+    /**
+     * Revision, last-administrator or membership conflict. Read current state before retrying.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type RestoreWorkspaceError = RestoreWorkspaceErrors[keyof RestoreWorkspaceErrors];
+
+export type RestoreWorkspaceResponses = {
+    /**
+     * Safe workspace metadata and authoritative revisions.
+     */
+    200: WorkspaceResponseDtoOutput;
+};
+
+export type RestoreWorkspaceResponse = RestoreWorkspaceResponses[keyof RestoreWorkspaceResponses];

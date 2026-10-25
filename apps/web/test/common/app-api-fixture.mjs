@@ -190,7 +190,12 @@ export async function startAppApi(t) {
         const more = session.data.user.name === 'Alice' && !url.searchParams.has('cursor');
 
         return send(response, 200, {
-          items: [url.searchParams.has('cursor') ? secondWorkspace : session.data.activeWorkspace],
+          items: [
+            {
+              ...(url.searchParams.has('cursor') ? secondWorkspace : session.data.activeWorkspace),
+              configVersion: 1,
+            },
+          ],
           pageInfo: { hasNextPage: more, nextCursor: more ? 'workspaces-next' : null },
         });
       }

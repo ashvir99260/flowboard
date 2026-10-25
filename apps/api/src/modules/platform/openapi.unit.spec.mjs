@@ -33,9 +33,12 @@ test('the spec-only bootstrap exposes real typed controller metadata without con
     '/v1/tasks/{taskId}/reorder',
     '/v1/tree',
     '/v1/workspaces',
+    '/v1/workspaces/{workspaceId}',
+    '/v1/workspaces/{workspaceId}/archive',
     '/v1/workspaces/{workspaceId}/invitations',
     '/v1/workspaces/{workspaceId}/members',
     '/v1/workspaces/{workspaceId}/members/{userId}',
+    '/v1/workspaces/{workspaceId}/restore',
   ]);
   expect(document.paths['/health/live'].get.operationId).toBe('getLiveness');
   expect(document.paths['/health/ready'].get.operationId).toBe('getReadiness');

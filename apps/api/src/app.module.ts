@@ -32,7 +32,12 @@ export class AppModule {
     realtime?: { redisUrl: string },
   ): DynamicModule {
     const authentication = AuthModule.forRuntime(auth, logger);
-    const permissions = PermissionsModule.forRuntime(database, auth?.settings.secret, logger);
+    const permissions = PermissionsModule.forRuntime(
+      database,
+      auth?.settings.secret,
+      logger,
+      auth?.identities,
+    );
 
     return {
       module: AppModule,

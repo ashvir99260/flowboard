@@ -59,7 +59,7 @@ This is a relationship overview, not a full foreign-key diagram. `SeedState` is 
 | User/RefreshSession/SeedState | Narrow global identity or operational repositories. Password hashes and refresh digests never appear in responses; access JWTs are deliberate auth responses.                                                       |
 | Invitation                    | Tenant-owned invitation with email, target role and expiry. Creation uses membership policy; acceptance crosses a narrow identity boundary. The creation response intentionally returns the one-time sharing token. |
 
-Nodes and tasks archive through `archivedAt`; public delete does not erase historical activity. Descendant/task effects are validated and committed atomically. There is no restore endpoint today.
+Nodes and tasks archive through `archivedAt`; public delete does not erase historical activity. Descendant/task effects are validated and committed atomically. Workspace roots now have administrator recovery; container/task restoration remains outside the implemented API.
 
 ## Request boundary and API contracts
 
@@ -69,7 +69,7 @@ Nodes and tasks archive through `archivedAt`; public delete does not erase histo
 4. Typed response serialization and Swagger metadata describe the outgoing contract. The global [exception filter](../apps/api/src/core/common/filters/http-exception.filter.ts) sanitizes failures into `{ error: { code, message, details? } }`.
 5. Spec-only [bootstrap](../apps/api/src/spec-bootstrap.ts) exports the real controller/DTO registry without connecting to DB/Redis. `pnpm gen:api` regenerates the committed spec/client. Drift and convention checks are separate commands.
 
-The snapshot contains 43 OpenAPI operations across 31 paths, including two health operations outside `/v1`. Entity responses use `{data}`, paginated responses use `{items,pageInfo}`, and resolved collections carry configuration revisions. `204` has no body. Read the [catalog](API_CATALOG.md) for each method, operationId, schema and permission policy.
+The snapshot contains 47 OpenAPI operations across 34 paths, including two health operations outside `/v1`. Entity responses use `{data}`, paginated responses use `{items,pageInfo}`, and resolved collections carry configuration revisions. `204` has no body. Read the [catalog](API_CATALOG.md) for each method, operationId, schema and permission policy.
 
 | Failure     | Contract meaning                                                                                                              |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -161,3 +161,5 @@ Gateways authenticate JWTs, validate Origins, authorize subscriptions and rechec
 The [delivery summary](DELIVERY_SUMMARY.md#verification-and-execution-record) links the recorded pure-contract, real-PostgreSQL/API, worker and browser verification. Important cases include foreign IDs, private ancestors, stale configuration, status/field deletion in use, move rollback, refresh replay, duplicate delivery and dirty drafts. P20 itself checks documentation, not new application behavior.
 
 Deliberate limits are workspace-wide write serialization, dense reordering, bounded page chains, whole-workspace tree evaluation, and no durable socket replay. Search, restore, OIDC, teams, outgoing webhooks and immutable multi-environment promotion are not implemented by these flows. See [open gates](DELIVERY_SUMMARY.md#open-gates-and-limits).
+
+Workspace root read/rename/archive use the ordinary tenant boundary. Session-only restore uses a narrow identity-repository operation, with target administrator checks in the central permission service and repeated under user → workspace locks. See [lifecycle contracts](WORKSPACE_LIFECYCLE.md#contracts-and-modules). The management UI is tracked separately in P29-02.

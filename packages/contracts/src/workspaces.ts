@@ -45,7 +45,8 @@ export const WorkspaceParamsSchema = z
   .strictObject({
     workspaceId: UuidSchema.overwrite((value) => value.toLowerCase()).meta({
       title: 'Workspace ID',
-      description: 'Must equal the authenticated session’s active workspace.',
+      description:
+        'Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.',
       example: AuthExamples.session.data.activeWorkspace.id,
     }),
   })
@@ -106,7 +107,9 @@ export const ConfigVersionSchema = VersionSchema.meta({
   title: 'Configuration version',
 });
 
-export const WorkspacePageSchema = cursorPageSchema(ActiveWorkspaceSchema).meta({
+export const WorkspacePageSchema = cursorPageSchema(
+  ActiveWorkspaceSchema.extend({ configVersion: ConfigVersionSchema }),
+).meta({
   title: 'Workspace page',
   description: 'Live cursor page of the caller’s memberships.',
   example: { items: [], pageInfo: { hasNextPage: false, nextCursor: null } },
@@ -289,3 +292,53 @@ export type CreateInvitation = z.infer<typeof CreateInvitationSchema>;
 export type InvitationEnvelope = z.infer<typeof InvitationEnvelopeSchema>;
 
 export type AcceptedInvitationEnvelope = z.infer<typeof AcceptedInvitationEnvelopeSchema>;
+
+export const WorkspaceSnapshotSchema = ActiveWorkspaceSchema.omit({ role: true }).meta({
+  title: 'Workspace root',
+  description: 'Safe workspace root metadata. Archiving retains descendants and history.',
+  example: (({ role: _role, ...workspace }) => workspace)(
+    AuthExamples.session.data.activeWorkspace,
+  ),
+});
+
+export const WorkspaceEnvelopeSchema = z
+  .strictObject({
+    data: WorkspaceSnapshotSchema,
+    configVersion: ConfigVersionSchema,
+    dataVersion: VersionSchema.meta({
+      description: 'Current workspace data revision.',
+      example: 1,
+      title: 'Data version',
+    }),
+  })
+  .meta({
+    title: 'Workspace root response',
+    description: 'Workspace metadata and authoritative configuration/data revisions.',
+    example: {
+      data: {
+        archivedAt: null,
+        createdAt: '2026-10-23T10:00:00.000Z',
+        id: AuthExamples.session.data.activeWorkspace.id,
+        name: 'Alex workspace',
+        updatedAt: '2026-10-23T10:00:00.000Z',
+      },
+      configVersion: 1,
+      dataVersion: 1,
+    },
+  });
+
+export const UpdateWorkspaceSchema = ExpectedConfigSchema.extend({
+  name: NameSchema.meta({
+    description: 'Trimmed workspace display name, up to 120 characters.',
+    example: 'Engineering',
+    title: 'Workspace name',
+  }),
+}).meta({
+  title: 'Rename workspace request',
+  description: 'Administrator rename with an optimistic configuration precondition.',
+  example: { expectedConfigVersion: 1, name: 'Engineering' },
+});
+
+export type UpdateWorkspace = z.infer<typeof UpdateWorkspaceSchema>;
+
+export type WorkspaceEnvelope = z.infer<typeof WorkspaceEnvelopeSchema>;

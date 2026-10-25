@@ -519,3 +519,35 @@ test('legacy clients keep the original strict invalidation payload', async () =>
   expect((await received)[0]).toEqual({ kind: 'list', listId: id(221), eventId: event.id });
   socket.disconnect();
 });
+
+test('workspace archive disconnects existing sockets and refuses new handshakes', async () => {
+  const created = await api().post('/v1/auth/signup').set('Origin', AuthTestOrigin).send({
+    email: 'archive-socket@example.test',
+    name: 'Archive owner',
+    password: 'A secure password!',
+    workspaceName: 'Archived sockets',
+  });
+  expect(created.status).toBe(201);
+  const session = created.body.data;
+  const options = {
+    transports: ['websocket'],
+    reconnection: false,
+    auth: { token: session.accessToken },
+    extraHeaders: { Origin: AuthTestOrigin },
+  };
+  const connected = io(apps[0].origin, options);
+  sockets.push(connected);
+  await once(connected, 'connect', { signal: AbortSignal.timeout(3000) });
+  const disconnected = once(connected, 'disconnect', { signal: AbortSignal.timeout(5000) });
+  const response = await api()
+    .post(`/v1/workspaces/${session.activeWorkspace.id}/archive`)
+    .set('Authorization', `Bearer ${session.accessToken}`)
+    .send({ expectedConfigVersion: 1 });
+  expect(response.status).toBe(200);
+  await disconnected;
+  const denied = io(apps[0].origin, options);
+  sockets.push(denied);
+  const [error] = await once(denied, 'connect_error', { signal: AbortSignal.timeout(3000) });
+  expect(error.message).toBe('Authentication required');
+  expect(denied.connected).toBe(false);
+});

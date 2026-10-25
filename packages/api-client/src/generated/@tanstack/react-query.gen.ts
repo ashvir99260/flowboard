@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, archiveTask, createNode, createScopeField, createScopeStatus, createTask, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, getTask, listNodeGrants, listScopeFields, listScopeStatuses, listTaskActivity, listTasks, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, moveNode, moveTask, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, reorderTask, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateTask, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, GetTaskData, GetTaskError, GetTaskResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListTaskActivityData, ListTaskActivityError, ListTaskActivityResponse, ListTasksData, ListTasksError, ListTasksResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, MoveNodeData, MoveNodeError, MoveNodeResponse, MoveTaskData, MoveTaskError, MoveTaskResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, ReorderTaskData, ReorderTaskError, ReorderTaskResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, archiveTask, archiveWorkspace, createNode, createScopeField, createScopeStatus, createTask, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, getTask, getWorkspace, listNodeGrants, listScopeFields, listScopeStatuses, listTaskActivity, listTasks, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, moveNode, moveTask, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, reorderTask, restoreWorkspace, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateTask, updateWorkspace, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveWorkspaceData, ArchiveWorkspaceError, ArchiveWorkspaceResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, GetTaskData, GetTaskError, GetTaskResponse, GetWorkspaceData, GetWorkspaceError, GetWorkspaceResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListTaskActivityData, ListTaskActivityError, ListTaskActivityResponse, ListTasksData, ListTasksError, ListTasksResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, MoveNodeData, MoveNodeError, MoveNodeResponse, MoveTaskData, MoveTaskError, MoveTaskResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, ReorderTaskData, ReorderTaskError, ReorderTaskResponse, RestoreWorkspaceData, RestoreWorkspaceError, RestoreWorkspaceResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateWorkspaceData, UpdateWorkspaceError, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpdateWorkspaceResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -964,6 +964,64 @@ export const listWorkspacesInfiniteOptions = (options?: Options<ListWorkspacesDa
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+export const getWorkspaceQueryKey = (options: Options<GetWorkspaceData>) => createQueryKey('getWorkspace', options);
+
+/**
+ * Read workspace root
+ *
+ * Read safe live root metadata and the current optimistic revisions.
+ */
+export const getWorkspaceOptions = (options: Options<GetWorkspaceData>) => queryOptions<GetWorkspaceResponse, GetWorkspaceError, GetWorkspaceResponse, ReturnType<typeof getWorkspaceQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getWorkspace({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getWorkspaceQueryKey(options)
+});
+
+/**
+ * Rename workspace
+ *
+ * Current administrators rename the root under its lock; unchanged names retain revisions.
+ */
+export const updateWorkspaceMutation = (options?: Partial<Options<UpdateWorkspaceData>>): UseMutationOptions<UpdateWorkspaceResponse, UpdateWorkspaceError, Options<UpdateWorkspaceData>> => {
+    const mutationOptions: UseMutationOptions<UpdateWorkspaceResponse, UpdateWorkspaceError, Options<UpdateWorkspaceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateWorkspace({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Archive workspace
+ *
+ * Current administrators archive only the root, preserving descendants and history. Ordinary access is then denied.
+ */
+export const archiveWorkspaceMutation = (options?: Partial<Options<ArchiveWorkspaceData>>): UseMutationOptions<ArchiveWorkspaceResponse, ArchiveWorkspaceError, Options<ArchiveWorkspaceData>> => {
+    const mutationOptions: UseMutationOptions<ArchiveWorkspaceResponse, ArchiveWorkspaceError, Options<ArchiveWorkspaceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await archiveWorkspace({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 /**
  * Create a private workspace invitation
  *
@@ -1082,6 +1140,25 @@ export const updateWorkspaceMemberMutation = (options?: Partial<Options<UpdateWo
     const mutationOptions: UseMutationOptions<UpdateWorkspaceMemberResponse, UpdateWorkspaceMemberError, Options<UpdateWorkspaceMemberData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await updateWorkspaceMember({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Restore workspace
+ *
+ * Session-only recovery by a current target administrator. Recheck live family and revision under user then workspace locks; selection is unchanged.
+ */
+export const restoreWorkspaceMutation = (options?: Partial<Options<RestoreWorkspaceData>>): UseMutationOptions<RestoreWorkspaceResponse, RestoreWorkspaceError, Options<RestoreWorkspaceData>> => {
+    const mutationOptions: UseMutationOptions<RestoreWorkspaceResponse, RestoreWorkspaceError, Options<RestoreWorkspaceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await restoreWorkspace({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

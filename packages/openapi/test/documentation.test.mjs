@@ -14,7 +14,7 @@ const hasExample = (schema) =>
   Object.hasOwn(schema, 'example') || Object.hasOwn(schema, 'examples');
 
 test('every Swagger operation and payload has a description and example', () => {
-  assert.equal(operations.length, 43);
+  assert.equal(operations.length, 47);
   for (const operation of operations) {
     meaningful(operation.summary, `${operation.operationId} summary`);
     meaningful(operation.description, `${operation.operationId} description`);
@@ -97,6 +97,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
   const expected = {
     acceptWorkspaceInvitation: 'AcceptedInvitationResponseDto_Output',
     addWorkspaceMember: 'MemberMutationResponseDto_Output',
+    archiveWorkspace: 'WorkspaceResponseDto_Output',
     createNode: 'NodeResponseDto_Output',
     createScopeField: 'ScopeFieldMutationResponseDto_Output',
     createScopeStatus: 'ScopeStatusMutationResponseDto_Output',
@@ -109,6 +110,7 @@ test('documented success responses retain their concrete DTO schemas', () => {
     getNode: 'NodeResponseDto_Output',
     getReadiness: 'ReadinessResponseDto_Output',
     getTask: 'TaskResponseDto_Output',
+    getWorkspace: 'WorkspaceResponseDto_Output',
     listNodeGrants: 'GrantPageResponseDto_Output',
     listScopeFields: 'ScopeFieldResponseDto_Output',
     listScopeStatuses: 'ScopeStatusResponseDto_Output',
@@ -123,12 +125,14 @@ test('documented success responses retain their concrete DTO schemas', () => {
     refreshSession: 'SessionResponseDto_Output',
     reorderNode: 'NodeResponseDto_Output',
     reorderTask: 'TaskMutationResponseDto_Output',
+    restoreWorkspace: 'WorkspaceResponseDto_Output',
     signUp: 'SessionResponseDto_Output',
     switchWorkspace: 'SessionResponseDto_Output',
     updateNode: 'NodeResponseDto_Output',
     updateScopeField: 'ScopeFieldMutationResponseDto_Output',
     updateScopeStatus: 'ScopeStatusMutationResponseDto_Output',
     updateTask: 'TaskMutationResponseDto_Output',
+    updateWorkspace: 'WorkspaceResponseDto_Output',
     updateWorkspaceMember: 'MemberMutationResponseDto_Output',
     upsertNodeGrant: 'GrantResponseDto_Output',
   };

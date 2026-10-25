@@ -35,6 +35,7 @@ export const ErrorCodeSchema = z
     'REFRESH_REUSED',
     'FORBIDDEN',
     'MEMBERSHIP_REQUIRED',
+    'WORKSPACE_ARCHIVED',
     'MEMBERSHIP_EXISTS',
     'ORIGIN_REJECTED',
     'NOT_FOUND',
