@@ -2,6 +2,7 @@
 
 import { Box, TreeItem } from '@flowboard/ui';
 import { useState } from 'react';
+
 import type { TreeBranch } from './assembleTree';
 
 export function SidebarBranches({

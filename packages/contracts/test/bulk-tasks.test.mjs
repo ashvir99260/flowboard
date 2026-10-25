@@ -29,7 +29,7 @@ test('bulk targets are bounded, unique normalized identities with version precon
       { id: id(1).toUpperCase(), expectedVersion: 2 },
     ],
     [{ id: id(1), expectedVersion: 0 }],
-    [{ id: 'invalid', expectedVersion: 1 }],
+    [{ expectedVersion: 1, id: 'invalid' }],
   ])
     expect(BulkUpdateTasksSchema.safeParse({ ...command, tasks }).success).toBe(false);
 });

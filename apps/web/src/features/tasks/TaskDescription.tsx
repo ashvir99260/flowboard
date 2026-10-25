@@ -5,8 +5,8 @@ import { Button, MarkdownContent, Stack } from '@flowboard/ui';
 import { useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
-import type { Control } from 'react-hook-form';
 import type { TaskDraft } from './taskFormData';
+import type { Control } from 'react-hook-form';
 
 export function TaskDescription({ control, busy }: { busy: boolean; control: Control<TaskDraft> }) {
   const description = useWatch({ control, name: 'description' });

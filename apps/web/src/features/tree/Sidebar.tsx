@@ -2,11 +2,14 @@
 
 import { Button, EmptyState, ErrorState } from '@flowboard/ui';
 import { useRouter } from 'next/navigation';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
+
 import { SessionLoading } from '../auth/SessionLoading';
+
 import { SidebarBranches } from './SidebarBranches';
 import { useTree } from './useTree';
+
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 
 export function Sidebar({
   runtime,

@@ -9,10 +9,10 @@ import { useWatch } from 'react-hook-form';
 import { bulkTaskDefaults, bulkTaskDraftSchema, bulkTaskInput } from './bulkTaskData';
 import { useBulkUpdateTasksMutation } from './useBulkUpdateTasksMutation';
 
-import type { FormFieldConfig } from '@flowboard/forms';
-import type { FieldPath } from 'react-hook-form';
 import type { BulkTaskDraft } from './bulkTaskData';
 import type { BulkTaskDetail, BulkTaskEditorProps } from './bulkTaskEditorTypes';
+import type { FormFieldConfig } from '@flowboard/forms';
+import type { FieldPath } from 'react-hook-form';
 
 export function BulkTaskForm({
   detail,
@@ -34,6 +34,7 @@ export function BulkTaskForm({
   );
   const operation = useWatch({ control, name: 'operation' });
   const fieldKey = useWatch({ control, name: 'fieldKey' });
+
   const field = detail.fields.find(({ key }) => key === fieldKey);
   const fields: Record<
     'status' | 'priority' | 'assignees' | 'custom-field',
@@ -76,7 +77,7 @@ export function BulkTaskForm({
     ],
   };
 
-  const save = handleSubmit(async (draft) => {
+  const save = async (draft: BulkTaskDraft) => {
     if (inFlight.current || conflict) return;
 
     inFlight.current = true;
@@ -122,7 +123,7 @@ export function BulkTaskForm({
       inFlight.current = false;
       setBusy(false);
     }
-  });
+  };
 
   return (
     <Stack
@@ -130,7 +131,7 @@ export function BulkTaskForm({
       noValidate
       aria-label="Bulk task editor"
       aria-busy={busy}
-      onSubmit={save}
+      onSubmit={(event) => void handleSubmit(save)(event)}
       spacing={1.2}
     >
       <Typography>{tasks.length} selected tasks. All changes are applied together.</Typography>

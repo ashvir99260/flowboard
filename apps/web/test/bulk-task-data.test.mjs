@@ -69,8 +69,8 @@ test('bulk drafts reject invalid options, required clearing, and unknown statuse
   const schema = bulkTaskDraftSchema(fixture.fields.items, fixture.statuses.items, tasks);
   for (const changes of [
     { operation: 'status', statusId: 'unknown' },
-    { operation: 'custom-field', fieldKey: 'area' },
-    { operation: 'custom-field', fieldKey: 'missing' },
+    { fieldKey: 'area', operation: 'custom-field' },
+    { fieldKey: 'missing', operation: 'custom-field' },
     { operation: 'custom-field', fieldKey: 'effort', customFields: { effort: 'wrong' } },
   ])
     assert.equal(schema.safeParse({ ...draft, ...changes }).success, false);

@@ -5,12 +5,13 @@ import NextLink from 'next/link';
 
 import { SessionLoading } from '../auth/SessionLoading';
 import { Board } from '../board/Board';
-import { ConnectedList } from './ConnectedList';
-import { readListLocation, writeListLocation } from './listLocation';
 
+import { ConnectedList } from './ConnectedList';
+import { readListLocation } from './listLocation';
+
+import type { TaskTableQuery } from './listLocation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { TaskTableQuery } from './listLocation';
 
 export function ListViewContent({
   location,
@@ -48,7 +49,7 @@ export function ListViewContent({
 
   return (
     <ConnectedList
-      key={`${scope.revision}:${scope.userId}:${scope.workspaceId}:${listId}:${writeListLocation(location.query)}`}
+      key={`${scope.revision}:${scope.userId}:${scope.workspaceId}:${listId}`}
       listId={listId}
       runtime={runtime}
       scope={scope}

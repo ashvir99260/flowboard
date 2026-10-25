@@ -1,16 +1,19 @@
 'use client';
 
-import type { WorkspaceEnvelope } from '@flowboard/contracts';
 import { WorkspaceEnvelopeSchema } from '@flowboard/contracts';
 import { Alert, Button, ErrorState, Stack, Typography } from '@flowboard/ui';
 import { useState } from 'react';
+
 import { apiError } from '../../lib/apiError';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import { SessionLoading } from '../auth/SessionLoading';
 import { useRealtime } from '../realtime/useRealtime';
+
 import { useGetWorkspaceQuery } from './useGetWorkspaceQuery';
 import { WorkspaceForm } from './WorkspaceForm';
+
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { WorkspaceEnvelope } from '@flowboard/contracts';
 
 export function WorkspaceSettingsContent({
   runtime,

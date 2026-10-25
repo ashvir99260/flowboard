@@ -2,6 +2,7 @@
 
 import { useSession } from '../../providers/useSession';
 import { SessionGate } from '../auth/SessionGate';
+
 import { WorkspaceMemberships } from './WorkspaceMemberships';
 
 export function WorkspacePicker() {

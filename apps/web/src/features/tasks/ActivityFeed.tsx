@@ -8,9 +8,9 @@ import { apiError } from '../../lib/apiError';
 import { assembleActivity } from './activityData';
 import { useListTaskActivityInfiniteQuery } from './useListTaskActivityInfiniteQuery';
 
-import type { ResolvedStatus } from '@flowboard/contracts';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type { ResolvedStatus } from '@flowboard/contracts';
 
 export function ActivityFeed({
   taskId,

@@ -47,16 +47,28 @@ test('create a child with required values, navigate its saved parent and detach 
       /\/lists\/[^/]+\/tasks$/.test(new URL(response.url()).pathname),
   );
   await drawer.getByRole('button', { exact: true, name: 'Create task' }).click();
-  const parentId = (await (await created).json()).data.parentTaskId;
-  assert.ok(parentId);
+  const createdTask = (await (await created).json()).data;
+  const parentId = createdTask.parentTaskId;
+  assert.equal(parentId, task(2).id);
   await expect(drawer.getByText('Task created.', { exact: true })).toBeVisible();
   await drawer.getByRole('button', { exact: true, name: 'Open parent task' }).click();
   await expect(drawer.getByLabel(/^Title/)).toHaveValue('Fix login');
+  const childRead = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'GET' &&
+      new URL(response.url()).pathname.endsWith(`/tasks/${createdTask.id}`),
+  );
   await drawer
     .getByRole('region', { exact: true, name: 'Subtasks' })
     .getByRole('button', { exact: true, name: 'Child from drawer' })
     .click();
-  await expect(drawer.getByLabel(/^Parent task/)).toHaveValue('Fix login');
+  assert.equal((await (await childRead).json()).data.parentTaskId, parentId);
+  await expect(drawer.getByLabel(/^Parent task/)).toHaveValue(
+    'Selected parent (outside loaded choices)',
+  );
+  await expect(
+    drawer.getByRole('button', { exact: true, name: 'Load more parent choices' }),
+  ).toBeVisible();
   await selectAutocomplete(drawer.getByLabel(/^Parent task/), 'No parent (top-level task)');
   const detached = page.waitForResponse(
     (response) =>

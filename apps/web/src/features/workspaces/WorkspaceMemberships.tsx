@@ -13,14 +13,17 @@ import {
 } from '@flowboard/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+
 import { apiError } from '../../lib/apiError';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import { useSession } from '../../providers/useSession';
 import { SessionLoading } from '../auth/SessionLoading';
 import { useNotifications } from '../notifications/useNotifications';
+
 import { useListWorkspacesInfiniteQuery } from './useListWorkspacesInfiniteQuery';
 import { useWorkspaceMutation } from './useWorkspaceMutation';
+
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 
 export function WorkspaceMemberships({
   runtime,

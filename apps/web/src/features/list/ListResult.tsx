@@ -1,9 +1,10 @@
 'use client';
 
-import { Button, CircularProgress, EmptyState, ErrorState, Stack, Typography } from '@flowboard/ui';
+import { Button, CircularProgress, ErrorState, Stack, Typography } from '@flowboard/ui';
 
 import { TaskTable } from './TaskTable';
 
+import type { TaskTableQuery } from './listLocation';
 import type { useListQuery } from './useListQuery';
 
 type ListView = ReturnType<typeof useListQuery>;
@@ -32,9 +33,15 @@ function failure(view: ListView) {
 export function ListResult({
   view,
   selection,
+  query,
+  onChange,
+  pending,
 }: {
+  onChange: (query: TaskTableQuery) => void;
+  pending: boolean;
+  query: TaskTableQuery;
+  selection?: { disabled?: boolean; ids: readonly string[]; onChange: (ids: string[]) => void };
   view: ListView;
-  selection?: { ids: readonly string[]; onChange: (ids: string[]) => void; disabled?: boolean };
 }) {
   const error = failure(view);
   if (error)
@@ -42,12 +49,28 @@ export function ListResult({
       <ErrorState
         title={error.title}
         description={error.message}
-        action={<Button onClick={view.retry}>Retry tasks</Button>}
+        action={
+          view.filterError ? (
+            <Button
+              onClick={() =>
+                onChange({
+                  sort: query.sort,
+                  direction: query.direction,
+                  ...(query.q ? { q: query.q } : {}),
+                })
+              }
+            >
+              Clear filter
+            </Button>
+          ) : (
+            <Button onClick={view.retry}>Retry tasks</Button>
+          )
+        }
       />
     );
 
   const { result } = view;
-  if (result.state !== 'ready')
+  if (result.state !== 'ready' && !view.configured)
     return (
       <Stack direction="row" role="status" spacing={0.8}>
         <CircularProgress aria-hidden="true" size={'2rem'} />
@@ -55,26 +78,26 @@ export function ListResult({
       </Stack>
     );
 
-  if (!result.items.length)
-    return (
-      <EmptyState
-        description="Try clearing the filter, or choose another list."
-        title="No matching tasks"
-      />
-    );
-
   return (
     <>
       <Typography color="text.secondary" variant="body2">
-        {result.items.length} loaded tasks
+        {result.state === 'ready' ? `${result.items.length} loaded tasks` : 'Loading tasks…'}
       </Typography>
       <TaskTable
-        items={result.items}
-        fields={result.fields}
-        statuses={result.statuses}
-        selection={selection}
+        query={query}
+        onChange={onChange}
+        pending={pending}
+        loading={result.state !== 'ready'}
+        items={result.state === 'ready' ? result.items : []}
+        fields={result.state === 'ready' ? result.fields : view.fields}
+        statuses={result.state === 'ready' ? result.statuses : view.statuses}
+        selection={
+          selection
+            ? { ...selection, disabled: selection.disabled || result.state !== 'ready' }
+            : undefined
+        }
       />
-      {result.nextCursor && (
+      {result.state === 'ready' && result.nextCursor && (
         <Button disabled={view.loadingMore || view.atLimit} onClick={view.loadMore}>
           {view.atLimit ? 'Page limit reached' : view.loadingMore ? 'Loading…' : 'Load more tasks'}
         </Button>

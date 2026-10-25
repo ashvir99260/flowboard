@@ -1,5 +1,5 @@
-import type { QueryClient } from '@tanstack/react-query';
 import type { QueryScope } from '../../lib/queryScope';
+import type { QueryClient } from '@tanstack/react-query';
 
 function sameScope(key: readonly unknown[] | undefined, scope: QueryScope) {
   return (

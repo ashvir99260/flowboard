@@ -1,17 +1,17 @@
 'use client';
 
 import { Alert, Button, Chip, ErrorState, Stack, Typography } from '@flowboard/ui';
+import { StatusPreview } from '@flowboard/ui';
 import { useRef, useState } from 'react';
 
 import { SessionLoading } from '../../auth/SessionLoading';
 
-import { StatusPreview } from '@flowboard/ui';
 import { StatusForm } from './StatusForm';
 import { useStatusConfiguration } from './useStatusConfiguration';
 
-import type { StatusScope } from '@flowboard/contracts';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
+import type { StatusScope } from '@flowboard/contracts';
 
 export function StatusScopeConfiguration({
   active,

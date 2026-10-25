@@ -11,9 +11,9 @@ import { isTaskBusy } from '../tasks/taskEvents';
 
 import { readBulkTaskResponse } from './bulkTaskData';
 
-import type { BulkUpdateTasks, ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type { BulkUpdateTasks, ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
 
 class BulkResponseError extends Error {}
 
@@ -24,7 +24,9 @@ export function useBulkUpdateTasksMutation(
 ) {
   const notifications = useNotifications();
   const client = useQueryClient();
+
   const generated = bulkUpdateTasksMutation({ client: runtime.client });
+
   const mutation = useApiMutation({
     mutationKey: ['task-write', scope.revision, scope.userId, scope.workspaceId],
     mutationFn: async (

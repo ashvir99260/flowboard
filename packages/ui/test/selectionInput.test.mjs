@@ -195,3 +195,111 @@ test('a nullable multi-select can distinguish clearing from removing its final c
   fireEvent.keyDown(screen.getByRole('combobox', { name: 'Tags' }), { key: 'Backspace' });
   assert.deepEqual(changes.at(-1), []);
 });
+
+test('unrelated renders with equivalent options preserve the active search text', () => {
+  const priorityOptions = [
+    { label: 'normal', value: 'normal' },
+    { label: 'high', value: 'high' },
+  ];
+  const view = render(
+    createElement(Selection, { label: 'Priority', options: priorityOptions, initial: 'normal' }),
+  );
+  const input = screen.getByRole('combobox', { name: 'Priority' });
+  fireEvent.focus(input);
+  fireEvent.change(input, { target: { value: 'high' } });
+  view.rerender(
+    createElement(Selection, {
+      label: 'Priority',
+      options: priorityOptions.map((option) => ({ ...option })),
+      initial: 'normal',
+    }),
+  );
+  assert.equal(input.value, 'high');
+  assert.ok(screen.getByRole('option', { name: 'high' }));
+  fireEvent.click(screen.getByRole('option', { name: 'high' }));
+  assert.equal(input.value, 'high');
+});
+
+test('multiple selection preserves typed search across equivalent value and option arrays', () => {
+  const memberOptions = [
+    { label: 'Alice', value: 'alice' },
+    { label: 'Bob', value: 'bob' },
+  ];
+  const view = render(
+    createElement(UI.SelectionInput, {
+      label: 'Members',
+      multiple: true,
+      value: ['alice'],
+      options: memberOptions,
+      onChange: () => {},
+    }),
+  );
+  const input = screen.getByRole('combobox', { name: 'Members' });
+  fireEvent.focus(input);
+  fireEvent.change(input, { target: { value: 'Bob' } });
+  view.rerender(
+    createElement(UI.SelectionInput, {
+      label: 'Members',
+      multiple: true,
+      value: ['alice'],
+      options: memberOptions.map((option) => ({ ...option })),
+      onChange: () => {},
+    }),
+  );
+  assert.equal(input.value, 'Bob');
+  assert.ok(screen.getByRole('option', { name: 'Bob' }));
+  assert.ok(screen.getByText('Alice'));
+});
+
+test('async selected labels refresh without overwriting a focused search', () => {
+  const initialOptions = [
+    { label: 'Loading selected parent', value: 'selected' },
+    { label: 'Other task', value: 'other' },
+  ];
+  const view = render(
+    createElement(Selection, { label: 'Parent', options: initialOptions, initial: 'selected' }),
+  );
+  const input = screen.getByRole('combobox', { name: 'Parent' });
+  fireEvent.focus(input);
+  fireEvent.change(input, { target: { value: 'Other' } });
+  view.rerender(
+    createElement(Selection, {
+      label: 'Parent',
+      options: [
+        { label: 'Resolved parent', value: 'selected' },
+        { label: 'Other task', value: 'other' },
+      ],
+      initial: 'selected',
+    }),
+  );
+  assert.equal(input.value, 'Other');
+  fireEvent.blur(input);
+  assert.equal(input.value, 'Resolved parent');
+});
+
+test('selected labels and removed options refresh when there is no active search', () => {
+  const changes = [];
+  const props = {
+    label: 'Parent',
+    value: 'selected',
+    onChange: (value) => changes.push(value),
+  };
+  const view = render(
+    createElement(UI.SelectionInput, {
+      ...props,
+      options: [{ label: 'Loading selected parent', value: 'selected' }],
+    }),
+  );
+  const input = screen.getByRole('combobox', { name: 'Parent' });
+  view.rerender(
+    createElement(UI.SelectionInput, {
+      ...props,
+      options: [{ label: 'Resolved parent', value: 'selected' }],
+    }),
+  );
+  assert.equal(input.value, 'Resolved parent');
+  view.rerender(createElement(UI.SelectionInput, { ...props, options: [] }));
+  assert.equal(input.value, 'Unavailable option (selected)');
+  assert.equal(input.getAttribute('aria-invalid'), 'true');
+  assert.deepEqual(changes, []);
+});

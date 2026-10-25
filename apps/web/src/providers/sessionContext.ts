@@ -1,9 +1,10 @@
 'use client';
 
 import { setupClient } from '@flowboard/api-client/session';
-import type { SessionEnvelope } from '@flowboard/contracts';
 import { createContext } from 'react';
+
 import type { QueryScope } from '../lib/queryScope';
+import type { SessionEnvelope } from '@flowboard/contracts';
 
 export type ClientRuntime = ReturnType<typeof setupClient>;
 

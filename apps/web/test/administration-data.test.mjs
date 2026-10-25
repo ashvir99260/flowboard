@@ -120,7 +120,7 @@ test('container forms validate hierarchy and produce minimal changes or a no-op'
   assert.deepEqual(administrationCommand(edit, data, { ...draft, name: 'Updated' }), {
     kind: 'update',
     nodeId: folder.id,
-    body: { name: 'Updated', expectedVersion: 1, expectedConfigVersion: 1 },
+    body: { expectedConfigVersion: 1, expectedVersion: 1, name: 'Updated' },
   });
   assert.equal(containerLabel(folder, data.nodes), 'folder: Engineering / Delivery');
 });

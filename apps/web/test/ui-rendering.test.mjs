@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { AuthExamples } from '@flowboard/contracts';
-import { designTokens } from '@flowboard/ui';
+import { designTokens } from '@flowboard/ui/tokens';
 import { chromium } from '@playwright/test';
 
 import { startAppApi } from './common/app-api-fixture.mjs';

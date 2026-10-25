@@ -1,14 +1,17 @@
 'use client';
 
-import type { SessionEnvelope } from '@flowboard/contracts';
 import { SocketEvents } from '@flowboard/contracts';
-import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-import type { ClientRuntime } from '../../providers/sessionContext';
+
 import { useNotifications } from '../notifications/useNotifications';
+
 import { RealtimeContext } from './realtimeContext';
 import { createInvalidationTracker, createRealtimeBus } from './realtimeEvents';
+
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { SessionEnvelope } from '@flowboard/contracts';
+import type { ReactNode } from 'react';
 
 export function RealtimeProvider({
   children,
@@ -69,7 +72,7 @@ export function RealtimeProvider({
               response.ok === true
             )
               // Catch writes committed while the server authorized and joined the list.
-              bus.dispatch({ kind: 'resync' });
+              bus.resyncList(listId);
           });
         }
       subscribed = lists;

@@ -1,12 +1,14 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useCallback, useRef, useState } from 'react';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
+
 import { TaskDrawer } from './TaskDrawer';
 import { TaskEditorContext } from './taskEditorContext';
+
 import type { Selection } from './taskEditorTypes';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { ReactNode } from 'react';
 
 export function TaskEditorProvider({
   children,

@@ -26,6 +26,8 @@ import { useNotifications } from '../notifications/useNotifications';
 
 import { readContainerWrite, readGrantWrite } from './administrationData';
 
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 import type {
   CreateNode,
   MoveNode,
@@ -34,21 +36,19 @@ import type {
   UpdateNode,
   UpsertGrant,
 } from '@flowboard/contracts';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 
 export type AdministrationCommand =
-  | { kind: 'create'; body: CreateNode }
-  | { kind: 'update'; nodeId: string; body: UpdateNode }
-  | { kind: 'move'; nodeId: string; body: MoveNode }
-  | { kind: 'reorder'; nodeId: string; body: ReorderNode }
-  | { kind: 'archive'; nodeId: string; body: NodeVersion }
-  | { kind: 'grant'; nodeId: string; body: UpsertGrant }
+  | { body: CreateNode; kind: 'create' }
+  | { body: UpdateNode; kind: 'update'; nodeId: string }
+  | { body: MoveNode; kind: 'move'; nodeId: string }
+  | { body: ReorderNode; kind: 'reorder'; nodeId: string }
+  | { body: NodeVersion; kind: 'archive'; nodeId: string }
+  | { body: UpsertGrant; kind: 'grant'; nodeId: string }
   | {
+      body: { expectedConfigVersion: number };
       kind: 'removeGrant';
       nodeId: string;
       userId: string;
-      body: { expectedConfigVersion: number };
     };
 
 class InvalidAdministrationResponse extends Error {}
@@ -56,6 +56,7 @@ class InvalidAdministrationResponse extends Error {}
 export function useAdministrationMutation(runtime: ClientRuntime, scope: QueryScope) {
   const client = useQueryClient();
   const notifications = useNotifications();
+
   const create = createNodeMutation({ client: runtime.client });
   const update = updateNodeMutation({ client: runtime.client });
   const move = moveNodeMutation({ client: runtime.client });
@@ -63,6 +64,7 @@ export function useAdministrationMutation(runtime: ClientRuntime, scope: QuerySc
   const archive = archiveNodeMutation({ client: runtime.client });
   const grant = upsertNodeGrantMutation({ client: runtime.client });
   const removeGrant = removeNodeGrantMutation({ client: runtime.client });
+
   const mutation = useApiMutation({
     mutationKey: ['configuration-write', scope.revision, scope.userId, scope.workspaceId],
     mutationFn: async (command: AdministrationCommand, context) => {
@@ -181,13 +183,13 @@ export function useAdministrationMutation(runtime: ClientRuntime, scope: QuerySc
       });
       report(
         {
-          create: 'Container created.',
-          update: 'Container saved.',
-          move: 'Container moved.',
-          reorder: 'Container reordered.',
           archive: 'Container archived.',
+          create: 'Container created.',
           grant: 'Access saved.',
+          move: 'Container moved.',
           removeGrant: 'Explicit grant removed.',
+          reorder: 'Container reordered.',
+          update: 'Container saved.',
         }[command.kind],
         'success',
       );

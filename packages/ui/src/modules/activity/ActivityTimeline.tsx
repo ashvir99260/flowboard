@@ -1,7 +1,7 @@
 'use client';
 import { styled } from '@mui/material/styles';
-
 import { default as Typography } from '@mui/material/Typography';
+
 import { formatTimestamp } from '../../utils/formatDate.js';
 
 import type { Activity, ResolvedStatus } from '@flowboard/contracts';

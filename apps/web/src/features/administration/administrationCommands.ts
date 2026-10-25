@@ -7,7 +7,7 @@ import {
 } from '@flowboard/contracts';
 import { z } from 'zod';
 
-import { updateContainerInput } from './administrationData';
+import { updateContainerInput } from './administrationData.ts';
 
 import type { AdministrationSnapshot } from './administrationData';
 import type { AdministrationCommand } from './useAdministrationMutation';
@@ -131,6 +131,7 @@ export function administrationDraftSchema(
           message: 'Choose a valid parent for this container type.',
         });
     }
+
     try {
       administrationCommand(selection, snapshot, draft);
     } catch (cause) {

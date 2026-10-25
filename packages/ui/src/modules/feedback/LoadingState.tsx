@@ -1,8 +1,7 @@
 'use client';
 
-import { styled } from '@mui/material/styles';
-
 import { default as CircularProgress } from '@mui/material/CircularProgress';
+import { styled } from '@mui/material/styles';
 import { default as Typography } from '@mui/material/Typography';
 
 import type { ReactNode } from 'react';

@@ -3,8 +3,9 @@ import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 export async function selectAutocomplete(input: Locator, label: string) {
-  await input.click();
-  await input.fill(label);
+  const combobox = input.and(input.page().getByRole('combobox'));
+  await combobox.click();
+  await combobox.fill(label);
   await input.page().getByRole('option', { name: label, exact: true }).click();
 }
 

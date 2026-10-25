@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from '../../providers/useSession';
+
 import { ConnectedBoard } from './ConnectedBoard';
 
 export function Board({ listId }: { listId: string }) {

@@ -63,7 +63,11 @@ test('button moves are optimistic, persist, and roll back rejected saves without
     .click();
   await selectAutocomplete(dialog.getByLabel('Status', { exact: true }), 'Done');
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
-  await dialog.getByText('Access denied', { exact: true }).waitFor();
+  await dialog
+    .locator('form')
+    .getByRole('alert')
+    .getByText('Access denied', { exact: true })
+    .waitFor();
   assert.equal(await dialog.getByLabel('Status', { exact: true }).inputValue(), 'Done');
   await dialog.getByRole('button', { exact: true, name: 'Cancel' }).click();
   await expect(active.getByRole('heading', { name: title, exact: true })).toBeVisible();

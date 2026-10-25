@@ -1,15 +1,17 @@
 'use client';
 
-import type { Task } from '@flowboard/contracts';
 import { Button, ConfirmDialog, DrawerPanel, ErrorState, Typography } from '@flowboard/ui';
 import { useRef, useState } from 'react';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
+
 import { ActivityFeed } from './ActivityFeed';
-import type { Selection } from './taskEditorTypes';
 import { TaskForm } from './TaskForm';
 import { TaskRelations } from './TaskRelations';
 import { useTaskDetail } from './useTaskDetail';
+
+import type { Selection } from './taskEditorTypes';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { Task } from '@flowboard/contracts';
 
 type DrawerAction = { type: 'close' | 'reload' } | { selection: Selection; type: 'navigate' };
 

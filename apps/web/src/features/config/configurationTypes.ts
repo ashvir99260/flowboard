@@ -1,7 +1,7 @@
-import type { StatusScope } from '@flowboard/contracts';
-import type { ComponentType } from 'react';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type { StatusScope } from '@flowboard/contracts';
+import type { ComponentType } from 'react';
 
 export type ConfigurationEditorProps = {
   active: boolean;

@@ -2,6 +2,7 @@ import { selectTaskStatus } from '@flowboard/contracts';
 
 import { prepareMoveFields } from '../board/taskPlacement.ts';
 
+import type { TaskPlacement } from '../board/taskPlacement';
 import type {
   NodeEnvelope,
   Placement,
@@ -9,7 +10,6 @@ import type {
   ResolvedStatus,
   Task,
 } from '@flowboard/contracts';
-import type { TaskPlacement } from '../board/taskPlacement';
 
 export type WorkspaceListNode = NodeEnvelope['data'];
 
@@ -32,7 +32,7 @@ export interface WorkspaceMoveSelection {
 
 type MovePlan =
   | { kind: 'blocked'; message: string }
-  | { kind: 'ready'; command: TaskPlacement }
+  | { command: TaskPlacement; kind: 'ready' }
   | { kind: 'repair'; selection: WorkspaceMoveSelection };
 
 /** Independent list reads must form one revision before sharing a DnD context. */

@@ -14,13 +14,13 @@ import {
 import { containerLabel } from './administrationData';
 import { useAdministrationMutation } from './useAdministrationMutation';
 
+import type { AdministrationDraft, AdministrationSelection } from './administrationCommands';
+import type { AdministrationSnapshot } from './administrationData';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 import type { FormFieldConfig } from '@flowboard/forms';
 import type { FormEvent } from 'react';
 import type { FieldPath } from 'react-hook-form';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
-import type { AdministrationDraft, AdministrationSelection } from './administrationCommands';
-import type { AdministrationSnapshot } from './administrationData';
 
 export function AdministrationForm({
   selection,
@@ -36,7 +36,7 @@ export function AdministrationForm({
   active: boolean;
   onReload: () => void;
   onSaved: (nodeId?: string) => void;
-  onState: (value: { dirty: boolean; busy: boolean }) => void;
+  onState: (value: { busy: boolean; dirty: boolean }) => void;
   runtime: ClientRuntime;
   scope: QueryScope;
   selection: AdministrationSelection;
@@ -202,6 +202,7 @@ export function AdministrationForm({
 
       if (result.success) {
         onSaved(result.response?.data.id);
+
         return;
       }
 

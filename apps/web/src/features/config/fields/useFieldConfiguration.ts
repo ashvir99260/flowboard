@@ -10,9 +10,9 @@ import { withQueryScope } from '../../../lib/queryScope';
 
 import { readFieldConfiguration } from './fieldConfiguration';
 
-import type { FieldScope } from '@flowboard/contracts';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
+import type { FieldScope } from '@flowboard/contracts';
 
 const policy = {
   staleTime: Infinity,

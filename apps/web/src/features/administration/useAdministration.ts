@@ -51,6 +51,7 @@ export function useAdministration(runtime: ClientRuntime, scope: QueryScope, nod
   );
 
   const tags = [`administration:${instance}:${attempt.generation}`];
+
   const tree = useInfiniteQuery({
     ...withQueryScope(
       listVisibleTreeInfiniteOptions({ client: runtime.client, query: { limit: '50' } }),

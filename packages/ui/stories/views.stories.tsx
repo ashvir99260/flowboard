@@ -1,3 +1,4 @@
+import { default as Stack } from '@mui/material/Stack';
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
@@ -7,9 +8,8 @@ import { MarkdownContent } from '../src/modules/content/MarkdownContent.js';
 import { EmptyState } from '../src/modules/feedback/EmptyState.js';
 import { ErrorState } from '../src/modules/feedback/ErrorState.js';
 import { LoadingState } from '../src/modules/feedback/LoadingState.js';
-import { TaskTable } from '../src/modules/tasks/TaskTable.js';
 import { Button } from '../src/modules/primitives/Button.js';
-import { default as Stack } from '@mui/material/Stack';
+import { TaskTable } from '../src/modules/tasks/TaskTable.js';
 
 import { approved, effort, statuses, task } from './fixtures.js';
 
@@ -141,8 +141,9 @@ export const MultipleLoadedPages: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole('button', { name: 'Go to next page' }));
+    await expect(await canvas.findByRole('button', { name: 'Open task: Task 051' })).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: 'Append loaded rows' }));
-    await expect(canvas.getByRole('button', { name: 'Open task: Task 051' })).toBeVisible();
+    await expect(await canvas.findByRole('button', { name: 'Open task: Task 051' })).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: 'Go to next page' }));
     await expect(args.onOpenTask).not.toHaveBeenCalled();
     await userEvent.click(await canvas.findByRole('button', { name: 'Open task: Task 105' }));
@@ -213,4 +214,40 @@ export const SafeMarkdown: Story = {
       }
     </MarkdownContent>
   ),
+};
+
+function GridControlsDemo({ onOpenTask }: { onOpenTask: (id: string) => void }) {
+  const [sort, setSort] = useState<
+    import('../src/modules/tasks/taskTableControls.js').TaskTableSort | null
+  >(null);
+  const [filter, setFilter] = useState<
+    import('../src/modules/tasks/taskTableControls.js').TaskTableFilter | null
+  >(null);
+
+  return (
+    <TaskTable
+      items={[task]}
+      fields={[effort, approved]}
+      statuses={statuses}
+      onOpenTask={onOpenTask}
+      controls={{ sort, filter, onSortChange: setSort, onFilterChange: setFilter }}
+    />
+  );
+}
+
+export const NativeServerControls: Story = {
+  render: (args) => <GridControlsDemo onOpenTask={args.onOpenTask} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('columnheader', { name: 'Priority' }));
+    await expect(canvas.getByRole('columnheader', { name: /Priority/ })).toHaveAttribute(
+      'aria-sort',
+      'ascending',
+    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Filters' }));
+    const body = within(canvasElement.ownerDocument.body);
+    await userEvent.type(body.getByRole('spinbutton', { name: 'Value' }), '0');
+    await expect(body.getByRole('spinbutton', { name: 'Value' })).toHaveValue(0);
+    await userEvent.click(body.getByRole('button', { name: 'Delete' }));
+  },
 };

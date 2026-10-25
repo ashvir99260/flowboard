@@ -11,16 +11,18 @@ import { useNotifications } from '../notifications/useNotifications';
 
 import { readCreatedInvitation } from './invitationData';
 
-import type { CreateInvitation } from '@flowboard/contracts';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type { CreateInvitation } from '@flowboard/contracts';
 
 class InvitationResponseError extends Error {}
 
 export function useCreateWorkspaceInvitationMutation(runtime: ClientRuntime, scope: QueryScope) {
   const notifications = useNotifications();
   const client = useQueryClient();
+
   const generated = createWorkspaceInvitationMutation({ client: runtime.client });
+
   const mutation = useApiMutation({
     mutationKey: ['configuration-write', scope.revision, scope.userId, scope.workspaceId],
     mutationFn: async (input: CreateInvitation, context) => {

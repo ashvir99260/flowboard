@@ -3,6 +3,7 @@
 import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 
 import { useTaskDetail } from '../tasks/useTaskDetail';
+
 import { BulkTaskForm } from './BulkTaskForm';
 
 import type { BulkTaskEditorProps } from './bulkTaskEditorTypes';
@@ -22,7 +23,7 @@ export function BulkTaskEditor(props: BulkTaskEditorProps) {
   if (result.state !== 'ready')
     return (
       <Stack spacing={1.2}>
-        <Typography role="status" aria-label="Loading bulk options">
+        <Typography aria-label="Loading bulk options" role="status">
           Loading editing options…
         </Typography>
         <Button onClick={props.onClose}>Cancel</Button>

@@ -37,7 +37,7 @@ test('workspace columns load visible lists with pagination and open tasks in the
   await expect(publicList.getByRole('article')).toHaveCount(4);
   await privateList.getByRole('button', { name: 'Open task: Private board task' }).click();
   const drawer = page.getByRole('dialog', { name: 'Task details' });
-  await expect(drawer.getByLabel('Title', { exact: true })).toHaveValue('Private board task');
+  await expect(drawer.getByRole('textbox', { name: /^Title/ })).toHaveValue('Private board task');
   await drawer.getByRole('button', { name: 'Close task' }).click();
   await privateList.getByRole('link', { name: 'Open Private list status board' }).click();
   await page
@@ -70,6 +70,7 @@ test('keyboard drag moves across lists and a rejected move rolls back without lo
   await handle.focus();
   await page.keyboard.press('Space');
   await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowUp');
   await page.keyboard.press('Space');
   assert.equal((await saved).status(), 200);
   await expect(privateList.locator(`[data-open-task="${movingId}"]`)).toBeVisible();
@@ -78,10 +79,11 @@ test('keyboard drag moves across lists and a rejected move rolls back without lo
     ids.todo,
   );
   api.controls.board.rejectNextMove = 'FORBIDDEN';
+  const back = privateList.locator(`[data-drag-task="${movingId}"]`);
+  await expect(back).toHaveAttribute('aria-disabled', 'false');
   const rejected = page.waitForResponse(
     (response) => response.url().endsWith(`/tasks/${movingId}/move`) && response.status() === 403,
   );
-  const back = privateList.locator(`[data-drag-task="${movingId}"]`);
   await back.focus();
   await page.keyboard.press('Space');
   await page.keyboard.press('ArrowLeft');
@@ -109,13 +111,17 @@ test('a cross-list drop opens field correction, keeps the draft on denial, and s
   await dialog.waitFor();
   assert.equal(api.requests.filter((entry) => entry.path.endsWith('/move')).length, before);
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
-  const note = dialog.getByLabel('release_note', { exact: true });
+  const note = dialog.getByRole('textbox', { name: /^release_note/ });
   await expect(note).toBeFocused();
   await note.fill('Keep this draft');
   await selectAutocomplete(dialog.getByLabel('Placement', { exact: true }), 'Start of column');
   api.controls.board.rejectNextMove = 'FORBIDDEN';
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
-  await dialog.getByText('Access denied', { exact: true }).waitFor();
+  await dialog
+    .locator('form')
+    .getByRole('alert')
+    .getByText('Access denied', { exact: true })
+    .waitFor();
   await expect(note).toHaveValue('Keep this draft');
   await dialog.getByRole('button', { exact: true, name: 'Save move' }).click();
   await expect(dialog).toHaveCount(0);

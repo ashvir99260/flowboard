@@ -99,3 +99,9 @@ export { ToastHost } from './modules/notifications/ToastHost.js';
 export { ToastRegion } from './modules/notifications/ToastRegion.js';
 
 export type { ToastMessage, ToastSeverity } from './modules/notifications/toastTypes.js';
+
+export type {
+  TaskTableControls,
+  TaskTableFilter,
+  TaskTableSort,
+} from './modules/tasks/taskTableControls.js';

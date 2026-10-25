@@ -1,6 +1,5 @@
 'use client';
 
-import type { Task } from '@flowboard/contracts';
 import {
   BoardDropzone,
   BoardGrid,
@@ -8,15 +7,18 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  WorkspaceColumn,
   useMediaQuery,
+  WorkspaceColumn,
 } from '@flowboard/ui';
-import type { DropResult, ResponderProvided } from '@hello-pangea/dnd';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import NextLink from 'next/link';
+
+import { WorkspaceTaskCard } from './WorkspaceTaskCard';
+
 import type { WorkspaceColumnState } from './useWorkspaceBoardQuery';
 import type { WorkspaceBoardColumn } from './workspaceBoardData';
-import { WorkspaceTaskCard } from './WorkspaceTaskCard';
+import type { Task } from '@flowboard/contracts';
+import type { DropResult, ResponderProvided } from '@hello-pangea/dnd';
 
 export function WorkspaceBoardDnd({
   columns,
@@ -36,6 +38,7 @@ export function WorkspaceBoardDnd({
   workspaceId: string;
 }) {
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
+
   const restoreFocus = (taskId: string) =>
     requestAnimationFrame(() => {
       const element = document.querySelector<HTMLElement>(
@@ -131,8 +134,8 @@ export function WorkspaceBoardDnd({
                       ))}
                       {!column.tasks.length && !snapshot.isUsingPlaceholder && (
                         <EmptyState
-                          title="No tasks"
                           description="Drop a task here or create one in this list."
+                          title="No tasks"
                         />
                       )}
                       {provided.placeholder}

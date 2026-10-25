@@ -14,13 +14,13 @@ import { createTaskInput, taskDefaults, taskDraftSchema, updateTaskInput } from 
 import { TaskParentField } from './TaskParentField';
 import { useTaskWriteMutation } from './useTaskWriteMutation';
 
+import type { assembleTaskDetail } from './taskDetailData';
+import type { TaskDraft } from './taskFormData';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 import type { Task } from '@flowboard/contracts';
 import type { FormEvent } from 'react';
 import type { FieldPath } from 'react-hook-form';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
-import type { assembleTaskDetail } from './taskDetailData';
-import type { TaskDraft } from './taskFormData';
 
 type Detail = Extract<ReturnType<typeof assembleTaskDetail>, { state: 'ready' }>;
 

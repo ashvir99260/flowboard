@@ -66,6 +66,8 @@ export { default as ToggleButton } from '@mui/material/ToggleButton';
 
 export { default as ToggleButtonGroup } from '@mui/material/ToggleButtonGroup';
 
+export { default as Tooltip } from '@mui/material/Tooltip';
+
 export { default as Typography } from '@mui/material/Typography';
 
 export { default as useMediaQuery } from '@mui/material/useMediaQuery';

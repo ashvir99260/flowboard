@@ -2,6 +2,7 @@
 
 import { useSession } from '../../providers/useSession';
 import { SessionLoading } from '../auth/SessionLoading';
+
 import { SelectedList } from './SelectedList';
 
 export function ListDetails({ listId }: { listId: string }) {

@@ -10,11 +10,11 @@ import { useNotifications } from '../notifications/useNotifications';
 import { useWorkspaceMutation } from './useWorkspaceMutation';
 import { WorkspaceDraftSchema } from './workspaceLifecycle';
 
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 import type { WorkspaceEnvelope } from '@flowboard/contracts';
 import type { FormFieldConfig } from '@flowboard/forms';
 import type { FormEvent } from 'react';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 
 const fields = [
   {

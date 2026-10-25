@@ -1,17 +1,20 @@
 'use client';
 
 import { setupClient } from '@flowboard/api-client/session';
-import type { SessionEnvelope } from '@flowboard/contracts';
 import { Alert, Button } from '@flowboard/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
+
 import { useNotifications } from '../features/notifications/useNotifications';
 import { RealtimeProvider } from '../features/realtime/RealtimeProvider';
 import { archiveStateChanged } from '../features/workspaces/workspaceLifecycle';
 import { apiError } from '../lib/apiError';
-import type { ClientRuntime, SessionState } from './sessionContext';
+
 import { SessionContext } from './sessionContext';
+
+import type { ClientRuntime, SessionState } from './sessionContext';
+import type { SessionEnvelope } from '@flowboard/contracts';
+import type { ReactNode } from 'react';
 
 export function RuntimeProviders({
   children,

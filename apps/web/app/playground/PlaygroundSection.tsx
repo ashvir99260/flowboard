@@ -1,6 +1,7 @@
 'use client';
 
 import { Paper, Typography } from '@flowboard/ui';
+
 import type { ReactNode } from 'react';
 
 export function PlaygroundSection({

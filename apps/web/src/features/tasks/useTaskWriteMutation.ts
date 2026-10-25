@@ -15,6 +15,8 @@ import { useNotifications } from '../notifications/useNotifications';
 import { isTaskBusy } from './taskEvents';
 import { readTaskWriteResponse } from './taskWriteData';
 
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 import type {
   ArchiveTask,
   CreateTask,
@@ -22,8 +24,6 @@ import type {
   ResolvedStatus,
   UpdateTask,
 } from '@flowboard/contracts';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 
 class TaskResponseError extends Error {}
 

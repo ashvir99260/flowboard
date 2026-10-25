@@ -7,7 +7,6 @@ import { styled } from '@mui/material/styles';
 import { default as Typography } from '@mui/material/Typography';
 import { useId, useRef } from 'react';
 
-
 import { Toolbar } from '../layout/Toolbar.js';
 import { WorkspaceIcon } from '../navigation/WorkspaceIcon.js';
 import { ToastRegion } from '../notifications/ToastRegion.js';

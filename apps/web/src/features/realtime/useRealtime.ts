@@ -1,8 +1,10 @@
 'use client';
 
-import type { RealtimeInvalidation } from '@flowboard/contracts';
 import { useContext, useEffect, useRef } from 'react';
+
 import { RealtimeContext } from './realtimeContext';
+
+import type { RealtimeInvalidation } from '@flowboard/contracts';
 
 export function useRealtime(
   listId: string | undefined,

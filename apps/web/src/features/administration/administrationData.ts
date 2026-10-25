@@ -9,11 +9,12 @@ import {
 } from '@flowboard/contracts';
 import { z } from 'zod';
 
-import { assembleTree } from '../tree/assembleTree';
+import { assembleTree } from '../tree/assembleTree.ts';
 
 import type { Grant, Member, NodeEnvelope } from '@flowboard/contracts';
 
 export type Container = z.infer<typeof NodeSchema>;
+
 export type AdministrationSnapshot = {
   configVersion: number;
   dataVersion: number;
@@ -167,7 +168,7 @@ export function readContainerWrite(
 
 export function readGrantWrite(
   value: unknown,
-  expected: { mode: 'allow' | 'deny'; nodeId: string; userId: string; configVersion: number },
+  expected: { configVersion: number; mode: 'allow' | 'deny'; nodeId: string; userId: string },
 ) {
   const parsed = GrantEnvelopeSchema.safeParse(value);
   if (

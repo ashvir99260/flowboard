@@ -4,9 +4,9 @@ import { Button, ErrorState, Stack, Typography } from '@flowboard/ui';
 
 import { useListRelatedTasksInfiniteQuery } from './useListRelatedTasksInfiniteQuery';
 
-import type { Task } from '@flowboard/contracts';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type { Task } from '@flowboard/contracts';
 
 export function TaskRelations({
   task,

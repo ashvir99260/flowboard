@@ -1,6 +1,6 @@
+import type { FormFieldConfig } from './fieldConfig.js';
 import type { ResolvedField } from '@flowboard/contracts';
 import type { FieldPath, FieldValues } from 'react-hook-form';
-import type { FormFieldConfig } from './fieldConfig.js';
 
 export function customFieldConfig<T extends FieldValues>(
   name: FieldPath<T>,

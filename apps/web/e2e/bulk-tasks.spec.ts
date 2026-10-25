@@ -18,9 +18,13 @@ test('bulk editing retains a stale selection, then persists a fresh shared chang
   await openBacklog(page);
   await page
     .getByRole('navigation', { name: 'List views' })
-    .getByRole('link', { exact: true, name: 'List' })
+    .getByRole('link', { exact: true, name: 'List view' })
     .click();
-  for (const name of names) await rowFor(page, name).getByRole('checkbox').check();
+  for (const name of names) {
+    const checkbox = rowFor(page, name).getByRole('checkbox');
+    await checkbox.click();
+    await expect(checkbox).toBeChecked();
+  }
 
   await expect(page.getByText('2 of 50 selected', { exact: true })).toBeVisible();
   const other = await browser.newContext({ baseURL: process.env.FLOWBOARD_E2E_URL });
@@ -58,7 +62,11 @@ test('bulk editing retains a stale selection, then persists a fresh shared chang
 
   await page.getByRole('button', { exact: true, name: 'Clear selection' }).click();
   await page.reload();
-  for (const name of names) await rowFor(page, name).getByRole('checkbox').check();
+  for (const name of names) {
+    const checkbox = rowFor(page, name).getByRole('checkbox');
+    await checkbox.click();
+    await expect(checkbox).toBeChecked();
+  }
 
   await page.getByRole('button', { exact: true, name: 'Edit selected tasks' }).click();
   await selectAutocomplete(dialog.getByLabel(/^Change/), 'Priority');
@@ -71,7 +79,10 @@ test('bulk editing retains a stale selection, then persists a fresh shared chang
   await dialog.getByRole('button', { exact: true, name: 'Update selected tasks' }).click();
   expect((await saved).status()).toBe(200);
   await expect(dialog).toHaveCount(0);
-  await expect(page.getByText('0 of 50 selected', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { exact: true, name: 'Edit selected tasks' })).toHaveCount(
+    0,
+  );
+  await expect(page.getByRole('button', { exact: true, name: 'Clear selection' })).toHaveCount(0);
   await page.reload();
   for (const name of names)
     await expect(rowFor(page, name).getByText('High', { exact: true })).toBeVisible();

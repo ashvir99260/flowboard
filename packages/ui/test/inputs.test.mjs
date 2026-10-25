@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { createElement, useState } from 'react';
 
 import * as UI from '../dist/index.js';
@@ -44,24 +44,35 @@ test('number drafts preserve zero, explicit clearing and invalid intermediate te
 });
 
 test('text and dates clear explicitly; required checkboxes preserve false', () => {
-  for (const [type, initial, changed] of [
-    ['text', 'Original', 'Changed'],
-    ['date', '2024-02-29', '2024-03-01'],
-  ]) {
-    const values = [];
-    render(
-      createElement(Input, {
-        field: definition(type),
-        initial,
-        onChange: (value) => values.push(value),
-      }),
-    );
-    const input = screen.getByLabelText('Value', { exact: false });
-    fireEvent.change(input, { target: { value: changed } });
-    fireEvent.change(input, { target: { value: '' } });
-    assert.deepEqual(values, [changed, null]);
-    cleanup();
-  }
+  const textValues = [];
+  render(
+    createElement(Input, {
+      field: definition('text'),
+      initial: 'Original',
+      onChange: (value) => textValues.push(value),
+    }),
+  );
+  const text = screen.getByRole('textbox', { name: /Value/ });
+  fireEvent.change(text, { target: { value: 'Changed' } });
+  fireEvent.change(text, { target: { value: '' } });
+  assert.deepEqual(textValues, ['Changed', null]);
+  cleanup();
+
+  const dateValues = [];
+  render(
+    createElement(Input, {
+      field: definition('date'),
+      initial: '2024-02-29',
+      onChange: (value) => dateValues.push(value),
+    }),
+  );
+  const month = screen.getByRole('spinbutton', { name: 'Month' });
+  act(() => month.focus());
+  fireEvent.keyDown(month, { key: 'ArrowUp' });
+  fireEvent.click(screen.getByRole('button', { name: 'Clear Value' }));
+  assert.deepEqual(dateValues, ['2024-03-29', null]);
+  cleanup();
+
   const values = [];
   render(
     createElement(Input, {

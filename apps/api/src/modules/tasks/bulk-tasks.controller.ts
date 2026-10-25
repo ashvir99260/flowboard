@@ -34,10 +34,10 @@ export class BulkTasksController {
   @HttpCode(200)
   @ActiveWorkspacePermission('task.write')
   @ApiOperation({
-    operationId: 'bulkUpdateTasks',
-    summary: 'Update selected tasks atomically',
     description:
       'Apply one shared patch to at most fifty unique live tasks. Recheck every permission and version inside one workspace transaction. Any invalid or denied target rolls back the complete batch; unchanged targets produce no event.',
+    operationId: 'bulkUpdateTasks',
+    summary: 'Update selected tasks atomically',
   })
   @ApiBody({
     type: BulkUpdateTasksDto,

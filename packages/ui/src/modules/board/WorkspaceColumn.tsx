@@ -1,6 +1,5 @@
 'use client';
 
-
 import { default as Box } from '@mui/material/Box';
 import { default as Stack } from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';

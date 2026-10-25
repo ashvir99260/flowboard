@@ -15,7 +15,6 @@ import { TreeItem } from '../src/modules/navigation/TreeItem.js';
 import { WorkspaceIcon } from '../src/modules/navigation/WorkspaceIcon.js';
 import { Button } from '../src/modules/primitives/Button.js';
 
-
 import { task } from './fixtures.js';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';

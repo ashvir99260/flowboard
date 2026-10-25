@@ -16,14 +16,40 @@ test('login, select a list, edit a custom field and reload persisted data', asyn
   await page.getByRole('button', { exact: true, name: 'Open task: Build demo workflow 1' }).click();
   const drawer = page.getByRole('dialog', { name: 'Task details' });
   await drawer.getByLabel(/^Effort/).fill('7');
-  await drawer.getByLabel(/^Due date \(UTC\)/).fill('2026-11-02T13:45:12.123');
+  const dueDate = drawer.getByRole('group', { exact: true, name: 'Due date (UTC)' });
+  for (const [name, value] of [
+    ['Year', '2026'],
+    ['Month', '11'],
+    ['Day', '02'],
+    ['Hours', '13'],
+    ['Minutes', '45'],
+    ['Seconds', '12'],
+  ] as const)
+    await dueDate.getByRole('spinbutton', { exact: true, name }).fill(value);
+  const savedTask = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' &&
+      /\/api\/v1\/tasks\/[^/]+$/.test(new URL(response.url()).pathname),
+  );
   await drawer.getByRole('button', { exact: true, name: 'Save changes' }).click();
   await expect(drawer.getByRole('status', { exact: true, name: '' })).toContainText('Task saved');
+  expect((await (await savedTask).json()).data.dueDate).toBe('2026-11-02T13:45:12.000Z');
   await drawer.getByRole('button', { exact: true, name: 'Close task' }).click();
   await page.reload();
   await page.getByRole('button', { exact: true, name: 'Open task: Build demo workflow 1' }).click();
   await expect(drawer.getByLabel(/^Effort/)).toHaveValue('7');
-  await expect(drawer.getByLabel(/^Due date \(UTC\)/)).toHaveValue('2026-11-02T13:45:12.123');
+  for (const [name, value] of [
+    ['Year', '2026'],
+    ['Month', '11'],
+    ['Day', '2'],
+    ['Hours', '13'],
+    ['Minutes', '45'],
+    ['Seconds', '12'],
+  ] as const)
+    await expect(dueDate.getByRole('spinbutton', { exact: true, name })).toHaveAttribute(
+      'aria-valuenow',
+      value,
+    );
 
   const bob = await browser.newContext({ baseURL: process.env.FLOWBOARD_E2E_URL });
   try {

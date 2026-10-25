@@ -58,12 +58,12 @@ test('unknown, repeated and malformed URL options never become API queries', () 
 
 test('search URLs preserve query text independently of sorting and field filters', () => {
   const query = {
-    q: '"Release notes" -draft',
-    sort: 'priority',
     direction: 'desc',
     fieldKey: 'effort',
     fieldOperator: 'eq',
     fieldValue: '0',
+    q: '"Release notes" -draft',
+    sort: 'priority',
   };
   expectSearch(query);
   function expectSearch(value) {

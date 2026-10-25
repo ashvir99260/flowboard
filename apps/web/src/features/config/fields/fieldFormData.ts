@@ -6,8 +6,8 @@ import {
 } from '@flowboard/contracts';
 import { z } from 'zod';
 
-import type { CreateScopeField, UpdateScopeField } from '@flowboard/contracts';
 import type { readFieldConfiguration } from './fieldConfiguration';
+import type { CreateScopeField, UpdateScopeField } from '@flowboard/contracts';
 
 export type FieldConfiguration = Extract<
   ReturnType<typeof readFieldConfiguration>,

@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { designTokens } from '@flowboard/ui';
+import { designTokens } from '@flowboard/ui/tokens';
 import { chromium } from '@playwright/test';
 
 import { startUpstream, startWeb } from './common/proxy-fixture.mjs';
@@ -115,14 +115,15 @@ test(
       );
       const form = page.getByRole('form', { name: 'Task field example' });
       const fieldMetrics = await form
-        .locator('input:not([type="checkbox"]):not([type="hidden"]), select:not([multiple])')
-        .evaluateAll((inputs) =>
-          inputs.map((input) => {
-            const root = input.closest('.MuiInputBase-root');
-            const outline = root.querySelector('fieldset') ?? root;
+        .locator('.MuiOutlinedInput-root, .MuiPickersOutlinedInput-root')
+        .evaluateAll((roots) =>
+          roots.map((root) => {
+            const outline = root.querySelector('fieldset');
             const style = getComputedStyle(outline);
 
             return {
+              background: getComputedStyle(root.closest('section')).backgroundColor,
+              color: style.borderTopColor,
               height: root.getBoundingClientRect().height,
               borders: [
                 style.borderTopStyle,
@@ -133,10 +134,17 @@ test(
             };
           }),
         );
-      assert.ok(fieldMetrics.length >= 3);
+      assert.equal(fieldMetrics.length, 5);
       for (const field of fieldMetrics) {
         assert.equal(field.height, 36, `${mode} single-line fields are compact`);
         assert.deepEqual(field.borders, ['solid', 'solid', 'solid', 'solid']);
+        const levels = [luminance(field.color, field.background), luminance(field.background)].sort(
+          (a, b) => b - a,
+        );
+        assert.ok(
+          (levels[0] + 0.05) / (levels[1] + 0.05) >= 3,
+          `${mode} input boundary must meet 3:1 contrast`,
+        );
       }
       const menu = page.getByRole('combobox', { name: 'Compact menu' });
       assert.equal(
@@ -182,23 +190,6 @@ test(
           `${mode} filled badge text contrast`,
         );
       }
-      const outlines = await form.getByLabel('Effort', { exact: true }).evaluate((element) => ({
-        background: getComputedStyle(element.closest('section')).backgroundColor,
-        color: getComputedStyle(element.parentElement.querySelector('fieldset')).borderTopColor,
-      }));
-      const underline = await form
-        .getByRole('combobox', { name: /^Team\b/ })
-        .evaluate((element) => ({
-          background: getComputedStyle(element.closest('section')).backgroundColor,
-          color: getComputedStyle(element.parentElement).borderTopColor,
-        }));
-      for (const { color, background } of [outlines, underline]) {
-        const levels = [luminance(color, background), luminance(background)].sort((a, b) => b - a);
-        assert.ok(
-          (levels[0] + 0.05) / (levels[1] + 0.05) >= 3,
-          `${mode} input boundary must meet 3:1 contrast`,
-        );
-      }
       for (const width of [320, 768, 1024, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
         await page.evaluate(() => window.scrollTo(0, 0));
@@ -238,9 +229,10 @@ test(
     assert.ok(
       await touchPage
         .getByRole('form', { name: 'Task field example' })
-        .getByLabel('Effort', { exact: true })
-        .evaluate(
-          (input) => input.closest('.MuiInputBase-root').getBoundingClientRect().height >= 44,
+        .locator('.MuiOutlinedInput-root, .MuiPickersOutlinedInput-root')
+        .evaluateAll(
+          (roots) =>
+            roots.length === 5 && roots.every((root) => root.getBoundingClientRect().height >= 44),
         ),
     );
   },

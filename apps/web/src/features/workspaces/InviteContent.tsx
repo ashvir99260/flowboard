@@ -1,13 +1,15 @@
 'use client';
 
-import type { InvitationContext, InvitationFormState } from './invitationTypes';
-
 import { WorkspaceEnvelopeSchema } from '@flowboard/contracts';
 import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 import { useState } from 'react';
+
 import { apiError } from '../../lib/apiError';
+
 import { InvitationForm } from './InvitationForm';
 import { useGetWorkspaceQuery } from './useGetWorkspaceQuery';
+
+import type { InvitationContext, InvitationFormState } from './invitationTypes';
 
 export function InviteContent({
   runtime,
@@ -16,6 +18,7 @@ export function InviteContent({
 }: InvitationContext & { onState: (state: InvitationFormState) => void }) {
   const query = useGetWorkspaceQuery(runtime, scope);
   const [initialVersion, setInitialVersion] = useState<number | null>(null);
+
   const parsed = WorkspaceEnvelopeSchema.safeParse(query.data);
   const valid =
     parsed.success &&
@@ -25,7 +28,7 @@ export function InviteContent({
 
   if (initialVersion === null && query.isPending)
     return (
-      <Typography role="status" aria-label="Loading invitation options">
+      <Typography aria-label="Loading invitation options" role="status">
         Loading workspace…
       </Typography>
     );

@@ -16,11 +16,11 @@ import { FieldInputs } from './FieldInputs';
 import { FieldPreview } from './FieldPreview';
 import { useFieldMutation } from './useFieldMutation';
 
-import type { FormEvent } from 'react';
-import type { FieldPath } from 'react-hook-form';
+import type { FieldConfiguration, FieldDraft } from './fieldFormData';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
-import type { FieldConfiguration, FieldDraft } from './fieldFormData';
+import type { FormEvent } from 'react';
+import type { FieldPath } from 'react-hook-form';
 
 type Command =
   | NonNullable<ReturnType<typeof fieldCommand>>

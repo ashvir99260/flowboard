@@ -3,14 +3,15 @@
 import { Button, Stack, Typography } from '@flowboard/ui';
 
 import { BulkTaskActions } from './BulkTaskActions';
+import { writeListLocation } from './listLocation';
 import { ListResult } from './ListResult';
 import { ListToolbar } from './ListToolbar';
 import { useBulkTaskSelection } from './useBulkTaskSelection';
 import { useListQuery } from './useListQuery';
 
+import type { TaskTableQuery } from './listLocation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { TaskTableQuery } from './listLocation';
 
 export function ConnectedList({
   listId,
@@ -28,7 +29,10 @@ export function ConnectedList({
   scope: QueryScope;
 }) {
   const view = useListQuery({ listId, runtime, scope, query });
-  const selection = useBulkTaskSelection(view.result.state === 'ready' ? view.result.items : []);
+  const selection = useBulkTaskSelection(
+    view.result.state === 'ready' ? view.result.items : [],
+    writeListLocation(query),
+  );
 
   return (
     <Stack spacing={1.2} sx={{ minWidth: 0 }}>
@@ -43,23 +47,22 @@ export function ConnectedList({
           Refresh tasks
         </Button>
       </Stack>
-      <ListToolbar
-        fields={view.fields}
-        configured={view.configured}
+      <ListToolbar query={query} onChange={onChange} pending={pending} />
+      {selection.selectedTasks.length > 0 && (
+        <BulkTaskActions
+          listId={listId}
+          runtime={runtime}
+          scope={scope}
+          tasks={selection.selectedTasks}
+          onSaved={selection.clear}
+          onClear={selection.clear}
+        />
+      )}
+      <ListResult
+        view={view}
         query={query}
         onChange={onChange}
         pending={pending}
-      />
-      <BulkTaskActions
-        listId={listId}
-        runtime={runtime}
-        scope={scope}
-        tasks={selection.selectedTasks}
-        onSaved={selection.clear}
-        onClear={selection.clear}
-      />
-      <ListResult
-        view={view}
         selection={{ ids: selection.selectedIds, onChange: selection.select, disabled: pending }}
       />
     </Stack>

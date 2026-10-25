@@ -7,8 +7,8 @@ import {
 } from '@flowboard/contracts';
 import { z } from 'zod';
 
-import type { CreateScopeStatus, UpdateScopeStatus } from '@flowboard/contracts';
 import type { readStatusConfiguration } from './statusConfiguration';
+import type { CreateScopeStatus, UpdateScopeStatus } from '@flowboard/contracts';
 
 export type StatusConfiguration = Extract<
   ReturnType<typeof readStatusConfiguration>,
