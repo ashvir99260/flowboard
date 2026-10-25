@@ -4,6 +4,8 @@ A self-hosted project management app for learning sound architecture at hobby sc
 
 **Current state:** The modular API, tenant permissions, inherited statuses/custom fields, task board/table/drawer, configuration editors, activity worker and authenticated realtime collaboration are implemented. Shared contracts generate the OpenAPI client. Local Docker and host-development workflows are available; hosted preview activation remains a separate external setup. See task evidence for tested behavior and outstanding release gates.
 
+**Try it locally:** [Run the complete preview with Docker](#preview-with-one-command); no `.env` setup is required.
+
 Start with the [application guide](docs/APPLICATION_GUIDE.md) for features, packages and libraries; [HLD](docs/HLD.md) for system boundaries; [LLD](docs/LLD.md) for implementation flows; and the [delivery summary](docs/DELIVERY_SUMMARY.md) for prompt-to-task coverage and open gates. The [documentation index](docs/README.md) links the detailed references. The [diagram atlas](docs/DIAGRAMS.md) provides 30 rendered views of the system, domain rules, frontend, delivery and hosting plans.
 
 Boards display only a consistent set of status, field and task revisions. A concurrent configuration or task change restarts loading, with a visible retry after repeated changes. Refreshing the board, returning to the tab or reconnecting starts again at the first page of every column. Use each column's **Load more** button to load additional cards; column counts describe loaded cards. Wider boards scroll inside their own region on small screens.
@@ -93,6 +95,18 @@ sequenceDiagram
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for module boundaries and [the ER model](docs/DATABASE_DESIGN.md) for every field, type and relationship. All tenant-owned records carry `workspaceId`; all 15 persisted models carry `createdAt` and `updatedAt`. Composite tenant foreign keys and a fail-closed repository boundary prevent cross-tenant links. Tasks have one primary list, stable status identities, explicit revisions and JSONB custom values. Containers/tasks archive through `archivedAt`; ordinary reads hide them, while historical records remain.
 
+## Preview with one command
+
+With Docker Desktop or Docker Engine plus Compose v2 running, use this from the repository root:
+
+```sh
+docker compose up --build
+```
+
+Open [Flowboard](http://localhost:3000) or [Swagger](http://localhost:3001/docs). Sign in as `alice@example.com` with `FlowboardDemo123!`. Docker builds all three apps, starts PostgreSQL/Redis, and automatically runs migrations and the demo seed. You do not need a `.env` file, Node.js/pnpm on your computer, or manual database commands. The first build needs internet access to download dependencies; ports 3000 and 3001 must be available.
+
+This is a local demo with public example credentials. Web/API ports bind to loopback; database, Redis and worker stay inside Docker. Ctrl+C stops the foreground services and retains their named-volume data. Run the same command again to resume without resetting edits. See [Docker operation](#run-with-docker) for background mode, optional configuration, logs and troubleshooting. [Host development](#run-locally) is a separate workflow for editing source outside containers.
+
 ## Local tooling
 
 Use Node 22.23.2 (`nvm use`) and the pinned pnpm version from `package.json`. If pnpm is not already managed by Corepack, enable its shim with `corepack enable pnpm`, then run:
@@ -115,13 +129,13 @@ On resource-constrained laptops, `pnpm test --concurrency=2` runs the same compl
 
 Start Docker Engine/Desktop, install the pinned Node/pnpm toolchain and Chromium as above, then run `pnpm test`. Tests automatically create uniquely named PostgreSQL/Redis containers; Node, the API, worker and Chromium run on the host. No manually created test database or running development stack is required. Fixtures clean up only their own containers and use separate data, never the development database. Docker unavailability fails the suites rather than silently skipping them.
 
-`pnpm docker:check` separately builds and boots all five application services, checks readiness and verifies restart persistence. It uses an isolated Compose project; it does not replace the behavioral suite. Production app images intentionally omit test files and dev dependencies, so `docker compose exec api pnpm test` is not a supported test command. CI runs the same workspace and Compose checks in parallel jobs on public-repository runners.
+`pnpm docker:check` separately builds and boots all five application services using Compose defaults without env files, checks readiness and verifies restart persistence. It clears inherited application settings and changes only host ports and log verbosity for test isolation. It uses an isolated Compose project; it does not replace the behavioral suite. Production app images intentionally omit test files and dev dependencies, so `docker compose exec api pnpm test` is not a supported test command. CI runs the same workspace and Compose checks in parallel jobs on public-repository runners.
 
 Run `pnpm hooks:install` once to enable the repository-local commit-message check. [Code-quality conventions](docs/CODE_QUALITY.md) explain the commit policy, manual checks and CI validation.
 
 ## Run locally
 
-For the first local setup, create private configuration files from the examples. `cp -n` preserves any files you already have:
+For host development with `pnpm dev`, create private configuration files from the examples. The Docker-only preview above does not need these files. `cp -n` preserves any files you already have:
 
 ```sh
 cp -n .env.example .env
@@ -160,12 +174,13 @@ Each HTTP response contains a server-generated `X-Request-Id`. Search that ID in
 
 Start Docker Desktop (or Docker Engine with the Compose v2 plugin). Run the commands below from the repository root. Docker installs dependencies and builds the apps, so this workflow does not require Node.js or pnpm on your host. Stop any running `pnpm dev` processes first to free ports 3000 and 3001.
 
-Create the optional local configuration file, preserving it if it already exists, then build and start all five services:
+Build and start all five services with the built-in local defaults:
 
 ```sh
-cp -n .env.example .env
 docker compose up --build
 ```
+
+No environment file is required. If you want to customize ports or local settings, optionally copy `.env.example` to `.env` with `cp -n .env.example .env`, then edit it before starting. Existing root `.env` values and exported shell variables override the defaults; review those if a customized checkout behaves differently.
 
 This runs in the foreground and shows the logs; Ctrl+C stops the services. To run in the background and wait for health checks instead:
 

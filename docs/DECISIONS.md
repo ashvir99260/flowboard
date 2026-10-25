@@ -619,3 +619,11 @@ Start with one shared preview. Do not assume Render's paid worker or persistent 
 Date: 2026-10-25. Source: user request for more diagrams.
 
 Create a 30-diagram atlas across seven chapters. Each diagram answers one question, has a stable ID, short explanation, implementation/planning status and source references. Keep Mermaid sources under `docs/diagrams/sources` and self-contained generated SVGs under `docs/diagrams/svg`; chapter pages embed the SVGs and link to sources. This makes the visual result readable without requiring the reader's Markdown viewer to compile Mermaid. Validate all renderings with a pinned temporary renderer outside the repository; do not add an application dependency or change global tooling. The existing prose/schema/source remain authoritative. Label Render and ordered environment promotion as planned, never deployed.
+
+## D150 — Setup-free local preview uses Compose defaults
+
+Date: 2026-10-25. Source: user request to preview the complete application with Docker Compose without preparing environment files.
+
+`compose.yaml` already supplies a complete local demonstration configuration. Keep that single source rather than generating files, adding a launcher, baking secrets into images or introducing a second preview stack. Put `docker compose up --build` first in the README; `.env` remains an optional override and host development retains its separate setup. Local-only credentials, demo seeding and HTTP cookie settings stay inside Compose; hosted application validation still requires supplied credentials and secure settings.
+
+Verify a copy of the Compose file in a temporary directory without `.env`, clearing inherited interpolation variables. Run the existing real Docker acceptance with default database/auth/seed/Swagger/origin settings, overriding only unique host ports and debug logging for test isolation. Reuse its browser edit, session rotation, persistence and worker recovery checks. Existing functionality may pass the new regression immediately; record that honestly rather than manufacture a red test.
