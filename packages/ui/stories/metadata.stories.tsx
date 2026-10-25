@@ -1,8 +1,8 @@
-import { AssigneeAvatarGroup } from '../src/components/assignee-avatar-group.js';
-import { CustomFieldChip } from '../src/components/custom-field-chip.js';
-import { DueDateLabel } from '../src/components/due-date-label.js';
-import { PriorityBadge } from '../src/components/priority-badge.js';
-import { StatusChip } from '../src/components/status-chip.js';
+import { CustomFieldChip } from '../src/modules/forms/customFieldChip.js';
+import { AssigneeAvatarGroup } from '../src/modules/tasks/assigneeAvatarGroup.js';
+import { DueDateLabel } from '../src/modules/tasks/dueDateLabel.js';
+import { PriorityBadge } from '../src/modules/tasks/priorityBadge.js';
+import { StatusChip } from '../src/modules/tasks/statusChip.js';
 import { Stack, Typography } from '../src/primitives.js';
 
 import { approved, effort, statuses } from './fixtures.js';

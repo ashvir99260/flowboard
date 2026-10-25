@@ -2,6 +2,8 @@
 
 As-built at `3cc62b0` (P19-01), 25 October 2026. Read [HLD](HLD.md) first. This document explains implementation seams and invariants; [field reference](FIELD_REFERENCE.md), [database design](DATABASE_DESIGN.md), [API catalog](API_CATALOG.md) and generated [OpenAPI](../packages/openapi/openapi.json) retain the exhaustive definitions.
 
+Current UI source links follow the P21-01 camelCase/module refactor, which preserves these public contracts.
+
 ## Source map and dependency direction
 
 | Concern                          | Implementation                                           | Responsibility                                                                                              |
@@ -142,7 +144,7 @@ sequenceDiagram
 
 Web extends generated query keys with session/user/workspace scope. Board and table assemblers verify response identities, revisions and field/status validity before display. Bounded retries prevent an endless changing-snapshot loop. URL state owns view/sort/filter; server data remains in TanStack Query. Optimistic placement is separate from canonical fetched data and cannot overwrite a newer confirmed result. Dirty drawers retain edits until an explicit conflict reload.
 
-[TaskTable](../packages/ui/src/components/task-table.tsx) is a presentational Community Data Grid. Its 25/50/100-row paginator only selects already-loaded rows; **Load more tasks** still performs a cursor request. Grid-local sort/filter is disabled. Stable IDs, title-button `tabIndex`, focus-return attributes and [measured rem geometry](../packages/ui/src/use-rem-size.ts) preserve keyboard and font behavior.
+[TaskTable](../packages/ui/src/modules/tasks/taskTable.tsx) is a presentational Community Data Grid. Its 25/50/100-row paginator only selects already-loaded rows; **Load more tasks** still performs a cursor request. Grid-local sort/filter is disabled. Stable IDs, title-button `tabIndex`, focus-return attributes and [measured rem geometry](../packages/ui/src/hooks/useRemSize.ts) preserve keyboard and font behavior.
 
 ## Async delivery, recovery and notifications
 

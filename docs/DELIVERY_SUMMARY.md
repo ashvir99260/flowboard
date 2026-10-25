@@ -53,6 +53,8 @@ Implementation snapshot: `3cc62b0` (P19-01), reviewed 25 October 2026. At that s
 
 ## Choices that superseded earlier wording
 
+The subsequent P21 refinement is tracked separately: R142/P21-01 groups UI implementations into camelCase module-owned files; R143/P21-02 adds React readability enforcement. Its evidence lives in [P21-01](evidence/P21-01.md) and [P21-02](evidence/P21-02.md), with the matrix retaining each task's current status.
+
 - The replacement package specification superseded the original `shared`/`tsconfig`/`eslint-config` layout. Database, logger, forms, formatting and release tooling have their own explicit responsibilities.
 - Prisma was chosen over TypeORM. Public task/configuration operations use tenant repositories; controllers do not own raw queries.
 - Workspace-level custom-field defaults were added to the original space/folder/list scopes. The nearest complete definition still wins.
@@ -106,31 +108,32 @@ Provider accounts, credentials, resources and current free-tier availability are
 
 This index makes omissions visible without duplicating 140 detailed matrix rows. Each range refers to the stable IDs in [REQUIREMENTS_MATRIX.md](REQUIREMENTS_MATRIX.md); the tables above give the implementation/evidence context.
 
-| IDs       | Topic                                           |
-| --------- | ----------------------------------------------- |
-| R01–R07   | Process, tests and honest execution.            |
-| R08–R10   | Workspace architecture and boundaries.          |
-| R11–R13   | Shared contracts, DTOs and pure algorithms.     |
-| R14–R15   | Database and async infrastructure.              |
-| R16–R22   | Generated client and OpenAPI pipeline.          |
-| R23       | Shared presentational UI.                       |
-| R24–R27   | Docker, health and initialization.              |
-| R28–R35   | Auth, membership and tenant identity.           |
-| R36–R43   | Hierarchy, access and concurrency.              |
-| R44–R49   | Task data and operations.                       |
-| R50–R55   | Status resolution and safety.                   |
-| R56–R61   | Custom fields and validation.                   |
-| R62–R71   | Web views, state and accessibility.             |
-| R72–R76   | Realtime, activity and reliable delivery.       |
-| R77–R82   | Second channel and seed.                        |
-| R83–R90   | Verification, documentation and evidence.       |
-| R91–R93   | API standards and shared tooling.               |
-| R94–R99   | Releases, hosting and future promotion.         |
-| R100–R107 | AI tooling, research and quality.               |
-| R108–R115 | Detailed design, field contracts and Swagger.   |
-| R116–R128 | Backend layout, logging, ESM and style.         |
-| R129–R133 | Local environment and development fixes.        |
-| R134–R140 | Later UI/form/notification/tooling refinements. |
-| R141      | This reader-facing documentation set.           |
+| IDs       | Topic                                                                        |
+| --------- | ---------------------------------------------------------------------------- |
+| R01–R07   | Process, tests and honest execution.                                         |
+| R08–R10   | Workspace architecture and boundaries.                                       |
+| R11–R13   | Shared contracts, DTOs and pure algorithms.                                  |
+| R14–R15   | Database and async infrastructure.                                           |
+| R16–R22   | Generated client and OpenAPI pipeline.                                       |
+| R23       | Shared presentational UI.                                                    |
+| R24–R27   | Docker, health and initialization.                                           |
+| R28–R35   | Auth, membership and tenant identity.                                        |
+| R36–R43   | Hierarchy, access and concurrency.                                           |
+| R44–R49   | Task data and operations.                                                    |
+| R50–R55   | Status resolution and safety.                                                |
+| R56–R61   | Custom fields and validation.                                                |
+| R62–R71   | Web views, state and accessibility.                                          |
+| R72–R76   | Realtime, activity and reliable delivery.                                    |
+| R77–R82   | Second channel and seed.                                                     |
+| R83–R90   | Verification, documentation and evidence.                                    |
+| R91–R93   | API standards and shared tooling.                                            |
+| R94–R99   | Releases, hosting and future promotion.                                      |
+| R100–R107 | AI tooling, research and quality.                                            |
+| R108–R115 | Detailed design, field contracts and Swagger.                                |
+| R116–R128 | Backend layout, logging, ESM and style.                                      |
+| R129–R133 | Local environment and development fixes.                                     |
+| R134–R140 | Later UI/form/notification/tooling refinements.                              |
+| R141      | This reader-facing documentation set.                                        |
+| R142–R143 | UI module/camelCase organization and the subsequent React readability rules. |
 
 When a feature or provider gate changes, update the owning task/evidence and matrix first, then this summary and the relevant HLD/LLD/application section. A document's existence alone is never evidence that a feature works.

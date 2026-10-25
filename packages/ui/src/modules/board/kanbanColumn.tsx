@@ -1,0 +1,50 @@
+'use client';
+
+import { styled } from '@mui/material/styles';
+
+import { Box, Paper, Stack, Typography } from '../../primitives.js';
+import { StatusChip } from '../tasks/statusChip.js';
+
+import type { ResolvedStatus } from '@flowboard/contracts';
+import type { ReactNode } from 'react';
+
+const Column = styled(Paper, { name: 'FlowboardKanbanColumn', slot: 'Root' })(({ theme }) => ({
+  padding: theme.spacing(1.2),
+  minWidth: 0,
+  width: '100%',
+})) as typeof Paper;
+const Header = styled(Stack)(({ theme }) => ({
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  marginBottom: theme.spacing(1.2),
+}));
+const Summary = styled(Box)({ minWidth: 0 });
+const Count = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(0.4) }));
+
+export function KanbanColumn({
+  action,
+  children,
+  count,
+  status,
+}: Readonly<{
+  action?: ReactNode;
+  children?: ReactNode;
+  count: number;
+  status: Pick<ResolvedStatus, 'name' | 'category' | 'color'>;
+}>) {
+  return (
+    <Column component="section" aria-label={`${status.name} column`} variant="outlined">
+      <Header direction="row" useFlexGap spacing={0.8}>
+        <Summary>
+          <StatusChip status={status} />
+          <Count color="text.secondary" variant="body2">
+            {count} loaded {count === 1 ? 'task' : 'tasks'}
+          </Count>
+        </Summary>
+        {action}
+      </Header>
+      <Stack spacing={1.2}>{children}</Stack>
+    </Column>
+  );
+}

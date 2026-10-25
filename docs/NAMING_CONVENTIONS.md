@@ -13,12 +13,15 @@ These conventions describe the implemented repository. Automated rules are disti
 | DTO adapters                             | PascalCase with `Dto`: `CreateTaskDto`, grouped in `tasks.request.dto.ts`                      | Review convention and typed schema/compiler validation                                                                                            |
 | Constants                                | Existing semantic style: `SocketEvents`, `EventJobName`; local constants remain camelCase      | Review convention; no blanket UPPER_SNAKE or PascalCase rewrite                                                                                   |
 | Source files and folders                 | Kebab-case with role suffixes: `task-form.tsx`, `use-task-write.ts`, `tasks.service.ts`        | Review convention, not a filename lint rule                                                                                                       |
+| UI package files                         | camelCase: `taskTable.tsx`, `useRemSize.ts`; presentation under `src/modules/<area>`           | UI source-layout test; other packages keep their existing filename convention                                                                     |
 | Backend tests                            | `*.unit.spec.mjs`, `*.integration.spec.mjs`; bootstrap `*.test.mjs`                            | Runner discovery is executable; purpose naming is a convention                                                                                    |
 | Shared/web tests                         | Node/Jest `*.test.mjs`; browser acceptance `e2e/*.spec.ts`                                     | Package runner configuration                                                                                                                      |
 | API/DB/wire fields                       | Preserve contract spelling: `workspaceId`, `expectedVersion`, `not_started`                    | Schemas, migrations and compatibility tests                                                                                                       |
 | Conventional files                       | Keep reserved names such as `AGENTS.md`, `README.md`, `page.tsx`, `layout.tsx`, `package.json` | Tool/framework conventions                                                                                                                        |
 
 Do not infer that all names must be PascalCase. Do not change enum values, status keys, JSON fields, SQL mappings or operation IDs as a cosmetic rename.
+
+The UI package's camelCase filenames supersede its earlier kebab-case convention (D146). Keep test/story suffixes (`sourceLayout.test.mjs`, `fields.stories.tsx`) and reserved tooling filenames. Split distinct component implementations; a cohesive compound component may keep its private styled parts. Public exports remain available from `@flowboard/ui`, regardless of internal file placement.
 
 ## Imports and modules
 

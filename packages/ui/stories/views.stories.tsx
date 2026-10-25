@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
-import { EmptyState } from '../src/components/empty-state.js';
-import { ErrorState } from '../src/components/error-state.js';
-import { FieldPreview } from '../src/components/field-preview.js';
-import { LoadingState } from '../src/components/loading-state.js';
-import { MarkdownContent } from '../src/components/markdown-content.js';
-import { StatusPreview } from '../src/components/status-preview.js';
-import { TaskTable } from '../src/components/task-table.js';
+import { FieldPreview } from '../src/modules/configuration/fieldPreview.js';
+import { StatusPreview } from '../src/modules/configuration/statusPreview.js';
+import { MarkdownContent } from '../src/modules/content/markdownContent.js';
+import { EmptyState } from '../src/modules/feedback/emptyState.js';
+import { ErrorState } from '../src/modules/feedback/errorState.js';
+import { LoadingState } from '../src/modules/feedback/loadingState.js';
+import { TaskTable } from '../src/modules/tasks/taskTable.js';
 import { Button, Stack } from '../src/primitives.js';
 
 import { approved, effort, statuses, task } from './fixtures.js';

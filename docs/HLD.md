@@ -2,6 +2,8 @@
 
 As-built reference, 25 October 2026. Implementation baseline: `3cc62b0` (P19-01). This describes the local application, not a claim of live cloud deployment. Start with the [application guide](APPLICATION_GUIDE.md) for a product tour, or the [low-level design](LLD.md) for implementation details. The [delivery summary](DELIVERY_SUMMARY.md) distinguishes completed work from open gates.
 
+Current source links follow the P21-01 UI module layout; the described public behavior is unchanged by that refactor.
+
 ## Purpose and scope
 
 Flowboard is a self-hosted project management application: workspaces contain spaces, folders, lists and tasks. Lists support a board and a table over the same records. Statuses and custom fields inherit through the hierarchy. Users collaborate within workspace and container permissions; edits update other authorized clients and status changes produce a durable activity feed.

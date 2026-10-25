@@ -587,3 +587,13 @@ Keep stable task IDs, title row headers and task-button callbacks/focus attribut
 Date: 2026-10-25. Source: user request for better HLD/LLD, a prompt-by-prompt delivery summary and an explanation of the application/features/packages.
 
 Use `docs/HLD.md` for system boundaries and tradeoffs, `docs/LLD.md` for implementation flows and invariants, `docs/APPLICATION_GUIDE.md` for features/package responsibilities, and `docs/DELIVERY_SUMMARY.md` for the execution and requirement map. `docs/README.md` is the reading index. Base descriptions on the P19 source snapshot; label historical test evidence and external activation separately. Preserve the matrix as the authoritative per-requirement status and the existing field/API/database guides as detailed dictionaries. This task changes documentation only and does not rerun or imply new runtime/release verification.
+
+## D146 — Focused UI modules and camelCase implementation files
+
+Date: 2026-10-25. Source: user request for separated components, camelCase UI filenames and feature folders named modules.
+
+Use `packages/ui/src/modules/<area>` for reusable presentation. Keep theme/foundation, layout, forms, board, configuration, tasks, activity, feedback, navigation and overlays/notifications responsibilities explicit; shared utilities/hooks can have their own directories. Use camelCase authored UI filenames while preserving reserved tool names and test/story suffixes. Other packages retain their established filename rules. Components/types remain PascalCase.
+
+Split distinct component implementations from shared multi-component files. A cohesive compound component such as Surface can keep its small styled slots in one file; do not create a folder or abstraction for each CSS rule. Keep one root public export surface and a pure primitive facade, use leaf imports internally, and preserve refs, polymorphic signatures, context identity, SSR and all interaction contracts. Current source links move with code; historical evidence still describes its original revision. React readability enforcement follows in the next task rather than being mixed into this structural refactor.
+
+Regression verification exposed an existing double-queue seam: Toastify's `limit={1}` could retain the next message behind a dismissed toast until its exit animation ended. Flowboard already owns notification sequencing, so remove the redundant Toastify limit and reset its renderer on controlled-message changes. A deterministic test holds the old animation open and requires the next message to be accessible immediately, with Alt+T targeting it rather than the stale element. Preserve dismissal, focus restoration and stale-callback protection.

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { BoardGrid, BoardViewport } from '../src/components/board-layout.js';
-import { KanbanCard } from '../src/components/kanban-card.js';
-import { KanbanColumn } from '../src/components/kanban-column.js';
-import { TreeItem } from '../src/components/tree-item.js';
+import { BoardGrid, BoardViewport } from '../src/modules/board/boardLayout.js';
+import { KanbanCard } from '../src/modules/board/kanbanCard.js';
+import { KanbanColumn } from '../src/modules/board/kanbanColumn.js';
+import { TreeItem } from '../src/modules/navigation/treeItem.js';
 import { Button, Stack } from '../src/primitives.js';
 
 import { statuses, task } from './fixtures.js';
