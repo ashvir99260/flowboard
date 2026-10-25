@@ -54,7 +54,7 @@ test(
     assert.equal(response.status(), 200, runtime.output());
     assert.match(await response.text(), /2026-01-02 03:04:05 UTC/);
     await page.getByRole('heading', { name: 'Component playground' }).waitFor();
-    const directory = new URL('../../../.ai-local/p0801/', import.meta.url);
+    const directory = new URL('../../../.ai-local/p2701/', import.meta.url);
     await mkdir(directory, { recursive: true });
     for (const mode of ['light', 'dark']) {
       const control = page.getByRole('button', {
@@ -103,6 +103,74 @@ test(
         `${mode} overflow avatar text must meet AA contrast`,
       );
       const form = page.getByRole('form', { name: 'Task field example' });
+      const fieldMetrics = await form
+        .locator('input:not([type="checkbox"]):not([type="hidden"]), select:not([multiple])')
+        .evaluateAll((inputs) =>
+          inputs.map((input) => {
+            const root = input.closest('.MuiInputBase-root');
+            const outline = root.querySelector('fieldset') ?? root;
+            const style = getComputedStyle(outline);
+
+            return {
+              height: root.getBoundingClientRect().height,
+              borders: [
+                style.borderTopStyle,
+                style.borderRightStyle,
+                style.borderBottomStyle,
+                style.borderLeftStyle,
+              ],
+            };
+          }),
+        );
+      assert.ok(fieldMetrics.length >= 3);
+      for (const field of fieldMetrics) {
+        assert.equal(field.height, 36, `${mode} single-line fields are compact`);
+        assert.deepEqual(field.borders, ['solid', 'solid', 'solid', 'solid']);
+      }
+      const nativeMenu = page.getByRole('combobox', { name: 'Compact menu' });
+      assert.equal(
+        await nativeMenu.evaluate(
+          (input) => input.closest('.MuiInputBase-root').getBoundingClientRect().height,
+        ),
+        36,
+      );
+      await nativeMenu.selectOption('due');
+      assert.equal(await nativeMenu.inputValue(), 'due');
+      const notes = page.getByRole('textbox', { name: 'Expanding notes' });
+      await notes.fill('First line\nSecond line');
+      await page.evaluate(
+        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+      );
+      const initialHeight = await notes.evaluate((input) => input.getBoundingClientRect().height);
+      await notes.fill('First\nSecond\nThird\nFourth\nFifth\nSixth');
+      await page.evaluate(
+        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+      );
+      assert.ok(
+        await notes.evaluate(
+          (input, height) =>
+            input.getBoundingClientRect().height > height &&
+            input.scrollHeight <= input.clientHeight + 1,
+          initialHeight,
+        ),
+      );
+      const badges = await page.locator('.MuiChip-root').evaluateAll((chips) =>
+        chips.map((chip) => ({
+          filled: chip.classList.contains('MuiChip-filled'),
+          background: getComputedStyle(chip).backgroundColor,
+          color: getComputedStyle(chip).color,
+        })),
+      );
+      assert.ok(badges.length >= 10);
+      for (const badge of badges) {
+        assert.ok(badge.filled);
+        assert.notEqual(badge.background, 'rgba(0, 0, 0, 0)');
+        const levels = [luminance(badge.color), luminance(badge.background)].sort((a, b) => b - a);
+        assert.ok(
+          (levels[0] + 0.05) / (levels[1] + 0.05) >= 4.5,
+          `${mode} filled badge text contrast`,
+        );
+      }
       const outlines = await form.getByLabel('Effort', { exact: true }).evaluate((element) => ({
         background: getComputedStyle(element.closest('section')).backgroundColor,
         color: getComputedStyle(element.parentElement.querySelector('fieldset')).borderTopColor,
@@ -133,6 +201,14 @@ test(
           path: fileURLToPath(new URL(`${mode}-${width}.png`, directory)),
           fullPage: true,
         });
+        if (width === 1440)
+          await page
+            .getByRole('heading', { exact: true, name: 'Status' })
+            .locator('..')
+            .screenshot({
+              path: fileURLToPath(new URL(`${mode}-status.png`, directory)),
+            });
+
         assert.ok(
           await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
           `${mode} at ${width}px must not overflow`,
@@ -141,5 +217,20 @@ test(
     }
     assert.deepEqual(apiRequests, []);
     assert.deepEqual(errors, []);
+    const touch = await browser.newContext({ hasTouch: true });
+    t.after(() => touch.close());
+    const touchPage = await touch.newPage();
+    await touchPage.goto(`${origin}/playground`);
+    const touchButton = touchPage.getByRole('button', { name: 'Preview JSON' });
+    await touchButton.waitFor();
+    assert.ok((await touchButton.boundingBox()).height >= 44);
+    assert.ok(
+      await touchPage
+        .getByRole('form', { name: 'Task field example' })
+        .getByLabel('Effort', { exact: true })
+        .evaluate(
+          (input) => input.closest('.MuiInputBase-root').getBoundingClientRect().height >= 44,
+        ),
+    );
   },
 );

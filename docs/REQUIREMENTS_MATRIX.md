@@ -360,3 +360,9 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | ID   | Source              | Requirement                                                                                   | Owner/tasks                  | Acceptance evidence                                                                                                                         | Status          |
 | ---- | ------------------- | --------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
 | R149 | E · User refinement | Document exact API DTO/test naming and module creation, plus UI component/naming/token rules. | Repository guidance · P26-01 | Source-aligned scoped instructions, naming/creation checklists, explicit exceptions and documentation checks; [P26-01](evidence/P26-01.md). | Verified — docs |
+
+## Compact component styling
+
+| ID   | Source              | Requirement                                                                                                                | Owner/tasks     | Acceptance evidence                                                                                                | Status   |
+| ---- | ------------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------ | -------- |
+| R150 | E · User refinement | Compact outlined fields, filled colored chips and fully token-owned application colors, matching the chosen UI references. | UI/web · P27-01 | Rendered geometry/contrast, token ownership, light/dark and interaction regressions; [P27-01](evidence/P27-01.md). | Verified |

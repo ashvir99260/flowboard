@@ -1,7 +1,26 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
 import * as UI from '../dist/index.js';
+
+test('compact controls explicitly default to small outlined fields', () => {
+  assert.equal(UI.designTokens.controlHeight, '3.6rem');
+  assert.equal(UI.theme.components.MuiTextField.defaultProps.variant, 'outlined');
+  assert.equal(UI.theme.components.MuiTextField.defaultProps.size, 'small');
+  assert.equal(UI.theme.components.MuiFormControl.defaultProps.size, 'small');
+});
+
+test('application color literals belong to tokens rather than theme wiring', async () => {
+  const source = await readFile(new URL('../src/modules/theme/theme.ts', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /(?:hsla?|rgba?)\(\s*\d|#[\da-f]{3,8}\b/i);
+  for (const mode of ['light', 'dark']) {
+    const palette = UI.theme.colorSchemes[mode].palette;
+    for (const semantic of ['error', 'warning', 'success', 'info']) {
+      assert.equal(palette[semantic].main, UI.designTokens.palette[mode][semantic]);
+    }
+  }
+});
 
 test('MUI uses ten-pixel rem calibration and direct rem spacing', () => {
   assert.equal(UI.theme.typography.htmlFontSize, 10);

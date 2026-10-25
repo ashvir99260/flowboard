@@ -9,6 +9,47 @@ import * as UI from '../dist/index.js';
 
 afterEach(cleanup);
 
+test('status and select badges use the saved color as fill with readable text', () => {
+  for (const color of ['#FFFFFF', '#000000', '#808080', '#245CC5', '#F4C430']) {
+    render(createElement(UI.StatusChip, { status: { category: 'active', color, name: 'Review' } }));
+    const chip = screen.getByText('Review · Active').closest('.MuiChip-root');
+    assert.ok(chip.classList.contains('MuiChip-filled'));
+    assert.ok(getContrastRatio(chip.style.backgroundColor, chip.style.color) >= 4.5);
+    cleanup();
+    render(
+      createElement(UI.CustomFieldChip, {
+        field: {
+          name: 'Team',
+          type: 'single_select',
+          options: [{ id: 'a', label: 'Design', color }],
+        },
+        value: 'a',
+      }),
+    );
+    const field = screen.getByText('Team: Design').closest('.MuiChip-root');
+    assert.ok(field.classList.contains('MuiChip-filled'));
+    assert.equal(field.style.backgroundColor, chip.style.backgroundColor);
+    assert.ok(getContrastRatio(field.style.backgroundColor, field.style.color) >= 4.5);
+    cleanup();
+  }
+});
+
+test('every priority badge is filled and unknown select values retain neutral fill', () => {
+  for (const priority of ['urgent', 'high', 'normal', 'low', 'none']) {
+    const { container } = render(createElement(UI.PriorityBadge, { priority }));
+    assert.ok(container.querySelector('.MuiChip-filled'));
+    cleanup();
+  }
+  const { container } = render(
+    createElement(UI.CustomFieldChip, {
+      field: { name: 'Team', type: 'single_select', options: [] },
+      value: 'gone',
+    }),
+  );
+  assert.ok(container.querySelector('.MuiChip-filled'));
+  assert.ok(screen.getByText('Team: Unknown option'));
+});
+
 test('status communicates its name and category independently of its accent color', () => {
   render(
     createElement(UI.StatusChip, {
@@ -143,5 +184,10 @@ test('both themes provide readable text and primary controls on their surfaces',
       assert.ok(getContrastRatio(palette.text.secondary, surface) >= 4.5);
     }
     assert.ok(getContrastRatio(palette.primary.main, palette.primary.contrastText) >= 4.5);
+    for (const name of ['secondary', 'error', 'warning', 'success', 'info'])
+      assert.ok(
+        getContrastRatio(palette[name].main, palette[name].contrastText) >= 4.5,
+        `${mode} ${name} contrast`,
+      );
   }
 });

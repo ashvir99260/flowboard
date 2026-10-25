@@ -30,7 +30,7 @@ test(
       }));
       assert.equal(metrics.root, font === 16 ? '10px' : '12.5px');
       assert.equal(metrics.body, font === 16 ? '14px' : '17.5px');
-      assert.equal(metrics.height, font === 16 ? 44 : 55);
+      assert.equal(metrics.height, font === 16 ? 36 : 45);
       assert.equal(metrics.radius, '6px');
       assert.equal(metrics.medium, font === 16);
       const section = page.getByRole('heading', { name: 'JSON-driven form' }).locator('..');

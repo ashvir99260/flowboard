@@ -1,6 +1,7 @@
 'use client';
 
 import { Chip } from '../../primitives.js';
+import { colorFill } from '../../utils/color.js';
 import { formatCalendarDate } from '../../utils/formatDate.js';
 
 import type { CustomFieldType, FieldValue, ResolvedField } from '@flowboard/contracts';
@@ -32,6 +33,24 @@ export function CustomFieldChip({
     (Array.isArray(value) && !value.length);
   const formatted = empty ? 'Not set' : formatters[field.type](value);
   const label = `${field.name}: ${formatted}`;
+  const selectedId =
+    typeof value === 'string'
+      ? value
+      : Array.isArray(value) && value.length === 1
+        ? value[0]
+        : undefined;
+  const color =
+    field.type === 'single_select' || field.type === 'multi_select'
+      ? field.options.find((item) => item.id === selectedId)?.color
+      : undefined;
 
-  return <Chip label={label} size="small" title={label} variant="outlined" />;
+  return (
+    <Chip
+      label={label}
+      size="small"
+      title={label}
+      variant="filled"
+      style={color ? colorFill(color) : undefined}
+    />
+  );
 }

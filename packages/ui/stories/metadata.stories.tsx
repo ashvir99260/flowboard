@@ -5,7 +5,7 @@ import { PriorityBadge } from '../src/modules/tasks/priorityBadge.js';
 import { StatusChip } from '../src/modules/tasks/statusChip.js';
 import { Stack, Typography } from '../src/primitives.js';
 
-import { approved, effort, statuses } from './fixtures.js';
+import { approved, area, effort, statuses } from './fixtures.js';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -53,6 +53,7 @@ export const AllMetadata: Story = {
       <DueDateLabel date={null} />
       <CustomFieldChip field={effort} value={0} />
       <CustomFieldChip field={approved} value={false} />
+      <CustomFieldChip field={area} value={area.options[0]!.id} />
     </Stack>
   ),
 };

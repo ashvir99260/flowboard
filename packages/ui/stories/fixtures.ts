@@ -10,6 +10,7 @@ export const statuses = [
     key: 'active',
     name: 'In progress',
     category: 'active',
+    color: '#245CC5',
     position: 1,
   }),
   ResolvedStatusSchema.parse({
@@ -18,6 +19,7 @@ export const statuses = [
     key: 'done',
     name: 'Done',
     category: 'done',
+    color: '#146C43',
     position: 2,
   }),
 ];

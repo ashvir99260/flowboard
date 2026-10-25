@@ -187,3 +187,7 @@ Separate frontend TanStack Query setup from view components into custom hooks wi
 ## Follow-up requirement — API and UI authoring rules (25 October 2026)
 
 Document exact API DTO filenames ending in `.dto.ts`, integration tests ending in `.integration.spec.mjs` and unit tests ending in `.unit.spec.mjs`. Explain where API features live and how modules are created and registered. Provide equivalent UI guidance for component creation, file/export naming, folder ownership, composition and theme/token usage. Keep the rules discoverable in scoped repository instructions and distinguish existing exceptions from enforced conventions.
+
+## Follow-up requirement — compact component styling (25 October 2026)
+
+Revisit shared components to more closely match the Tailwind/shadcn and Headless UI references: reduce overly large field heights, make field outlines consistent, use filled colored chips, and remove hardcoded application colors from the theme in favor of shared tokens. Preserve the chosen MUI/composition approach, accessibility, forms, light/dark behavior and rem/HSL conventions.

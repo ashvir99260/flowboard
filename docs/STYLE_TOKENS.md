@@ -12,17 +12,21 @@ D140 and P15-01 define the shared UI scale. Author reusable presentation in `pac
 
 Components read semantic values through `(theme.vars ?? theme).palette` and `theme.spacing(...)`; they do not define a second palette/provider. Add a shared token only when it expresses a reusable design decision. Preserve the public `ThemeProvider` so server rendering and client hydration share the same styling setup.
 
+Application color literals belong only in `tokens.ts`, including severity/info/secondary and colored-fill foreground choices. `theme.ts` is a mapping layer. Persisted status/option colors remain domain data, converted at the presentation boundary, rather than application palette constants.
+
 For example, a reusable styled slot can use the existing theme without choosing its own light/dark colors:
 
 ```tsx
 import { styled } from '@mui/material/styles';
+
+import { designTokens } from '../theme/tokens.js';
 
 const Root = styled('section', { name: 'FlowboardTaskSummary', slot: 'Root' })(({ theme }) => ({
   color: (theme.vars ?? theme).palette.text.primary,
   backgroundColor: (theme.vars ?? theme).palette.background.paper,
   border: `1px solid ${(theme.vars ?? theme).palette.divider}`,
   borderRadius: theme.shape.borderRadius,
-  minHeight: '4.4rem',
+  minHeight: designTokens.controlHeight,
   padding: theme.spacing(1.6),
 }));
 ```
@@ -30,6 +34,8 @@ const Root = styled('section', { name: 'FlowboardTaskSummary', slot: 'Root' })((
 This is a styling example for the [component creation workflow](UI_COMPONENT_SYSTEM.md#creating-a-shared-component), not a new exported component.
 
 ## Values and units
+
+- Standard desktop text fields, native single-select menus and buttons use `controlHeight: '3.6rem'` (36px at the normal default); coarse-pointer targets use `touchControlHeight: '4.4rem'`. Multiline text and multi-select lists remain content-driven. This supersedes the previous 4.4rem desktop minimum (D153).
 
 - Write palette colors as comma-form HSL, for example `hsl(240, 5.8824%, 10%)`. Prefer semantic theme tokens in components. The comma form is compatible with MUI's current color parser.
 - Root font size is `62.5%`; MUI `typography.htmlFontSize` is 10. At a normal 16px browser default, `1rem = 10px`, `1.4rem = 14px` and `1.6rem = 16px`. Larger browser default fonts scale the UI; do not force an absolute 10px root.
@@ -45,3 +51,5 @@ Stored/API custom colors retain their existing hex contract and validated inputs
 Data Grid requires numeric pixel geometry for columns and headers. `useRemSize` observes a one-rem element and converts the authored rem values for that API; container sizing, padding and typography remain rem CSS. Initial server/client rendering uses the normal 10px equivalent, then browser measurement updates it. The observer handles later font changes and disconnects on unmount; do not hardcode pixel geometry that ignores user font preferences.
 
 Tests cover public theme values, computed browser geometry and colors, both color schemes, responsive widths and an increased browser default font. See the official [MUI typography](https://mui.com/material-ui/customization/typography/#html-font-size), [spacing](https://mui.com/material-ui/customization/spacing/) and [CSS length](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length) references.
+
+Filled badges use a 2.4rem height. `colorFill` selects the black/white token with the higher contrast ratio for validated stored colors; mixed selections and unsupported strings fall back to neutral fill. Do not assume white text is readable on every user-selected color.

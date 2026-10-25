@@ -324,6 +324,10 @@ P25-01 extracts the remaining TanStack reads from workspace and activity view co
 
 P26-01 makes the repository authoring rules directly usable: exact DTO/unit/integration filename patterns, API module creation and registration, UI component ownership/exports, and theme/token usage. Keep detailed rules in the existing owning guides, with short scoped AGENTS links and a shared naming table. Explain existing shared-test exceptions and executable enforcement separately; this is documentation work, not a source-file migration or runner change.
 
+### Compact component styling refinement (25 October 2026)
+
+P27-01 revisits shared visual defaults against the shadcn compact input/select/badge references. Use 3.6rem desktop controls, consistent outlines, filled metadata and centralized color tokens, while preserving accessible touch sizing, larger-font reflow, MUI semantics, forms and SSR. Headless UI supplies composition/state principles rather than a fixed visual skin. Verify actual rendered geometry, contrast, keyboard/focus and light/dark screenshots rather than relying only on theme values.
+
 ### Agent guidance refinement (25 October 2026)
 
 P17-01 organizes repository instructions by app/package ownership and documents the implemented naming and code patterns. The index routes readers to canonical architecture, backend, frontend, forms, style, tooling and verification guides. It changes documentation only; runtime behavior remains evidenced by P16-01.

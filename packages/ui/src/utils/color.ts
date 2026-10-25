@@ -1,3 +1,7 @@
+import { getContrastRatio } from '@mui/material/styles';
+
+import { designTokens } from '../modules/theme/tokens.js';
+
 /** Convert persisted hexadecimal colors at the presentation boundary. CSS tokens pass through. */
 export function toHslColor(color: string): string {
   if (!/^#[\da-f]{6}$/i.test(color)) return color;
@@ -21,4 +25,20 @@ export function toHslColor(color: string): string {
   const round = (value: number) => Number(value.toFixed(4));
 
   return `hsl(${round((hue * 60 + 360) % 360)}, ${round(saturation * 100)}%, ${round(lightness * 100)}%)`;
+}
+
+/** Contract colors are opaque hex; unsupported inputs retain the neutral themed fill. */
+export function colorFill(color: string) {
+  if (!/^#[\da-f]{6}$/i.test(color)) return undefined;
+
+  const backgroundColor = toHslColor(color);
+  const { dark, light } = designTokens.contrast;
+
+  return {
+    backgroundColor,
+    color:
+      getContrastRatio(backgroundColor, light) >= getContrastRatio(backgroundColor, dark)
+        ? light
+        : dark,
+  };
 }
