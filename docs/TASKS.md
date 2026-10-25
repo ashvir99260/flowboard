@@ -1288,14 +1288,33 @@ D155 records the subsequent instruction to complete all local tasks. R156–R160
   - **Commit:** `feat(web): manage workspace lifecycle`.
   - **Evidence:** [P29-02](evidence/P29-02.md).
 
-- [ ] **NEXT-03 — Design one-level subtasks**
-  - **Goal:** Consider parentTaskId without changing current task ownership accidentally.
+- [x] **NEXT-03 — Design one-level subtasks**
+  - **Goal:** Define parentTaskId without changing current task ownership accidentally.
   - **Requirements:** R157.
-  - **Files:** Hierarchy design, task contracts/database/API/UI/tests after selection.
-  - **Dependencies:** P28-01 and explicit selection.
-  - **Acceptance:** Maximum depth one; define list moves, permissions, parent archival and ordering; reject cycles and cross-tenant parents.
-  - **Validation:** Design review and chosen behavioral tests before implementation.
-  - **Commit:** Chosen after design selection.
+  - **Files:** `docs/SUBTASKS.md`, decisions, plan, task/matrix and design evidence.
+  - **Dependencies:** P29-02; selection D155.
+  - **Acceptance:** Maximum depth one; same-list relations, archive/move restrictions and retained history are explicit; define permission/cursor/event behavior and testable API/UI slices.
+  - **Validation:** Source-backed design review, Markdown links/formatting and acceptance mapping; runtime evidence belongs to P30-01/P30-02.
+  - **Commit:** `docs: define one-level subtask behavior`.
+  - **Evidence:** [NEXT-03](evidence/NEXT-03.md).
+
+- [ ] **P30-01 — Implement subtask relations and guarded task operations**
+  - **Goal:** Persist one-level task relationships through existing APIs without invalid links, data loss or unscoped events.
+  - **Requirements:** R157; preserve tenant/permission/task/configuration/cursor contracts.
+  - **Files:** Task/query/event/error contracts; Prisma migration/schema and task/event repositories; API task service/Swagger/error mapping; generated spec/client, strict fixtures, database/API/contract tests and field documentation.
+  - **Dependencies:** NEXT-03.
+  - **Acceptance:** Nullable same-list parent, maximum depth one, omission/clear semantics, guarded parent-filtered pagination, documented move/archive restrictions, no-op and historical event compatibility; failed/racing commands cannot leave partial state.
+  - **Validation:** G01–G08/G11; failure-first contracts, real PostgreSQL/REST migration/FK/denial/rollback/race tests, root gates and generated drift checks.
+  - **Commit:** `feat(tasks): add one-level subtask relations`.
+
+- [ ] **P30-02 — Add subtask creation and navigation to the drawer**
+  - **Goal:** Create, attach/detach and navigate related tasks while retaining flat board/list behavior and dirty drafts.
+  - **Requirements:** R157; preserve R70/R76/R80/R134/R137/R140.
+  - **Files:** Web task features/hooks, shared task presentation/forms where needed, browser fixtures/tests and application docs/evidence.
+  - **Dependencies:** P30-01.
+  - **Acceptance:** Paginated parent/child controls use generated APIs and shared forms; required values and stale errors remain visible; dirty related navigation confirms; partial pages cannot imply completeness; another client updates and keyboard flows work.
+  - **Validation:** G01–G05/G09–G11; real browser create/reload/navigate/detach and negative/race paths, root gates and React review.
+  - **Commit:** `feat(web): add subtask controls`.
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**
   - **Goal:** Supply real indexing/query behavior only after product scope includes search.
