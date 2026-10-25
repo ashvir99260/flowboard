@@ -1,6 +1,6 @@
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { MemberAccess } from '../src/modules/administration/memberAccess.js';
+import { MemberAccess } from '../src/modules/administration/MemberAccess.js';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

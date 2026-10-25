@@ -1,13 +1,13 @@
-export { ControlledField } from './controlled-field.js';
+export { ControlledField } from './ControlledField.js';
 
-export type { ControlledFieldProps } from './controlled-field.js';
+export type { ControlledFieldProps } from './ControlledField.js';
 
-export { FormFields } from './form-fields.js';
+export { FormFields } from './FormFields.js';
 
-export { FormFieldsSchema, parseFormFields } from './field-config.js';
+export { FormFieldsSchema, parseFormFields } from './fieldConfig.js';
 
-export type { FormFieldConfig } from './field-config.js';
+export type { FormFieldConfig } from './fieldConfig.js';
 
-export { useZodForm } from './use-zod-form.js';
+export { useZodForm } from './useZodForm.js';
 
-export { customFieldConfig } from './custom-field-config.js';
+export { customFieldConfig } from './customFieldConfig.js';

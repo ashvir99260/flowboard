@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { configurationChanged } from '../src/features/config/configuration-events.ts';
-import { readStatusWriteResponse } from '../src/features/config/statuses/status-write-data.ts';
+import { configurationChanged } from '../src/features/config/configurationEvents.ts';
+import { readStatusWriteResponse } from '../src/features/config/statuses/statusWriteData.ts';
 
 import { statusConfigId, statusConfigurationFixture } from './common/status-config-fixture.mjs';
 

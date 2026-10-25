@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { ActivitySchema } from '@flowboard/contracts';
 
-import { assembleActivity } from '../src/features/tasks/activity-data.ts';
+import { assembleActivity } from '../src/features/tasks/activityData.ts';
 
 test('activity pages reject foreign data, duplicate events, missing links and out-of-order entries', () => {
   const item = ActivitySchema.parse(ActivitySchema.meta().example);

@@ -6,7 +6,7 @@ import {
   taskDefaults,
   taskDraftSchema,
   updateTaskInput,
-} from '../src/features/tasks/task-form-data.ts';
+} from '../src/features/tasks/taskFormData.ts';
 
 import { boardFixture, field } from './common/board-fixture.mjs';
 

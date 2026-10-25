@@ -4,8 +4,8 @@ import test from 'node:test';
 import {
   createInvalidationTracker,
   createRealtimeBus,
-} from '../src/features/realtime/realtime-events.ts';
-import { readRealtimeUrl } from '../src/server/realtime-config.ts';
+} from '../src/features/realtime/realtimeEvents.ts';
+import { readRealtimeUrl } from '../src/server/realtimeConfig.ts';
 
 const id = (n) => `f1000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 test('deduplication retains both move endpoints, rejects content, and always allows reconnect resync', () => {

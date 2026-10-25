@@ -1,14 +1,14 @@
 'use client';
 
-export { Button } from './modules/primitives/button.js';
+export { Button } from './modules/primitives/Button.js';
 
-export { Chip } from './modules/primitives/chip.js';
+export { Chip } from './modules/primitives/Chip.js';
 
-export { Paper } from './modules/primitives/paper.js';
+export { Paper } from './modules/primitives/Paper.js';
 
-export { TextField } from './modules/primitives/textField.js';
+export { TextField } from './modules/primitives/TextField.js';
 
-export { NativeSelect } from './modules/primitives/nativeSelect.js';
+export { NativeSelect } from './modules/primitives/NativeSelect.js';
 
 export { default as Alert } from '@mui/material/Alert';
 
@@ -18,7 +18,7 @@ export { default as Checkbox } from '@mui/material/Checkbox';
 
 export { default as CircularProgress } from '@mui/material/CircularProgress';
 
-export { Dialog } from './modules/overlays/dialog.js';
+export { Dialog } from './modules/overlays/Dialog.js';
 
 export { default as DialogActions } from '@mui/material/DialogActions';
 

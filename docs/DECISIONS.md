@@ -703,3 +703,7 @@ R160 exposes the existing guarded container and grant operations in an administr
 ## D162 — Branded workspace shell and dual board levels
 
 R161–R163 use a compact ClickUp/Jira-inspired layout with Flowboard branding, MUI/Emotion and the existing semantic tokens. Workspace home groups tasks by primary list; opening a list preserves resolved-status Kanban/table views. Cross-list drops use existing move validation and prompts rather than discarding fields. Invitations use the implemented link-creation API and never claim email delivery. [UI refresh](UI_REFRESH.md) records the design and access boundaries.
+
+## D163 — Frontend component names and mutation ownership
+
+R164–R165 supersede D146's frontend filename rule: React implementation files in web/UI/forms use PascalCase; hooks and utilities use camelCase. Keep reserved Next routes and tool-specific test/story/config names. Split distinct React components, while cohesive private styled slots remain local. `useApiMutation` owns the existing retry/network execution defaults; feature `use<Operation>Mutation` hooks retain their generated operations, validation, exact keys, cache behavior and notifications. See [the refactor plan](FRONTEND_REFACTOR.md).

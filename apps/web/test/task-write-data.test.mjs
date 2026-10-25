@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { readTaskWriteResponse } from '../src/features/tasks/task-write-data.ts';
+import { readTaskWriteResponse } from '../src/features/tasks/taskWriteData.ts';
 
 import { boardFixture, ids } from './common/board-fixture.mjs';
 

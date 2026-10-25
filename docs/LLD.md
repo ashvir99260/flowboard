@@ -94,7 +94,7 @@ Source, destination, anchor and assignee relationships are validated in the same
 
 The host-only refresh cookie uses HttpOnly, Path=/ and SameSite=Lax, with Secure outside explicit local development. Cookie endpoints require an allowed Origin, including cookbook requests. Login/signup are public but bounded; domain access remains guarded. Workspace switching checks membership and changes the family's active workspace, making old-workspace access invalid.
 
-[setup-client.ts](../packages/api-client/src/setup-client.ts) attaches in-memory access tokens to generated requests. A 401 coordinates one refresh and one retry; failure closes the session. [Session synchronization](../packages/api-client/src/session-sync.ts) uses Web Locks and revision signals, not stored access/refresh credentials. Identity/workspace changes fence stale requests and clear query data, drafts, notifications and sockets. The [Next proxy](../apps/web/src/server/api-proxy.ts) forwards to a validated fixed upstream; it does not implement auth/domain policy itself.
+[setup-client.ts](../packages/api-client/src/setup-client.ts) attaches in-memory access tokens to generated requests. A 401 coordinates one refresh and one retry; failure closes the session. [Session synchronization](../packages/api-client/src/session-sync.ts) uses Web Locks and revision signals, not stored access/refresh credentials. Identity/workspace changes fence stale requests and clear query data, drafts, notifications and sockets. The [Next proxy](../apps/web/src/server/apiProxy.ts) forwards to a validated fixed upstream; it does not implement auth/domain policy itself.
 
 ## Status and field resolution
 
@@ -150,7 +150,7 @@ Web extends generated query keys with session/user/workspace scope. Board and ta
 
 The task drawer reuses its dirty/busy navigation gate for parent and child links. `task-form-data.ts` owns the initial parent, omission on unrelated edits and explicit null detachment; `task-parent-field.tsx` preserves the selected ID outside loaded choices. `use-list-related-tasks-infinite-query.ts` reads bounded generated task pages, checks scope/filter/revision continuity and restarts stale chains. Local mutations and realtime invalidations refresh relations independently of the editable form baseline. The drawer retains the original board/table focus target across related navigation.
 
-[TaskTable](../packages/ui/src/modules/tasks/taskTable.tsx) is a presentational Community Data Grid. Its 25/50/100-row paginator only selects already-loaded rows; **Load more tasks** still performs a cursor request. Grid-local sort/filter is disabled. Stable IDs, title-button `tabIndex`, focus-return attributes and [measured rem geometry](../packages/ui/src/hooks/useRemSize.ts) preserve keyboard and font behavior.
+[TaskTable](../packages/ui/src/modules/tasks/TaskTable.tsx) is a presentational Community Data Grid. Its 25/50/100-row paginator only selects already-loaded rows; **Load more tasks** still performs a cursor request. Grid-local sort/filter is disabled. Stable IDs, title-button `tabIndex`, focus-return attributes and [measured rem geometry](../packages/ui/src/hooks/useRemSize.ts) preserve keyboard and font behavior.
 
 ## Async delivery, recovery and notifications
 

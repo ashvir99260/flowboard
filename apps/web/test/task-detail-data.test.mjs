@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { assembleTaskDetail } from '../src/features/tasks/task-detail-data.ts';
+import { assembleTaskDetail } from '../src/features/tasks/taskDetailData.ts';
 
 import { boardFixture, ids } from './common/board-fixture.mjs';
 

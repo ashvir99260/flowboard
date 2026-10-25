@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { readListLocation, writeListLocation } from '../src/features/list/list-location.ts';
+import { readListLocation, writeListLocation } from '../src/features/list/listLocation.ts';
 
 test('list URLs use the shared task query contract and retain raw filter values', () => {
   assert.deepEqual(readListLocation('view=list&sort=priority&direction=desc'), {

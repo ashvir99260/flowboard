@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { withQueryScope } from '../src/lib/query-scope.ts';
+import { withQueryScope } from '../src/lib/queryScope.ts';
 
 test('query scope preserves generated operation structure and separates users, workspaces and sessions', () => {
   const queryFn = () => 'result';

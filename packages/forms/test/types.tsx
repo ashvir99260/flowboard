@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-import { ControlledField, FormFields, parseFormFields, useZodForm } from '../src/index.js';
+import { ControlledField } from '../src/ControlledField.js';
+import { FormFields } from '../src/FormFields.js';
+import { parseFormFields } from '../src/fieldConfig.js';
+import { useZodForm } from '../src/useZodForm.js';
 
 export function TypedExample() {
   const schema = z.object({

@@ -1,0 +1,261 @@
+'use client';
+
+import { useZodForm } from '@flowboard/forms';
+import { Alert, Button, ConfirmDialog, Stack, Typography } from '@flowboard/ui';
+import { useEffect, useRef, useState } from 'react';
+import { useWatch } from 'react-hook-form';
+
+import {
+  fieldCommand,
+  fieldDefaults,
+  fieldDraftSchema,
+  previewFieldEdit,
+  previewFieldRemoval,
+} from './fieldFormData';
+import { FieldInputs } from './FieldInputs';
+import { FieldPreview } from './FieldPreview';
+import { useFieldMutation } from './useFieldMutation';
+
+import type { FormEvent } from 'react';
+import type { FieldPath } from 'react-hook-form';
+import type { QueryScope } from '../../../lib/queryScope';
+import type { ClientRuntime } from '../../../providers/sessionContext';
+import type { FieldConfiguration, FieldDraft } from './fieldFormData';
+
+type Command =
+  | NonNullable<ReturnType<typeof fieldCommand>>
+  | { body: { expectedConfigVersion: number }; fieldId: string; kind: 'remove' };
+
+export function FieldForm({
+  active,
+  configuration,
+  targetKey,
+  runtime,
+  scope,
+  onState,
+  onClose,
+  onSaved,
+  onReload,
+}: {
+  active: boolean;
+  configuration: FieldConfiguration;
+  onClose: () => void;
+  onReload: () => void;
+  onSaved: () => void;
+  onState: (state: { busy: boolean; dirty: boolean }) => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  targetKey?: string;
+}) {
+  const owner = configuration.input.scopes.at(-1)!;
+
+  const { submit } = useFieldMutation(runtime, scope, owner);
+  const form = useZodForm(fieldDraftSchema(targetKey), {
+    defaultValues: fieldDefaults(configuration, targetKey),
+    mode: 'onBlur',
+  });
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setError,
+    setFocus,
+    formState: { isDirty },
+  } = form;
+
+  const draft = useWatch({ control });
+
+  const preview = previewFieldEdit(configuration, draft, targetKey);
+
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [conflict, setConflict] = useState(false);
+  const [confirmation, setConfirmation] = useState<'close' | 'reload' | 'remove' | null>(null);
+  const inFlight = useRef(false);
+  const focus = useRef<FieldPath<FieldDraft> | null>(null);
+
+  const local = configuration.local.find((item) => item.key === targetKey);
+  const canInherit = configuration.input.definitions.some(
+    (row) => row.key === targetKey && row.ownerId !== owner.ownerId,
+  );
+
+  useEffect(() => {
+    setFocus(targetKey ? 'name' : 'key');
+  }, [setFocus, targetKey]);
+
+  useEffect(() => onState({ busy, dirty: isDirty }), [busy, isDirty, onState]);
+
+  useEffect(() => {
+    if (!busy && focus.current) {
+      setFocus(focus.current);
+      focus.current = null;
+    }
+  }, [busy, setFocus]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
+
+  const saveCommand = async (command: Command) => {
+    setBusy(true);
+    setNotice(null);
+    focus.current = null;
+    const result = await submit(command);
+    if (result.success) {
+      onSaved();
+
+      return;
+    }
+
+    setNotice(result.error.message);
+    setConflict(
+      ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(result.error.code),
+    );
+    for (const issue of 'details' in result.error ? (result.error.details ?? []) : []) {
+      const path = issue.path.join('.');
+      if (/^(key|name|type|required|position|options(?:\.\d+\.(?:id|label|color))?)$/.test(path)) {
+        const name = path as FieldPath<FieldDraft>;
+        // IDs are preserved internally; focus the matching option's editable label.
+        focus.current ??= path.endsWith('.id')
+          ? (path.replace(/\.id$/, '.label') as FieldPath<FieldDraft>)
+          : name;
+        setError(name, { type: 'server', message: issue.message });
+      }
+    }
+  };
+  const save = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (inFlight.current || conflict || !preview.success) return;
+
+    inFlight.current = true;
+    void handleSubmit(async (value) => {
+      const command = fieldCommand(configuration, value, targetKey);
+      if (!command) {
+        reset(fieldDefaults(configuration, targetKey));
+        setNotice('No changes to save.');
+
+        return;
+      }
+
+      await saveCommand(command);
+    })(event)
+      .catch(() => setNotice('The field could not be saved. Please try again.'))
+      .finally(() => {
+        inFlight.current = false;
+        setBusy(false);
+      });
+  };
+  const request = (action: 'close' | 'reload') => {
+    if (busy) return;
+
+    if (isDirty) setConfirmation(action);
+    else if (action === 'close') onClose();
+    else onReload();
+  };
+  const removePreview = targetKey ? previewFieldRemoval(configuration, targetKey) : null;
+
+  return (
+    <Stack
+      component="form"
+      aria-label="Field editor"
+      onSubmit={save}
+      noValidate
+      spacing={1.2}
+      aria-busy={busy}
+    >
+      <Typography component="h2" variant="h3">
+        {targetKey ? (local ? 'Edit field' : 'Override inherited field') : 'Add field'}
+      </Typography>
+      {targetKey && !local && (
+        <Alert aria-live="off" severity="info">
+          Saving creates a complete local definition. Later ancestor edits will not change this
+          field at this scope.
+        </Alert>
+      )}
+      {notice && (
+        <Alert
+          aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
+          severity={notice === 'No changes to save.' ? 'info' : 'error'}
+        >
+          {notice}
+        </Alert>
+      )}
+      {conflict && (
+        <Button onClick={() => request('reload')} disabled={busy}>
+          Reload configuration
+        </Button>
+      )}
+      <FieldInputs form={form} busy={busy} editing={Boolean(targetKey)} />
+      <FieldPreview
+        label="Draft field preview"
+        items={preview.success ? preview.items : []}
+        errors={preview.success ? [] : preview.issues.map((issue) => issue.message)}
+      />
+      <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
+        <Button type="submit" variant="contained" disabled={busy || conflict || !preview.success}>
+          {busy ? 'Saving…' : 'Save field'}
+        </Button>
+        <Button type="button" disabled={busy} onClick={() => request('close')}>
+          Cancel editing
+        </Button>
+        {local && (
+          <Button
+            type="button"
+            color="error"
+            disabled={busy || conflict || !removePreview?.success}
+            onClick={() => setConfirmation('remove')}
+          >
+            {canInherit ? 'Remove local override' : 'Delete field'}
+          </Button>
+        )}
+      </Stack>
+      <ConfirmDialog
+        open={active && confirmation !== null}
+        busy={busy}
+        title={
+          confirmation === 'remove'
+            ? 'Remove local field configuration?'
+            : 'Discard unsaved changes?'
+        }
+        description={
+          confirmation === 'remove'
+            ? 'Inherited definitions may become visible again. Existing task values can block removal.'
+            : 'Your unsaved field edits will be discarded.'
+        }
+        confirmLabel={
+          confirmation === 'remove'
+            ? 'Remove configuration'
+            : confirmation === 'reload'
+              ? 'Discard and reload'
+              : 'Discard changes'
+        }
+        onCancel={() => setConfirmation(null)}
+        onConfirm={() => {
+          const action = confirmation;
+          setConfirmation(null);
+          if (action === 'remove' && local && !inFlight.current) {
+            inFlight.current = true;
+            void saveCommand({
+              kind: 'remove',
+              fieldId: local.id,
+              body: { expectedConfigVersion: configuration.configVersion },
+            }).finally(() => {
+              inFlight.current = false;
+              setBusy(false);
+            });
+          } else if (action === 'reload') onReload();
+          else if (action === 'close') onClose();
+        }}
+      />
+    </Stack>
+  );
+}

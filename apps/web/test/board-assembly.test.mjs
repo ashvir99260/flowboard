@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { assembleBoard, readBoardStatuses } from '../src/features/board/board-data.ts';
+import { assembleBoard, readBoardStatuses } from '../src/features/board/boardData.ts';
 
 import {
   boardFixture,

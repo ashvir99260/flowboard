@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
-import { FieldPreview } from '../src/modules/configuration/fieldPreview.js';
-import { StatusPreview } from '../src/modules/configuration/statusPreview.js';
-import { MarkdownContent } from '../src/modules/content/markdownContent.js';
-import { EmptyState } from '../src/modules/feedback/emptyState.js';
-import { ErrorState } from '../src/modules/feedback/errorState.js';
-import { LoadingState } from '../src/modules/feedback/loadingState.js';
-import { TaskTable } from '../src/modules/tasks/taskTable.js';
-import { Button, Stack } from '../src/primitives.js';
+import { FieldPreview } from '../src/modules/configuration/FieldPreview.js';
+import { StatusPreview } from '../src/modules/configuration/StatusPreview.js';
+import { MarkdownContent } from '../src/modules/content/MarkdownContent.js';
+import { EmptyState } from '../src/modules/feedback/EmptyState.js';
+import { ErrorState } from '../src/modules/feedback/ErrorState.js';
+import { LoadingState } from '../src/modules/feedback/LoadingState.js';
+import { TaskTable } from '../src/modules/tasks/TaskTable.js';
+import { Button } from '../src/modules/primitives/Button.js';
+import { default as Stack } from '@mui/material/Stack';
 
 import { approved, effort, statuses, task } from './fixtures.js';
 

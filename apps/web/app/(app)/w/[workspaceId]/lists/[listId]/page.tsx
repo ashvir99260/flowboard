@@ -1,7 +1,7 @@
 import { UuidSchema } from '@flowboard/contracts';
 import { notFound } from 'next/navigation';
 
-import { ListDetails } from '../../../../../../src/features/workspaces/workspace-shell';
+import { ListDetails } from '../../../../../../src/features/workspaces/ListDetails';
 
 export default async function ListPage({ params }: PageProps<'/w/[workspaceId]/lists/[listId]'>) {
   const { workspaceId, listId } = await params;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { readStatusConfiguration } from '../src/features/config/statuses/status-configuration.ts';
+import { readStatusConfiguration } from '../src/features/config/statuses/statusConfiguration.ts';
 
 import { statusConfigId, statusConfigurationFixture } from './common/status-config-fixture.mjs';
 

@@ -6,7 +6,7 @@ import {
   invitationLink,
   readCreatedInvitation,
   readInvitationFragment,
-} from '../src/features/workspaces/invitation-data.ts';
+} from '../src/features/workspaces/invitationData.ts';
 
 const token = 'A'.repeat(43);
 const response = {

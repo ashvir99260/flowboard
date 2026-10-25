@@ -62,7 +62,7 @@ Delivery is **at least once**. A crash after activity insertion but before publi
 | Subscriber/browser is disconnected                | Pub/Sub does not replay missed messages. Clients resync from REST after reconnect.                                                |
 | Auth rate-limit Redis is unavailable              | Auth limiter fails closed with 503. Existing durable task data is unaffected, but this is not full application availability.      |
 
-Do not treat a successful Redis publish as proof that every browser received it. [API recipient filtering](../apps/api/src/modules/realtime/realtime.service.ts) rechecks current membership and list access; room membership alone is not authorization. Internal envelopes can contain private references. Public invalidations contain authorized scope/event identity and optional negotiated `self` metadata, not task content or hidden destination details. The web [realtime provider](../apps/web/src/features/realtime/realtime-provider.tsx) deduplicates events and refetches; it does not apply Redis payloads as task records.
+Do not treat a successful Redis publish as proof that every browser received it. [API recipient filtering](../apps/api/src/modules/realtime/realtime.service.ts) rechecks current membership and list access; room membership alone is not authorization. Internal envelopes can contain private references. Public invalidations contain authorized scope/event identity and optional negotiated `self` metadata, not task content or hidden destination details. The web [realtime provider](../apps/web/src/features/realtime/RealtimeProvider.tsx) deduplicates events and refetches; it does not apply Redis payloads as task records.
 
 ## Deployment and environment isolation
 

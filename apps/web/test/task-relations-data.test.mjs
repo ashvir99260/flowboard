@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { readTaskRelations } from '../src/features/tasks/task-relations-data.ts';
+import { readTaskRelations } from '../src/features/tasks/taskRelationsData.ts';
 
 import { listId, task, workspaceId } from './common/board-fixture.mjs';
 
