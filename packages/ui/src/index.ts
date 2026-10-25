@@ -22,6 +22,14 @@ export { FormField } from './modules/forms/FormField.js';
 
 export { CustomFieldInput } from './modules/forms/CustomFieldInput.js';
 
+export { SelectionInput } from './modules/forms/SelectionInput.js';
+
+export type {
+  SelectionInputProps,
+  SelectionOption,
+  SelectionValue,
+} from './modules/forms/selectionTypes.js';
+
 export { ConfirmDialog } from './modules/overlays/ConfirmDialog.js';
 
 export { TreeItem } from './modules/navigation/TreeItem.js';

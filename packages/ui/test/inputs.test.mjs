@@ -89,7 +89,9 @@ test('select controls use IDs and retain removed values for correction', () => {
     createElement(Input, { field, initial: 'a', onChange: (value) => values.push(value) }),
   );
   const input = screen.getByRole('combobox', { exact: false, name: 'Value' });
-  fireEvent.change(input, { target: { value: 'b' } });
+  fireEvent.focus(input);
+  fireEvent.change(input, { target: { value: 'Platform' } });
+  fireEvent.click(screen.getByRole('option', { name: 'Platform' }));
   assert.deepEqual(values, ['b']);
   view.rerender(
     createElement(Input, {
@@ -97,24 +99,25 @@ test('select controls use IDs and retain removed values for correction', () => {
       onChange: (value) => values.push(value),
     }),
   );
-  assert.equal(input.value, 'b');
-  assert.ok(screen.getByRole('option', { name: /Unavailable option/ }));
+  assert.equal(input.value, 'Unavailable option (b)');
   assert.equal(input.getAttribute('aria-invalid'), 'true');
   fireEvent.change(input, { target: { value: '' } });
   assert.equal(values.at(-1), null);
   cleanup();
-  render(createElement(Input, { field: { ...field, type: 'multi_select' }, initial: ['b'] }));
-  const multiple = screen.getByRole('listbox', { exact: false, name: 'Value' });
-  assert.deepEqual(
-    [...multiple.selectedOptions].map((option) => option.value),
-    ['b'],
+  render(
+    createElement(Input, {
+      field: { ...field, type: 'multi_select' },
+      initial: ['b'],
+      onChange: (value) => values.push(value),
+    }),
   );
-  for (const option of multiple.options) option.selected = option.value === 'a';
-  fireEvent.change(multiple);
-  assert.deepEqual(
-    [...multiple.selectedOptions].map((option) => option.value),
-    ['a'],
-  );
+  const multiple = screen.getByRole('combobox', { exact: false, name: 'Value' });
+  assert.ok(screen.getByText('Platform'));
+  fireEvent.keyDown(multiple, { key: 'Backspace' });
+  assert.deepEqual(values.at(-1), []);
+  fireEvent.change(multiple, { target: { value: 'Design' } });
+  fireEvent.click(screen.getByRole('option', { name: 'Design' }));
+  assert.deepEqual(values.at(-1), ['a']);
 });
 
 test('field errors remain linked to their labeled controls', () => {

@@ -134,7 +134,7 @@ export function ControlledField<T extends FieldValues, Output extends FieldValue
         {config.kind === 'custom' &&
           config.clearable &&
           !definition.required &&
-          definition.type !== 'checkbox' &&
+          !['checkbox', 'single_select', 'multi_select'].includes(definition.type) &&
           field.value !== null && (
             <Button
               type="button"

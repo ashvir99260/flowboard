@@ -1498,6 +1498,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Focused browser/search/session regressions, type checks and visual review.
   - **Commit:** `feat(web): simplify header and add global search`.
 - [ ] **P36-01 — Searchable single and multi selections**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P36-01.md).
   - **Goal:** Replace shared native field selectors with controlled MUI Autocomplete.
   - **Requirements:** R170.
   - **Files:** Shared UI Autocomplete/selection wrappers, custom-field select input, forms SelectInput, exports, tests/stories.
