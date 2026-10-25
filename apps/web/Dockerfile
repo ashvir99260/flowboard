@@ -2,6 +2,9 @@
 ARG NODE_IMAGE=node:22.23.2-bookworm-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f19948f0f9
 FROM ${NODE_IMAGE} AS tools
 WORKDIR /repo
+# The shared build graph generates Prisma-backed API contracts.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 RUN npm install --global pnpm@12.15.0 turbo@2.11.10
 
 FROM tools AS prune
@@ -19,9 +22,6 @@ RUN pnpm exec turbo run build --filter=@flowboard/web
 FROM build AS development
 ENV CI=false NODE_ENV=development HOST=0.0.0.0 NEXT_TELEMETRY_DISABLED=1 PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false
 COPY .gitignore .gitignore
-# The web development graph also rebuilds Prisma-backed API contracts.
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
 RUN find /repo -name node_modules -prune -o -exec chown node:node {} +
 USER node
 EXPOSE 3000

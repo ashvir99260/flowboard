@@ -57,6 +57,20 @@ async function docker(...args) {
   return stdout.trim();
 }
 
+const countTasks = () =>
+  docker(
+    'exec',
+    '-T',
+    'postgres',
+    'psql',
+    '-U',
+    'flowboard',
+    '-d',
+    'flowboard',
+    '-tAc',
+    'SELECT count(*) FROM tasks;',
+  );
+
 async function edit(relative, before, after) {
   const target = path.join(fixture, relative);
   const content = await readFile(target, 'utf8');
@@ -224,6 +238,8 @@ try {
     `[${project}] Build and start isolated ${control ? 'production control' : 'development'} services`,
   );
   await docker('up', '--build', '-d', '--wait', '--wait-timeout', '180');
+  const initialTaskCount = await countTasks();
+  assert.match(initialTaskCount, /^[1-9]\d*$/, 'The initialized preview must contain seeded tasks');
   if (!control) {
     const sslRequest = Buffer.alloc(8);
     sslRequest.writeInt32BE(8);
@@ -299,6 +315,7 @@ try {
   );
   console.info(`[${project}] Shared UI, API and worker source reload passed`);
 
+  const beforeSharedWebLogs = await docker('logs', '--no-color', 'web');
   await edit(
     'packages/logger/src/index.ts',
     '          event,',
@@ -311,6 +328,11 @@ try {
       logs.includes('"event":"api.started.dev-shared"') &&
       logs.includes('"event":"worker.dev-reloaded.dev-shared"')
     );
+  });
+  await eventually('shared logger rebuilds web database dependency', async () => {
+    const logs = await docker('logs', '--no-color', 'web');
+
+    return logs.slice(beforeSharedWebLogs.length).includes('Generated Prisma Client');
   });
   const controller = path.join(fixture, 'apps/api/src/modules/platform/health.controller.ts');
   const validController = await readFile(controller, 'utf8');
@@ -341,21 +363,7 @@ try {
       "import assert from 'node:assert/strict'; import { existsSync } from 'node:fs'; for (const file of ['.env', 'apps/api/.env', 'apps/worker/.env', 'apps/web/.env.local']) assert.equal(existsSync(file), false);",
     );
   }
-  assert.equal(
-    await docker(
-      'exec',
-      '-T',
-      'postgres',
-      'psql',
-      '-U',
-      'flowboard',
-      '-d',
-      'flowboard',
-      '-tAc',
-      'SELECT count(*) FROM tasks;',
-    ),
-    '27',
-  );
+  assert.equal(await countTasks(), initialTaskCount, 'Live reload must preserve seeded tasks');
   assert.equal(await docker('ps', '-q'), containers, 'Source updates must not replace containers');
   assert.deepEqual(await readdir(generated), [], 'Generated Prisma files must stay in containers');
   await eventually('all development services recover health', async () =>

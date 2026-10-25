@@ -266,3 +266,32 @@ test('strict Turbo development preserves worker dependencies and frozen image ru
     assert.match(development, /PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false/);
   }
 });
+
+test('Prisma-capable image builds install OpenSSL before dependency generation', async () => {
+  for (const app of ['api', 'web', 'worker']) {
+    const dockerfile = await readFile(new URL(`apps/${app}/Dockerfile`, root), 'utf8');
+    const stages = new Map(
+      dockerfile
+        .split(/^FROM /m)
+        .slice(1)
+        .map((source) => {
+          const [, base, name] = source.match(/^(\S+) AS (\S+)/);
+
+          return [name, { base, source }];
+        }),
+    );
+    const prerequisites = [];
+    let current = 'build';
+    while (stages.has(current)) {
+      const stage = stages.get(current);
+      prerequisites.unshift(stage.source);
+      current = stage.base;
+    }
+    assert.match(
+      prerequisites.join('\n').split(/\bpnpm install\b/)[0],
+      /apt-get install[^\n]*openssl/,
+      `${app} installs OpenSSL before dependency generation`,
+    );
+    assert.equal(stages.get('development').base, 'build');
+  }
+});
