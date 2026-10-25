@@ -25,6 +25,7 @@
     "@flowboard/contracts": "workspace:*",
     "@flowboard/database": "workspace:*",
     "@flowboard/logger": "workspace:*",
+    "@flowboard/jobs": "workspace:*",
     "bullmq": "6.3.16",
     "ioredis": "6.0.0"
   },

@@ -48,7 +48,7 @@ flowchart LR
   end
   Repo --> PG[(PostgreSQL)]
   Repo --> Outbox[Transactional outbox rows]
-  Outbox --> Dispatch[API outbox dispatcher]
+  Outbox --> Dispatch[Worker outbox dispatcher]
   Dispatch --> Redis[(Redis BullMQ and Pub/Sub)]
   Redis --> Worker[BullMQ worker]
   Worker --> PG
@@ -67,11 +67,12 @@ Feature source lives under `apps/api/src/modules/<feature>/` (D93). Auth and pla
 
 | Path                         | Responsibility and permitted dependencies                                                                                                                                             |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api`                   | REST, authentication, permissions, orchestration, Socket.IO, outbox dispatch. Imports contracts, database and logger, never web/worker/client.                                        |
-| `apps/worker`                | BullMQ activity processing and explicit search stub. Imports contracts/database/logger, never another app.                                                                            |
+| `apps/api`                   | REST, authentication, permissions, orchestration and Socket.IO. Imports contracts, database, jobs and logger; never web/worker/client.                                                |
+| `apps/worker`                | Committed-event dispatch and BullMQ activity processing. Imports jobs/contracts/database/logger, never another app.                                                                   |
 | `apps/web`                   | Routes, auth state, data hooks, board/list/drawer/config composition. Imports contracts/ui/forms/api-client.                                                                          |
 | `packages/contracts`         | Zod schemas, inferred types, enums, errors, pagination, event schemas, pure resolution/validation. Only external runtime dependency is Zod; no framework or other workspace imports.  |
 | `packages/database`          | Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts and logger.                             |
+| `packages/jobs`              | Shared durable outbox dispatch, queue publication and lifecycle                                                                                                                       | `contracts`, `database`, `logger`; no framework or app imports |
 | `packages/logger`            | Pino-backed structured logs and Node async request context shared by API/database/worker; no framework or other workspace imports.                                                    |
 | `packages/openapi`           | Export, normalization, lint and drift checks for the API spec. Sole build-tool exception: imports API's exported spec bootstrap; never shipped into a browser/runtime API dependency. |
 | `packages/api-client`        | Committed `src/generated/**` from Hey API; separate handwritten `src/setup-client.ts`. Exports SDK, types, query/mutation options.                                                    |
@@ -106,7 +107,7 @@ P03-01 implements strict container creation/read/update/archive with admin-only 
 
 Use feature-owned modules/controllers/services and focused local DTO adapters as specified in [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md). Shared schemas, persistence and generated artifacts retain their package ownership. Folder conventions are review rules; only documented executable checks count as automated enforcement.
 
-`core/config` owns reusable application/Redis settings; `core/utils` owns pure helpers; `shared` owns shared Nest modules/logging; `core/common` owns decorators, injection tokens, DTO helpers, exception mapping and Swagger support. Core cannot import shared/features, and shared cannot import features; shared ESLint checks these directions. Features live under `modules`: `platform` owns health and dependency probes; `auth` owns credentials, sessions and token verification; `workspaces` owns membership/invitations; `permissions` owns a single resource authorization policy; `hierarchy` owns container paths and archive operations; `statuses` and `fields` own scoped configuration; `tasks` composes both resolvers inside transactions; `activity` exposes stored events; `realtime` owns authenticated subscriptions and Redis fanout; `outbox` retries committed events.
+`core/config` owns reusable application/Redis settings; `core/utils` owns pure helpers; `shared` owns shared Nest modules/logging; `core/common` owns decorators, injection tokens, DTO helpers, exception mapping and Swagger support. Core cannot import shared/features, and shared cannot import features; shared ESLint checks these directions. Features live under `modules`: `platform` owns health and dependency probes; `auth` owns credentials, sessions and token verification; `workspaces` owns membership/invitations; `permissions` owns a single resource authorization policy; `hierarchy` owns container paths and archive operations; `statuses` and `fields` own scoped configuration; `tasks` composes both resolvers inside transactions; `activity` exposes stored events; `realtime` owns authenticated subscriptions and Redis fanout; the worker daemon owns committed-event dispatch through the shared jobs package; API outbox exports remain test compatibility seams.
 
 Controllers translate HTTP and call services; they contain no business rules or Prisma calls. Repositories centralize tenant filters and relation checks. Services orchestrate transactions; pure functions hold deterministic domain logic.
 
@@ -306,7 +307,7 @@ Compatibility will be rechecked against pinned versions before implementation. T
 
 P00-04 through P00-06 add per-app Docker images, selective semantic releases and CI publication before domain development continues. `packages/release-tools` is CI-only; it compares committed app/runtime/compiler inputs against each app's published baseline. The selected application topology is Vercel Services/Daemons with Neon PostgreSQL and an external Redis dependency; local development keeps PostgreSQL/Redis in Compose. Product implementation order remains unchanged. [DELIVERY.md](DELIVERY.md) defines versioning and release recovery; [VERCEL.md](VERCEL.md) defines the hosted application configuration.
 
-P00-08 established conditional CD after release publication. P00-13 implemented a Vercel/Northflank initial preview adapter, which is now a historical path. The selected multi-service project is configured by P38-01; P38-02/P38-03 own workflow reconciliation and live verification. Pending per-app releases still recover across later merges. Four-environment work does not block this preview; no cloud resource or database migration is created by CI.
+P00-08 established conditional CD after release publication. P00-13 implemented a Vercel/Northflank initial preview adapter, which is now a historical path. The selected multi-service project is configured by P38-01; P38-02 owns one Hobby production-target deployment, P38-04 moves dispatch into the daemon, and P38-03 owns live verification. Pending per-app releases still recover across later merges. Four-environment work does not block this demo; no cloud resource or database migration is created by CI.
 
 ### Future build-once promotion (23 October 2026 clarification)
 

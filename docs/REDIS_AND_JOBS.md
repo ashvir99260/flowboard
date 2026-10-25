@@ -11,16 +11,16 @@ Source snapshot: `1ae096b`, 25 October 2026. PostgreSQL is authoritative for tas
 | Worker → API publication          | Channel `flowboard:events`                                                  | Publish a validated private event envelope to API processes. This is ephemeral Pub/Sub, not replay storage.    |
 | Socket.IO horizontal coordination | Adapter prefix `flowboard:socket.io`, peer event `flowboard.internal.event` | Coordinate API instances and authorized browser invalidations. List rooms include both workspace and list IDs. |
 
-The API uses separate connections for publishing/subscribing and event consumption. The worker separates BullMQ's blocking connection from bounded publishing. Redis subscription mode cannot double as an arbitrary command connection. The browser never connects to Redis.
+The API uses separate connections for socket publishing/subscribing and event consumption. The worker owns outbox dispatch and separates BullMQ's blocking connection from bounded publishing. Redis subscription mode cannot double as an arbitrary command connection. The browser never connects to Redis.
 
-Relevant sources: [job constants](../packages/contracts/src/jobs.ts), [auth limiter](../apps/api/src/modules/auth/runtime.ts), [outbox publisher](../apps/api/src/modules/outbox/outbox.publisher.ts), [worker runtime](../apps/worker/src/activity.worker.ts), [realtime gateway service](../apps/api/src/modules/realtime/realtime.service.ts).
+Relevant sources: [job constants](../packages/contracts/src/jobs.ts), [auth limiter](../apps/api/src/modules/auth/runtime.ts), [outbox publisher](../packages/jobs/src/outbox.publisher.ts), [worker runtime](../apps/worker/src/activity.worker.ts), [realtime gateway service](../apps/api/src/modules/realtime/realtime.service.ts).
 
 ## One task status change, end to end
 
 ```mermaid
 sequenceDiagram
   participant UI as Browser
-  participant API as API transaction and dispatcher
+  participant API as API transaction
   participant DB as PostgreSQL
   participant Q as Redis and BullMQ
   participant W as Worker
@@ -28,8 +28,8 @@ sequenceDiagram
   UI->>API: Authorized task mutation
   API->>DB: Commit task/version and outbox event together
   API-->>UI: Authoritative task response
-  API->>DB: Claim due persisted event
-  API->>Q: Add event job using stable event ID
+  W->>DB: Claim due persisted event
+  W->>Q: Add event job using stable event ID
   Q->>W: Deliver job, possibly more than once
   W->>DB: Reload/verify event; insert status activity idempotently
   W->>Q: Publish validated private event envelope
@@ -42,9 +42,9 @@ sequenceDiagram
 
 A database transaction writes the task mutation, version and outbox row atomically. No event is emitted before commit. The response does not wait for activity delivery; the drawer's activity feed appears asynchronously after the worker processes the event.
 
-The [dispatcher](../apps/api/src/modules/outbox/outbox.service.ts) polls every 500 ms, claims at most 20 due events with 30-second leases and enqueues `{ schemaVersion: 1, eventId, workspaceId }`. PostgreSQL row locking with `SKIP LOCKED` allows competing dispatchers. A successful enqueue marks the event queued for recheck after 30 seconds; it is not considered delivered yet.
+The worker-owned [dispatcher](../packages/jobs/src/outbox.service.ts) polls every 500 ms, claims at most 20 due events with 30-second leases and enqueues `{ schemaVersion: 1, eventId, workspaceId }`. PostgreSQL row locking with `SKIP LOCKED` allows competing dispatchers. A successful enqueue marks the event queued for recheck after 30 seconds; it is not considered delivered yet.
 
-BullMQ uses the event UUID as its stable job ID, five attempts and exponential backoff starting at one second. Jobs are removed on completion/failure. Worker concurrency is four. These values come from [outbox configuration](../apps/api/src/modules/outbox/outbox.config.ts), [queue publication](../apps/api/src/modules/outbox/outbox.publisher.ts) and [worker startup](../apps/worker/src/activity.worker.ts); they are implementation defaults, not throughput guarantees.
+BullMQ uses the event UUID as its stable job ID, five attempts and exponential backoff starting at one second. Jobs are removed on completion/failure. Worker concurrency is four. These values come from [outbox configuration](../packages/jobs/src/outbox.config.ts), [queue publication](../packages/jobs/src/outbox.publisher.ts) and [worker startup](../apps/worker/src/activity.worker.ts); they are implementation defaults, not throughput guarantees.
 
 The [processor](../apps/worker/src/activity.processor.ts) validates job name/ID/schema, claims the stored event, and verifies tenant, aggregate, list and status relationships against PostgreSQL. A `task.updated` status change inserts activity with a unique event identity. An unchanged status or another event type does not fabricate a status-change activity entry. It publishes the validated envelope and only then marks delivery complete.
 
@@ -70,12 +70,12 @@ Local [Compose](../compose.yaml) runs Redis with append-only persistence, `noevi
 
 Each environment must have its own Redis instance and PostgreSQL database/branch. Queue, channel and auth prefixes are fixed in the current code. Using the same Redis server with different logical database numbers does not isolate Pub/Sub channels. Environment-prefix support would be a separate code change, not a runtime setting that exists today.
 
-Keep Redis private and configure API/worker `REDIS_URL` at process startup. Web does not receive it. Redis remains an external managed dependency; provider and persistence capacity are open deployment choices. The selected compute topology is described in [Vercel Services](VERCEL.md).
+Keep Redis private and configure API/worker `REDIS_URL` at process startup. Web does not receive it. Redis uses Upstash Free for the shared demo; TLS, memory and command quotas must be checked before activation. The selected compute topology is described in [Vercel Services](VERCEL.md).
 
 ## Health and operational checks
 
 - API `/health/live` reports process liveness. `/health/ready` checks database and Redis dependencies.
-- Worker `/health/ready` also needs an active BullMQ worker and both queue/publish connections. The Vercel worker daemon receives no public traffic; use daemon process/log monitoring and external functional acceptance rather than expecting Vercel to call this HTTP path.
+- Worker `/health/ready` also needs an active BullMQ consumer and healthy outbox dispatch plus queue/publish connections. The Vercel worker daemon receives no public traffic; use daemon process/log monitoring and external functional acceptance rather than expecting Vercel to call this HTTP path.
 - Readiness is not a queue-drained check. Monitor outbox age/count by state, failed/quarantined events, retries, processing latency, worker health and Redis memory.
 - The 500 ms dispatcher and database readiness probes generate regular PostgreSQL traffic. Consider this when evaluating Neon suspension/usage; no automatic idle optimization is implemented.
 - Test a real status change: REST returns success, one activity is stored, a second authorized client refreshes, and a denied client receives no protected details. Test worker restart and Redis interruption using disposable data.

@@ -18,6 +18,7 @@ const names = [
   'packages/contracts',
   'packages/database',
   'packages/logger',
+  'packages/jobs',
   'packages/ui',
   'packages/forms',
   'packages/openapi',
@@ -66,6 +67,9 @@ async function check(file, code) {
 
 for (const [file, code] of [
   ['apps/api/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
+  ['apps/api/src/example.ts', "export { createOutboxRuntime } from '@flowboard/jobs';"],
+  ['apps/worker/src/example.ts', "import { createOutboxRuntime } from '@flowboard/jobs';"],
+  ['packages/jobs/src/example.ts', "import { createOutboxRepository } from '@flowboard/database';"],
   ['apps/worker/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['packages/database/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['apps/api/src/example.ts', "import { schema } from '@flowboard/contracts';"],
@@ -87,6 +91,7 @@ for (const [file, code] of [
 
 for (const [file, code] of [
   ['packages/logger/src/example.ts', "import { schema } from '@flowboard/contracts';"],
+  ['packages/jobs/src/example.ts', "import { controller } from '../../../apps/api/src/main.js';"],
   ['packages/api-client/src/setup-client.ts', "import { database } from '@flowboard/database';"],
   ['apps/web/src/example.ts', "import { createLogger } from '@flowboard/logger';"],
   ['packages/ui/src/example.ts', "import { createLogger } from '@flowboard/logger';"],

@@ -6,16 +6,17 @@ import ts from 'typescript';
 
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const runtimeDependencies = {
-  api: ['contracts', 'database', 'logger'],
+  api: ['contracts', 'database', 'jobs', 'logger'],
   'api-client': ['contracts'],
   contracts: [],
   database: ['contracts', 'logger'],
   forms: ['contracts', 'ui'],
+  jobs: ['contracts', 'database', 'logger'],
   logger: [],
   openapi: ['contracts'],
   ui: ['contracts'],
   web: ['contracts', 'api-client', 'ui', 'forms'],
-  worker: ['contracts', 'database', 'logger'],
+  worker: ['contracts', 'database', 'jobs', 'logger'],
 };
 
 function workspaceFor(root, filename) {
