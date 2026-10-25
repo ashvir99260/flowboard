@@ -1234,6 +1234,16 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `feat(tasks): support datetime due dates`.
   - **Evidence:** [P28-06](evidence/P28-06.md).
 
+- [x] **P28-07 — Repair development Compose verification**
+  - **Goal:** Restore the live-reload CI gate after the richer seed and make Prisma platform detection consistent through the web image build.
+  - **Requirements:** R131, R151; preserves R24/R27/R82.
+  - **Files:** Web Dockerfile, development Compose verification script, shared workspace configuration tests and evidence.
+  - **Dependencies:** P28-02, P28-06, P02-21.
+  - **Acceptance:** Capture initialized task count and prove it survives source reloads without assuming the older seed size; install OpenSSL before web dependency generation/build; retain non-root runtime and immutable installed dependencies; live app/shared edits and failure recovery pass CI.
+  - **Validation:** G01–G05/G11; failing prerequisite-order regression, root gates and GitHub development Compose verification.
+  - **Commit:** `fix(ci): align development compose checks`.
+  - **Evidence:** [P28-07](evidence/P28-07.md).
+
 ## Selected local enhancements — design before implementation
 
 D155 records the subsequent instruction to complete all local tasks. R156–R160 are selected for sequential design and implementation after P28; establish each safe design before coding. Existing live-hosting gates remain separate.
