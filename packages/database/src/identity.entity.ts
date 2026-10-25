@@ -9,6 +9,7 @@ export interface IdentityUser {
 }
 
 export interface IdentityWorkspace {
+  archivedAt: Date | null;
   createdAt: Date;
   id: string;
   name: string;

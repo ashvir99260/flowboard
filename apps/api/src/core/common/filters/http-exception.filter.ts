@@ -53,7 +53,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
               ? 500
               : exception.code === 'NOT_FOUND'
                 ? 404
-                : ['MEMBERSHIP_REQUIRED', 'FORBIDDEN'].includes(exception.code)
+                : ['MEMBERSHIP_REQUIRED', 'FORBIDDEN', 'WORKSPACE_ARCHIVED'].includes(
+                      exception.code,
+                    )
                   ? 403
                   : 400;
     }

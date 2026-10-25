@@ -2,6 +2,7 @@ import {
   CurrentUserEnvelopeSchema,
   MemberMutationEnvelopeSchema,
   MemberPageSchema,
+  WorkspaceEnvelopeSchema,
   WorkspacePageSchema,
 } from '@flowboard/contracts';
 import { AcceptedInvitationEnvelopeSchema, InvitationEnvelopeSchema } from '@flowboard/contracts';
@@ -18,3 +19,5 @@ export class MemberMutationResponseDto extends createZodDto(MemberMutationEnvelo
 export class InvitationResponseDto extends createZodDto(InvitationEnvelopeSchema) {}
 
 export class AcceptedInvitationResponseDto extends createZodDto(AcceptedInvitationEnvelopeSchema) {}
+
+export class WorkspaceResponseDto extends createZodDto(WorkspaceEnvelopeSchema) {}

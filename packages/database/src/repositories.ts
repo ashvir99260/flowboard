@@ -15,6 +15,7 @@ import { scopeRepository } from './scope-repository.js';
 import { statusRepository } from './status-repository.js';
 import { taskRepository } from './task-repository.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
+import { workspaceRepository } from './workspace-repository.js';
 
 import type { Prisma } from './generated/client.js';
 import type { TenantContext } from './tenant-context.js';
@@ -85,6 +86,7 @@ export interface GrantRecord extends GrantInput {
 }
 
 export interface ReadRepositories {
+  workspace: ReturnType<typeof workspaceRepository>['read'];
   activities: ReturnType<typeof activityRepository>;
   tasks: ReturnType<typeof taskRepository>['read'];
   access: ReturnType<typeof accessRepository>['read'];
@@ -100,6 +102,7 @@ export interface ReadRepositories {
 }
 
 export interface WriteRepositories extends ReadRepositories {
+  workspace: ReturnType<typeof workspaceRepository>['write'];
   tasks: ReturnType<typeof taskRepository>['write'];
   fields: ReturnType<typeof fieldRepository>['write'];
   statuses: ReturnType<typeof statusRepository>['write'];
@@ -305,6 +308,7 @@ export function repositories(
 
   return {
     read: Object.freeze({
+      workspace: workspaceRepository(tx, context, assertActive).read,
       activities: activityRepository(tx, context, assertActive),
       scopes,
       tasks: tasks.read,
@@ -325,6 +329,7 @@ export function repositories(
       }),
     }) satisfies ReadRepositories,
     write: Object.freeze({
+      workspace: workspaceRepository(tx, context, assertActive).write,
       activities: activityRepository(tx, context, assertActive),
       scopes,
       tasks: tasks.write,

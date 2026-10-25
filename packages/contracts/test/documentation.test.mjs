@@ -42,11 +42,15 @@ import {
   UpdateNodeSchema,
   UpdateScopeFieldSchema,
   UpdateTaskSchema,
+  UpdateWorkspaceSchema,
   UserSelfSchema,
   ValidationIssueSchema,
+  WorkspaceEnvelopeSchema,
 } from '../dist/index.js';
 
 const schemas = {
+  UpdateWorkspaceSchema,
+  WorkspaceEnvelopeSchema,
   ActiveWorkspaceSchema,
   MemberPageQuerySchema,
   TaskMutationEnvelopeSchema,

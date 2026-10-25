@@ -42,6 +42,7 @@ erDiagram
     timestamptz updatedAt
   }
   WORKSPACE {
+    timestamptz archivedAt "nullable"
     uuid id PK
     text name
     int configVersion
@@ -222,7 +223,7 @@ Relationships are logical cardinalities; the following key table specifies actua
 | Activity        | `id uuid`, `workspaceId uuid`, `taskId uuid`, `actorId uuid`, `eventId uuid`, `type text`, `payload jsonb`, `createdAt`, `updatedAt`                                                                                                                                                                                                                                              | UUID PK; eventId unique. Payload is a versioned, validated change summary. Actor references User, not Membership, so departure preserves history.                                                                                                                                                        |
 | SeedState       | `version text`, `completedAt`, `updatedAt`, `createdAt`                                                                                                                                                                                                                                                                                                                           | Version PK. Operational seed-completion marker, written with seed data under an initialization lock. No tenant data or credentials live here.                                                                                                                                                            |
 
-The [field reference](FIELD_REFERENCE.md) gives all 135 stored fields their exact storage/wire types, defaults, relations and validation owners. Required names/keys reject empty or whitespace-only strings. String bounds count Unicode code points consistently across contracts/UI/PostgreSQL; JSON byte limits are separate. Do not add global uniqueness to workspace names, node names or field display labels.
+The [field reference](FIELD_REFERENCE.md) gives all 136 stored fields their exact storage/wire types, defaults, relations and validation owners. Required names/keys reject empty or whitespace-only strings. String bounds count Unicode code points consistently across contracts/UI/PostgreSQL; JSON byte limits are separate. Do not add global uniqueness to workspace names, node names or field display labels.
 
 ## Physical tables and audit policy
 
@@ -358,3 +359,5 @@ References: PostgreSQL [constraints](https://www.postgresql.org/docs/current/ddl
 P28-06/D156 changes task dueDate from a calendar DATE to a PostgreSQL timestamptz(3). Requests require an ISO datetime with seconds and Z or an explicit offset, with no more than three fractional digits. Responses normalize to UTC milliseconds. UTC years are bounded to 0001–9999; unset remains null. Calendar custom-field values retain YYYY-MM-DD semantics.
 
 Migration 202610250001 interprets old task dates as midnight UTC regardless of the database session timezone. It also normalizes only the historical task.updated dueDate before/after payload paths, preserving nulls and unrelated event content. Queued jobs reload those records by identity. Task versions and task audit times are preserved; updated outbox rows follow the existing database audit trigger. Restart API and worker consumers together for this contract change. Old date-only mutations and old date-shaped cursors are rejected rather than truncating times.
+
+Workspace root lifecycle uses a nullable archive timestamp without modifying descendant rows. Ordinary identity and tenant transactions reject archived workspaces; the narrow administrator recovery capability rechecks session, membership and version under locks. See [workspace lifecycle](WORKSPACE_LIFECYCLE.md).

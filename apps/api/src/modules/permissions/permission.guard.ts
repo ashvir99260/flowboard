@@ -14,7 +14,7 @@ import {
 } from './permission.service.ts';
 
 import type { PermissionAction } from '@flowboard/contracts';
-import type { IdentitySession } from '@flowboard/database';
+import type { AuthenticatedIdentity, IdentitySession } from '@flowboard/database';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 
 @Injectable()
@@ -43,7 +43,7 @@ export class PermissionGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<{
-      identity?: IdentitySession;
+      identity?: AuthenticatedIdentity;
       params: Record<string, string | undefined>;
     }>();
     const action = this.reflector.getAllAndOverride<PermissionAction>(PermissionActionKey, [
@@ -52,6 +52,15 @@ export class PermissionGuard implements CanActivate {
     ]);
     if (!request.identity)
       throw new ApiException(401, 'UNAUTHENTICATED', 'Authentication required');
+
+    if (action === 'workspace.restore') {
+      const target = UuidSchema.safeParse(request.params.workspaceId);
+      if (!target.success) throw new ApiException(400, 'VALIDATION_FAILED', 'Invalid workspace ID');
+
+      await this.permissions.authorizeWorkspaceRestore(request.identity, target.data.toLowerCase());
+
+      return true;
+    }
 
     const workspace = request.identity.activeWorkspace;
     if (!workspace)

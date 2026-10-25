@@ -6,6 +6,7 @@
         "description": "Joined workspace and role; current session selection is unchanged.",
         "example": {
           "data": {
+            "archivedAt": null,
             "createdAt": "2026-10-23T10:00:00.000Z",
             "id": "10000000-0000-4000-8000-000000000002",
             "name": "Alex workspace",
@@ -18,6 +19,7 @@
             "additionalProperties": false,
             "description": "Selected workspace and the user’s current membership role.",
             "example": {
+              "archivedAt": null,
               "createdAt": "2026-10-23T10:00:00.000Z",
               "id": "10000000-0000-4000-8000-000000000002",
               "name": "Alex workspace",
@@ -25,6 +27,15 @@
               "updatedAt": "2026-10-23T10:00:00.000Z"
             },
             "properties": {
+              "archivedAt": {
+                "description": "Root archive timestamp, or null when live. Archived selections retain identity for recovery only.",
+                "example": null,
+                "format": "date-time",
+                "nullable": true,
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Workspace archived at",
+                "type": "string"
+              },
               "createdAt": {
                 "description": "Server-owned creation timestamp in UTC with millisecond precision.",
                 "example": "2026-10-23T10:00:00.000Z",
@@ -69,6 +80,7 @@
               }
             },
             "required": [
+              "archivedAt",
               "createdAt",
               "id",
               "name",
@@ -935,6 +947,7 @@
         "example": {
           "data": {
             "activeWorkspace": {
+              "archivedAt": null,
               "createdAt": "2026-10-23T10:00:00.000Z",
               "id": "10000000-0000-4000-8000-000000000002",
               "name": "Alex workspace",
@@ -956,6 +969,7 @@
             "description": "Safe current user and selected workspace projection.",
             "example": {
               "activeWorkspace": {
+                "archivedAt": null,
                 "createdAt": "2026-10-23T10:00:00.000Z",
                 "id": "10000000-0000-4000-8000-000000000002",
                 "name": "Alex workspace",
@@ -975,6 +989,7 @@
                 "additionalProperties": false,
                 "description": "Selected workspace with current membership, or null if that membership is gone.",
                 "example": {
+                  "archivedAt": null,
                   "createdAt": "2026-10-23T10:00:00.000Z",
                   "id": "10000000-0000-4000-8000-000000000002",
                   "name": "Alex workspace",
@@ -983,6 +998,15 @@
                 },
                 "nullable": true,
                 "properties": {
+                  "archivedAt": {
+                    "description": "Root archive timestamp, or null when live. Archived selections retain identity for recovery only.",
+                    "example": null,
+                    "format": "date-time",
+                    "nullable": true,
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Workspace archived at",
+                    "type": "string"
+                  },
                   "createdAt": {
                     "description": "Server-owned creation timestamp in UTC with millisecond precision.",
                     "example": "2026-10-23T10:00:00.000Z",
@@ -1027,6 +1051,7 @@
                   }
                 },
                 "required": [
+                  "archivedAt",
                   "createdAt",
                   "id",
                   "name",
@@ -1169,6 +1194,7 @@
                   "REFRESH_REUSED",
                   "FORBIDDEN",
                   "MEMBERSHIP_REQUIRED",
+                  "WORKSPACE_ARCHIVED",
                   "MEMBERSHIP_EXISTS",
                   "ORIGIN_REJECTED",
                   "NOT_FOUND",
@@ -4706,6 +4732,7 @@
           "data": {
             "accessToken": "example-only.access-token.not-valid",
             "activeWorkspace": {
+              "archivedAt": null,
               "createdAt": "2026-10-23T10:00:00.000Z",
               "id": "10000000-0000-4000-8000-000000000002",
               "name": "Alex workspace",
@@ -4729,6 +4756,7 @@
             "example": {
               "accessToken": "example-only.access-token.not-valid",
               "activeWorkspace": {
+                "archivedAt": null,
                 "createdAt": "2026-10-23T10:00:00.000Z",
                 "id": "10000000-0000-4000-8000-000000000002",
                 "name": "Alex workspace",
@@ -4756,6 +4784,7 @@
                 "additionalProperties": false,
                 "description": "Selected workspace, or null when the account has no memberships. Member routes require a workspace.",
                 "example": {
+                  "archivedAt": null,
                   "createdAt": "2026-10-23T10:00:00.000Z",
                   "id": "10000000-0000-4000-8000-000000000002",
                   "name": "Alex workspace",
@@ -4764,6 +4793,15 @@
                 },
                 "nullable": true,
                 "properties": {
+                  "archivedAt": {
+                    "description": "Root archive timestamp, or null when live. Archived selections retain identity for recovery only.",
+                    "example": null,
+                    "format": "date-time",
+                    "nullable": true,
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                    "title": "Workspace archived at",
+                    "type": "string"
+                  },
                   "createdAt": {
                     "description": "Server-owned creation timestamp in UTC with millisecond precision.",
                     "example": "2026-10-23T10:00:00.000Z",
@@ -4808,6 +4846,7 @@
                   }
                 },
                 "required": [
+                  "archivedAt",
                   "createdAt",
                   "id",
                   "name",
@@ -6516,6 +6555,38 @@
         "title": "Update task request",
         "type": "object"
       },
+      "UpdateWorkspaceDto": {
+        "additionalProperties": false,
+        "description": "Administrator rename with an optimistic configuration precondition.",
+        "example": {
+          "expectedConfigVersion": 1,
+          "name": "Engineering"
+        },
+        "properties": {
+          "expectedConfigVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Trimmed workspace display name, up to 120 characters.",
+            "example": "Engineering",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Workspace name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedConfigVersion",
+          "name"
+        ],
+        "title": "Rename workspace request",
+        "type": "object"
+      },
       "UpsertGrantDto": {
         "additionalProperties": false,
         "description": "Admin-only grant change with workspace revision precondition.",
@@ -6576,15 +6647,24 @@
             "example": [],
             "items": {
               "additionalProperties": false,
-              "description": "Selected workspace and the user’s current membership role.",
-              "example": {
-                "createdAt": "2026-10-23T10:00:00.000Z",
-                "id": "10000000-0000-4000-8000-000000000002",
-                "name": "Alex workspace",
-                "role": "admin",
-                "updatedAt": "2026-10-23T10:00:00.000Z"
-              },
               "properties": {
+                "archivedAt": {
+                  "description": "Root archive timestamp, or null when live. Archived selections retain identity for recovery only.",
+                  "example": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                  "title": "Workspace archived at",
+                  "type": "string"
+                },
+                "configVersion": {
+                  "description": "Workspace configuration revision. Mutations must send the version last read.",
+                  "example": 1,
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "title": "Configuration version",
+                  "type": "integer"
+                },
                 "createdAt": {
                   "description": "Server-owned creation timestamp in UTC with millisecond precision.",
                   "example": "2026-10-23T10:00:00.000Z",
@@ -6629,13 +6709,14 @@
                 }
               },
               "required": [
+                "archivedAt",
                 "createdAt",
                 "id",
                 "name",
                 "role",
-                "updatedAt"
+                "updatedAt",
+                "configVersion"
               ],
-              "title": "Active workspace",
               "type": "object"
             },
             "maxItems": 100,
@@ -6679,6 +6760,109 @@
           "pageInfo"
         ],
         "title": "Workspace page",
+        "type": "object"
+      },
+      "WorkspaceResponseDto_Output": {
+        "additionalProperties": false,
+        "description": "Workspace metadata and authoritative configuration/data revisions.",
+        "example": {
+          "configVersion": 1,
+          "data": {
+            "archivedAt": null,
+            "createdAt": "2026-10-23T10:00:00.000Z",
+            "id": "10000000-0000-4000-8000-000000000002",
+            "name": "Alex workspace",
+            "updatedAt": "2026-10-23T10:00:00.000Z"
+          },
+          "dataVersion": 1
+        },
+        "properties": {
+          "configVersion": {
+            "description": "Workspace configuration revision. Mutations must send the version last read.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Configuration version",
+            "type": "integer"
+          },
+          "data": {
+            "additionalProperties": false,
+            "description": "Safe workspace root metadata. Archiving retains descendants and history.",
+            "example": {
+              "archivedAt": null,
+              "createdAt": "2026-10-23T10:00:00.000Z",
+              "id": "10000000-0000-4000-8000-000000000002",
+              "name": "Alex workspace",
+              "updatedAt": "2026-10-23T10:00:00.000Z"
+            },
+            "properties": {
+              "archivedAt": {
+                "description": "Root archive timestamp, or null when live. Archived selections retain identity for recovery only.",
+                "example": null,
+                "format": "date-time",
+                "nullable": true,
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Workspace archived at",
+                "type": "string"
+              },
+              "createdAt": {
+                "description": "Server-owned creation timestamp in UTC with millisecond precision.",
+                "example": "2026-10-23T10:00:00.000Z",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Created at",
+                "type": "string"
+              },
+              "id": {
+                "description": "Identifier of the workspace selected for this login family.",
+                "example": "10000000-0000-4000-8000-000000000002",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "title": "Workspace ID",
+                "type": "string"
+              },
+              "name": {
+                "description": "Display name of the selected workspace.",
+                "example": "Alex workspace",
+                "maxLength": 120,
+                "minLength": 1,
+                "title": "Workspace name",
+                "type": "string"
+              },
+              "updatedAt": {
+                "description": "Server-owned last modification timestamp in UTC with millisecond precision.",
+                "example": "2026-10-23T10:00:00.000Z",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$",
+                "title": "Updated at",
+                "type": "string"
+              }
+            },
+            "required": [
+              "archivedAt",
+              "createdAt",
+              "id",
+              "name",
+              "updatedAt"
+            ],
+            "title": "Workspace root",
+            "type": "object"
+          },
+          "dataVersion": {
+            "description": "Current workspace data revision.",
+            "example": 1,
+            "maximum": 2147483647,
+            "minimum": 1,
+            "title": "Data version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "configVersion",
+          "dataVersion"
+        ],
+        "title": "Workspace root response",
         "type": "object"
       }
     },
@@ -6983,6 +7167,7 @@
                   "data": {
                     "accessToken": "example-only.access-token.not-valid",
                     "activeWorkspace": {
+                      "archivedAt": null,
                       "createdAt": "2026-10-23T10:00:00.000Z",
                       "id": "10000000-0000-4000-8000-000000000002",
                       "name": "Alex workspace",
@@ -7686,6 +7871,7 @@
                   "data": {
                     "accessToken": "example-only.access-token.not-valid",
                     "activeWorkspace": {
+                      "archivedAt": null,
                       "createdAt": "2026-10-23T10:00:00.000Z",
                       "id": "10000000-0000-4000-8000-000000000002",
                       "name": "Alex workspace",
@@ -8100,6 +8286,7 @@
                   "data": {
                     "accessToken": "example-only.access-token.not-valid",
                     "activeWorkspace": {
+                      "archivedAt": null,
                       "createdAt": "2026-10-23T10:00:00.000Z",
                       "id": "10000000-0000-4000-8000-000000000002",
                       "name": "Alex workspace",
@@ -8482,6 +8669,7 @@
                   "data": {
                     "accessToken": "example-only.access-token.not-valid",
                     "activeWorkspace": {
+                      "archivedAt": null,
                       "createdAt": "2026-10-23T10:00:00.000Z",
                       "id": "10000000-0000-4000-8000-000000000002",
                       "name": "Alex workspace",
@@ -8870,6 +9058,7 @@
               "application/json": {
                 "example": {
                   "data": {
+                    "archivedAt": null,
                     "createdAt": "2026-10-23T10:00:00.000Z",
                     "id": "10000000-0000-4000-8000-000000000002",
                     "name": "Alex workspace",
@@ -10322,6 +10511,7 @@
                 "example": {
                   "data": {
                     "activeWorkspace": {
+                      "archivedAt": null,
                       "createdAt": "2026-10-23T10:00:00.000Z",
                       "id": "10000000-0000-4000-8000-000000000002",
                       "name": "Alex workspace",
@@ -17165,13 +17355,710 @@
         ]
       }
     },
+    "/v1/workspaces/{workspaceId}": {
+      "get": {
+        "description": "Read safe live root metadata and the current optimistic revisions.",
+        "operationId": "getWorkspace",
+        "parameters": [
+          {
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
+            "in": "path",
+            "name": "workspaceId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000002",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Workspace ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "data": {
+                    "archivedAt": null,
+                    "createdAt": "2026-10-23T10:00:00.000Z",
+                    "id": "10000000-0000-4000-8000-000000000002",
+                    "name": "Engineering",
+                    "updatedAt": "2026-10-23T10:00:00.000Z"
+                  },
+                  "dataVersion": 1
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto_Output"
+                }
+              }
+            },
+            "description": "Safe workspace metadata and authoritative revisions."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Invalid email or password"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Email or password is incorrect. The same response is used for unknown accounts.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The current membership cannot perform this action."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Member not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The workspace or member is not available to the caller."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Revision, last-administrator or membership conflict. Read current state before retrying."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Read workspace root",
+        "tags": [
+          "Workspaces"
+        ]
+      },
+      "patch": {
+        "description": "Current administrators rename the root under its lock; unchanged names retain revisions.",
+        "operationId": "updateWorkspace",
+        "parameters": [
+          {
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
+            "in": "path",
+            "name": "workspaceId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000002",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Workspace ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "change": {
+                  "summary": "Rename workspace",
+                  "value": {
+                    "expectedConfigVersion": 1,
+                    "name": "Engineering"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceDto"
+              }
+            }
+          },
+          "description": "Last-read configuration revision and requested change.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "data": {
+                    "archivedAt": null,
+                    "createdAt": "2026-10-23T10:00:00.000Z",
+                    "id": "10000000-0000-4000-8000-000000000002",
+                    "name": "Engineering",
+                    "updatedAt": "2026-10-23T10:00:00.000Z"
+                  },
+                  "dataVersion": 1
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto_Output"
+                }
+              }
+            },
+            "description": "Safe workspace metadata and authoritative revisions."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Invalid email or password"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Email or password is incorrect. The same response is used for unknown accounts.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The current membership cannot perform this action."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Member not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The workspace or member is not available to the caller."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Revision, last-administrator or membership conflict. Read current state before retrying."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Rename workspace",
+        "tags": [
+          "Workspaces"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/archive": {
+      "post": {
+        "description": "Current administrators archive only the root, preserving descendants and history. Ordinary access is then denied.",
+        "operationId": "archiveWorkspace",
+        "parameters": [
+          {
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
+            "in": "path",
+            "name": "workspaceId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000002",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Workspace ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "change": {
+                  "summary": "Archive workspace",
+                  "value": {
+                    "expectedConfigVersion": 1
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ExpectedConfigDto"
+              }
+            }
+          },
+          "description": "Last-read configuration revision and requested change.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 2,
+                  "data": {
+                    "archivedAt": "2026-10-25T10:00:00.000Z",
+                    "createdAt": "2026-10-23T10:00:00.000Z",
+                    "id": "10000000-0000-4000-8000-000000000002",
+                    "name": "Engineering",
+                    "updatedAt": "2026-10-23T10:00:00.000Z"
+                  },
+                  "dataVersion": 2
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto_Output"
+                }
+              }
+            },
+            "description": "Safe workspace metadata and authoritative revisions."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Invalid email or password"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Email or password is incorrect. The same response is used for unknown accounts.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The current membership cannot perform this action."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Member not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The workspace or member is not available to the caller."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Revision, last-administrator or membership conflict. Read current state before retrying."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Archive workspace",
+        "tags": [
+          "Workspaces"
+        ]
+      }
+    },
     "/v1/workspaces/{workspaceId}/invitations": {
       "post": {
         "description": "Create a 48-hour single-use token for an exact normalized email and target role. Store only its digest; the administrator receives the raw token once for manual sharing.",
         "operationId": "createWorkspaceInvitation",
         "parameters": [
           {
-            "description": "Must equal the authenticated session’s active workspace.",
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
             "in": "path",
             "name": "workspaceId",
             "required": true,
@@ -17409,7 +18296,7 @@
         "operationId": "listWorkspaceMembers",
         "parameters": [
           {
-            "description": "Must equal the authenticated session’s active workspace.",
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
             "in": "path",
             "name": "workspaceId",
             "required": true,
@@ -17663,7 +18550,7 @@
         "operationId": "addWorkspaceMember",
         "parameters": [
           {
-            "description": "Must equal the authenticated session’s active workspace.",
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
             "in": "path",
             "name": "workspaceId",
             "required": true,
@@ -17903,7 +18790,7 @@
         "operationId": "removeWorkspaceMember",
         "parameters": [
           {
-            "description": "Must equal the authenticated session’s active workspace.",
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
             "in": "path",
             "name": "workspaceId",
             "required": true,
@@ -18135,7 +19022,7 @@
         "operationId": "updateWorkspaceMember",
         "parameters": [
           {
-            "description": "Must equal the authenticated session’s active workspace.",
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
             "in": "path",
             "name": "workspaceId",
             "required": true,
@@ -18376,6 +19263,245 @@
           }
         ],
         "summary": "Change a workspace member’s role",
+        "tags": [
+          "Workspaces"
+        ]
+      }
+    },
+    "/v1/workspaces/{workspaceId}/restore": {
+      "post": {
+        "description": "Session-only recovery by a current target administrator. Recheck live family and revision under user then workspace locks; selection is unchanged.",
+        "operationId": "restoreWorkspace",
+        "parameters": [
+          {
+            "description": "Ordinary routes require the active workspace; restore may target another workspace the caller currently administers.",
+            "in": "path",
+            "name": "workspaceId",
+            "required": true,
+            "schema": {
+              "example": "10000000-0000-4000-8000-000000000002",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "title": "Workspace ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "change": {
+                  "summary": "Restore workspace",
+                  "value": {
+                    "expectedConfigVersion": 1
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ExpectedConfigDto"
+              }
+            }
+          },
+          "description": "Last-read configuration revision and requested change.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "configVersion": 1,
+                  "data": {
+                    "archivedAt": null,
+                    "createdAt": "2026-10-23T10:00:00.000Z",
+                    "id": "10000000-0000-4000-8000-000000000002",
+                    "name": "Engineering",
+                    "updatedAt": "2026-10-23T10:00:00.000Z"
+                  },
+                  "dataVersion": 1
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto_Output"
+                }
+              }
+            },
+            "description": "Safe workspace metadata and authoritative revisions."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_FAILED",
+                    "details": [
+                      {
+                        "code": "unrecognized_keys",
+                        "message": "Unexpected request fields",
+                        "path": []
+                      }
+                    ],
+                    "message": "Request validation failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The body or query failed validation. Details identify invalid fields or unexpected keys.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "message": "Invalid email or password"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Email or password is incorrect. The same response is used for unknown accounts.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Access denied"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The current membership cannot perform this action."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Member not found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "The workspace or member is not available to the caller."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFIG_CONFLICT",
+                    "message": "Workspace configuration changed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "Revision, last-administrator or membership conflict. Read current state before retrying."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "An internal error occurred"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "An unexpected internal failure occurred. The response omits internal details and credentials.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "message": "Required dependencies unavailable"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto_Output"
+                }
+              }
+            },
+            "description": "A required dependency is unavailable or did not respond before its timeout.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server-generated identifier for correlating this request without logging credentials.",
+                "example": "10000000-0000-4000-8000-000000000003",
+                "schema": {
+                  "description": "A unique request identifier.",
+                  "format": "uuid",
+                  "title": "Request ID",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Restore workspace",
         "tags": [
           "Workspaces"
         ]

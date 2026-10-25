@@ -25,6 +25,7 @@ import { SessionRoute } from '../../core/common/decorators/session-route.decorat
 import { EmptyQueryDto } from '../../core/common/dto/empty-query.dto.ts';
 import { ErrorResponseDto } from '../../core/common/dto/error-response.dto.ts';
 import { documentedError } from '../../core/common/swagger/api-documentation.ts';
+import { serializeWorkspace } from '../../core/utils/serialize-workspace.ts';
 import { WorkspacePermission } from '../permissions/permission.decorator.ts';
 
 import {
@@ -35,6 +36,7 @@ import {
   MemberPageQueryDto,
   MemberParamsDto,
   UpdateMemberDto,
+  UpdateWorkspaceDto,
   WorkspacePageQueryDto,
   WorkspaceParamsDto,
 } from './workspaces.request.dto.ts';
@@ -45,6 +47,7 @@ import {
   MemberMutationResponseDto,
   MemberPageResponseDto,
   WorkspacePageResponseDto,
+  WorkspaceResponseDto,
 } from './workspaces.response.dto.ts';
 import { WorkspacesService } from './workspaces.service.ts';
 
@@ -52,6 +55,7 @@ import type {
   CurrentUserEnvelope,
   MemberMutationEnvelope,
   MemberPage,
+  WorkspaceEnvelope,
   WorkspacePage,
 } from '@flowboard/contracts';
 import type { AcceptedInvitationEnvelope, InvitationEnvelope } from '@flowboard/contracts';
@@ -85,6 +89,171 @@ import type { AuthenticatedIdentity, IdentitySession } from '@flowboard/database
 @Controller()
 export class WorkspacesController {
   constructor(private readonly workspaces: WorkspacesService) {}
+  @Get('workspaces/:workspaceId')
+  @WorkspacePermission('workspace.read')
+  @ApiOperation({
+    description: 'Read safe live root metadata and the current optimistic revisions.',
+    operationId: 'getWorkspace',
+    summary: 'Read workspace root',
+  })
+  @ZodResponse({
+    status: 200,
+    type: WorkspaceResponseDto,
+    description: 'Safe workspace metadata and authoritative revisions.',
+  })
+  @ApiResponse({
+    status: 200,
+    type: WorkspaceResponseDto.Output,
+    example: {
+      data: {
+        archivedAt: null,
+        createdAt: '2026-10-23T10:00:00.000Z',
+        id: AuthExamples.session.data.activeWorkspace.id,
+        name: 'Engineering',
+        updatedAt: '2026-10-23T10:00:00.000Z',
+      },
+      configVersion: 1,
+      dataVersion: 1,
+    },
+  })
+  getWorkspace(
+    @Param() params: WorkspaceParamsDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ): Promise<WorkspaceEnvelope> {
+    return this.workspaces.getWorkspace(request.identity, params.workspaceId);
+  }
+  @Patch('workspaces/:workspaceId')
+  @WorkspacePermission('workspace.manage')
+  @ApiOperation({
+    description:
+      'Current administrators rename the root under its lock; unchanged names retain revisions.',
+    operationId: 'updateWorkspace',
+    summary: 'Rename workspace',
+  })
+  @ApiBody({
+    type: UpdateWorkspaceDto,
+    description: 'Last-read configuration revision and requested change.',
+    examples: {
+      change: {
+        summary: 'Rename workspace',
+        value: { expectedConfigVersion: 1, name: 'Engineering' },
+      },
+    },
+  })
+  @ZodResponse({
+    status: 200,
+    type: WorkspaceResponseDto,
+    description: 'Safe workspace metadata and authoritative revisions.',
+  })
+  @ApiResponse({
+    status: 200,
+    type: WorkspaceResponseDto.Output,
+    example: {
+      data: {
+        archivedAt: null,
+        createdAt: '2026-10-23T10:00:00.000Z',
+        id: AuthExamples.session.data.activeWorkspace.id,
+        name: 'Engineering',
+        updatedAt: '2026-10-23T10:00:00.000Z',
+      },
+      configVersion: 1,
+      dataVersion: 1,
+    },
+  })
+  updateWorkspace(
+    @Param() params: WorkspaceParamsDto,
+    @Body() input: UpdateWorkspaceDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ): Promise<WorkspaceEnvelope> {
+    return this.workspaces.updateWorkspace(request.identity, params.workspaceId, input);
+  }
+  @Post('workspaces/:workspaceId/archive')
+  @HttpCode(200)
+  @WorkspacePermission('workspace.manage')
+  @ApiOperation({
+    description:
+      'Current administrators archive only the root, preserving descendants and history. Ordinary access is then denied.',
+    operationId: 'archiveWorkspace',
+    summary: 'Archive workspace',
+  })
+  @ApiBody({
+    type: ExpectedConfigDto,
+    description: 'Last-read configuration revision and requested change.',
+    examples: { change: { summary: 'Archive workspace', value: { expectedConfigVersion: 1 } } },
+  })
+  @ZodResponse({
+    status: 200,
+    type: WorkspaceResponseDto,
+    description: 'Safe workspace metadata and authoritative revisions.',
+  })
+  @ApiResponse({
+    status: 200,
+    type: WorkspaceResponseDto.Output,
+    example: {
+      data: {
+        archivedAt: '2026-10-25T10:00:00.000Z',
+        createdAt: '2026-10-23T10:00:00.000Z',
+        id: AuthExamples.session.data.activeWorkspace.id,
+        name: 'Engineering',
+        updatedAt: '2026-10-23T10:00:00.000Z',
+      },
+      configVersion: 2,
+      dataVersion: 2,
+    },
+  })
+  archiveWorkspace(
+    @Param() params: WorkspaceParamsDto,
+    @Body() input: ExpectedConfigDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: IdentitySession },
+  ): Promise<WorkspaceEnvelope> {
+    return this.workspaces.archiveWorkspace(request.identity, params.workspaceId, input);
+  }
+  @Post('workspaces/:workspaceId/restore')
+  @HttpCode(200)
+  @SessionRoute()
+  @WorkspacePermission('workspace.restore')
+  @ApiOperation({
+    description:
+      'Session-only recovery by a current target administrator. Recheck live family and revision under user then workspace locks; selection is unchanged.',
+    operationId: 'restoreWorkspace',
+    summary: 'Restore workspace',
+  })
+  @ApiBody({
+    type: ExpectedConfigDto,
+    description: 'Last-read configuration revision and requested change.',
+    examples: { change: { summary: 'Restore workspace', value: { expectedConfigVersion: 1 } } },
+  })
+  @ZodResponse({
+    status: 200,
+    type: WorkspaceResponseDto,
+    description: 'Safe workspace metadata and authoritative revisions.',
+  })
+  @ApiResponse({
+    status: 200,
+    type: WorkspaceResponseDto.Output,
+    example: {
+      data: {
+        archivedAt: null,
+        createdAt: '2026-10-23T10:00:00.000Z',
+        id: AuthExamples.session.data.activeWorkspace.id,
+        name: 'Engineering',
+        updatedAt: '2026-10-23T10:00:00.000Z',
+      },
+      configVersion: 1,
+      dataVersion: 1,
+    },
+  })
+  restoreWorkspace(
+    @Param() params: WorkspaceParamsDto,
+    @Body() input: ExpectedConfigDto,
+    @Query(new ZodValidationPipe(EmptyQueryDto)) _query: Record<string, never>,
+    @Req() request: { identity: AuthenticatedIdentity },
+  ): Promise<WorkspaceEnvelope> {
+    return this.workspaces.restoreWorkspace(request.identity, params.workspaceId, input);
+  }
   @Post('workspaces/:workspaceId/invitations')
   @WorkspacePermission('member.manage')
   @ApiOperation({
@@ -362,7 +531,10 @@ export class WorkspacesController {
     });
 
     return {
-      data: { user: audit(user), activeWorkspace: activeWorkspace ? audit(activeWorkspace) : null },
+      data: {
+        user: audit(user),
+        activeWorkspace: activeWorkspace ? serializeWorkspace(activeWorkspace) : null,
+      },
     };
   }
 }

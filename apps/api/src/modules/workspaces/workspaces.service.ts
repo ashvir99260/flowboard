@@ -4,6 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { ApiException } from '../../core/common/errors/api-exception.ts';
 import { ApiLoggerKey } from '../../core/common/tokens/logger.token.ts';
+import { serializeWorkspace } from '../../core/utils/serialize-workspace.ts';
 import { PermissionService } from '../permissions/permission.service.ts';
 
 import { WorkspacesRuntimeKey } from './workspaces.runtime.ts';
@@ -14,6 +15,8 @@ import type {
   MemberMutationEnvelope,
   MemberPage,
   UpdateMember,
+  UpdateWorkspace,
+  WorkspaceEnvelope,
   WorkspacePage,
 } from '@flowboard/contracts';
 import type {
@@ -51,25 +54,79 @@ export class WorkspacesService {
     identity: IdentitySession,
     workspaceId: string,
     operation: (store: WriteRepositories) => Promise<T>,
+    action: 'member.manage' | 'workspace.manage' = 'member.manage',
   ) {
+    const active = identity.activeWorkspace;
+    if (!active)
+      throw new ApiException(403, 'MEMBERSHIP_REQUIRED', 'Workspace membership required');
+
+    this.permissions.assert({ role: active.role, workspaceId: active.id }, action, workspaceId);
+
+    return this.logger.observe('workspace.membership.write', () =>
+      this.resources().database.write(
+        { actorUserId: identity.user.id, workspaceId },
+        async (store) => {
+          this.permissions.assert(store.context, action, workspaceId);
+
+          return operation(store);
+        },
+      ),
+    );
+  }
+  async getWorkspace(identity: IdentitySession, workspaceId: string): Promise<WorkspaceEnvelope> {
     const active = identity.activeWorkspace;
     if (!active)
       throw new ApiException(403, 'MEMBERSHIP_REQUIRED', 'Workspace membership required');
 
     this.permissions.assert(
       { role: active.role, workspaceId: active.id },
-      'member.manage',
+      'workspace.read',
       workspaceId,
     );
 
-    return this.logger.observe('workspace.membership.write', () =>
-      this.resources().database.write(
-        { actorUserId: identity.user.id, workspaceId },
-        async (store) => {
-          this.permissions.assert(store.context, 'member.manage', workspaceId);
+    return this.resources().database.read(
+      { actorUserId: identity.user.id, workspaceId },
+      async (view) => {
+        this.permissions.assert(view.context, 'workspace.read', workspaceId);
 
-          return operation(store);
+        return view.workspace.snapshot();
+      },
+    );
+  }
+  async updateWorkspace(identity: IdentitySession, workspaceId: string, input: UpdateWorkspace) {
+    return this.write(
+      identity,
+      workspaceId,
+      (store) => store.workspace.rename(input),
+      'workspace.manage',
+    );
+  }
+  async archiveWorkspace(
+    identity: IdentitySession,
+    workspaceId: string,
+    input: { expectedConfigVersion: number },
+  ) {
+    return this.write(
+      identity,
+      workspaceId,
+      (store) => store.workspace.archive(input),
+      'workspace.manage',
+    );
+  }
+  async restoreWorkspace(
+    identity: AuthenticatedIdentity,
+    workspaceId: string,
+    input: { expectedConfigVersion: number },
+  ) {
+    return this.logger.observe('workspace.restore', () =>
+      this.resources().identities.restoreWorkspace(
+        {
+          userId: identity.user.id,
+          familyId: identity.familyId,
+          workspaceId: identity.selectedWorkspaceId,
         },
+        workspaceId,
+        input,
       ),
     );
   }
@@ -142,7 +199,7 @@ export class WorkspacesService {
       ),
     );
 
-    return { data: serializeAudit(workspace) };
+    return { data: serializeWorkspace(workspace) };
   }
   async listWorkspaces(
     identity: IdentitySession,
@@ -176,7 +233,7 @@ export class WorkspacesService {
         : null;
 
     return {
-      items: items.map(({ workspace }) => serializeAudit(workspace)),
+      items: items.map(({ workspace }) => serializeWorkspace(workspace)),
       pageInfo: { hasNextPage: nextCursor !== null, nextCursor },
     };
   }

@@ -43,6 +43,13 @@ export function createDatabase(connectionString: string, logger: Logger = Silent
           if (!membership)
             throw new DatabaseError('MEMBERSHIP_REQUIRED', 'Workspace membership required');
 
+          const workspace = await tx.workspace.findUnique({
+            where: { id: request.workspaceId },
+            select: { archivedAt: true },
+          });
+          if (workspace?.archivedAt)
+            throw new DatabaseError('WORKSPACE_ARCHIVED', 'Workspace is archived');
+
           let active = true;
           const store = repositories(tx, { ...request, role: membership.role }, () => {
             if (!active) throw new DatabaseError('INTERNAL_ERROR', 'Transaction is closed');

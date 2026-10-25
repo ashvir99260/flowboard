@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateScopeFieldData, CreateScopeFieldErrors, CreateScopeFieldResponses, CreateScopeStatusData, CreateScopeStatusErrors, CreateScopeStatusResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetListResolvedFieldsData, GetListResolvedFieldsErrors, GetListResolvedFieldsResponses, GetListResolvedStatusesData, GetListResolvedStatusesErrors, GetListResolvedStatusesResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, GetTaskData, GetTaskErrors, GetTaskResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListScopeFieldsData, ListScopeFieldsErrors, ListScopeFieldsResponses, ListScopeStatusesData, ListScopeStatusesErrors, ListScopeStatusesResponses, ListTaskActivityData, ListTaskActivityErrors, ListTaskActivityResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, MoveNodeData, MoveNodeErrors, MoveNodeResponses, MoveTaskData, MoveTaskErrors, MoveTaskResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveScopeFieldData, RemoveScopeFieldErrors, RemoveScopeFieldResponses, RemoveScopeStatusData, RemoveScopeStatusErrors, RemoveScopeStatusResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, ReorderTaskData, ReorderTaskErrors, ReorderTaskResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateScopeFieldData, UpdateScopeFieldErrors, UpdateScopeFieldResponses, UpdateScopeStatusData, UpdateScopeStatusErrors, UpdateScopeStatusResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationErrors, AcceptWorkspaceInvitationResponses, AddWorkspaceMemberData, AddWorkspaceMemberErrors, AddWorkspaceMemberResponses, ArchiveNodeData, ArchiveNodeErrors, ArchiveNodeResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveWorkspaceData, ArchiveWorkspaceErrors, ArchiveWorkspaceResponses, CreateNodeData, CreateNodeErrors, CreateNodeResponses, CreateScopeFieldData, CreateScopeFieldErrors, CreateScopeFieldResponses, CreateScopeStatusData, CreateScopeStatusErrors, CreateScopeStatusResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateWorkspaceInvitationData, CreateWorkspaceInvitationErrors, CreateWorkspaceInvitationResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetListResolvedFieldsData, GetListResolvedFieldsErrors, GetListResolvedFieldsResponses, GetListResolvedStatusesData, GetListResolvedStatusesErrors, GetListResolvedStatusesResponses, GetLivenessData, GetLivenessErrors, GetLivenessResponses, GetNodeData, GetNodeErrors, GetNodeResponses, GetReadinessData, GetReadinessErrors, GetReadinessResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetWorkspaceData, GetWorkspaceErrors, GetWorkspaceResponses, ListNodeGrantsData, ListNodeGrantsErrors, ListNodeGrantsResponses, ListScopeFieldsData, ListScopeFieldsErrors, ListScopeFieldsResponses, ListScopeStatusesData, ListScopeStatusesErrors, ListScopeStatusesResponses, ListTaskActivityData, ListTaskActivityErrors, ListTaskActivityResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListVisibleTreeData, ListVisibleTreeErrors, ListVisibleTreeResponses, ListWorkspaceMembersData, ListWorkspaceMembersErrors, ListWorkspaceMembersResponses, ListWorkspacesData, ListWorkspacesErrors, ListWorkspacesResponses, LogInData, LogInErrors, LogInResponses, LogOutData, LogOutErrors, LogOutResponses, MoveNodeData, MoveNodeErrors, MoveNodeResponses, MoveTaskData, MoveTaskErrors, MoveTaskResponses, RefreshSessionData, RefreshSessionErrors, RefreshSessionResponses, RemoveNodeGrantData, RemoveNodeGrantErrors, RemoveNodeGrantResponses, RemoveScopeFieldData, RemoveScopeFieldErrors, RemoveScopeFieldResponses, RemoveScopeStatusData, RemoveScopeStatusErrors, RemoveScopeStatusResponses, RemoveWorkspaceMemberData, RemoveWorkspaceMemberErrors, RemoveWorkspaceMemberResponses, ReorderNodeData, ReorderNodeErrors, ReorderNodeResponses, ReorderTaskData, ReorderTaskErrors, ReorderTaskResponses, RestoreWorkspaceData, RestoreWorkspaceErrors, RestoreWorkspaceResponses, SignUpData, SignUpErrors, SignUpResponses, SwitchWorkspaceData, SwitchWorkspaceErrors, SwitchWorkspaceResponses, UpdateNodeData, UpdateNodeErrors, UpdateNodeResponses, UpdateScopeFieldData, UpdateScopeFieldErrors, UpdateScopeFieldResponses, UpdateScopeStatusData, UpdateScopeStatusErrors, UpdateScopeStatusResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateWorkspaceData, UpdateWorkspaceErrors, UpdateWorkspaceMemberData, UpdateWorkspaceMemberErrors, UpdateWorkspaceMemberResponses, UpdateWorkspaceResponses, UpsertNodeGrantData, UpsertNodeGrantErrors, UpsertNodeGrantResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -535,6 +535,47 @@ export const listWorkspaces = <ThrowOnError extends boolean = false>(options?: O
 });
 
 /**
+ * Read workspace root
+ *
+ * Read safe live root metadata and the current optimistic revisions.
+ */
+export const getWorkspace = <ThrowOnError extends boolean = false>(options: Options<GetWorkspaceData, ThrowOnError>): RequestResult<GetWorkspaceResponses, GetWorkspaceErrors, ThrowOnError> => (options.client ?? client).get<GetWorkspaceResponses, GetWorkspaceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}',
+    ...options
+});
+
+/**
+ * Rename workspace
+ *
+ * Current administrators rename the root under its lock; unchanged names retain revisions.
+ */
+export const updateWorkspace = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkspaceData, ThrowOnError>): RequestResult<UpdateWorkspaceResponses, UpdateWorkspaceErrors, ThrowOnError> => (options.client ?? client).patch<UpdateWorkspaceResponses, UpdateWorkspaceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Archive workspace
+ *
+ * Current administrators archive only the root, preserving descendants and history. Ordinary access is then denied.
+ */
+export const archiveWorkspace = <ThrowOnError extends boolean = false>(options: Options<ArchiveWorkspaceData, ThrowOnError>): RequestResult<ArchiveWorkspaceResponses, ArchiveWorkspaceErrors, ThrowOnError> => (options.client ?? client).post<ArchiveWorkspaceResponses, ArchiveWorkspaceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}/archive',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Create a private workspace invitation
  *
  * Create a 48-hour single-use token for an exact normalized email and target role. Store only its digest; the administrator receives the raw token once for manual sharing.
@@ -598,6 +639,21 @@ export const removeWorkspaceMember = <ThrowOnError extends boolean = false>(opti
 export const updateWorkspaceMember = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkspaceMemberData, ThrowOnError>): RequestResult<UpdateWorkspaceMemberResponses, UpdateWorkspaceMemberErrors, ThrowOnError> => (options.client ?? client).patch<UpdateWorkspaceMemberResponses, UpdateWorkspaceMemberErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/workspaces/{workspaceId}/members/{userId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Restore workspace
+ *
+ * Session-only recovery by a current target administrator. Recheck live family and revision under user then workspace locks; selection is unchanged.
+ */
+export const restoreWorkspace = <ThrowOnError extends boolean = false>(options: Options<RestoreWorkspaceData, ThrowOnError>): RequestResult<RestoreWorkspaceResponses, RestoreWorkspaceErrors, ThrowOnError> => (options.client ?? client).post<RestoreWorkspaceResponses, RestoreWorkspaceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/workspaces/{workspaceId}/restore',
     ...options,
     headers: {
         'Content-Type': 'application/json',

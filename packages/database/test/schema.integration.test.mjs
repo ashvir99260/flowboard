@@ -289,5 +289,5 @@ test('the migration creates all fifteen domain tables with database-owned audit 
     SELECT count(*)::int AS count FROM information_schema.columns
     WHERE table_schema = 'public' AND table_name <> '_prisma_migrations'
   `);
-  expect(columns.rows[0].count).toBe(135);
+  expect(columns.rows[0].count).toBe(136);
 });

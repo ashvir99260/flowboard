@@ -17,7 +17,7 @@ import type {
   UpsertGrant,
   WorkspaceRole,
 } from '@flowboard/contracts';
-import type { IdentitySession, ReadRepositories } from '@flowboard/database';
+import type { AuthenticatedIdentity, IdentitySession, ReadRepositories } from '@flowboard/database';
 import type { Logger } from '@flowboard/logger';
 
 export const ActiveWorkspaceKey = 'flowboard:active-workspace-permission';
@@ -58,6 +58,8 @@ export class PermissionService {
 
     const allowed: Partial<Record<PermissionAction, readonly WorkspaceRole[]>> = {
       'workspace.read': ['admin', 'member'],
+      'workspace.manage': ['admin'],
+      'workspace.restore': ['admin'],
       'member.list': ['admin', 'member'],
       'member.manage': ['admin'],
       'container.read': ['admin', 'member'],
@@ -71,6 +73,19 @@ export class PermissionService {
     };
     if (!allowed[action]?.includes(context.role))
       throw new ApiException(403, 'FORBIDDEN', 'Access denied');
+  }
+  async authorizeWorkspaceRestore(identity: AuthenticatedIdentity, workspaceId: string) {
+    if (!this.runtime.identities)
+      throw new ApiException(503, 'SERVICE_UNAVAILABLE', 'Permissions service unavailable');
+
+    await this.runtime.identities.authorizeWorkspaceRestore(
+      {
+        userId: identity.user.id,
+        familyId: identity.familyId,
+        workspaceId: identity.selectedWorkspaceId,
+      },
+      workspaceId,
+    );
   }
   private context(identity: IdentitySession) {
     if (!identity.activeWorkspace)
