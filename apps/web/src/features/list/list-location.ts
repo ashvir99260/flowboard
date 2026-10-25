@@ -4,10 +4,10 @@ import type { ListTasksQuery } from '@flowboard/contracts';
 
 export type TaskTableQuery = Pick<
   ListTasksQuery,
-  'sort' | 'direction' | 'fieldKey' | 'fieldOperator' | 'fieldValue'
+  'q' | 'sort' | 'direction' | 'fieldKey' | 'fieldOperator' | 'fieldValue'
 >;
 
-const keys = ['sort', 'direction', 'fieldKey', 'fieldOperator', 'fieldValue'] as const;
+const keys = ['q', 'sort', 'direction', 'fieldKey', 'fieldOperator', 'fieldValue'] as const;
 const queryKeys = new Set<string>(keys);
 const allowedKeys = new Set(['view', ...keys]);
 
@@ -36,7 +36,7 @@ export function readListLocation(
   if (!parsed.success)
     return { message: 'Invalid sort or incomplete filter. Reset the view to continue.', ok: false };
 
-  const { sort, direction, fieldKey, fieldOperator, fieldValue } = parsed.data;
+  const { q, sort, direction, fieldKey, fieldOperator, fieldValue } = parsed.data;
 
   return {
     ok: true,
@@ -44,6 +44,7 @@ export function readListLocation(
     query: {
       sort,
       direction,
+      ...(q === undefined ? {} : { q }),
       ...(fieldKey === undefined ? {} : { fieldKey, fieldOperator, fieldValue }),
     },
   };

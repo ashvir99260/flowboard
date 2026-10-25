@@ -8,6 +8,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { readListFilter } from './list-filter';
+import { TaskSearch } from './task-search';
 
 import type { TaskTableQuery } from './list-location';
 import type { ResolvedField } from '@flowboard/contracts';
@@ -23,7 +24,11 @@ function filterQuery(
   draft: Draft,
   fields: readonly ResolvedField[],
 ): TaskTableQuery {
-  const base = { sort: query.sort, direction: query.direction };
+  const base = {
+    sort: query.sort,
+    direction: query.direction,
+    ...(query.q === undefined ? {} : { q: query.q }),
+  };
   if (!draft.fieldKey) return base;
 
   return {
@@ -155,7 +160,7 @@ function FieldFilter({
         sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
         onClick={() => {
           reset({ fieldKey: '', value: null });
-          onChange({ sort: query.sort, direction: query.direction });
+          onChange(filterQuery(query, { fieldKey: '', value: null }, fields));
         }}
       >
         Clear filter
@@ -179,6 +184,7 @@ export function ListToolbar({
 }) {
   return (
     <Stack aria-busy={pending} spacing={1.2}>
+      <TaskSearch key={query.q ?? ''} query={query} onChange={onChange} pending={pending} />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={0.8}>
         <FormField
           label="Sort by"
