@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "exclude": ["dist", "node_modules", "storybook-static", "test"],
+  "extends": "./tsconfig.json",
+  "include": [".storybook/**/*.ts", ".storybook/**/*.tsx", "stories/**/*.ts", "stories/**/*.tsx"]
+}

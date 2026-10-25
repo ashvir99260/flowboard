@@ -317,3 +317,5 @@ R86 documentation follow-up: [P02-20](evidence/P02-20.md) clarifies the Docker r
 | R137 | E · User refinement | React Toastify feedback for explicit action/API success and failures, plus authorized realtime notifications. | UI/web/realtime · P16-01 | Session-scoped/deduplicated feedback, final result validation, inline repair state, overlay accessibility and remote event tests; [P16-01](evidence/P16-01.md). | Verified |
 
 | R138 | E · User refinement | Split and improve repository AI guidance with implemented architecture, naming, code patterns and validation conventions. | Repository harness · P17-01 | Scoped instructions, source-linked examples, accurate enforcement labels, corrected stale guidance and documentation checks; [P17-01](evidence/P17-01.md). | Verified |
+
+| R139 | E · User refinement | Add Storybook to the component library. | UI/tooling · P18-01 | Isolated typed stories, shared light/dark theme, controls/accessibility, browser interactions, static build and release isolation; [P18-01](evidence/P18-01.md). | Verified |
