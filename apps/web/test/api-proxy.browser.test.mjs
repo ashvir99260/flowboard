@@ -5,6 +5,7 @@ import { getTask } from '@flowboard/api-client/sdk';
 import { setupClient } from '@flowboard/api-client/session';
 import { chromium } from '@playwright/test';
 
+import { navigateInitially } from './common/initial-navigation.mjs';
 import { startUpstream, startWeb } from './common/proxy-fixture.mjs';
 
 // This transport fixture emits contract-valid sessions; API authentication has real DB tests.
@@ -98,7 +99,7 @@ test(
     t.after(() => browser.close());
     const context = await browser.newContext();
     const page = await context.newPage();
-    await page.goto(webOrigin);
+    await navigateInitially(page, webOrigin);
     const requests = [];
     const runtime = setupClient({
       baseUrl: `${webOrigin}/api`,

@@ -127,6 +127,8 @@ pnpm format:check
 
 On resource-constrained laptops, `pnpm test --concurrency=2` runs the same complete suite with fewer simultaneous Turbo tasks. Run Docker checks afterward. CI keeps its parallel build, lint, type and test jobs.
 
+The web test launcher discovers every `test/*.test.mjs` file. Ordinary files retain a 60-second file budget; the real E2E wrapper runs separately with 180 seconds per discovered journey plus a 30-second aggregate margin. Each journey keeps its own deadline. Both groups run even if one fails, and either failure fails the command. Initial proxy-browser navigation retries only `ERR_NETWORK_CHANGED`, at most three attempts; application errors and auth assertions are unchanged.
+
 ### Tests using Docker
 
 Start Docker Engine/Desktop, install the pinned Node/pnpm toolchain and Chromium as above, then run `pnpm test`. Tests automatically create uniquely named PostgreSQL/Redis containers; Node, the API, worker and Chromium run on the host. No manually created test database or running development stack is required. Fixtures clean up only their own containers and use separate data, never the development database. Docker unavailability fails the suites rather than silently skipping them.
