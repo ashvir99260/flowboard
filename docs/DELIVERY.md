@@ -1,8 +1,8 @@
 # Independent releases and deployment
 
-> Updated 25 October 2026: [Render](RENDER.md) is the new planned hosting target, with Neon retained for PostgreSQL. The release/image implementation below remains current; the Vercel/Northflank setup sections describe the legacy adapter still present in code. Start with [delivery operations](DELIVERY_OPERATIONS.md) for trunk-based development, runtime environment injection and same-image promotion.
+> Updated 25 October 2026: [Vercel Services](VERCEL.md) is the selected application hosting target, with Neon retained for PostgreSQL. The release/image implementation below remains current. The existing preview adapter still has a separate Northflank API/worker path and has not yet been reconciled with the single Vercel project; keep `CD_ENABLED` off until that work is complete. Start with [delivery operations](DELIVERY_OPERATIONS.md) for trunk-based development, runtime configuration and the separate same-image promotion contract.
 
-**Future promotion direction:** Docker is for local development/test. The user may adopt trunk-based `dev → qa → stage → prod` delivery with one unchanged artifact and runtime configuration. Current Vercel source deployment does not meet that build-once contract; see [PROMOTION.md](PROMOTION.md) before enabling hosted CD for that purpose.
+**Future promotion direction:** Docker is for local development/test. Trunk-based `dev → qa → stage → prod` delivery with one unchanged artifact and runtime configuration remains future work. Vercel Services configuration does not by itself meet that build-once contract; see [PROMOTION.md](PROMOTION.md).
 
 Status: Docker and release automation are implemented; P12-03 verifies the complete local MVP and both container modes, 24 October 2026. The first real main-branch publication is tracked by P00-07. This document does not claim a hosted deployment exists.
 
@@ -38,11 +38,9 @@ API and worker expose HTTP liveness at `/health/live` and dependency-aware readi
 
 Local PostgreSQL stays in Docker. A localhost-only port override supports running Node development servers on the host. Hosted PostgreSQL uses Neon: pooled `DATABASE_URL` for application traffic and direct `DATABASE_URL_UNPOOLED` for migrations. Both remain server-side environment variables. Seed data is opt-in for a hosted environment and must never be applied implicitly to production.
 
-## Legacy initial hosted preview
+## Hosted services
 
-Previously selected on 23 October 2026: Vercel Hobby for Next.js, Northflank Sandbox for the API and worker, Northflank Redis, and Neon PostgreSQL. Use one shared preview stack initially. These are separate deployment targets, so releasing one application does not deploy the others. A separate stack per pull request is outside the free allocation. Keep Redis private, enable persistence, and use `noeviction` for BullMQ.
-
-This allocation described the previous proposal, not the new Render plan. Do not use old quota assumptions to provision resources; current capacity and live acceptance must be established for the selected host. No paid plan is enabled by this repository.
+Use [Vercel Services](VERCEL.md) for the selected web/API/worker topology and [Neon preview setup](#neon-preview-setup) for the hosted database. Redis is an external managed dependency; its provider, capacity and environment isolation remain to be selected. Railway and Render are not deployment targets. No provider resource, secret or paid capacity has been provisioned by this repository change.
 
 Neon can suspend idle compute. The API outbox dispatcher polls PostgreSQL, and readiness checks query dependencies; this traffic may keep compute awake. Liveness is dependency-independent. Assess polling and health-check frequency against actual hosted usage before claiming idle suspension or free-tier suitability. PostgreSQL remains authoritative; no migration or validation policy changes because the host is Neon.
 
@@ -54,9 +52,8 @@ Provider configuration and credentials are separate from releases. This work doe
 - [Next standalone output](https://nextjs.org/docs/app/api-reference/config/next-config-js/output)
 - [GitHub container publication](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images)
 - [GitHub workflow triggering](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)
-- [Vercel Hobby](https://vercel.com/docs/plans/hobby)
-- [Northflank pricing](https://northflank.com/pricing)
-- [Northflank Redis](https://northflank.com/docs/v1/application/databases-and-persistence/deploy-databases-on-northflank/deploy-redis-on-northflank)
+- [Vercel Services](https://vercel.com/docs/services)
+- [Vercel Daemons](https://vercel.com/docs/daemons)
 - [Neon with Prisma](https://neon.com/docs/guides/prisma)
 - [BullMQ production guidance](https://docs.bullmq.io/guide/going-to-production)
 
@@ -84,34 +81,10 @@ Existing image tags are reused only when digest and source/version labels match.
 
 Enable GitHub Actions and package publication for the repository, and require the verification jobs in branch protection. The workflow starts after this change is merged into main; a local passing run is not proof of a remote publication. If GHCR packages are private, give the host a read-only registry credential, or explicitly change the package visibility to public for this public hobby app. Public image contents must never contain secrets.
 
-## Legacy Vercel UI setup
-
-1. Use a dedicated Vercel Hobby project named `flowboard-preview`, never a real production project. Vercel's [first deployment is always production](https://vercel.com/docs/deployments/environments#first-deployment), including preview requests. An empty project therefore needs an explicitly reviewed one-time bootstrap of this implemented app before preview CI is enabled. That deployment is production-labeled only within this preview-only project; use no production data, secrets or custom domains. CI refuses to perform this bootstrap automatically. Import this GitHub repository into that project. Use **Next.js**, root directory `apps/web`, and Node **22.x**. Enable access to source files outside the root directory so workspace packages are available.
-2. Install command: `cd ../.. && pnpm install --frozen-lockfile`. Build command: `cd ../.. && pnpm build --filter=@flowboard/web`. Keep Next's `.next` output setting. The app package and its dependency builds stay owned by Turbo.
-3. `apps/web/vercel.json` disables automatic Git deployments. The gated GitHub CD job selects released web versions and deploys their exact commits after checks pass. Keep this setting so provider Git events cannot bypass the pipeline.
-4. The CI source branch is `main`, but the deployment API creates a Vercel **preview**, without production promotion. Set server-only runtime `API_INTERNAL_URL` to the API HTTPS origin and `WEB_ALLOWED_ORIGINS` to the exact Vercel preview origin; add the same origin to the API's `AUTH_ALLOWED_ORIGINS`. Set web runtime `REALTIME_PUBLIC_URL` to the API public HTTPS origin. The generated browser client uses same-origin `/api/v1` through the Next proxy (P07-04), including refresh cookies; sockets connect to the configured API origin. Database, Redis, signing and refresh secrets never belong in Vercel browser variables.
-
-After the explicit initial bootstrap, Vercel builds the exact released Git commit as a preview; the web Docker image remains an independently versioned portable artifact. GitHub Releases and provider deployments are separate records. Follow [preview CI/CD activation](CI_CD.md) to connect tokens and enable the `preview` job.
-
-## Legacy Northflank API, worker and Redis setup
-
-1. Create one Sandbox project named `flowboard-preview` in an available region. Confirm its free allocation first, then select the same region for Neon. Add the Redis addon on the free allocation; keep its endpoint private, enable persistence, and set `maxmemory-policy=noeviction` for BullMQ.
-2. Create two services from external GHCR images: `flowboard-api:<version>` and `flowboard-worker:<version>` from the respective releases. Prefer the immutable digest from `release.json` for deployment/rollback. Do not build all apps in one service.
-3. API: `HOST=0.0.0.0`, `PORT=3001`; expose HTTP port 3001 with TLS and WebSocket support. Worker: background service, `HOST=0.0.0.0`, `PORT=3002`, HTTP `/health/live` and `/health/ready` on private port 3002, with no public ingress. Use the image defaults for commands.
-4. Set the server-only variables below through host secrets. Use the same Redis service for API sockets and worker queues. Keep worker and Redis in the same project/region.
-5. Follow [CI/CD activation](CI_CD.md) to enable independent digest-based deployment from GitHub. Keep Northflank automatic image updates disabled; the pipeline pins the published digest and checks readiness. No cloud account is linked by this change.
-
-| Variable                | API                | Worker      | Purpose                                                 |
-| ----------------------- | ------------------ | ----------- | ------------------------------------------------------- |
-| `DATABASE_URL`          | yes                | yes         | Neon pooled application URL; preserve Neon TLS settings |
-| `DATABASE_URL_UNPOOLED` | yes, when supplied | no          | Neon direct URL for API startup migrations              |
-| `REDIS_URL`             | yes                | yes         | Private addon connection string                         |
-| `HOST`, `PORT`          | `0.0.0.0`, `3001`  | port `3002` | Service binding/liveness                                |
-
-The local MVP includes authentication, tenant-scoped tasks, realtime updates and durable activity processing. Hosted acceptance remains open until the selected services are deployed and exercised. Configure a fresh `AUTH_SECRET`, exact `AUTH_ALLOWED_ORIGINS`, `AUTH_ALLOW_INSECURE_HTTP=false`, and `DEMO_SEED=false`. Browser refresh cookies stay same-origin through the Next proxy; do not use wildcard credentialed CORS.
+See [Vercel multi-service deployment](VERCEL.md) for project configuration, service bindings, route exposure and runtime settings. The local MVP includes authentication, tenant-scoped tasks, realtime updates and durable activity processing. Hosted acceptance remains open until the Vercel project and external dependencies are deployed and exercised.
 
 ## Neon preview setup
 
-Create a dedicated `flowboard-preview` Neon project/database near the selected API region. For the new target, check Render/Neon region availability before provisioning; the legacy Northflank steps above do not select the new region. Copy its **pooled** connection URL into the API/worker `DATABASE_URL` secret, and its **direct** URL into the API's `DATABASE_URL_UNPOOLED` secret. Never commit either value. Keep the SSL parameters supplied by Neon. API startup runs the checked-in migrations through database initialization, using the direct URL when supplied, before accepting requests; hosted demo seeding stays opt-in. Local Compose continues using PostgreSQL with local-only credentials.
+Create a dedicated preview Neon project/database in a region compatible with the Vercel deployment. Copy its **pooled** connection URL into the API/worker `DATABASE_URL` secret, and its **direct** URL into the API's `DATABASE_URL_UNPOOLED` secret. Never commit either value. Keep the SSL parameters supplied by Neon. API startup runs the checked-in migrations through database initialization, using the direct URL when supplied, before accepting requests; hosted demo seeding stays opt-in. Local Compose continues using PostgreSQL with local-only credentials.
 
-Free plans have capacity limits and may change; the [Render plan](RENDER.md#cost-and-preview-limits) records the current constraint for the selected host. Neon idle suspension can add cold-start latency. Avoid frequent database polling/health queries that keep compute awake, and check current provider quotas before creating resources.
+Vercel Services and Daemons have platform limits that can change; check the official documentation before provisioning. Neon idle suspension can add cold-start latency. Avoid frequent database polling/health queries that keep compute awake, and check current provider quotas before creating resources.

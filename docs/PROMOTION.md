@@ -4,7 +4,7 @@ Status: agreed direction from the user's 23 October 2026 clarification; future f
 
 ## Shared preview comes first
 
-The selected target is now [Render with Neon](RENDER.md). Start with one shared preview, then implement ordered promotion separately. Current CD code still uses the earlier Vercel/Northflank adapter; it must be replaced and verified before claiming a Render deployment. [Delivery operations](DELIVERY_OPERATIONS.md) connects this contract to the actual release/runtime code.
+The selected application target is now [Vercel Services](VERCEL.md), with Neon for PostgreSQL. Start with a shared environment, then implement ordered promotion separately. Vercel Services build from repository source and do not satisfy the unchanged-artifact contract by themselves. The current CD adapter also still has a separate Northflank API/worker path and must be reconciled with the one-project service configuration before enabling it. [Delivery operations](DELIVERY_OPERATIONS.md) connects this contract to the actual release/runtime code.
 
 ## What stays separate
 
@@ -58,18 +58,16 @@ Each environment needs isolated database data and a separate Redis instance. Cur
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Local Compose and per-app Dockerfiles                   | Keep for local use and optional portable packaging                                                                                                                        |
 | Independent release tags and digest manifests           | Reuse as the foundation                                                                                                                                                   |
-| Legacy Northflank API/worker deployment by digest       | Preserves image identity for a given release                                                                                                                              |
-| Vercel deployment from `gitSource`                      | Builds the source again; **does not satisfy build-once promotion**                                                                                                        |
+| Existing Northflank API/worker deployment by digest     | Historical provider path; not the selected deployment topology                                                                                                            |
+| Vercel Services deployment from source                  | Builds the source for the deployment; **does not satisfy build-once promotion**                                                                                           |
 | Shared-preview CD job and latest-release reconciliation | Does not implement ordered four-environment promotion of an explicitly selected candidate                                                                                 |
 | Public runtime bootstrap                                | REST uses the runtime-only server proxy (P07-04); validated `REALTIME_PUBLIC_URL` is read at server request time for Socket.IO (P11-03). Full promotion remains separate. |
 
-The current `CD_ENABLED=true` gate enables only the legacy provider adapter with its configured targets. It does not enable Render or provide the four-environment contract above. P00-08 is historical evidence of the earlier production-only design; P00-13 supersedes its target without claiming future promotion is implemented.
+The current `CD_ENABLED=true` gate enables only the legacy provider adapter with its configured targets. It does not configure the Vercel Services project or provide the four-environment contract above. Keep it off until the deployment workflow is reconciled. P00-08 is historical evidence of the earlier production-only design; P00-13 superseded that target without implementing multi-service Vercel delivery.
 
 ## Selected hosting path
 
-The new Render plan uses image-backed web, API and worker services. Publish the final container once, retain its registry digest and deploy that digest with each target's runtime settings. The existing `linux/amd64` publication and dynamic web origins are foundations; a Render adapter, environment gates and live same-digest acceptance remain unimplemented.
-
-Do not use a Render Git-backed service that rebuilds source for each target when proving this contract. Do not confuse a successful deploy-hook request with a ready, digest-verified deployment. Persistent worker/storage capacity and four environments require a separate budget decision; see [RENDER.md](RENDER.md).
+The selected Vercel Services configuration is documented in [VERCEL.md](VERCEL.md). Vercel source builds are acceptable for the selected initial topology but do not prove artifact promotion. An environment-neutral artifact path, promotion gates and live same-digest acceptance remain unimplemented.
 
 ## Acceptance proof for the future implementation
 
@@ -83,4 +81,4 @@ Build a candidate once, disable compilation and dependency downloads during prom
 - [Vercel prebuilt deployment](https://vercel.com/docs/cli/deploy#prebuilt)
 - [Vercel environment and promotion behavior](https://vercel.com/docs/deployments/promoting-a-deployment)
 
-Render references and current provider limits were checked on 25 October 2026 and are linked in [RENDER.md](RENDER.md). The Vercel references above explain the legacy source-build limitation.
+Vercel Services and daemon limits are documented in the [Vercel deployment guide](VERCEL.md). The Vercel references above explain why source builds are not the future build-once promotion path.

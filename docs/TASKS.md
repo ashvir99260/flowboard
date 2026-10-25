@@ -265,7 +265,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Completion evidence:** [P00-28 verification](evidence/P00-28.md):135 stored-field rows match the ER/dictionary; typed embedded/request controls, cursor-only policy,43-operation inventory and documentation checks reviewed.
 
 - [ ] **P00-14 — Connect and verify the initial hosted preview**
-  - **Target superseded:** The Vercel/Northflank target below is historical. The 25 October Render plan is tracked by P22-02/P22-03; do not execute this old provider setup or mark it verified from the new plan.
+  - **Target superseded:** The Vercel/Northflank target below is historical. D168/P38 selects Vercel Services/Daemons with Neon and external Redis; P38-03 now owns live acceptance. Do not execute this old provider setup.
   - **Goal:** Put the implemented local MVP online on the selected preview hosts.
   - **Requirements:** R96–R98.
   - **Files:** `docs/evidence/P00-14.md`, `docs/TASKS.md`, requirement matrix; credentials remain only in provider/GitHub secret settings.
@@ -1082,7 +1082,7 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `style: enforce readable react hook sections`.
   - **Evidence:** [P21-02](evidence/P21-02.md).
 
-## Phase 22 — Delivery operations and Render plan
+## Phase 22 — Delivery operations and superseded Render plan
 
 - [x] **P22-01 — Explain delivery, runtime configuration and Redis operations**
   - **Goal:** Explain the implemented pipeline and the planned trunk-based promotion/Render setup without claiming unimplemented deployment automation.
@@ -1094,7 +1094,8 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `docs: explain delivery operations and render plan`.
   - **Evidence:** [P22-01](evidence/P22-01.md).
 
-- [ ] **P22-02 — Implement Render deployment of published image digests**
+- [ ] **P22-02 — Implement Render deployment of published image digests (superseded)**
+  - **Status:** Superseded by P38-02. Do not implement a Render adapter.
   - **Goal:** Replace the legacy hosted adapter with controlled, independently deployable Render services using existing immutable releases.
   - **Requirements:** R98–R99; implements the provider plan documented by R145.
   - **Files:** Release-tool provider/config/CLI/tests, workflow, optional Render Blueprint and deployment docs; choose exact files when implementation is requested.
@@ -1103,7 +1104,8 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Validation:** Provider fixtures and workflow checks plus normal implementation gates. No live success claim from HTTP fixtures.
   - **Commit:** `ci: deploy released images to render`.
 
-- [ ] **P22-03 — Activate and verify the Render shared preview**
+- [ ] **P22-03 — Activate and verify the Render shared preview (superseded)**
+  - **Status:** Superseded by P38-03. Do not provision Render resources.
   - **Goal:** Record a real Render/Neon rollout after the adapter and appropriately sized services are ready.
   - **Requirements:** R96–R98.
   - **Files:** Deployment evidence and environment documentation; credentials stay outside Git.
@@ -1536,3 +1538,33 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** Card position and board geometry remain stable during a delayed successful save/refresh; no early success toast; errors roll back safely; access/configuration invalidation clears retained content; unchanged/cancelled drags stay quiet.
   - **Validation:** Failing browser continuity test, focused drag/rollback/realtime regressions, web typecheck and scoped lint/format.
   - **Commit:** `fix(web): keep drag placement stable through refresh`.
+
+## Phase 38 — Vercel multi-service deployment
+
+- [x] **P38-01 — Configure the Vercel Services project and deployment guide**
+  - **Goal:** Configure one Vercel project for web/API services and the background worker daemon, and make Vercel the documented application hosting target.
+  - **Requirements:** R145; updates the hosting target for R98 while preserving R96–R99.
+  - **Files:** Root `vercel.json`, web Vercel/env examples, `docs/VERCEL.md`, delivery/CI/promotion guides, README/architecture navigation, plan/decision/task/matrix/evidence records.
+  - **Dependencies:** Vercel Services clarification from the user; P22-01 as historical input only.
+  - **Acceptance:** `web` and `api` names and service roots match the monorepo; web binds `API_INTERNAL_URL` to API; `/socket.io/*` routes to API and the catch-all to web; worker remains a daemon with no public route. Document runtime settings, Vercel beta and the unverified preview-daemon behavior, external Redis as undecided, the unmodified legacy deployment adapter, and no Railway/Render target. Do not provision resources or claim live acceptance.
+  - **Validation:** Parse Vercel JSON; check documentation links/anchors, config/code parity, formatting and whitespace. No application behavior or live deployment is claimed.
+  - **Commit:** `feat: configure vercel multi-service deployment`.
+  - **Completion evidence:** [P38-01](evidence/P38-01.md).
+
+- [ ] **P38-02 — Reconcile deployment automation with the Vercel Services project**
+  - **Goal:** Replace the legacy Vercel/Northflank split-preview workflow with one deployment path for the configured Vercel project.
+  - **Requirements:** R98.
+  - **Files:** Release-tool deployment adapter/config/tests, GitHub workflow, CI/CD and delivery docs.
+  - **Dependencies:** P38-01; an approved design for preview worker processing and the external Redis service.
+  - **Acceptance:** Deploy the released source into the one project, verify all configured services and runtime settings, preserve stale-run/retry safety, and verify whether daemon processing is supported in preview deployments before claiming preview acceptance.
+  - **Validation:** Provider fixtures, workflow checks, standard implementation gates; no live success claim from fixtures.
+  - **Commit:** `ci: deploy the vercel services project`.
+
+- [ ] **P38-03 — Verify the Vercel shared deployment**
+  - **Goal:** Record a real Vercel/Neon/Redis rollout after the workflow and preview-worker design are ready.
+  - **Requirements:** R96–R98.
+  - **Files:** Deployment evidence and environment documentation; secrets stay in provider settings.
+  - **Dependencies:** P38-02, connected provider access, selected Redis capacity and explicitly approved service plans.
+  - **Acceptance:** Record actual Vercel services/daemon, isolated database and Redis settings; verify auth/refresh, tenant-scoped task flow, migrations, async activity, realtime, health and recovery. Verify and state whether daemon processing is supported in preview deployments.
+  - **Validation:** Real provider deployment records and external end-to-end checks; fixtures do not satisfy this task.
+  - **Commit:** `docs: verify the vercel shared deployment`.

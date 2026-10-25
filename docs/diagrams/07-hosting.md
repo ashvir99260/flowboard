@@ -2,21 +2,21 @@
 
 [Atlas index](../DIAGRAMS.md). Source snapshot: `cc0e3d6`; render/update details are in the [diagram guide](README.md).
 
-## C28 — Planned Render topology
+## C28 — Selected Vercel Services topology
 
-**Status: Planned; not deployed.** This is a target plan, not a deployment record. The current adapter still targets Vercel/Northflank. Worker/persistent-storage capacity and live Render acceptance remain open.
+**Status: Configured; not deployed.** The repository config routes public web and Socket.IO traffic to Vercel Services and runs the worker as a Daemon. The legacy deployment adapter is not reconciled; preview worker processing and external Redis capacity remain open.
 
-![Planned Render topology. Planned; not deployed.](svg/c28-planned-render-topology.svg)
+![Selected Vercel Services topology. Configured; not deployed.](svg/c28-planned-render-topology.svg)
 
-[Editable Mermaid source](sources/c28-planned-render-topology.mmd). References: [Render plan](../RENDER.md).
+[Editable Mermaid source](sources/c28-planned-render-topology.mmd). References: [Vercel setup](../VERCEL.md).
 
-## C29 — Render activation gates
+## C29 — Vercel activation gates
 
 **Status: Planned.** The plan has explicit infrastructure, implementation and live-verification gates. A successful API trigger or a source diagram cannot substitute for running-digest and product acceptance evidence.
 
-![Render activation gates. Planned.](svg/c29-render-activation-gates.svg)
+![Vercel activation gates. Planned.](svg/c29-render-activation-gates.svg)
 
-[Editable Mermaid source](sources/c29-render-activation-gates.mmd). References: [Render rollout](../RENDER.md#implementation-and-rollout-sequence), [Open tasks](../TASKS.md#phase-22--delivery-operations-and-render-plan).
+[Editable Mermaid source](sources/c29-render-activation-gates.mmd). References: [Vercel deployment gaps](../VERCEL.md#build-deployment-and-current-gaps), [Open tasks](../TASKS.md).
 
 ## C30 — Selected-candidate promotion
 

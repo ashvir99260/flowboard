@@ -337,9 +337,9 @@ Behavioral suites run Node/Chromium on the host with isolated Docker datastores;
 
 Merges to `main` publish only affected applications: `api/vX.Y.Z`, `web/vX.Y.Z`, and `worker/vX.Y.Z`, with separate GHCR images and source/digest manifests. Shared runtime package changes release their consumers; documentation/test-only changes do not. Pull requests run read-only verification first.
 
-Local development uses Docker PostgreSQL. The planned hosted target is now **Render** for web/API/worker and Redis-compatible Key Value, with **Neon** retained for PostgreSQL. Start with one shared preview; the Render adapter, resource/capacity decision and live verification are still open. See the [Render plan](docs/RENDER.md) and [delivery operations](docs/DELIVERY_OPERATIONS.md).
+Local development uses Docker PostgreSQL. The selected hosted application target is **Vercel Services** for web and API plus a worker daemon, with **Neon** retained for PostgreSQL. Redis is an external managed dependency whose provider and capacity remain undecided. The service configuration is committed, but resources and live deployment are not verified. See the [Vercel deployment guide](docs/VERCEL.md) and [delivery operations](docs/DELIVERY_OPERATIONS.md).
 
-The existing CD adapter still targets Vercel/Northflank; `CD_ENABLED` does not switch it to Render. The [CI/CD guide](docs/CI_CD.md) lists the seven actual parallel check lanes and current publication/deployment gates. [Independent delivery](docs/DELIVERY.md) explains versions and release recovery; [Redis and BullMQ](docs/REDIS_AND_JOBS.md) explains background activity, realtime and failures.
+The existing CD adapter still contains a separate Northflank API/worker path and has not been reconciled with the one-project Vercel Services setup; keep `CD_ENABLED` off. Railway and Render are not deployment targets. The [CI/CD guide](docs/CI_CD.md) lists the actual parallel check lanes and current publication/deployment gates. [Independent delivery](docs/DELIVERY.md) explains versions and release recovery; [Redis and BullMQ](docs/REDIS_AND_JOBS.md) explains background activity, realtime and failures.
 
 Future `dev → qa → stage → prod` promotion will reuse one build and inject configuration at runtime. Docker remains the local development/test setup. See the [build-once contract and current limitations](docs/PROMOTION.md).
 

@@ -33,7 +33,7 @@ Implementation snapshot: `3cc62b0` (P19-01), reviewed 25 October 2026. At that s
 | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Shared Node/Next ESLint, TypeScript and Prettier                                                             | Common configs and package scripts across all workspaces.                                                                                             | R93                                   | [P00-01](evidence/P00-01.md), [P00-03](evidence/P00-03.md).                                                                                           |
 | Independent releases and Docker per app                                                                      | Dependency-aware planner/publisher, separate app tags/images/manifests and tests. First real main publication remains open.                           | R94–R95                               | [P00-05](evidence/P00-05.md), [P00-06](evidence/P00-06.md); P00-07 open.                                                                              |
-| Earlier Vercel/Northflank preview; current Render plan and parallel free-runner CI                           | Legacy deployment orchestration and seven check instances; Render adapter/live setup remain open, documented in P22.                                  | R96–R98                               | [P00-13](evidence/P00-13.md), [P00-15](evidence/P00-15.md), [CI/CD](CI_CD.md), [Render plan](RENDER.md); P22-02/P22-03 open.                          |
+| Vercel multi-service app topology with Neon and external Redis; parallel free-runner CI                      | Vercel web/API services and worker daemon are configured; provider resources, workflow reconciliation and live setup remain open.                     | R96–R98                               | [Vercel deployment](VERCEL.md), [P00-13](evidence/P00-13.md), [P00-15](evidence/P00-15.md), [CI/CD](CI_CD.md); P38-02/P38-03 open.                    |
 | Build once, promote dev/qa/stage/prod with runtime configuration                                             | Architecture/acceptance plan exists. Runtime REST and public socket URLs are implemented; full immutable promotion is not.                            | R99                                   | [Promotion design](PROMOTION.md); P00-11/P00-12 open.                                                                                                 |
 | Graphify, additional AI tools and reverse engineering                                                        | Local navigation/tooling guidance; outputs ignored. REA is an optional explicitly invoked artifact tool.                                              | R100–R102                             | [P00-16](evidence/P00-16.md), [P00-17](evidence/P00-17.md), [P00-18](evidence/P00-18.md).                                                             |
 | Research ClickUp/Asana/Linear and design Flowboard from the requirements                                     | Cited public research, system/ER/API/UI design. No claim of access to their private internals.                                                        | R103                                  | [P00-19](evidence/P00-19.md), [references](REFERENCE_ARCHITECTURES.md).                                                                               |
@@ -55,7 +55,7 @@ Implementation snapshot: `3cc62b0` (P19-01), reviewed 25 October 2026. At that s
 
 The subsequent P21 refinement is tracked separately: R142/P21-01 groups UI implementations into camelCase module-owned files; R143/P21-02 adds React readability enforcement. Its evidence lives in [P21-01](evidence/P21-01.md) and [P21-02](evidence/P21-02.md), with the matrix retaining each task's current status.
 
-P22 documents the operating model and new Render/Neon hosting plan: [delivery operations](DELIVERY_OPERATIONS.md), [Redis/BullMQ](REDIS_AND_JOBS.md) and [Render](RENDER.md). It changes documentation only. P22-02/P22-03 own Render implementation/live acceptance; P00-11/P00-12 retain the unimplemented four-environment promotion work.
+P22 is the historical Render planning record. The user later selected Vercel Services; [Vercel deployment](VERCEL.md) and P38-01 supersede that target. P38-02/P38-03 own deployment-workflow reconciliation and live acceptance; P00-11/P00-12 retain the unimplemented four-environment promotion work.
 
 P23-01/R146 adds the [30-diagram atlas](DIAGRAMS.md): seven chapters with editable Mermaid, rendered SVGs and code/reference links. Its [evidence](evidence/P23-01.md) covers documentation semantics, rendering and navigation; it does not rerun or extend product/runtime acceptance.
 
@@ -105,14 +105,14 @@ Latest recorded implementation verification is [P19-01](evidence/P19-01.md): **1
 
 ## Open gates and limits
 
-| Open task     | What remains                                                                                                     | Related status                                    |
-| ------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| P00-07        | Observe the first real main-branch publication: tags, releases, images, manifests and digests.                   | R94–R95 In progress.                              |
-| P22-02/P22-03 | Implement the Render adapter and verify the Render/Neon shared preview; replaces the old P00-14 provider target. | R96–R98 remain open until live acceptance.        |
-| P00-11        | Complete environment-neutral artifact/runtime configuration requirements for the future promotion model.         | R99 Planned.                                      |
-| P00-12        | Promote an explicitly selected unchanged artifact through dev/qa/stage/prod.                                     | R99 Planned.                                      |
-| P00-09        | Later live production activation under the selected promotion/hosting approach.                                  | R98 retains a future activation gate.             |
-| NEXT-01 / P31 | PostgreSQL title/description search with scoped cursors and List controls.                                       | Implementation added; final verification pending. |
+| Open task     | What remains                                                                                                                                       | Related status                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| P00-07        | Observe the first real main-branch publication: tags, releases, images, manifests and digests.                                                     | R94–R95 In progress.                              |
+| P22-02/P22-03 | Superseded Render adapter/live preview tasks; do not execute. P38-02/P38-03 now own deployment-workflow reconciliation and Vercel live acceptance. | R96–R98 remain open until live acceptance.        |
+| P00-11        | Complete environment-neutral artifact/runtime configuration requirements for the future promotion model.                                           | R99 Planned.                                      |
+| P00-12        | Promote an explicitly selected unchanged artifact through dev/qa/stage/prod.                                                                       | R99 Planned.                                      |
+| P00-09        | Later live production activation under the selected promotion/hosting approach.                                                                    | R98 retains a future activation gate.             |
+| NEXT-01 / P31 | PostgreSQL title/description search with scoped cursors and List controls.                                                                         | Implementation added; final verification pending. |
 
 Provider accounts, credentials, resources and current free-tier availability are external prerequisites, not completed product behavior. Ordinary future extensions are separate: OIDC, teams, invitation email/UI, restore, uploads and outbound webhook delivery. Scalability tradeoffs include workspace-wide write locks, dense reordering, graph reads and no universal JSON-field index. See [HLD tradeoffs](HLD.md#scale-reliability-and-tradeoffs).
 
@@ -147,7 +147,7 @@ This index makes omissions visible without duplicating the detailed matrix rows.
 | R134–R140 | Later UI/form/notification/tooling refinements.                                                   |
 | R141      | This reader-facing documentation set.                                                             |
 | R142–R143 | UI module/camelCase organization and the subsequent React readability rules.                      |
-| R144–R145 | Delivery/runtime/Redis explanations and the Render hosting plan; no live deployment claim.        |
+| R144–R145 | Delivery/runtime/Redis explanations and the Vercel Services topology; no live deployment claim.   |
 | R146      | Rendered diagram atlas with editable sources, status labels and source references.                |
 | R147      | One-command local Docker preview without env files or manual data initialization.                 |
 | R148      | Named feature query hooks separated from frontend view components.                                |

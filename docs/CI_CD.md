@@ -1,6 +1,6 @@
 # Continuous integration and preview deployment
 
-Updated 25 October 2026. **This page describes the currently implemented workflow**, including its legacy Vercel/Northflank provider adapter. The new selected target is [Render with Neon](RENDER.md), but that adapter and live rollout are still planned. Do not enable the legacy CD job expecting it to deploy Render. See [delivery operations](DELIVERY_OPERATIONS.md) for trunk-based development and runtime configuration, and [PROMOTION.md](PROMOTION.md) for the future build-once `dev → qa → stage → prod` contract.
+Updated 25 October 2026. **This page describes the currently implemented workflow**, including its legacy Vercel/Northflank provider adapter. The selected application target is now [Vercel Services](VERCEL.md), but the workflow has not been reconciled with the one-project services configuration. Keep `CD_ENABLED` off. Railway and Render are not deployment targets. See [delivery operations](DELIVERY_OPERATIONS.md) and [PROMOTION.md](PROMOTION.md) for operating boundaries and the future build-once `dev → qa → stage → prod` contract.
 
 ```mermaid
 flowchart LR
@@ -58,7 +58,7 @@ Within the web suite, [the launcher](../apps/web/scripts/test.mjs) runs all disc
 
 The workflow does not currently add dependency-audit, CodeQL, image-vulnerability or external penetration-test jobs. OpenAPI/client checks are part of builds, not extra named GitHub check lanes. `pnpm release:check` is a separate clean-checkout acceptance command, not the workflow's entry command.
 
-## Existing legacy deployment contract
+## Existing legacy deployment adapter
 
 - CI runs on pull requests and main; pull requests cannot publish or deploy this shared preview.
 - The serialized publisher remains authoritative for independent versions and immutable images.
@@ -69,27 +69,11 @@ The workflow does not currently add dependency-audit, CodeQL, image-vulnerabilit
 - Serialize preview deployments and refuse stale main workflows before mutations and during readiness polling. A stale Vercel build can finish at its unique preview URL, but it cannot acquire a production alias through this workflow.
 - PostgreSQL/Redis secrets stay on the hosts. CD needs deployment permissions, not database credentials. API startup applies checked-in migrations before readiness; hosted DEMO_SEED stays false.
 
-## Legacy Vercel/Northflank setup (not the Render plan)
+## Selected Vercel Services configuration
 
-1. Create the Vercel project and **preview-only** Northflank services using [DELIVERY.md](DELIVERY.md). Use a dedicated `flowboard-preview` Vercel project, linked to this repository with root `apps/web`. Vercel forces the first deployment to production even for preview requests. CI checks unfiltered project history and refuses an empty project before writing; complete the explicitly reviewed bootstrap in the hosting guide first. The committed `vercel.json` disables automatic Git deployments, so CI controls which released SHA builds. Keep Northflank automatic image/tag updates disabled.
-2. Create a GitHub environment named `preview`, restricted to `main`. Add the two tokens below as environment secrets. Add the resource IDs as repository variables. Use least-privilege tokens for the selected preview project/services.
-3. Configure the preview services' runtime secrets, including the region-matched Neon database and private Redis. Do not reuse production data or credentials. Northflank currently requires a payment method even for Sandbox resources; complete that step in the provider UI, with the free allocation selected.
-4. Merge the release workflow to main when ready. Set repository variable `CD_ENABLED=true` only after the targets and secrets exist. The next passing main run deploys the published releases; the workflow can also be dispatched manually on current main. Deployment retries do not mint new versions.
+The root [`vercel.json`](../vercel.json) defines the web/API services, the API binding, public Socket.IO route, and worker daemon. See [VERCEL.md](VERCEL.md) for the service roots, runtime settings, and current limitations. This repository configuration does not provision the Vercel project or external data services. Do not set the `API_INTERNAL_URL` service binding manually.
 
-| Name                           | Kind                         | Purpose                                                   |
-| ------------------------------ | ---------------------------- | --------------------------------------------------------- |
-| `VERCEL_TOKEN`                 | Preview environment secret   | Read project/deployments and create previews              |
-| `NORTHFLANK_API_TOKEN`         | Preview environment secret   | Read/update the selected preview services                 |
-| `VERCEL_PROJECT_ID`            | Repository variable          | Preview web project ID                                    |
-| `VERCEL_TEAM_ID`               | Optional repository variable | Owning team; omit for a personal account                  |
-| `NORTHFLANK_PROJECT_ID`        | Repository variable          | Preview project ID                                        |
-| `NORTHFLANK_API_SERVICE_ID`    | Repository variable          | Preview external-image API service                        |
-| `NORTHFLANK_WORKER_SERVICE_ID` | Repository variable          | Preview external-image worker service, different from API |
-| `CD_ENABLED`                   | Repository variable          | Exactly `true` enables the shared preview job             |
-
-GitHub supplies its token, repository ID and workflow SHA. Never paste provider tokens into a PR, issue, file or chat. Database URLs, Redis credentials and auth keys belong in provider runtime secrets. Vercel receives only settings it needs; no database or Redis secret belongs in the browser.
-
-API runtime settings now include `DATABASE_URL`, optional direct `DATABASE_URL_UNPOOLED`, `REDIS_URL`, a newly generated `AUTH_SECRET` of at least 32 bytes, `AUTH_ALLOWED_ORIGINS` listing exact HTTPS web origins, `AUTH_ALLOW_INSECURE_HTTP=false`, `DEMO_SEED=false`, and `API_DOCS=false` unless Swagger exposure is intentional. Store secrets on Northflank; they are never build inputs. Readiness is `/health/ready`. Configure web runtime `API_INTERNAL_URL` and `REALTIME_PUBLIC_URL` to the API HTTPS origin, with `WEB_ALLOWED_ORIGINS` listing exact web origins. Browser REST and refresh use the implemented same-origin Next proxy; realtime connects to the API. Forwarded client-IP headers remain untrusted.
+The legacy deployment job still contains Vercel preview plus Northflank API/worker operations. It is not a deployment path for the selected single Vercel Services project. Do not add or use those legacy provider credentials for this target. A future workflow change must deploy the services coherently and verify worker daemon behavior before preview can claim job-processing acceptance. Keep `CD_ENABLED` off.
 
 ## Readiness and recovery
 
@@ -103,7 +87,7 @@ Each provider wait is bounded to 15 minutes. If main changes mid-run, rerun on c
 
 The local MVP includes login/refresh/logout, a permission-filtered tree, board/list/task editing, scoped configuration, realtime updates and durable activity processing. Both API and worker expose HTTP liveness/readiness; API startup runs migrations with opt-in demo seeding. P12-03 verifies the full suite and both Docker modes. These local results do not establish a verified hosted deployment.
 
-The original P00-14 target is superseded by P22-02/P22-03 for Render. Those tasks must record actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
+The original P00-14 and Render P22-02/P22-03 targets are superseded by P38-02/P38-03 for Vercel Services. Those tasks must record actual provider resources, the workflow run and external checks. Local HTTP fixtures prove integration behavior, not a live deployment. P00-07 separately records first real GitHub Releases/images after merge. Sign-in, resource setup and an authorized merge are needed before those tasks can pass.
 
 ## Legacy provider references checked 23 October 2026
 
