@@ -1497,3 +1497,29 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** Avatar/name/role menu signs out; header Settings replaced by theme toggle; generated search finds/opens authorized tasks/lists, paginates and clears stale session results; sidebar administration retained.
   - **Validation:** Focused browser/search/session regressions, type checks and visual review.
   - **Commit:** `feat(web): simplify header and add global search`.
+- [ ] **P36-01 — Searchable single and multi selections**
+  - **Goal:** Replace shared native field selectors with controlled MUI Autocomplete.
+  - **Requirements:** R170.
+  - **Files:** Shared UI Autocomplete/selection wrappers, custom-field select input, forms SelectInput, exports, tests/stories.
+  - **Dependencies:** Existing UI/forms architecture and scalar form contracts.
+  - **Acceptance:** Stable IDs and null/false/zero preserved; search, chips, clear, unavailable values, disabled state and RHF focus work; assignee descriptors inherit the control.
+  - **Validation:** Focused selection and form regressions, type/build checks and browser task edit.
+  - **Commit:** `feat(forms): use searchable MUI selections`.
+
+- [ ] **P36-02 — MUI X date and date-time controls**
+  - **Goal:** Replace native date controls with shared Community pickers.
+  - **Requirements:** R171.
+  - **Files:** UI date wrapper/adapter/helpers, forms date binding, custom date renderer, exact dependencies/lockfile, tests/stories.
+  - **Dependencies:** Existing date contracts and UI/form values.
+  - **Acceptance:** Calendar and UTC semantics round-trip, clear and invalid text stay distinct, date/time editing remains keyboard-accessible, disabled values remain.
+  - **Validation:** Focused picker/date/timezone/form tests and browser editing.
+  - **Commit:** `feat(forms): use MUI X date pickers`.
+
+- [ ] **P36-03 — Migrate web dropdowns and search suggestions**
+  - **Goal:** Apply the shared controls to direct web selectors and global search.
+  - **Requirements:** R170; preserve R169.
+  - **Files:** Web scope/list/filter/move/admin dropdowns, global search, browser tests and input guides.
+  - **Dependencies:** P36-01 public controls; existing authorized search operation.
+  - **Acceptance:** No native value dropdown remains in app flows; global suggestions use server search and preserve permissions, pagination/refresh and task/list navigation; action menus remain correct.
+  - **Validation:** Focused web selection/search/date editing, source inventory, typecheck and scoped lint.
+  - **Commit:** `feat(web): adopt autocomplete search and dropdowns`.
