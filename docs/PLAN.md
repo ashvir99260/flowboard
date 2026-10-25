@@ -320,6 +320,10 @@ P16-01 adds React Toastify action feedback and content-free realtime notificatio
 
 P25-01 extracts the remaining TanStack reads from workspace and activity view components into feature-owned hooks. Name single-resource hooks `use<Operation>Query` and paginated collection hooks `use<Operation>InfiniteQuery`, matching generated operation names (for example `useGetCurrentUserQuery`). Keep generated options and session scoping in the hooks, while views retain validation, interaction and display decisions. Existing board/list/detail/configuration orchestration and mutation hooks already provide a separate data boundary; preserve their semantics. Verify architecture separation plus existing failure, pagination, identity-change and realtime browser behavior.
 
+### API and UI authoring refinement (25 October 2026)
+
+P26-01 makes the repository authoring rules directly usable: exact DTO/unit/integration filename patterns, API module creation and registration, UI component ownership/exports, and theme/token usage. Keep detailed rules in the existing owning guides, with short scoped AGENTS links and a shared naming table. Explain existing shared-test exceptions and executable enforcement separately; this is documentation work, not a source-file migration or runner change.
+
 ### Agent guidance refinement (25 October 2026)
 
 P17-01 organizes repository instructions by app/package ownership and documents the implemented naming and code patterns. The index routes readers to canonical architecture, backend, frontend, forms, style, tooling and verification guides. It changes documentation only; runtime behavior remains evidenced by P16-01.

@@ -354,3 +354,9 @@ R96–R99 hosting clarification (D148): Render/Neon is now the planned target. E
 | ID   | Source              | Requirement                                                                  | Owner/tasks  | Acceptance evidence                                                                                                         | Status   |
 | ---- | ------------------- | ---------------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------- | -------- |
 | R148 | E · User refinement | Separate TanStack Query setup from components into descriptive custom hooks. | Web · P25-01 | Named feature hooks, generated transport/session isolation, boundary and browser regressions; [P25-01](evidence/P25-01.md). | Verified |
+
+## API and UI authoring rules
+
+| ID   | Source              | Requirement                                                                                   | Owner/tasks                  | Acceptance evidence                                                                                                                         | Status          |
+| ---- | ------------------- | --------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| R149 | E · User refinement | Document exact API DTO/test naming and module creation, plus UI component/naming/token rules. | Repository guidance · P26-01 | Source-aligned scoped instructions, naming/creation checklists, explicit exceptions and documentation checks; [P26-01](evidence/P26-01.md). | Verified — docs |

@@ -32,6 +32,28 @@ Each independent public component has its own file. Surface and Toolbar retain t
 - Neutral light/dark surfaces replace the previous blue-gray palette. Status/priority colors retain their meanings; text labels never rely on color alone.
 - Export typed public APIs, never package source paths. Prefer explicit variants and compound parts over accumulating boolean layout flags. Busy/disabled/open remain legitimate control state.
 
+## Creating a shared component
+
+| Responsibility                 | Location                                 | Naming                                                                          |
+| ------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------- |
+| Reusable presentation          | `packages/ui/src/modules/<area>/`        | camelCase file, PascalCase component; for example `taskTable.tsx` / `TaskTable` |
+| Generic UI helper/hook         | `packages/ui/src/utils/` or `src/hooks/` | camelCase; for example `useRemSize.ts` / `useRemSize`                           |
+| React Hook Form bindings       | `packages/forms/src/`                    | Follow that package's existing conventions; do not put RHF in UI                |
+| API/session/URL-aware adapter  | `apps/web/src/features/<feature>/`       | Kebab-case file; PascalCase component, named query hooks in `.ts`               |
+| Component stories              | `packages/ui/stories/`                   | `<camelCase>.stories.tsx` with typed CSF                                        |
+| UI rendering/interaction tests | `packages/ui/test/`                      | `<camelCase>.test.mjs`, using the public exports                                |
+
+1. Check existing exports and choose the owning UI area. Reuse or compose an existing control when it already provides the behavior. UI `modules` are presentation folders, not Nest modules or an instruction to move web's `features` directory.
+2. Define plain typed props and callbacks. Reuse contract types for domain values and the underlying element/control props for native attributes and refs. Keep API clients, routing, session/permission decisions and form-library wiring outside UI.
+3. Create one independent public component per camelCase file. Use PascalCase for the component and its props type, for example `TaskSummary` / `TaskSummaryProps` in `taskSummary.tsx`. Small private styled parts of one compound component may stay together.
+4. Compose accessible MUI behavior and style reusable parts with MUI `styled`. Use children/named slots when callers need layout composition; use context only for genuinely shared state. Preserve labels, keyboard operation, focus restoration, refs and busy/disabled behavior.
+5. Apply [semantic tokens and units](STYLE_TOKENS.md): theme palette values, rem spacing/dimensions, HSL palette definitions and px borders/radii. Support both themes and browser font scaling; do not hardcode light-mode colors in a component.
+6. Export the public component and relevant props through `src/index.ts`. Internal modules use leaf imports; web imports the package public API. Extend `src/primitives.ts` only when maintaining that internal primitive facade, not as a second public package path.
+7. Add public rendering/interaction tests and a typed Storybook story with local props. Cover meaningful empty/error/disabled or long-content states, keyboard/focus, light/dark and responsive behavior as applicable. No API calls or web fixtures in UI stories.
+8. Consume the component from web's feature adapter. Keep named query hooks, Zod/RHF orchestration, optimistic writes and toasts in their owning layers. Run root build/lint/type/test/format and the applicable Storybook checks for an implementation change.
+
+Use the existing [Surface implementation](../packages/ui/src/modules/layout/surface.tsx), [field stories](../packages/ui/stories/fields.stories.tsx) and [public composition tests](../packages/ui/test/composition.test.mjs) as source examples. The module/file split is checked by the UI source-layout suite; deciding the correct responsibility and a useful component API still requires review.
+
 ## Ordered implementation
 
 1. P13-01: shared neutral tokens, styled controls and stateless composition parts; auth/workspace selection use them, with focused behavior and SSR checks.

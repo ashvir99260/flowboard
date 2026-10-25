@@ -1148,6 +1148,18 @@ The checklist above is a reusable protocol, not a task to mark globally complete
   - **Commit:** `refactor(web): separate named query hooks`.
   - **Evidence:** [P25-01](evidence/P25-01.md).
 
+## Phase 26 — API and UI authoring rules
+
+- [x] **P26-01 — Make API and UI file/creation conventions explicit**
+  - **Goal:** Give contributors and agents exact DTO/test naming and repeatable instructions for creating API modules and UI components.
+  - **Requirements:** R149; refine R138, R142 and R148 without changing runtime behavior.
+  - **Files:** API/UI/web AGENTS, backend/naming/component/token/frontend guides, corrected backend contract locations, plan/decisions/requirements/matrix/delivery summary and evidence.
+  - **Dependencies:** P17-01, P21-01 and P25-01.
+  - **Acceptance:** Specify `.request.dto.ts`/`.response.dto.ts`, `.unit.spec.mjs` and `.integration.spec.mjs`; distinguish bootstrap and UI test formats. Explain API modules/core/shared ownership, registration, Swagger and test lifecycle. Explain UI modules versus web features, component exports, composition, query/form boundaries, themes/tokens/units, stories and accessibility. Label retained shared-test filename exceptions and actual automation accurately. Correct stale DTO-folder and Express-adapter descriptions. Do not rename source files or change test discovery in a documentation task.
+  - **Validation:** G01/G02 documentation scope; compare source paths/runner/theme settings, validate links/anchors and exact filename examples, root formatting and whitespace; independent source review. Runtime/build/Docker suites are not applicable to Markdown-only changes.
+  - **Commit:** `docs: clarify api and ui authoring rules`.
+  - **Evidence:** [P26-01](evidence/P26-01.md).
+
 ## Explicitly deferred work
 
 - [ ] **NEXT-01 — Replace the declared search-index stub when search is requested**

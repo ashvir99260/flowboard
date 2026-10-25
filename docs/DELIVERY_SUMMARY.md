@@ -63,6 +63,8 @@ P24-01/R147 records and verifies the [setup-free Docker preview](../README.md#pr
 
 P25-01/R148 tracks the [named frontend query hooks](FRONTEND_GUIDELINES.md#data-and-session-flow), separating workspace/activity query setup from views while preserving generated transport and cache policy. Its current implementation and validation state is recorded in [P25-01](evidence/P25-01.md).
 
+P26-01/R149 makes the [file patterns](NAMING_CONVENTIONS.md#exact-file-patterns), [API feature workflow](BACKEND_GUIDELINES.md#creating-an-api-feature) and [UI component workflow](UI_COMPONENT_SYSTEM.md#creating-a-shared-component) explicit. Its [evidence](evidence/P26-01.md) verifies documentation against source and identifies retained naming exceptions; it does not claim a code migration or a new runtime test run.
+
 - The replacement package specification superseded the original `shared`/`tsconfig`/`eslint-config` layout. Database, logger, forms, formatting and release tooling have their own explicit responsibilities.
 - Prisma was chosen over TypeORM. Public task/configuration operations use tenant repositories; controllers do not own raw queries.
 - Workspace-level custom-field defaults were added to the original space/folder/list scopes. The nearest complete definition still wins.
@@ -147,5 +149,6 @@ This index makes omissions visible without duplicating the detailed matrix rows.
 | R146      | Rendered diagram atlas with editable sources, status labels and source references.         |
 | R147      | One-command local Docker preview without env files or manual data initialization.          |
 | R148      | Named feature query hooks separated from frontend view components.                         |
+| R149      | Explicit API DTO/test/module rules and UI component/naming/token creation guidance.        |
 
 When a feature or provider gate changes, update the owning task/evidence and matrix first, then this summary and the relevant HLD/LLD/application section. A document's existence alone is never evidence that a feature works.

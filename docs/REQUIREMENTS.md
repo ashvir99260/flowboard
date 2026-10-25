@@ -183,3 +183,7 @@ A new contributor must be able to run `docker compose up --build` from the repos
 ## Follow-up requirement — named frontend query hooks (25 October 2026)
 
 Separate frontend TanStack Query setup from view components into custom hooks with descriptive names such as `useGetUserQuery`. Use the existing generated API client and preserve session isolation, pagination, error handling and UI behavior.
+
+## Follow-up requirement — API and UI authoring rules (25 October 2026)
+
+Document exact API DTO filenames ending in `.dto.ts`, integration tests ending in `.integration.spec.mjs` and unit tests ending in `.unit.spec.mjs`. Explain where API features live and how modules are created and registered. Provide equivalent UI guidance for component creation, file/export naming, folder ownership, composition and theme/token usage. Keep the rules discoverable in scoped repository instructions and distinguish existing exceptions from enforced conventions.
