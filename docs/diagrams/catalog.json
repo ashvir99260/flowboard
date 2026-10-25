@@ -9,7 +9,7 @@
       "chapter": "01-system",
       "title": "System context",
       "status": "Implemented",
-      "description": "The browser uses the web proxy for REST and a direct authenticated socket for realtime. It never connects to Redis or PostgreSQL. The worker stores activity and publishes invalidations through the API.",
+      "description": "The browser uses the web proxy for REST and an authenticated API socket. Worker-owned shared dispatch feeds BullMQ; the activity consumer persists history and publishes invalidations. Clients never connect to the data stores.",
       "references": [
         ["Architecture", "../../ARCHITECTURE.md"],
         ["HLD", "../HLD.md"]
@@ -22,7 +22,7 @@
       "chapter": "01-system",
       "title": "Package dependency boundaries",
       "status": "Implemented",
-      "description": "Solid arrows show permitted runtime imports. The OpenAPI-to-API exception is build-only; apps do not import other apps. The contracts package stays framework-free.",
+      "description": "Runtime imports flow from apps to packages. Shared jobs serves worker dispatch and API compatibility seams; OpenAPI-to-API is build-only. Contracts remain framework-free.",
       "references": [["Package matrix", "../../ARCHITECTURE.md#package-boundary-matrix"]],
       "source": "sources/c02-package-dependency-boundaries.mmd",
       "svg": "svg/c02-package-dependency-boundaries.svg"
@@ -192,7 +192,7 @@
       "status": "Implemented",
       "description": "Statuses and fields begin concurrently; validated statuses determine the first task request for each column. The complete bundle must have compatible versions before rendering, including empty resolved columns.",
       "references": [
-        ["Board queries", "../../apps/web/src/features/board/use-board.ts"],
+        ["Board queries", "../../apps/web/src/features/board/useBoard.ts"],
         ["Architecture board flow", "../../ARCHITECTURE.md#load-a-board-then-drag-a-card"]
       ],
       "source": "sources/c15-load-a-consistent-board.mmd",
@@ -205,8 +205,8 @@
       "status": "Implemented",
       "description": "Optimistic state is a temporary task/list projection. Settlement removes that projection and refetches authoritative lists; failure repairs its own preview while preserving newer changes. Keyboard and explicit move controls share the server operation.",
       "references": [
-        ["Mutation coordination", "../../apps/web/src/features/board/use-task-mutation.ts"],
-        ["Board drag adapter", "../../apps/web/src/features/board/board-dnd.tsx"]
+        ["Mutation coordination", "../../apps/web/src/features/board/useTaskPlacementMutation.ts"],
+        ["Board drag adapter", "../../apps/web/src/features/board/BoardDnd.tsx"]
       ],
       "source": "sources/c16-optimistic-drag-lifecycle.mmd",
       "svg": "svg/c16-optimistic-drag-lifecycle.svg"
@@ -216,10 +216,10 @@
       "chapter": "04-frontend",
       "title": "Form submit and recovery",
       "status": "Implemented",
-      "description": "Local invalid input does not trigger a success request/toast. Server failures preserve the draft, and conflicts never silently replace an edit with another client\u2019s data.",
+      "description": "Local invalid input does not trigger a success request/toast. Server failures preserve the draft, and conflicts never silently replace an edit with another client’s data.",
       "references": [
-        ["Task form", "../../apps/web/src/features/tasks/task-form.tsx"],
-        ["Task writes", "../../apps/web/src/features/tasks/use-task-write.ts"],
+        ["Task form", "../../apps/web/src/features/tasks/TaskForm.tsx"],
+        ["Task writes", "../../apps/web/src/features/tasks/useTaskWriteMutation.ts"],
         ["Form system", "../FORM_SYSTEM.md"]
       ],
       "source": "sources/c17-form-submit-and-recovery.mmd",
@@ -306,9 +306,9 @@
     {
       "id": "C24",
       "chapter": "06-delivery",
-      "title": "Seven CI lanes and release gates",
+      "title": "Eight CI lanes and release gates",
       "status": "Implemented",
-      "description": "In public repositories, all seven check instances start independently; each lane still respects its own build dependencies. Current gated CD targets the legacy providers, not Render.",
+      "description": "Five workspace checks, UI tests and two Compose checks start independently. Main publication targets GHCR; protected settings gate the temporary Vercel source deployment.",
       "references": [
         ["GitHub workflow", "../../.github/workflows/delivery.yml"],
         ["CI details", "../CI_CD.md"]
@@ -346,8 +346,8 @@
       "id": "C27",
       "chapter": "06-delivery",
       "title": "One image with different runtime configuration",
-      "status": "Runtime seams implemented; promotion planned",
-      "description": "The runtime seams and image publication exist. End-to-end ordered multi-environment promotion is still planned. Each environment needs isolated data and Redis; config changes restart the same image rather than rebuild it.",
+      "status": "Runtime seams implemented; ECR and promotion planned",
+      "description": "Runtime configuration seams and current GHCR publication exist. ECR integration and ordered unchanged-image promotion remain planned, with isolated data and Redis per environment.",
       "references": [
         ["Runtime injection", "../DELIVERY_OPERATIONS.md#where-environment-settings-enter"],
         ["Promotion contract", "../PROMOTION.md"]
@@ -358,9 +358,9 @@
     {
       "id": "C28",
       "chapter": "07-hosting",
-      "title": "Selected Vercel Services topology",
-      "status": "Configured; not deployed",
-      "description": "The repository config routes public web and Socket.IO traffic to Vercel Services and runs the worker as a Daemon. The legacy deployment adapter is not reconciled; preview worker processing and external Redis capacity remain open.",
+      "title": "Temporary Vercel demo topology",
+      "status": "Verified in P38-03",
+      "description": "The temporary demo routes public pages/REST to web and Socket.IO to API; web uses the private binding. Neon, Upstash TLS Redis and the worker daemon were exercised in P38-03. This is not future ECR production.",
       "references": [["Vercel setup", "../VERCEL.md"]],
       "source": "sources/c28-planned-render-topology.mmd",
       "svg": "svg/c28-planned-render-topology.svg"
@@ -368,11 +368,12 @@
     {
       "id": "C29",
       "chapter": "07-hosting",
-      "title": "Vercel activation gates",
-      "status": "Planned",
-      "description": "The plan has explicit workflow, infrastructure, implementation and live-verification gates. A committed config cannot substitute for live service readiness and product acceptance evidence.",
+      "title": "Demo verification and remaining gates",
+      "status": "Demo verified; CI activation pending",
+      "description": "P38 implementation and manual live checks are complete. Protected main-branch CD activation remains separate; ECR publication and unchanged-image promotion are future work.",
       "references": [
-        ["Vercel deployment gaps", "../VERCEL.md#build-deployment-and-current-gaps"],
+        ["Live demo evidence", "../evidence/P38-03.md"],
+        ["Current gates", "../VERCEL.md#one-project-deployment-and-ci"],
         ["Open tasks", "../TASKS.md"]
       ],
       "source": "sources/c29-render-activation-gates.mmd",
@@ -383,7 +384,7 @@
       "chapter": "07-hosting",
       "title": "Selected-candidate promotion",
       "status": "Planned",
-      "description": "The future promoter must select explicit manifests, preserve image identity and record environment/configuration evidence. A new main commit must not silently replace a candidate already in testing.",
+      "description": "The future ECR promoter selects compatible manifests and preserves exact image identity with runtime settings. A new main commit must not replace a candidate already in testing.",
       "references": [
         ["Build-once contract", "../PROMOTION.md"],
         ["Runtime operations", "../DELIVERY_OPERATIONS.md#data-promotion-and-rollback"]
@@ -391,5 +392,10 @@
       "source": "sources/c30-selected-candidate-promotion.mmd",
       "svg": "svg/c30-selected-candidate-promotion.svg"
     }
-  ]
+  ],
+  "deploymentReview": {
+    "sourceSnapshot": "507a0a8",
+    "date": "2026-10-26",
+    "diagramIds": ["C01", "C02", "C24", "C27", "C28", "C29", "C30"]
+  }
 }

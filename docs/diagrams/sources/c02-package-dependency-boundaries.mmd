@@ -18,6 +18,11 @@ flowchart LR
   API --> Contracts
   API --> Database[database]
   API --> Logger[logger]
+  API --> Jobs[jobs]
+  Worker --> Jobs
+  Jobs --> Contracts
+  Jobs --> Database
+  Jobs --> Logger
   Worker --> Contracts
   Worker --> Database
   Worker --> Logger

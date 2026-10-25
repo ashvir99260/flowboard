@@ -26,7 +26,7 @@ D155 records the user's selection of these local enhancements for implementation
 
 ## External delivery gates
 
-Provider setup and live verification remain distinct from local product completion: first release publication, Render/Neon preview activation, and four-environment build-once promotion require their owning tasks and configured infrastructure. See [delivery operations](DELIVERY_OPERATIONS.md), [Render](RENDER.md), [CI/CD](CI_CD.md) and [promotion](PROMOTION.md). A plan or successful local build is not proof of a deployed environment.
+The temporary Vercel/Neon/Upstash demo has live evidence in [P38-03](evidence/P38-03.md); [P38-05](evidence/P38-05.md) verifies Neon integration. Protected main-branch CD activation and first GHCR publication remain separate from that manual rollout. ECR integration (P39-02), the AWS application runtime and unchanged-image promotion (P00-11/P00-12) are future work. See [run modes](RUN_AND_DEPLOY.md), [delivery operations](DELIVERY_OPERATIONS.md) and [open tasks](TASKS.md).
 
 ## Consider later
 

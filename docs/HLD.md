@@ -1,6 +1,6 @@
 # Flowboard high-level design
 
-As-built reference, 25 October 2026. Core implementation baseline: `3cc62b0` (P19-01); runtime and deployment direction updated 26 October 2026 under D171. [P38-03](evidence/P38-03.md) records the temporary live demo; future ECR production remains planned. Start with the [application guide](APPLICATION_GUIDE.md) for a product tour, or the [low-level design](LLD.md) for implementation details. The [delivery summary](DELIVERY_SUMMARY.md) distinguishes completed work from open gates.
+As-built reference, 25 October 2026. Core implementation baseline: `3cc62b0` (P19-01); runtime and deployment reviewed against `507a0a8` on 26 October 2026 under D171. [P38-03](evidence/P38-03.md) records the temporary live demo; future ECR production remains planned. Start with the [application guide](APPLICATION_GUIDE.md) for a product tour, or the [low-level design](LLD.md) for implementation details. The [delivery summary](DELIVERY_SUMMARY.md) distinguishes completed work from open gates.
 
 Current source links follow the P21-01 UI module layout; the described public behavior is unchanged by that refactor.
 
@@ -24,14 +24,17 @@ flowchart LR
     REST[REST v1] --> Guards[Authentication and permissions]
     Guards --> Modules[Domain modules]
     Modules --> Tenant[Tenant repositories]
-    Dispatch[Outbox dispatcher]
     Gateway[Socket.IO gateway]
     Gateway --> Guards
+  end
+  subgraph WorkerProcess[Worker daemon]
+    Dispatch[Shared jobs outbox dispatcher]
+    Worker[Activity consumer]
   end
   Tenant --> PG[(PostgreSQL: authoritative data)]
   PG --> Dispatch
   Dispatch --> Redis[(Redis: jobs and pub-sub)]
-  Redis --> Worker[BullMQ worker]
+  Redis --> Worker
   Worker --> PG
   Worker --> Redis
   Redis --> Gateway
@@ -42,18 +45,19 @@ REST is the shared contract for the web app and second-channel clients. The web 
 
 ## Responsibilities and boundaries
 
-| Area             | Owns                                                                                        | Boundary                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Web              | Routes, session lifecycle, scoped query cache, domain forms and optimistic interaction      | Uses generated API operations; cannot import the API app or raw persistence.        |
-| Shared UI        | Theme, controls, composed views, Data Grid and notification presentation                    | Plain props/callbacks; no sessions, API requests or permission decisions.           |
-| Shared forms     | React Hook Form bindings and safe JSON field presentation                                   | Reuses UI; web chooses domain schemas, defaults, submissions and conflict policy.   |
-| Contracts        | Zod schemas/types, enums, errors, pagination, events and pure resolution                    | Imports Zod and its own files only; no framework or I/O.                            |
-| API              | Authentication, authorization, REST/WebSocket boundaries and domain orchestration           | Verifies current DB identity; services call repository capabilities.                |
-| Database         | Prisma, migrations, SQL, identity access, tenant transactions and outbox records            | Sole raw database owner; tenant repositories fail closed outside their transaction. |
-| Worker           | Validates persisted event references, writes activity idempotently, publishes invalidations | Jobs carry references; the database remains authoritative.                          |
-| Delivery tooling | App dependency graphs, releases, images and preview deployment orchestration                | Runs in CI/operations; not an application runtime dependency.                       |
+| Area             | Owns                                                                                   | Boundary                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Web              | Routes, session lifecycle, scoped query cache, domain forms and optimistic interaction | Uses generated API operations; cannot import the API app or raw persistence.        |
+| Shared UI        | Theme, controls, composed views, Data Grid and notification presentation               | Plain props/callbacks; no sessions, API requests or permission decisions.           |
+| Shared forms     | React Hook Form bindings and safe JSON field presentation                              | Reuses UI; web chooses domain schemas, defaults, submissions and conflict policy.   |
+| Contracts        | Zod schemas/types, enums, errors, pagination, events and pure resolution               | Imports Zod and its own files only; no framework or I/O.                            |
+| API              | Authentication, authorization, REST/WebSocket boundaries and domain orchestration      | Verifies current DB identity; services call repository capabilities.                |
+| Database         | Prisma, migrations, SQL, identity access, tenant transactions and outbox records       | Sole raw database owner; tenant repositories fail closed outside their transaction. |
+| Shared jobs      | Outbox polling, fenced claims, queue publication and lifecycle                         | Reusable Node package; no Nest or app imports.                                      |
+| Worker           | Owns dispatch and consumption, writes activity idempotently, publishes invalidations   | Jobs carry references; the database remains authoritative.                          |
+| Delivery tooling | App dependency graphs, releases, images and preview deployment orchestration           | Runs in CI/operations; not an application runtime dependency.                       |
 
-The [package inventory](APPLICATION_GUIDE.md#workspace-packages) explains all 15 workspaces. The [architecture reference](../ARCHITECTURE.md) remains the change-impact map and [agent guides](agents/README.md) explain coding rules.
+The [package inventory](APPLICATION_GUIDE.md#workspace-packages) explains all 16 workspaces: three apps and thirteen packages. The [architecture reference](../ARCHITECTURE.md) remains the change-impact map and [agent guides](agents/README.md) explain coding rules.
 
 ## Domain and data ownership
 
@@ -102,6 +106,32 @@ flowchart LR
 
 Future production uses the Docker images stored in ECR. ECR publishing and the AWS service that runs the containers are not implemented or selected. The future promoter will reuse each selected digest across dev/qa/stage/prod with separate runtime settings and data. Current GHCR publication and Vercel source-based demo deployment remain accurately documented; neither is proof of ECR activation or unchanged-image promotion. See [delivery](DELIVERY.md), [CI/CD](CI_CD.md), and [promotion](PROMOTION.md).
 
+### Temporary hosted request paths
+
+```mermaid
+flowchart LR
+  Browser[Browser] -->|pages and /api/v1| Web[Vercel Next.js web]
+  Web -->|runtime API_INTERNAL_URL binding: /v1| API[Vercel Nest API]
+  Browser -->|public /socket.io rewrite| API
+  API -->|pooled application connection| PG[(Neon PostgreSQL)]
+  API -->|direct migration connection| PG
+  API --> Redis[(Upstash TLS Redis)]
+  subgraph Daemon[Worker daemon: no public ingress]
+    Dispatch[Outbox dispatch]
+    Consumer[Activity consumer]
+  end
+  PG --> Dispatch
+  Dispatch --> Redis
+  Redis --> Consumer
+  Consumer --> PG
+  Consumer --> Redis
+  Redis -->|authorized API fanout| API
+```
+
+The root configuration exposes web publicly and only the API's Socket.IO path directly; REST crosses the private binding through the web proxy. The worker daemon requests 1 GiB in `iad1` and needs Vercel's technical production target. That platform label does not change the temporary nature of this demo. PostgreSQL and Redis credentials remain server-only. The [LLD](LLD.md#runtime-startup-and-deployment-wiring) describes startup ordering, connections, cookies and failure cleanup.
+
+The main workflow runs eight independent verification instances, then publishes affected apps to GHCR and conditionally deploys the temporary demo from source. P38-03 records a manual verified deployment; enabling protected main-branch CD is separate. ECR publication, the AWS application runtime and same-image environment promotion are future work, not properties established by the Vercel source build.
+
 ## Scale, reliability and tradeoffs
 
 | Choice                                   | Benefit at hobby scale                                                    | Cost or next step                                                                       |
@@ -119,4 +149,4 @@ API instances can scale horizontally with common PostgreSQL/Redis and the Socket
 
 ## Verification boundary
 
-[P19-01](evidence/P19-01.md) records the baseline's 1,066 passing tests, including 28 stories and 156 web checks. [P12-03](evidence/P12-03.md) is the historical clean-checkout/container acceptance record; it is not a fresh image run for P19/P20. This documentation task validates source consistency, links and formatting. The [matrix](REQUIREMENTS_MATRIX.md) and [task evidence](evidence/README.md) govern completion claims.
+[P19-01](evidence/P19-01.md) records the baseline's 1,066 passing tests, including 28 stories and 156 web checks. [P12-03](evidence/P12-03.md) is the historical clean-checkout/container acceptance record; it is not a fresh image run for P19/P20. [P38-03](evidence/P38-03.md) records the later temporary Vercel/Neon/Upstash rollout. [P39-03](evidence/P39-03.md) validates this deployment documentation through source consistency, diagram rendering, links and formatting; it does not rerun the live rollout. The [matrix](REQUIREMENTS_MATRIX.md) and [task evidence](evidence/README.md) govern completion claims.

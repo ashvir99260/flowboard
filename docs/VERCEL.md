@@ -89,3 +89,7 @@ HOSTNAME=localhost PORT=3400 API_INTERNAL_URL=http://localhost:3401 WEB_ALLOWED_
 ```
 
 Open `http://localhost:3400` and create a new account. These explicit commands verify hosted services; ordinary `pnpm dev` retains the existing per-app local development environment. Production uses HTTPS, secure cookies and the exact stable Vercel alias for allowed origins and realtime. An immutable deployment URL is not automatically allowlisted.
+
+## Local mirror of hosted settings
+
+An ignored `.env.vercel.local` may hold a private copy of the hosted server settings for troubleshooting. Keep it outside Git and Docker build contexts, restrict file permissions, and never copy server secrets into browser variables. It is not the normal input to `pnpm run dev` or the setup-free Compose preview; use the local examples in [run modes](RUN_AND_DEPLOY.md). Do not start local processes against hosted data unless intentionally testing that hosted environment.

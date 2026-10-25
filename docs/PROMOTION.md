@@ -54,16 +54,16 @@ Each environment needs isolated database data and a separate Redis instance. Cur
 
 ## Current implementation versus this target
 
-| Current component                                       | Compatibility                                                                                                                                                             |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Local Compose and per-app Dockerfiles                   | Full local preview and the Docker artifact foundation for future ECR production                                                                                           |
-| Independent release tags and digest manifests           | Reuse as the foundation                                                                                                                                                   |
-| Existing Northflank API/worker deployment by digest     | Historical provider path; not the selected deployment topology                                                                                                            |
-| Vercel Services deployment from source                  | Builds the source for the deployment; **does not satisfy build-once promotion**                                                                                           |
-| Shared-preview CD job and latest-release reconciliation | Does not implement ordered four-environment promotion of an explicitly selected candidate                                                                                 |
-| Public runtime bootstrap                                | REST uses the runtime-only server proxy (P07-04); validated `REALTIME_PUBLIC_URL` is read at server request time for Socket.IO (P11-03). Full promotion remains separate. |
+| Current component                                   | Compatibility                                                                                                                                                             |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local Compose and per-app Dockerfiles               | Full local preview and the Docker artifact foundation for future ECR production                                                                                           |
+| Independent release tags and digest manifests       | Reuse as the foundation                                                                                                                                                   |
+| Existing Northflank API/worker deployment by digest | Historical provider path; not the selected deployment topology                                                                                                            |
+| Vercel Services deployment from source              | Builds the source for the deployment; **does not satisfy build-once promotion**                                                                                           |
+| Gated one-project Vercel source deployment          | Does not implement ordered four-environment promotion of an explicitly selected candidate                                                                                 |
+| Public runtime bootstrap                            | REST uses the runtime-only server proxy (P07-04); validated `REALTIME_PUBLIC_URL` is read at server request time for Socket.IO (P11-03). Full promotion remains separate. |
 
-The current `CD_ENABLED=true` gate enables only the configured Vercel Hobby Services deployment after verification and publication. It does not provision credentials or provide the four-environment contract above. Keep it off until live acceptance passes. P00-08 is historical evidence of the earlier production-only design; P00-13 superseded that target without implementing multi-service Vercel delivery.
+The current `CD_ENABLED=true` gate enables only the configured Vercel Hobby Services deployment after verification and GHCR publication. P38-03 verifies a manual live demo; protected main-branch CD activation remains separate. The gate does not provision credentials or implement the four-environment contract. P00-08/P00-13 describe superseded provider paths; P38-02 implements the current one-project adapter.
 
 ## Selected hosting path
 

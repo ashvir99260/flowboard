@@ -1,6 +1,6 @@
 # Flowboard low-level design
 
-As-built at `3cc62b0` (P19-01), 25 October 2026. Read [HLD](HLD.md) first. This document explains implementation seams and invariants; [field reference](FIELD_REFERENCE.md), [database design](DATABASE_DESIGN.md), [API catalog](API_CATALOG.md) and generated [OpenAPI](../packages/openapi/openapi.json) retain the exhaustive definitions.
+Core baseline: `3cc62b0` (P19-01). Deployment/runtime review: `507a0a8`, 26 October 2026, including P38 worker ownership and the verified temporary demo. Read [HLD](HLD.md) first. This document explains implementation seams and invariants; [field reference](FIELD_REFERENCE.md), [database design](DATABASE_DESIGN.md), [API catalog](API_CATALOG.md) and generated [OpenAPI](../packages/openapi/openapi.json) retain the exhaustive definitions.
 
 Current UI source links follow the P21-01 camelCase/module refactor, which preserves these public contracts.
 
@@ -8,15 +8,17 @@ The [diagram atlas](DIAGRAMS.md) provides focused rendered views and editable Me
 
 ## Source map and dependency direction
 
-| Concern                          | Implementation                                           | Responsibility                                                                                              |
-| -------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Transport contracts              | [contracts/src](../packages/contracts/src)               | Strict Zod request/response/event schemas and inferred types.                                               |
-| REST features                    | [api/src/modules](../apps/api/src/modules)               | Auth, workspaces, hierarchy, permissions, statuses, fields, tasks, activity, outbox, realtime and platform. |
-| HTTP infrastructure              | [api/src/core](../apps/api/src/core)                     | Configuration, cursor codec, shared decorators, errors, Swagger and validation infrastructure.              |
-| Persistence                      | [database/src](../packages/database/src)                 | Tenant/identity capabilities, repositories, migrations, ordering, events and seed.                          |
-| Generated transport              | [api-client/src](../packages/api-client/src)             | Generated operations/options; only transport setup/session helpers are hand-authored.                       |
-| Web coordination                 | [web/src/features](../apps/web/src/features)             | Query composition, routing, domain forms, optimistic commands and realtime invalidation.                    |
-| Shared presentation/form binding | [UI](../packages/ui/src), [forms](../packages/forms/src) | Controlled visual components and reusable typed RHF adapters.                                               |
+| Concern                          | Implementation                                           | Responsibility                                                                                                                                     |
+| -------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Transport contracts              | [contracts/src](../packages/contracts/src)               | Strict Zod request/response/event schemas and inferred types.                                                                                      |
+| REST features                    | [api/src/modules](../apps/api/src/modules)               | Auth, workspaces, hierarchy, permissions, statuses, fields, tasks, activity, realtime and platform; outbox compatibility exports remain for tests. |
+| Shared dispatch                  | [jobs/src](../packages/jobs/src)                         | Outbox polling, lease fencing, queue publication, health and cleanup without a Nest dependency.                                                    |
+| Worker process                   | [worker/src](../apps/worker/src)                         | Owns shared dispatch, BullMQ consumption, activity persistence and invalidation publication.                                                       |
+| HTTP infrastructure              | [api/src/core](../apps/api/src/core)                     | Configuration, cursor codec, shared decorators, errors, Swagger and validation infrastructure.                                                     |
+| Persistence                      | [database/src](../packages/database/src)                 | Tenant/identity capabilities, repositories, migrations, ordering, events and seed.                                                                 |
+| Generated transport              | [api-client/src](../packages/api-client/src)             | Generated operations/options; only transport setup/session helpers are hand-authored.                                                              |
+| Web coordination                 | [web/src/features](../apps/web/src/features)             | Query composition, routing, domain forms, optimistic commands and realtime invalidation.                                                           |
+| Shared presentation/form binding | [UI](../packages/ui/src), [forms](../packages/forms/src) | Controlled visual components and reusable typed RHF adapters.                                                                                      |
 
 Dependencies flow from apps toward packages. Contracts have no framework/I/O dependencies. API services do not construct Prisma clients; UI does not call the API. `openapi` alone has a documented build-time API entry. See [backend structure](BACKEND_GUIDELINES.md) and [frontend structure](FRONTEND_GUIDELINES.md).
 
@@ -69,7 +71,7 @@ Nodes and tasks archive through `archivedAt`; public delete does not erase histo
 4. Typed response serialization and Swagger metadata describe the outgoing contract. The global [exception filter](../apps/api/src/core/common/filters/http-exception.filter.ts) sanitizes failures into `{ error: { code, message, details? } }`.
 5. Spec-only [bootstrap](../apps/api/src/spec-bootstrap.ts) exports the real controller/DTO registry without connecting to DB/Redis. `pnpm gen:api` regenerates the committed spec/client. Drift and convention checks are separate commands.
 
-The snapshot contains 47 OpenAPI operations across 34 paths, including two health operations outside `/v1`. Entity responses use `{data}`, paginated responses use `{items,pageInfo}`, and resolved collections carry configuration revisions. `204` has no body. Read the [catalog](API_CATALOG.md) for each method, operationId, schema and permission policy.
+The committed spec at this review contains 49 OpenAPI operations across 36 paths, including two health operations outside `/v1`. Entity responses use `{data}`, paginated responses use `{items,pageInfo}`, and resolved collections carry configuration revisions. `204` has no body. Read the [catalog](API_CATALOG.md) for each method, operationId, schema and permission policy.
 
 | Failure     | Contract meaning                                                                                                              |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -115,6 +117,7 @@ sequenceDiagram
   participant API as Guard and TasksService
   participant DB as Tenant transaction
   participant Queue as Redis and BullMQ
+  participant Dispatch as Worker-owned dispatcher
   participant Worker as Activity worker
   participant WS as Authorized gateways
   UI->>API: Generated mutation with expected versions
@@ -122,12 +125,15 @@ sequenceDiagram
   DB->>DB: Validate source, destination, anchor, fields and assignees
   alt Invalid or stale
     DB-->>API: Roll back
-    API-->>UI: Typed error; preserve draft or undo preview
+    API-->>UI: Typed error and preserve draft or undo preview
   else Valid
     DB->>DB: Write task/order versions and outbox intent
     DB-->>API: Commit typed result
-    API-->>UI: Validate result and refresh affected queries
-    API->>Queue: Dispatcher sends committed event reference
+    par HTTP completion
+      API-->>UI: Validate result and refresh affected queries
+    and Committed background delivery
+    Dispatch->>DB: Claim committed event with a fenced lease
+    Dispatch->>Queue: Enqueue persisted event reference
     Queue->>Worker: Deliver reference, possibly more than once
     Worker->>DB: Verify event and insert status activity idempotently
     Worker->>Queue: Publish trusted internal event
@@ -135,6 +141,7 @@ sequenceDiagram
     Worker->>DB: Mark delivery after successful publish
     WS-->>UI: Minimal permitted invalidation
     UI->>API: Refetch authoritative pages
+    end
   end
 ```
 
@@ -160,9 +167,35 @@ Transient failures retry with capped backoff, even when the activity already exi
 
 Gateways authenticate JWTs, validate Origins, authorize subscriptions and recheck recipients before emitting. Public messages do not carry task content or inaccessible destination IDs. The optional recipient-relative `self` flag is negotiated for notification-capable clients; older clients retain the previous payload shape. Web deduplicates invalidations and clears listeners on scope changes. A successful current-connection subscription acknowledgement triggers another REST resync, catching writes committed during asynchronous authorization/join. Acknowledgements for disposed connections or no-longer-requested lists are ignored. Toastify renders action outcomes and eligible remote notices, while durable history remains the activity feed.
 
+## Runtime startup and deployment wiring
+
+[API startup](../apps/api/src/main.ts) validates configuration, runs database initialization, constructs request/auth/socket services, then listens. It does not construct the normal outbox runtime. The API `modules/outbox` exports preserve optional test injection into the application factory; they do not transfer production polling back to HTTP functions. [Spec bootstrap](../apps/api/src/spec-bootstrap.ts) remains separate and connects to neither database nor Redis.
+
+[Worker startup](../apps/worker/src/main.ts) composes the activity consumer and shared jobs runtime. [Lifecycle coordination](../apps/worker/src/runtime.ts) waits for the consumer, starts dispatch, then waits for dispatch readiness. Startup failure and shutdown close both; readiness includes both components. The worker owns continuous polling because a Vercel API function can suspend after its request finishes. Shutdown and retry behavior remain part of the shared lifecycle and database fencing, not an in-memory promise attached to a request.
+
+[Database initialization](../packages/database/src/initialize.ts) uses a dedicated PostgreSQL advisory lock, checked-in migrations and conditional demo seeding. `DATABASE_URL_UNPOOLED` selects the direct migration/lock connection when present; application repositories use pooled `DATABASE_URL`. [The client](../packages/database/src/client.ts) uses Prisma's `@prisma/adapter-pg` and `pg`, with a maximum of ten connections per client. This is the existing Node/PostgreSQL architecture; no Neon HTTP driver or Edge runtime is introduced. Connection counts must be considered across all API/worker instances.
+
+| Mode                       | Startup and configuration boundary                                                                                                                                                                                                                                                  |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full local Compose preview | PostgreSQL/Redis become healthy, API migrates/seeds, then dependent apps start. Defaults require no manual env file; secrets and production URLs are unnecessary.                                                                                                                   |
+| Native development         | Only PostgreSQL/Redis run in Docker. App-specific local files configure native processes; initialize an empty database through the API once before `pnpm run dev` starts all three apps.                                                                                            |
+| Temporary Vercel demo      | Server-only project settings provide Neon/Upstash/auth values; web receives its private API binding at runtime. The database must be initialized before the daemon consumes events; do not assume Compose dependency ordering exists on Vercel. Hosted demo seeding stays disabled. |
+| Future ECR production      | Per-app images and unchanged-digest promotion are planned. Inject settings/secrets at startup; the AWS runtime and registry integration are not configured.                                                                                                                         |
+
+See [run modes](RUN_AND_DEPLOY.md) for exact local commands. The current [root API](../Dockerfile.api) and [worker](../Dockerfile.worker) Dockerfiles use Turbo pruning and repository-root build context for both Compose and Vercel. The [web Dockerfile](../apps/web/Dockerfile) supports Compose/image releases; the Vercel web service instead uses the native Next.js source builder. Current release publication targets GHCR, so the temporary source-built demo does not prove future ECR image promotion.
+
+### Public requests and private bindings
+
+1. Browser requests use the generated client with base `/api`, producing `/api/v1/...` on the web origin. The [Next.js proxy](../apps/web/src/server/apiProxy.ts) forwards only the allowed request shape to `/v1/...` on runtime `API_INTERNAL_URL`; it owns no domain logic.
+2. In Vercel, the sole service binding is web → api. It is injected into server request handling, never a browser bundle, build step or middleware. REST remains internal behind web; local direct API tools may use `http://localhost:3001/v1`.
+3. The public `/socket.io/*` rewrite goes to API before the catch-all goes to web. Browser sockets use the public project origin, WebSocket transport and an in-memory JWT; API guards still verify session, membership and subscription access.
+4. Refresh cookies belong to the web origin, with the existing proxy allowlists and Origin checks. Neon URLs, Redis credentials and signing secrets remain server-only. The worker has no public ingress and no service binding; it uses PostgreSQL and Redis directly.
+
+The [Vercel configuration](../vercel.json) declares a 1 GiB worker daemon in `iad1`. Vercel's technical production target is needed for that daemon; it is still a temporary project demo. Automatic Vercel Git deployments are disabled. The repository's separate main-only deployment job waits for checks/publication and remains gated by protected settings. P38-03 is evidence of the manual live rollout, not evidence that protected GitHub CD has run.
+
 ## Tests and limits
 
-The [delivery summary](DELIVERY_SUMMARY.md#verification-and-execution-record) links the recorded pure-contract, real-PostgreSQL/API, worker and browser verification. Important cases include foreign IDs, private ancestors, stale configuration, status/field deletion in use, move rollback, refresh replay, duplicate delivery and dirty drafts. P20 itself checks documentation, not new application behavior.
+The [delivery summary](DELIVERY_SUMMARY.md#verification-and-execution-record) links the recorded pure-contract, real-PostgreSQL/API, worker and browser verification. Important cases include foreign IDs, private ancestors, stale configuration, status/field deletion in use, move rollback, refresh replay, duplicate delivery and dirty drafts. P20 and the [P39-03 deployment refresh](evidence/P39-03.md) check documentation; [P38-03](evidence/P38-03.md) records the separate live demo verification.
 
 Deliberate limits are workspace-wide write serialization, dense reordering, bounded page chains, whole-workspace tree evaluation, and no durable socket replay. Search, general container/task restoration, OIDC, teams, outgoing webhooks and immutable multi-environment promotion are not implemented by these flows. See [open gates](DELIVERY_SUMMARY.md#open-gates-and-limits).
 

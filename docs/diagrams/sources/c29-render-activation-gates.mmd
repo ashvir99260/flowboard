@@ -1,13 +1,13 @@
 ---
-title: "C29 — Vercel activation gates · Planned"
+title: "C29 — Demo verification and remaining gates · Demo verified; CI activation pending"
 ---
 flowchart TD
-  Workflow[Reconcile deployment workflow to Vercel Services] --> Resources[Configure project, Neon and external Redis]
-  Resources --> Preview[Resolve preview worker processing design]
-  Preview --> Adapter[Implement and test deployment adapter]
-  Adapter --> Enable[Enable gated Vercel deployment path]
-  Enable --> Ready[Verify deployed service readiness]
-  Ready --> Product[Test auth, tenant access, writes, activity and realtime]
-  Product --> Recovery[Test restart and retry behavior]
-  Recovery --> Evidence[Record live evidence]
-  Legacy[Keep CD_ENABLED off until gates pass] -. constraint .-> Enable
+  Workflow[P38-02: single-project adapter implemented] --> Resources[P38-05: existing Neon and Upstash connected]
+  Ownership[P38-04: worker owns dispatch and consumption] --> Ready
+  Resources --> Ready[P38-03: actual deployment and readiness verified]
+  Ready --> Product[Auth, tenancy, writes, activity and realtime verified]
+  Product --> Recovery[Restart, retry and live evidence recorded]
+  Recovery -. still separate .-> Enable[Pending: protected main-branch CD activation]
+  Enable --> Main[Future automatic temporary demo deployment]
+  Recovery -. future infrastructure .-> ECR[P39-02: ECR integration and AWS runtime selection]
+  ECR -. future proof .-> Promotion[P00-11/P00-12: promote same image]

@@ -136,6 +136,8 @@ Services orchestrate mutations using transaction-bound repositories: lock, re-re
 
 Prisma/PostgreSQL connections belong to the database package. Redis connections may be owned by API runtime providers (as in the existing auth runtime and dependency probe) with explicit cleanup; feature controllers/services consume injected capabilities rather than opening per-request connections.
 
+Normal worker runtime owns both shared outbox dispatch (`packages/jobs`) and BullMQ consumption. API requests commit outbox intent atomically but do not start background polling tied to the HTTP function lifetime. API outbox reexports remain compatibility/test seams. Keep database initialization in API startup and shared dispatch cleanup in the worker lifecycle; see [LLD](LLD.md#runtime-startup-and-deployment-wiring).
+
 Controllers return deliberate response DTO projections. Never return complete database rows, ORM models or an entity merely because its current fields look safe. Password hashes, refresh digests, lease/internal error fields and private columns must stay out of the wire response and the generated spec. See [response projections](BACKEND_CONTRACTS.md#5-response-projections-and-audit-fields).
 
 ## DTOs, Swagger and generated clients

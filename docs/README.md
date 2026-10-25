@@ -11,7 +11,7 @@ New to the repository? Read these in order:
 
 Explore the [diagram atlas](DIAGRAMS.md) for 30 rendered architecture, security, domain, frontend, queue and delivery views. Each links to editable Mermaid source and its owning reference.
 
-These are as-built summaries with a named source snapshot. The following documents retain the detailed contracts and operating rules:
+The HLD, LLD, architecture and deployment atlas were reconciled to `507a0a8` on 26 October 2026. Their P38 references are recorded live evidence; P39 documentation checks do not rerun that deployment. Historical baselines remain labeled. These are as-built summaries with a named source snapshot. The following documents retain the detailed contracts and operating rules:
 
 | Need                                         | Canonical reference                                                                                                                                       |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |

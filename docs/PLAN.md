@@ -1,6 +1,6 @@
 # Flowboard Implementation Plan
 
-**Status:** The local MVP is implemented and verified through P12-03, including a clean checkout and both Docker modes. Updated 25 October 2026. The P13 composable UI refinement is complete and verified. P14 shared RHF bindings and JSON field presentation are implemented and verified across auth and product editing forms. P15 HSL/10px-rem styling is implemented and verified, preserving default geometry and browser font preferences. Hosted preview activation, first publication and future environment promotion remain separately tracked.
+**Status:** The local MVP and P12 clean-checkout/Compose acceptance are implemented and verified. Later UI work keeps its own task evidence. P38-03/P38-05 verify the temporary Vercel/Neon/Upstash deployment and real hosted persistence. Main-branch CD activation, first release publication, ECR integration and future promotion retain separate gates. Deployment review: 26 October 2026.
 **Goal:** Build a self-hosted project manager that teaches sound architecture while remaining manageable as a hobby project.
 
 **Current run/deployment direction (D171):** Native `pnpm run dev` with PostgreSQL/Redis in Docker for development; zero-env full Compose for local previews; Vercel only for temporary hosted demos; Docker images in ECR for future production. Current publication is GHCR, and ECR/AWS runtime integration remains planned. [Run modes](RUN_AND_DEPLOY.md) owns the workflow details.
@@ -74,7 +74,7 @@ Feature source lives under `apps/api/src/modules/<feature>/` (D93). Auth and pla
 | `apps/web`                   | Routes, auth state, data hooks, board/list/drawer/config composition. Imports contracts/ui/forms/api-client.                                                                          |
 | `packages/contracts`         | Zod schemas, inferred types, enums, errors, pagination, event schemas, pure resolution/validation. Only external runtime dependency is Zod; no framework or other workspace imports.  |
 | `packages/database`          | Prisma schema, migrations, seed, generated Prisma client, tenant repositories and transaction helpers shared by API/worker. Imports contracts and logger.                             |
-| `packages/jobs`              | Shared durable outbox dispatch, queue publication and lifecycle                                                                                                                       | `contracts`, `database`, `logger`; no framework or app imports |
+| `packages/jobs`              | Shared durable outbox dispatch, queue publication and lifecycle; imports contracts, database and logger, with no framework or app imports.                                            |
 | `packages/logger`            | Pino-backed structured logs and Node async request context shared by API/database/worker; no framework or other workspace imports.                                                    |
 | `packages/openapi`           | Export, normalization, lint and drift checks for the API spec. Sole build-tool exception: imports API's exported spec bootstrap; never shipped into a browser/runtime API dependency. |
 | `packages/api-client`        | Committed `src/generated/**` from Hey API; separate handwritten `src/setup-client.ts`. Exports SDK, types, query/mutation options.                                                    |

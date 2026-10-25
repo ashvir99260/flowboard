@@ -4,7 +4,7 @@
 
 ## C01 — System context
 
-**Status: Implemented.** The browser uses the web proxy for REST and a direct authenticated socket for realtime. It never connects to Redis or PostgreSQL. The worker stores activity and publishes invalidations through the API.
+**Status: Implemented.** The browser uses the web proxy for REST and an authenticated API socket. Worker-owned shared dispatch feeds BullMQ; the activity consumer persists history and publishes invalidations. Clients never connect to the data stores.
 
 ![System context. Implemented.](svg/c01-system-context.svg)
 
@@ -12,7 +12,7 @@
 
 ## C02 — Package dependency boundaries
 
-**Status: Implemented.** Solid arrows show permitted runtime imports. The OpenAPI-to-API exception is build-only; apps do not import other apps. The contracts package stays framework-free.
+**Status: Implemented.** Runtime imports flow from apps to packages. Shared jobs serves worker dispatch and API compatibility seams; OpenAPI-to-API is build-only. Contracts remain framework-free.
 
 ![Package dependency boundaries. Implemented.](svg/c02-package-dependency-boundaries.svg)
 

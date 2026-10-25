@@ -39,7 +39,7 @@ Branch protection should require `Workspace / build`, `Workspace / lint`, `Works
 
 ## Exact checks and dependency graph
 
-Source: [`.github/workflows/delivery.yml`](../.github/workflows/delivery.yml). PR open/update/reopen/title edits, main pushes and manual dispatch trigger verification. All eight instances below start independently, subject to runner capacity; they do not run sequentially after each other. Each runner has its own checkout and frozen pnpm install. The earlier C24 diagram is a snapshot of the preceding seven-job workflow.
+Source: [`.github/workflows/delivery.yml`](../.github/workflows/delivery.yml). PR open/update/reopen/title edits, main pushes and manual dispatch trigger verification. All eight instances below start independently, subject to runner capacity; they do not run sequentially after each other. Each runner has its own checkout and frozen pnpm install. [Atlas C24](diagrams/06-delivery.md#c24--eight-ci-lanes-and-release-gates) shows these eight checks and the current deployment gate.
 
 | Required check name           | What it verifies                                                                                                                                                    |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -72,7 +72,7 @@ The production target is deliberate: Vercel Daemons do not run in previews. This
 
 The demo GitHub environment needs the VERCEL_TOKEN secret plus VERCEL_PROJECT_ID and VERCEL_TEAM_ID variables. The token must belong to the selected account. No Northflank credentials are used. Database, Redis and auth secrets live in Vercel runtime settings; they are not needed by the deployment adapter and must not enter its logs.
 
-The project must already exist, be linked to this GitHub repository and use the Services preset with repository root. Keep CD_ENABLED off until the project, free-tier resources and live acceptance are complete. Root vercel.json disables automatic Git deploys so the verified publication/deployment path remains the owner.
+The project must already exist, be linked to this GitHub repository and use the Services preset with repository root. P38-03 verifies the manual live demo; protected main-branch CD remains disabled until its credentials and activation are explicitly configured. Root vercel.json disables automatic Git deploys so the verified publication/deployment path remains the owner.
 
 ## Readiness and recovery
 
