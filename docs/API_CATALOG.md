@@ -1,6 +1,6 @@
 # Flowboard REST API implementation catalog
 
-Status: **48 REST operations implemented with typed contracts and generated OpenAPI**. Reviewed 25 October 2026. Shared Zod schemas and the committed [OpenAPI document](../packages/openapi/openapi.json) are executable sources; this catalog explains their policy and usage. See task evidence for verification.
+Status: **49 REST operations implemented with typed contracts and generated OpenAPI**. Reviewed 25 October 2026. Shared Zod schemas and the committed [OpenAPI document](../packages/openapi/openapi.json) are executable sources; this catalog explains their policy and usage. See task evidence for verification.
 
 [Workspace RBAC and DTO/entity design](BACKEND_CONTRACTS.md) specifies workspace field inheritance, audit timestamps and decorator-driven Swagger → generated Next.js contracts.
 
@@ -15,6 +15,12 @@ Every operation needs its listed unique lowerCamelCase operationId. Resource nam
 Responses use `{data: T}` for entities and `{items: T[], pageInfo: {nextCursor: string|null, hasNextPage: boolean}}` for paginated collections. Scoped complete collections use `{items: T[], configVersion: number}`. Task/tree responses add `configVersion` and `dataVersion`; 200/201 task mutation responses also contain `changedTaskIds: UUID[]` for refetching renumbered siblings. `204` has no JSON body. The two health success responses intentionally use their documented bare status shape. Error responses always use the shared error envelope below. Datetimes are UTC ISO strings; dates are strict `YYYY-MM-DD` without timezone conversion.
 
 No public delete physically removes nodes/tasks. DELETE archives a live target; a repeat request to an archived/missing target returns 404. Config DELETE removes a local override/definition only after validating its resulting effective state. Bodies on DELETE carry required version guards; the proxy/SDK must preserve them. Workspace root restoration is explicitly implemented below; no container/task restoration, bulk deletion or external webhook delivery endpoint is implied. Task search is an optional list-query parameter.
+
+## Workspace-wide search
+
+`GET /v1/search` (`searchWorkspace`) accepts required `q` plus optional `limit` and `cursor`. It searches live task titles/descriptions and list names in the active workspace. Full ancestor access is resolved before pagination; result breadcrumbs never disclose hidden ancestors. Each result contains `id`, `type` (`task` or `list`), `title`, `containerId` and ancestor-name `path`. The response adds `pageInfo`, `configVersion` and `dataVersion`.
+
+Use the same query and limit for subsequent pages. Cursors bind the caller, workspace, query and both revisions; mismatches fail with 400 and changed snapshots with 409. See [search behavior](SEARCH.md) and [P35-03 evidence](evidence/P35-03.md). The existing list-scoped task search remains available.
 
 ## Identity, access and errors
 

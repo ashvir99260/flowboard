@@ -9,6 +9,7 @@ import { OutboxModule } from './modules/outbox/outbox.module.ts';
 import { PermissionsModule } from './modules/permissions/permissions.module.ts';
 import { PlatformModule } from './modules/platform/platform.module.ts';
 import { RealtimeModule } from './modules/realtime/realtime.module.ts';
+import { SearchModule } from './modules/search/search.module.ts';
 import { StatusesModule } from './modules/statuses/statuses.module.ts';
 import { TasksModule } from './modules/tasks/tasks.module.ts';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module.ts';
@@ -58,6 +59,7 @@ export class AppModule {
         StatusesModule.forDatabase(database, logger, permissions),
         FieldsModule.forDatabase(database, logger, permissions),
         TasksModule.forDatabase(database, auth?.settings.secret, logger, permissions),
+        SearchModule.forDatabase(database, auth?.settings.secret, logger, permissions),
         ActivityModule.forDatabase(database, auth?.settings.secret, logger, permissions),
       ],
     };

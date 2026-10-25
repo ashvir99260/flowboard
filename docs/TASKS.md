@@ -1479,6 +1479,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Commit:** `feat(forms): add status color picker`.
 
 - [ ] **P35-03 — Add authorized workspace search API**
+  - **Implementation:** Complete; final acceptance pending. [Evidence](evidence/P35-03.md).
   - **Goal:** Search tasks and lists throughout the active workspace.
   - **Requirements:** R169.
   - **Files:** Contracts, database repository, API module/DTOs, OpenAPI/client and integration tests.

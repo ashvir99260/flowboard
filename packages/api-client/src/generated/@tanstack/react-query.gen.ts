@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen.js';
-import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, archiveTask, archiveWorkspace, bulkUpdateTasks, createNode, createScopeField, createScopeStatus, createTask, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, getTask, getWorkspace, listNodeGrants, listScopeFields, listScopeStatuses, listTaskActivity, listTasks, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, moveNode, moveTask, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, reorderTask, restoreWorkspace, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateTask, updateWorkspace, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
-import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveWorkspaceData, ArchiveWorkspaceError, ArchiveWorkspaceResponse, BulkUpdateTasksData, BulkUpdateTasksError, BulkUpdateTasksResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, GetTaskData, GetTaskError, GetTaskResponse, GetWorkspaceData, GetWorkspaceError, GetWorkspaceResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListTaskActivityData, ListTaskActivityError, ListTaskActivityResponse, ListTasksData, ListTasksError, ListTasksResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, MoveNodeData, MoveNodeError, MoveNodeResponse, MoveTaskData, MoveTaskError, MoveTaskResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, ReorderTaskData, ReorderTaskError, ReorderTaskResponse, RestoreWorkspaceData, RestoreWorkspaceError, RestoreWorkspaceResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateWorkspaceData, UpdateWorkspaceError, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpdateWorkspaceResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
+import { acceptWorkspaceInvitation, addWorkspaceMember, archiveNode, archiveTask, archiveWorkspace, bulkUpdateTasks, createNode, createScopeField, createScopeStatus, createTask, createWorkspaceInvitation, getCurrentUser, getListResolvedFields, getListResolvedStatuses, getLiveness, getNode, getReadiness, getTask, getWorkspace, listNodeGrants, listScopeFields, listScopeStatuses, listTaskActivity, listTasks, listVisibleTree, listWorkspaceMembers, listWorkspaces, logIn, logOut, moveNode, moveTask, type Options, refreshSession, removeNodeGrant, removeScopeField, removeScopeStatus, removeWorkspaceMember, reorderNode, reorderTask, restoreWorkspace, searchWorkspace, signUp, switchWorkspace, updateNode, updateScopeField, updateScopeStatus, updateTask, updateWorkspace, updateWorkspaceMember, upsertNodeGrant } from '../sdk.gen.js';
+import type { AcceptWorkspaceInvitationData, AcceptWorkspaceInvitationError, AcceptWorkspaceInvitationResponse, AddWorkspaceMemberData, AddWorkspaceMemberError, AddWorkspaceMemberResponse, ArchiveNodeData, ArchiveNodeError, ArchiveNodeResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveWorkspaceData, ArchiveWorkspaceError, ArchiveWorkspaceResponse, BulkUpdateTasksData, BulkUpdateTasksError, BulkUpdateTasksResponse, CreateNodeData, CreateNodeError, CreateNodeResponse, CreateScopeFieldData, CreateScopeFieldError, CreateScopeFieldResponse, CreateScopeStatusData, CreateScopeStatusError, CreateScopeStatusResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateWorkspaceInvitationData, CreateWorkspaceInvitationError, CreateWorkspaceInvitationResponse, GetCurrentUserData, GetCurrentUserError, GetCurrentUserResponse, GetListResolvedFieldsData, GetListResolvedFieldsError, GetListResolvedFieldsResponse, GetListResolvedStatusesData, GetListResolvedStatusesError, GetListResolvedStatusesResponse, GetLivenessData, GetLivenessError, GetLivenessResponse, GetNodeData, GetNodeError, GetNodeResponse, GetReadinessData, GetReadinessError, GetReadinessResponse, GetTaskData, GetTaskError, GetTaskResponse, GetWorkspaceData, GetWorkspaceError, GetWorkspaceResponse, ListNodeGrantsData, ListNodeGrantsError, ListNodeGrantsResponse, ListScopeFieldsData, ListScopeFieldsError, ListScopeFieldsResponse, ListScopeStatusesData, ListScopeStatusesError, ListScopeStatusesResponse, ListTaskActivityData, ListTaskActivityError, ListTaskActivityResponse, ListTasksData, ListTasksError, ListTasksResponse, ListVisibleTreeData, ListVisibleTreeError, ListVisibleTreeResponse, ListWorkspaceMembersData, ListWorkspaceMembersError, ListWorkspaceMembersResponse, ListWorkspacesData, ListWorkspacesError, ListWorkspacesResponse, LogInData, LogInError, LogInResponse, LogOutData, LogOutError, LogOutResponse, MoveNodeData, MoveNodeError, MoveNodeResponse, MoveTaskData, MoveTaskError, MoveTaskResponse, RefreshSessionData, RefreshSessionError, RefreshSessionResponse, RemoveNodeGrantData, RemoveNodeGrantError, RemoveNodeGrantResponse, RemoveScopeFieldData, RemoveScopeFieldError, RemoveScopeFieldResponse, RemoveScopeStatusData, RemoveScopeStatusError, RemoveScopeStatusResponse, RemoveWorkspaceMemberData, RemoveWorkspaceMemberError, RemoveWorkspaceMemberResponse, ReorderNodeData, ReorderNodeError, ReorderNodeResponse, ReorderTaskData, ReorderTaskError, ReorderTaskResponse, RestoreWorkspaceData, RestoreWorkspaceError, RestoreWorkspaceResponse, SearchWorkspaceData, SearchWorkspaceError, SearchWorkspaceResponse, SignUpData, SignUpError, SignUpResponse, SwitchWorkspaceData, SwitchWorkspaceError, SwitchWorkspaceResponse, UpdateNodeData, UpdateNodeError, UpdateNodeResponse, UpdateScopeFieldData, UpdateScopeFieldError, UpdateScopeFieldResponse, UpdateScopeStatusData, UpdateScopeStatusError, UpdateScopeStatusResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateWorkspaceData, UpdateWorkspaceError, UpdateWorkspaceMemberData, UpdateWorkspaceMemberError, UpdateWorkspaceMemberResponse, UpdateWorkspaceResponse, UpsertNodeGrantData, UpsertNodeGrantError, UpsertNodeGrantResponse } from '../types.gen.js';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -710,6 +710,58 @@ export const updateScopeStatusMutation = (options?: Partial<Options<UpdateScopeS
         }
     };
     return mutationOptions;
+};
+
+export const searchWorkspaceQueryKey = (options: Options<SearchWorkspaceData>) => createQueryKey('searchWorkspace', options);
+
+/**
+ * Search visible workspace tasks and lists
+ *
+ * Search task titles/descriptions and list names within the active workspace. Full ancestor permissions filter results and breadcrumbs before stable cursor pagination; cursors bind the caller, query, page size and both workspace revisions.
+ */
+export const searchWorkspaceOptions = (options: Options<SearchWorkspaceData>) => queryOptions<SearchWorkspaceResponse, SearchWorkspaceError, SearchWorkspaceResponse, ReturnType<typeof searchWorkspaceQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await searchWorkspace({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: searchWorkspaceQueryKey(options)
+});
+
+export const searchWorkspaceInfiniteQueryKey = (options: Options<SearchWorkspaceData>): QueryKey<Options<SearchWorkspaceData>> => createQueryKey('searchWorkspace', options, true);
+
+/**
+ * Search visible workspace tasks and lists
+ *
+ * Search task titles/descriptions and list names within the active workspace. Full ancestor permissions filter results and breadcrumbs before stable cursor pagination; cursors bind the caller, query, page size and both workspace revisions.
+ */
+export const searchWorkspaceInfiniteOptions = (options: Options<SearchWorkspaceData>) => {
+    const opts = infiniteQueryOptions<SearchWorkspaceResponse, SearchWorkspaceError, InfiniteData<SearchWorkspaceResponse>, QueryKey<Options<SearchWorkspaceData>>, string | Pick<QueryKey<Options<SearchWorkspaceData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<SearchWorkspaceData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    cursor: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await searchWorkspace({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: searchWorkspaceInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
 };
 
 /**

@@ -2580,6 +2580,82 @@ export type ScopeStatusResponseDtoOutput = {
 };
 
 /**
+ * Workspace search page
+ *
+ * Visible search results in stable type and ID order with same-snapshot revisions.
+ */
+export type SearchPageResponseDtoOutput = {
+    /**
+     * Configuration version
+     *
+     * Workspace configuration revision. Mutations must send the version last read.
+     */
+    configVersion: number;
+    /**
+     * Data version
+     *
+     * Workspace task and tree data revision.
+     */
+    dataVersion: number;
+    /**
+     * Items
+     *
+     * Authorized items in stable order.
+     */
+    items: Array<{
+        /**
+         * Containing node
+         *
+         * Primary list for a task, or the parent folder for a list.
+         */
+        containerId: string | null;
+        /**
+         * Result ID
+         *
+         * Visible task or list identifier.
+         */
+        id: string;
+        /**
+         * Breadcrumb names
+         *
+         * Authorized ancestor names; task paths include their primary list.
+         */
+        path: Array<string>;
+        /**
+         * Result title
+         *
+         * Task title or list name, without task content.
+         */
+        title: string;
+        /**
+         * Result type
+         *
+         * Whether the result opens a list or task details.
+         */
+        type: 'list' | 'task';
+    }>;
+    /**
+     * Page information
+     *
+     * Consistent forward-pagination state.
+     */
+    pageInfo: {
+        /**
+         * Has next page
+         *
+         * Whether another page is available.
+         */
+        hasNextPage: boolean;
+        /**
+         * Next cursor
+         *
+         * Continuation token, or null at the end.
+         */
+        nextCursor: string | null;
+    };
+};
+
+/**
  * Session response
  *
  * Successful authentication or refresh response. The separate httpOnly cookie carries the opaque refresh credential.
@@ -5620,6 +5696,70 @@ export type UpdateScopeStatusResponses = {
 };
 
 export type UpdateScopeStatusResponse = UpdateScopeStatusResponses[keyof UpdateScopeStatusResponses];
+
+export type SearchWorkspaceData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Cursor
+         *
+         * Opaque server-authenticated continuation token; keep the same query.
+         */
+        cursor?: string;
+        /**
+         * Page limit
+         *
+         * Maximum returned items, from 1 to 100.
+         */
+        limit?: string;
+        /**
+         * Workspace search text
+         *
+         * Required word or quoted-phrase search across visible task titles, descriptions and list names.
+         */
+        q: string;
+    };
+    url: '/v1/search';
+};
+
+export type SearchWorkspaceErrors = {
+    /**
+     * The body or query failed validation. Details identify invalid fields or unexpected keys.
+     */
+    400: ErrorResponseDtoOutput;
+    /**
+     * A valid access token is required.
+     */
+    401: ErrorResponseDtoOutput;
+    /**
+     * Current workspace membership or permission is insufficient.
+     */
+    403: ErrorResponseDtoOutput;
+    /**
+     * Configuration or collection changed; reload state or restart cursor pagination.
+     */
+    409: ErrorResponseDtoOutput;
+    /**
+     * An unexpected internal failure occurred. The response omits internal details and credentials.
+     */
+    500: ErrorResponseDtoOutput;
+    /**
+     * A required dependency is unavailable or did not respond before its timeout.
+     */
+    503: ErrorResponseDtoOutput;
+};
+
+export type SearchWorkspaceError = SearchWorkspaceErrors[keyof SearchWorkspaceErrors];
+
+export type SearchWorkspaceResponses = {
+    /**
+     * Authorized task/list navigation results and same-snapshot revisions.
+     */
+    200: SearchPageResponseDtoOutput;
+};
+
+export type SearchWorkspaceResponse = SearchWorkspaceResponses[keyof SearchWorkspaceResponses];
 
 export type BulkUpdateTasksData = {
     /**

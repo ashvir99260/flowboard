@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import {
+  SearchPositionSchema,
   TaskPositionSchema,
   TimestampSchema,
   TreePositionSchema,
@@ -41,6 +42,14 @@ const activityPayloadSchema = payloadSchema.extend({
   upper: payloadSchema.shape.after,
 });
 
+const searchPayloadSchema = payloadSchema.extend({
+  kind: z.literal('search'),
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  after: SearchPositionSchema,
+  configVersion: z.number().int().positive(),
+  dataVersion: z.number().int().positive(),
+});
+
 export type CursorBinding = Pick<
   z.infer<typeof payloadSchema>,
   'caller' | 'workspaceId' | 'resource' | 'limit'
@@ -62,6 +71,27 @@ export class CursorCodec {
   }
   decodeActivity(value: string | undefined, binding: CursorBinding) {
     return this.decodePayload(value, binding, activityPayloadSchema);
+  }
+  decodeSearch(value: string | undefined, binding: CursorBinding & { fingerprint: string }) {
+    return this.decodePayload(value, binding, searchPayloadSchema);
+  }
+  encodeSearch(
+    binding: CursorBinding & { fingerprint: string },
+    after: z.infer<typeof SearchPositionSchema>,
+    revisions: { configVersion: number; dataVersion: number },
+    previous?: ReturnType<CursorCodec['decodeSearch']>,
+  ) {
+    const payload = searchPayloadSchema.parse({
+      ...binding,
+      ...revisions,
+      v: 1,
+      kind: 'search',
+      after,
+      expiresAt: previous?.expiresAt ?? Date.now() + 900_000,
+    });
+    const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
+
+    return `${encoded}.${this.signature(encoded).toString('base64url')}`;
   }
   encodeActivity(
     binding: CursorBinding,

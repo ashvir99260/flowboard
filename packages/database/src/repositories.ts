@@ -12,6 +12,7 @@ import { fieldRepository } from './field-repository.js';
 import { hierarchyRepository } from './hierarchy-repository.js';
 import { membershipRepository } from './membership-repository.js';
 import { scopeRepository } from './scope-repository.js';
+import { searchRepository } from './search-repository.js';
 import { statusRepository } from './status-repository.js';
 import { taskRepository } from './task-repository.js';
 import { DatabaseError, exactKeys } from './tenant-context.js';
@@ -86,6 +87,7 @@ export interface GrantRecord extends GrantInput {
 }
 
 export interface ReadRepositories {
+  search: ReturnType<typeof searchRepository>;
   workspace: ReturnType<typeof workspaceRepository>['read'];
   activities: ReturnType<typeof activityRepository>;
   tasks: ReturnType<typeof taskRepository>['read'];
@@ -266,6 +268,7 @@ export function repositories(
   const fields = fieldRepository(tx, context, scopes);
   const statuses = statusRepository(tx, context, assertActive, nodePath);
   const access = accessRepository(tx, context, assertActive, node);
+  const search = searchRepository(tx, context, assertActive, access.read);
   const tasks = taskRepository(
     tx,
     context,
@@ -308,6 +311,7 @@ export function repositories(
 
   return {
     read: Object.freeze({
+      search,
       workspace: workspaceRepository(tx, context, assertActive).read,
       activities: activityRepository(tx, context, assertActive),
       scopes,
@@ -329,6 +333,7 @@ export function repositories(
       }),
     }) satisfies ReadRepositories,
     write: Object.freeze({
+      search,
       workspace: workspaceRepository(tx, context, assertActive).write,
       activities: activityRepository(tx, context, assertActive),
       scopes,
