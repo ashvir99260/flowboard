@@ -112,7 +112,7 @@ Future production uses the Docker images stored in ECR. ECR publishing and the A
 flowchart LR
   Browser[Browser] -->|pages and /api/v1| Web[Vercel Next.js web]
   Web -->|runtime API_INTERNAL_URL binding: /v1| API[Vercel Nest API]
-  Browser -->|public /socket.io rewrite| API
+  Browser -->|public docs, health and Socket.IO rewrites| API
   API -->|pooled application connection| PG[(Neon PostgreSQL)]
   API -->|direct migration connection| PG
   API --> Redis[(Upstash TLS Redis)]
@@ -128,7 +128,7 @@ flowchart LR
   Redis -->|authorized API fanout| API
 ```
 
-The root configuration exposes web publicly and only the API's Socket.IO path directly; REST crosses the private binding through the web proxy. The worker daemon requests 1 GiB in `iad1` and needs Vercel's technical production target. That platform label does not change the temporary nature of this demo. PostgreSQL and Redis credentials remain server-only. The [LLD](LLD.md#runtime-startup-and-deployment-wiring) describes startup ordering, connections, cookies and failure cleanup.
+The root configuration exposes web publicly plus explicit API documentation, health and Socket.IO paths. Domain REST still crosses the private binding through the web proxy. Swagger is deliberately enabled for this demo; its runtime document uses `/api` for domain requests and `/` for health, and does not persist entered bearer tokens. The worker daemon requests 1 GiB in `iad1` and needs Vercel's technical production target. That platform label does not change the temporary nature of this demo. PostgreSQL and Redis credentials remain server-only. The [LLD](LLD.md#runtime-startup-and-deployment-wiring) describes startup ordering, connections, cookies and failure cleanup.
 
 The main workflow runs eight independent verification instances, then publishes affected apps to GHCR and conditionally deploys the temporary demo from source. P38-03 records a manual verified deployment; enabling protected main-branch CD is separate. ECR publication, the AWS application runtime and same-image environment promotion are future work, not properties established by the Vercel source build.
 

@@ -45,7 +45,10 @@ test(
     const card = board.locator(`[data-drag-task="${taskId}"]`);
     await expect(card).toBeVisible();
     const dismiss = page.getByRole('button', { name: 'Dismiss notification' });
-    while (await dismiss.isVisible()) await dismiss.click();
+    while (await dismiss.isVisible()) {
+      await page.keyboard.press('Alt+t');
+      await page.keyboard.press('Escape');
+    }
 
     let releaseWrite;
     let releaseReads;

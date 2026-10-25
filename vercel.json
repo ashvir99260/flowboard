@@ -27,6 +27,42 @@
     },
     {
       "destination": {
+        "service": "api"
+      },
+      "source": "/docs"
+    },
+    {
+      "destination": {
+        "service": "api"
+      },
+      "source": "/docs/(.*)"
+    },
+    {
+      "destination": {
+        "service": "api"
+      },
+      "source": "/docs-json"
+    },
+    {
+      "destination": {
+        "service": "api"
+      },
+      "source": "/docs-yaml"
+    },
+    {
+      "destination": {
+        "service": "api"
+      },
+      "source": "/health/live"
+    },
+    {
+      "destination": {
+        "service": "api"
+      },
+      "source": "/health/ready"
+    },
+    {
+      "destination": {
         "service": "web"
       },
       "source": "/(.*)"

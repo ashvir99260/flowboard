@@ -7,6 +7,7 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { AppModule } from './app.module.ts';
 import { GracefulExpressAdapter } from './core/common/graceful-express-adapter.ts';
+import { runtimeDocumentation } from './core/common/swagger/runtime-documentation.ts';
 import { RealtimeService } from './modules/realtime/realtime.service.ts';
 import { NestLogger } from './shared/logging/nest-logger.ts';
 import { requestLogging } from './shared/logging/request-logging.ts';
@@ -24,6 +25,7 @@ export async function createApplication(
   options: {
     auth?: AuthRuntime;
     database?: Database;
+    docsBasePath?: '/' | '/api';
     exposeDocs?: boolean;
     logger?: Logger;
     outbox?: OutboxRuntime;
@@ -114,7 +116,13 @@ export async function createApplication(
           .build(),
       ),
     );
-    if (options.exposeDocs) SwaggerModule.setup('docs', app, document);
+    if (options.exposeDocs)
+      SwaggerModule.setup(
+        'docs',
+        app,
+        runtimeDocumentation(document, options.docsBasePath ?? '/'),
+        { swaggerOptions: { persistAuthorization: false, withCredentials: true } },
+      );
 
     return { app, document };
   } catch (error) {
