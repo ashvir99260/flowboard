@@ -1,12 +1,12 @@
 ---
-title: "C28 — Temporary Vercel demo topology · Verified in P38-03"
+title: "C28 — Temporary Vercel demo topology · Ohio configured in P39-07; live rollout pending P39-08"
 ---
 flowchart TD
-  Browser[Browser] -->|Pages and /api/v1| Web[Vercel Next.js web]
-  Web -->|Runtime API_INTERNAL_URL binding: /v1| API[Vercel API: Dockerfile.api]
+  Browser[Browser] -->|Pages and /api/v1| Web[Vercel Next.js web: cle1]
+  Web -->|Runtime API_INTERNAL_URL binding: /v1| API[Vercel API: cle1 / Dockerfile.api]
   Browser -->|Public /socket.io rewrite| API
-  API -->|Pooled runtime and direct migrations| DB[(Neon PostgreSQL)]
-  API --> Redis[(Upstash Free TLS Redis)]
+  API -->|Pooled runtime and direct migrations| DB[(Neon PostgreSQL: Ohio)]
+  API --> Redis[(Upstash Free TLS Redis: Ohio)]
   subgraph WorkerProcess[Worker daemon: Dockerfile.worker]
     Dispatch[Shared outbox dispatcher]
     Worker[Activity consumer]
@@ -16,5 +16,5 @@ flowchart TD
   Redis --> Worker
   Worker --> DB
   Worker --> Redis
-  NoIngress[No public worker route; 1 GiB in iad1] -. boundary .-> WorkerProcess
+  NoIngress[No public worker route; 1 GiB in cle1] -. boundary .-> WorkerProcess
   Target[Vercel production target for daemon; temporary demo] -. configuration .-> WorkerProcess

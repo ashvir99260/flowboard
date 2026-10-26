@@ -216,7 +216,7 @@
       "chapter": "04-frontend",
       "title": "Form submit and recovery",
       "status": "Implemented",
-      "description": "Local invalid input does not trigger a success request/toast. Server failures preserve the draft, and conflicts never silently replace an edit with another client’s data.",
+      "description": "Local invalid input does not trigger a success request/toast. Server failures preserve the draft, and conflicts never silently replace an edit with another client\u2019s data.",
       "references": [
         ["Task form", "../../apps/web/src/features/tasks/TaskForm.tsx"],
         ["Task writes", "../../apps/web/src/features/tasks/useTaskWriteMutation.ts"],
@@ -359,8 +359,8 @@
       "id": "C28",
       "chapter": "07-hosting",
       "title": "Temporary Vercel demo topology",
-      "status": "Verified in P38-03",
-      "description": "The temporary demo routes public pages/REST to web and Socket.IO to API; web uses the private binding. Neon, Upstash TLS Redis and the worker daemon were exercised in P38-03. This is not future ECR production.",
+      "status": "Ohio configured in P39-07; live rollout pending P39-08",
+      "description": "The temporary demo routes public pages/REST to web and Socket.IO to API; web forwards domain REST through the private binding. P39-07 aligns dynamic compute and the worker to Ohio beside the existing Neon/Upstash services; live region proof belongs to P39-08. This is not future ECR production.",
       "references": [["Vercel setup", "../VERCEL.md"]],
       "source": "sources/c28-planned-render-topology.mmd",
       "svg": "svg/c28-planned-render-topology.svg"

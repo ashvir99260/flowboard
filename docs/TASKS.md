@@ -1651,3 +1651,21 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Manifest/planner review, diagram rendering, links, shared formatting and whitespace checks. Application suites and live deployments are not applicable to this documentation-only task.
   - **Commit:** `docs: define selective ecr deployment policy`.
   - **Completion evidence:** [P39-06](evidence/P39-06.md).
+
+- [ ] **P39-07 — Align demo compute with the existing Ohio datastores**
+  - **Goal:** Remove the known cross-region path between Vercel compute and the existing Neon/Upstash services.
+  - **Requirements:** R177; preserve R96–R98 and D174.
+  - **Files:** `vercel.json`, release-tool deployment readiness/tests, hosting/architecture references, task/matrix/decision/evidence records.
+  - **Dependencies:** P38-03/P39-05; live inventory confirms both datastores are in AWS Ohio (`us-east-2`).
+  - **Acceptance:** Pin web/API functions and the single worker to Vercel Ohio (`cle1`); reject a worker in another region. Preserve Hobby/Free plans, authentication, routing, TLS, data and global static CDN delivery. Do not disable scale-to-zero or add paid capacity.
+  - **Validation:** Failing region/configuration regressions, then passing release-tool tests, root build/lint/tests/types, applicable formatting and delivery configuration checks. P39-08 owns live rollout and timing evidence.
+  - **Commit:** `fix(deploy): colocate demo compute in ohio`.
+
+- [ ] **P39-08 — Verify the Ohio demo rollout**
+  - **Goal:** Apply the checked configuration and prove web, API and worker run beside Neon/Redis.
+  - **Requirements:** R177.
+  - **Files:** Deployment evidence and task/matrix completion; provider settings remain outside Git.
+  - **Dependencies:** P39-07; current authorized Vercel project access.
+  - **Acceptance:** Deploy the committed revision on the existing Hobby demo, verify Ohio function execution and one live worker, retain unchanged datastore identities and free plans, check health/authenticated reads and compare representative before/after timings. Record timing limits; do not equate colocation with removing cold starts or guarantee a speedup from a small sample.
+  - **Validation:** Real deployment inventory, HTTP/browser checks and bounded direct timing samples; no database migrations beyond the existing startup path, reset, reseed or paid upgrades.
+  - **Commit:** `docs: verify ohio demo deployment`.

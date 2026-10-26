@@ -131,7 +131,11 @@ export function createDeploymentProviders(config: DeploymentConfig, options: Pro
           Array.isArray(worker.instances.items) &&
           worker.instances.items.some(
             (instance) =>
-              instance.alive === true && instance.region === 'iad1' && !instance.stoppedAt,
+              instance.alive === true && instance.region === 'cle1' && !instance.stoppedAt,
+          ) &&
+          worker.instances.items.every(
+            (instance) =>
+              instance.alive !== true || Boolean(instance.stoppedAt) || instance.region === 'cle1',
           )
         );
 

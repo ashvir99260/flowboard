@@ -12,7 +12,7 @@ Vercel [Services](https://vercel.com/docs/services) and [Daemons](https://vercel
 | ---------- | ------------------------------------------ | ----------------------------------------------------------------------- |
 | web        | Next.js service rooted at apps/web         | Public catch-all, pages and same-origin REST proxy                      |
 | api        | Container service using Dockerfile.api     | Private REST binding; public docs, exact health probes and /socket.io/* |
-| worker     | One daemon using Dockerfile.worker in iad1 | No public route; consumes Redis jobs and dispatches committed events    |
+| worker     | One daemon using Dockerfile.worker in cle1 | No public route; consumes Redis jobs and dispatches committed events    |
 | PostgreSQL | Neon Free                                  | Server-only pooled connection; direct connection for migrations         |
 | Redis      | Upstash Free                               | Server-only rediss:// connection for BullMQ, rate limiting and pub/sub  |
 
@@ -48,6 +48,12 @@ Set these as production environment variables in the dedicated Vercel project. S
 
 The API runs checked-in migrations before readiness; the worker does not own migrations. A deployment is not accepted until the API is reachable, schema initialization has finished and an actual task change produces activity through the worker. Use isolated environment data and secrets; fixed Redis queue/channel names cannot be isolated with a logical database number alone.
 
+## Regional placement
+
+The temporary demo colocates dynamic web/API compute and its single worker in Ohio: root `regions: ["cle1"]` sets the function region, and `daemons.worker.instances` selects one `cle1` instance. The existing Neon project and Upstash primary are both AWS `us-east-2` (Ohio), so this requires no data migration or new database. CDN assets remain globally distributed. Do not add per-function overrides pointing elsewhere. The rollout checker rejects a worker outside Ohio.
+
+Vercel defaults to Northern Virginia when no region is specified. Colocation removes that known cross-region path; it does not eliminate cold starts or the network distance from a user's browser. Free-tier scaling and limits remain unchanged. See [function regions](https://vercel.com/docs/functions/configuring-functions/region), [daemon regions](https://vercel.com/docs/daemons/config-reference#instances), D174 and the P39-07/P39-08 evidence.
+
 ## Free-tier boundaries
 
 This is a bounded demo, not a promise of unlimited or continuously free operation.
@@ -58,7 +64,7 @@ This is a bounded demo, not a promise of unlimited or continuously free operatio
 
 ## One-project deployment and CI
 
-P38-02 replaces the older Vercel/Northflank adapter with one Vercel deployment from the validated current main SHA after app publication. Independent app tags and image manifests remain unchanged. The deployment uses the production target so the daemon can run; it validates the configured Hobby team, project, linked repository and production environment-key names. The deployment details request opts into Git metadata, then verifies the exact source, web/API service inventory and ready function builds. A separate production daemon inventory must report one ready, live worker in `iad1` belonging to that same deployment. Retries reuse the same deployment identity. These provider checks establish rollout readiness; application behavior still requires the live acceptance below.
+P38-02 replaces the older Vercel/Northflank adapter with one Vercel deployment from the validated current main SHA after app publication. Independent app tags and image manifests remain unchanged. The deployment uses the production target so the daemon can run; it validates the configured Hobby team, project, linked repository and production environment-key names. The deployment details request opts into Git metadata, then verifies the exact source, web/API service inventory and ready function builds. A separate production daemon inventory must report one ready, live worker in `cle1` belonging to that same deployment. Retries reuse the same deployment identity. These provider checks establish rollout readiness; application behavior still requires the live acceptance below.
 
 GitHub runs the existing parallel verification lanes, then publishes affected apps. The deployment job uses the protected demo environment and remains gated by CD_ENABLED. Configure VERCEL_TOKEN as an environment secret, and VERCEL_PROJECT_ID and VERCEL_TEAM_ID as environment variables. The root command is pnpm deploy:vercel. Database and Redis credentials belong in Vercel, not GitHub deployment logs.
 
