@@ -1719,3 +1719,15 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Interaction regressions, browser screenshots/story checks and standard gates.
   - **Commit:** `style(ui): refine workspace visual hierarchy`.
   - **Implementation evidence:** [P40-03](evidence/P40-03.md).
+
+## Phase 41 — Focused browser coverage
+
+- [x] **P41-01 — Cover container form validation and save recovery**
+  - **Goal:** Add focused browser cases for the existing containers page on a branch from current main.
+  - **Requirements:** R160; preserve R37 and R68.
+  - **Files:** `apps/web/e2e/administration.spec.ts`, task/matrix/evidence records.
+  - **Dependencies:** NEXT-05 implementation; this test-only follow-up does not close its pending full acceptance.
+  - **Acceptance:** Blank names and missing parents send no creation request; corrected input persists. Container types offer only valid parent types and retain the name. Unchanged details send no update; an interrupted save reports failure, retains name/visibility, and permits a successful persisted retry.
+  - **Validation:** Real-service administration Playwright suite; root build, lint, tests, types and applicable formatting. No runtime or API changes.
+  - **Commit:** `test(web): cover container validation and save recovery`.
+  - **Completion evidence:** [P40-01](evidence/P40-01.md).
