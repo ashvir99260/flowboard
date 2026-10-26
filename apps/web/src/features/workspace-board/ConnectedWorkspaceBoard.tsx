@@ -154,7 +154,12 @@ export function ConnectedWorkspaceBoard({
             Each column is a list. Tasks stay grouped by status; drag within a group to reorder or
             into another list to move.
           </Typography>
-          <BoardViewport role="region" aria-label="Workspace lists board" tabIndex={0}>
+          <BoardViewport
+            role="region"
+            aria-label="Workspace lists board"
+            aria-busy={board.refreshing}
+            tabIndex={0}
+          >
             <WorkspaceBoardDnd
               columns={columns}
               pending={

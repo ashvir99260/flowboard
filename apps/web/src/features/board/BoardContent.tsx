@@ -43,7 +43,12 @@ export function BoardContent({
           Refresh board
         </Button>
       </Stack>
-      <BoardViewport role="region" aria-label="Task board" tabIndex={0}>
+      <BoardViewport
+        role="region"
+        aria-label="Task board"
+        aria-busy={board.refreshing}
+        tabIndex={0}
+      >
         <BoardDnd
           columns={board.columns}
           fields={board.fields}

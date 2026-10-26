@@ -16,6 +16,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
+import { useBackgroundRefresh } from '../../lib/useBackgroundRefresh';
 import { configurationChanged } from '../config/configurationEvents';
 import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
@@ -107,50 +108,6 @@ export function useBoard({
     [listId],
   );
 
-  useRealtime(listId, (event) => refresh(event.kind === 'list'));
-
-  useEffect(() => {
-    const unfocus = focusManager.subscribe((focused) => {
-      if (focused) refresh();
-    });
-    const unonline = onlineManager.subscribe((online) => {
-      if (online) refresh();
-    });
-
-    const unmutate = queryClient.getMutationCache().subscribe((event) => {
-      if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
-
-      const key = event.mutation.options.mutationKey;
-      if (configurationChanged(key, event.action.type, scope)) {
-        refresh();
-
-        return;
-      }
-
-      if (!taskMutationAffectsList(key, event.mutation.state.variables, scope, listId)) return;
-
-      const code = event.action.type === 'error' ? apiError(event.mutation.state.error).code : null;
-      const retain =
-        key?.[0] === 'task-placement' &&
-        (!code ||
-          ['INTERNAL_ERROR', 'SERVICE_UNAVAILABLE', 'NETWORK_ERROR', 'RATE_LIMITED'].includes(
-            code,
-          ));
-      refresh(
-        retain,
-        retain && event.action.type === 'success'
-          ? (event.mutation.state.variables as TaskPlacement)
-          : undefined,
-      );
-    });
-
-    return () => {
-      unmutate();
-      unfocus();
-      unonline();
-    };
-  }, [queryClient, listId, refresh, scope]);
-
   const tags = [`board:${instance}:${attempt.generation}`];
 
   const statusesQuery = useQuery({
@@ -204,7 +161,6 @@ export function useBoard({
     pages,
   });
   const stale = error ? error.code === 'CURSOR_STALE' : result.state === 'stale';
-  const retry = () => refresh();
   const view = boardView(result, error, stale);
   const retrying = stale && attempt.restarts < 2;
 
@@ -213,6 +169,66 @@ export function useBoard({
 
     if (view.state === 'error' && !retrying) latest.current = null;
   }, [view, attempt.generation, retrying]);
+
+  const background = useBackgroundRefresh(
+    () => refresh(true),
+    view.state === 'loading' || retrying,
+    view.state === 'error' && !retrying,
+  );
+
+  const retry = background.request;
+
+  useRealtime(listId, (event) => {
+    if (event.kind === 'list') background.request();
+    else {
+      background.clear();
+      refresh();
+    }
+  });
+
+  useEffect(() => {
+    const unfocus = focusManager.subscribe((focused) => {
+      if (focused) background.request();
+    });
+    const unonline = onlineManager.subscribe((online) => {
+      if (online) background.request();
+    });
+
+    const unmutate = queryClient.getMutationCache().subscribe((event) => {
+      if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
+
+      const key = event.mutation.options.mutationKey;
+      if (configurationChanged(key, event.action.type, scope)) {
+        background.clear();
+        refresh();
+
+        return;
+      }
+
+      if (!taskMutationAffectsList(key, event.mutation.state.variables, scope, listId)) return;
+
+      const code = event.action.type === 'error' ? apiError(event.mutation.state.error).code : null;
+      const retain =
+        !code ||
+        ['INTERNAL_ERROR', 'SERVICE_UNAVAILABLE', 'NETWORK_ERROR', 'RATE_LIMITED'].includes(code);
+      if (retain && key?.[0] !== 'task-placement') background.request();
+      else {
+        background.clear();
+        refresh(
+          retain,
+          retain && event.action.type === 'success'
+            ? (event.mutation.state.variables as TaskPlacement)
+            : undefined,
+        );
+      }
+    });
+
+    return () => {
+      unmutate();
+      unfocus();
+      unonline();
+    };
+  }, [background, queryClient, listId, refresh, scope]);
 
   if (attempt.snapshot && (view.state === 'ready' || (view.state === 'error' && !retrying)))
     setAttempt({ ...attempt, snapshot: null });

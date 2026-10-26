@@ -10,6 +10,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
+import { useBackgroundRefresh } from '../../lib/useBackgroundRefresh';
 import { configurationChanged } from '../config/configurationEvents';
 import { assembleTaskList } from '../list/listData';
 import { useRealtime } from '../realtime/useRealtime';
@@ -97,59 +98,6 @@ export function useWorkspaceBoardQuery(
     (placement?: TaskPlacement) => refresh(undefined, true, placement),
     [refresh],
   );
-
-  useRealtime(undefined, () => retry());
-
-  useEffect(() => {
-    const refreshAll = () => retry();
-    const unfocus = focusManager.subscribe((focused) => {
-      if (focused) refreshAll();
-    });
-    const unonline = onlineManager.subscribe((online) => {
-      if (online) refreshAll();
-    });
-    const unmutate = client.getMutationCache().subscribe((event) => {
-      if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
-
-      if (configurationChanged(event.mutation.options.mutationKey, event.action.type, scope)) {
-        refreshAll();
-
-        return;
-      }
-
-      if (
-        lists.some((list) =>
-          taskMutationAffectsList(
-            event.mutation.options.mutationKey,
-            event.mutation.state.variables,
-            scope,
-            list.id,
-          ),
-        )
-      ) {
-        const isPlacement = event.mutation.options.mutationKey?.[0] === 'task-placement';
-        const recoverable = [
-          'NETWORK_ERROR',
-          'INTERNAL_ERROR',
-          'SERVICE_UNAVAILABLE',
-          'RATE_LIMITED',
-        ].includes(apiError(event.mutation.state.error).code);
-        if (isPlacement && (event.action.type === 'success' || recoverable))
-          refreshTasks(
-            event.action.type === 'success'
-              ? (event.mutation.state.variables as TaskPlacement)
-              : undefined,
-          );
-        else refreshAll();
-      }
-    });
-
-    return () => {
-      unfocus();
-      unonline();
-      unmutate();
-    };
-  }, [client, lists, retry, refreshTasks, scope]);
 
   const tags = (listId: string) => [
     `workspace-board:${instance}:${listId}:${(attempts[listId] ?? emptyAttempt).generation}`,
@@ -346,6 +294,72 @@ export function useWorkspaceBoardQuery(
     else if (failed || invalid) latest.current = null;
   }, [coherent, complete, epoch, failed, invalid]);
 
+  const background = useBackgroundRefresh(
+    refreshTasks,
+    !complete && !failed && !invalid,
+    failed || invalid,
+  );
+
+  useRealtime(undefined, () => {
+    background.clear();
+    retry();
+  });
+
+  useEffect(() => {
+    const refreshAll = () => {
+      background.clear();
+      retry();
+    };
+    const unfocus = focusManager.subscribe((focused) => {
+      if (focused) background.request();
+    });
+    const unonline = onlineManager.subscribe((online) => {
+      if (online) background.request();
+    });
+    const unmutate = client.getMutationCache().subscribe((event) => {
+      if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
+
+      if (configurationChanged(event.mutation.options.mutationKey, event.action.type, scope)) {
+        refreshAll();
+
+        return;
+      }
+
+      if (
+        lists.some((list) =>
+          taskMutationAffectsList(
+            event.mutation.options.mutationKey,
+            event.mutation.state.variables,
+            scope,
+            list.id,
+          ),
+        )
+      ) {
+        const isPlacement = event.mutation.options.mutationKey?.[0] === 'task-placement';
+        const recoverable = [
+          'NETWORK_ERROR',
+          'INTERNAL_ERROR',
+          'SERVICE_UNAVAILABLE',
+          'RATE_LIMITED',
+        ].includes(apiError(event.mutation.state.error).code);
+        if (isPlacement && (event.action.type === 'success' || recoverable))
+          refreshTasks(
+            event.action.type === 'success'
+              ? (event.mutation.state.variables as TaskPlacement)
+              : undefined,
+          );
+        else if (event.action.type === 'success' || recoverable) background.request();
+        else refreshAll();
+      }
+    });
+
+    return () => {
+      unfocus();
+      unonline();
+      unmutate();
+    };
+  }, [background, client, lists, retry, refreshTasks, scope]);
+
   if (retained !== null && (complete || failed || invalid)) setRetained(null);
 
   const refreshing = retained !== null && !complete && !failed && !invalid;
@@ -365,5 +379,5 @@ export function useWorkspaceBoardQuery(
       })
     : coherent;
 
-  return { columns: visibleColumns, loadMore, retry, refreshTasks, refreshing };
+  return { columns: visibleColumns, loadMore, retry, refreshTasks: background.request, refreshing };
 }
