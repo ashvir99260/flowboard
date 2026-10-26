@@ -768,6 +768,8 @@ Routine focus, reconnect and task invalidations retain the last validated board/
 
 Use one small refresh queue per view to merge invalidations received during a read into one trailing refresh. Do not drop the trailing request, use a time-based debounce for correctness, or substitute snapshots across scopes. Placement writes keep their immediate optimistic projection and rollback policy. Expose background work through `aria-busy` without replacing the loaded layout. Initial-load skeletons are a separate presentation layer.
 
+D175 clarification: successful list-subscription catch-up is a routine refresh. Its origin is supplied only by the in-process realtime bus as optional callback context. Network/global resyncs never receive that context and keep their hard-clear behavior. No wire contract or authorization check changes.
+
 ## D176 — Skeletons preserve initial loading geometry
 
 Use shared `WorkspaceSkeleton`, `NavigationSkeleton`, `BoardSkeleton`, `TableSkeleton` and `TaskDetailSkeleton` components for their corresponding initial loads. Keep `LoadingState` as a compact skeleton fallback for smaller sections. All use the existing MUI theme, deterministic shapes, one accessible loading status per region and no fake focusable content. Disable skeleton animation under reduced motion.

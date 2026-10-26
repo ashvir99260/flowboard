@@ -68,3 +68,15 @@ test('browser socket origin is runtime configuration independent of the internal
   ])
     assert.throws(() => readRealtimeUrl(url));
 });
+
+test('local subscription catch-up is distinguishable from a global access resync', () => {
+  const bus = createRealtimeBus();
+  const received = [];
+  bus.listen(id(1), (event, context) => received.push({ event, context }));
+  bus.resyncList(id(1));
+  bus.dispatch({ kind: 'resync' });
+  assert.deepEqual(received, [
+    { event: { kind: 'resync' }, context: { listId: id(1) } },
+    { event: { kind: 'resync' }, context: undefined },
+  ]);
+});

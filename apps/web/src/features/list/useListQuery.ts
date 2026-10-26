@@ -210,8 +210,9 @@ export function useListQuery({
     Boolean(error && !restarting) || result.state === 'invalid',
   );
 
-  useRealtime(listId, (event) => {
-    if (event.kind === 'list') background.request();
+  useRealtime(listId, (event, context) => {
+    if (event.kind === 'list' || (event.kind === 'resync' && context?.listId === listId))
+      background.request();
     else {
       background.clear();
       refresh();

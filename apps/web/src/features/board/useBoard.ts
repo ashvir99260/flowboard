@@ -178,8 +178,9 @@ export function useBoard({
 
   const retry = background.request;
 
-  useRealtime(listId, (event) => {
-    if (event.kind === 'list') background.request();
+  useRealtime(listId, (event, context) => {
+    if (event.kind === 'list' || (event.kind === 'resync' && context?.listId === listId))
+      background.request();
     else {
       background.clear();
       refresh();
