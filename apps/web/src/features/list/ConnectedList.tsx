@@ -35,7 +35,13 @@ export function ConnectedList({
   );
 
   return (
-    <Stack spacing={1.2} sx={{ minWidth: 0 }}>
+    <Stack
+      component="section"
+      aria-label="List view"
+      aria-busy={view.refreshing}
+      spacing={1.2}
+      sx={{ minWidth: 0 }}
+    >
       <Stack
         direction="row"
         sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 0.8 }}
@@ -43,7 +49,7 @@ export function ConnectedList({
         <Typography component="h2" variant="h2">
           Tasks
         </Typography>
-        <Button disabled={pending} onClick={view.retry}>
+        <Button disabled={pending || view.refreshing} onClick={view.retry}>
           Refresh tasks
         </Button>
       </Stack>

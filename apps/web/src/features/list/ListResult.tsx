@@ -1,6 +1,7 @@
 'use client';
 
-import { Button, CircularProgress, ErrorState, Stack, Typography } from '@flowboard/ui';
+import { Button, ErrorState, TableSkeleton, Typography } from '@flowboard/ui';
+import { useState } from 'react';
 
 import { TaskTable } from './TaskTable';
 
@@ -43,7 +44,13 @@ export function ListResult({
   selection?: { disabled?: boolean; ids: readonly string[]; onChange: (ids: string[]) => void };
   view: ListView;
 }) {
+  const [hasLoaded, setHasLoaded] = useState(false);
+
   const error = failure(view);
+  const { result } = view;
+  if (error && hasLoaded) setHasLoaded(false);
+  else if (!error && result.state === 'ready' && !hasLoaded) setHasLoaded(true);
+
   if (error)
     return (
       <ErrorState
@@ -69,35 +76,25 @@ export function ListResult({
       />
     );
 
-  const { result } = view;
-  if (result.state !== 'ready' && !view.configured)
-    return (
-      <Stack direction="row" role="status" spacing={0.8}>
-        <CircularProgress aria-hidden="true" size={'2rem'} />
-        <Typography>Loading tasks…</Typography>
-      </Stack>
-    );
+  const ready = result.state === 'ready';
+  if (!ready && !hasLoaded) return <TableSkeleton />;
 
   return (
     <>
       <Typography color="text.secondary" variant="body2">
-        {result.state === 'ready' ? `${result.items.length} loaded tasks` : 'Loading tasks…'}
+        {ready ? `${result.items.length} loaded tasks` : 'Loading tasks…'}
       </Typography>
       <TaskTable
         query={query}
         onChange={onChange}
         pending={pending}
-        loading={result.state !== 'ready'}
-        items={result.state === 'ready' ? result.items : []}
-        fields={result.state === 'ready' ? result.fields : view.fields}
-        statuses={result.state === 'ready' ? result.statuses : view.statuses}
-        selection={
-          selection
-            ? { ...selection, disabled: selection.disabled || result.state !== 'ready' }
-            : undefined
-        }
+        loading={!ready}
+        items={ready ? result.items : []}
+        fields={view.fields}
+        statuses={view.statuses}
+        selection={selection && { ...selection, disabled: selection.disabled || !ready }}
       />
-      {result.state === 'ready' && result.nextCursor && (
+      {ready && result.nextCursor && (
         <Button disabled={view.loadingMore || view.atLimit} onClick={view.loadMore}>
           {view.atLimit ? 'Page limit reached' : view.loadingMore ? 'Loading…' : 'Load more tasks'}
         </Button>

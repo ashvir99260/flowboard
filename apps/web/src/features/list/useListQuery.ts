@@ -13,10 +13,11 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
+import { useBackgroundRefresh } from '../../lib/useBackgroundRefresh';
 import { readBoardStatuses } from '../board/boardData';
 import { configurationChanged } from '../config/configurationEvents';
 import { useRealtime } from '../realtime/useRealtime';
@@ -38,32 +39,43 @@ const pagePolicy = {
   refetchOnWindowFocus: false,
 } as const;
 const maxPages = 100;
+type ReadyList = Extract<ReturnType<typeof assembleTaskList>, { state: 'ready' }>;
 
 function subscribeChanges(
   client: QueryClient,
   scope: QueryScope,
   listId: string,
-  refresh: () => void,
+  refresh: (retain: boolean) => void,
 ) {
   const unfocus = focusManager.subscribe((focused) => {
-    if (focused) refresh();
+    if (focused) refresh(true);
   });
   const unonline = onlineManager.subscribe((online) => {
-    if (online) refresh();
+    if (online) refresh(true);
   });
   const unmutate = client.getMutationCache().subscribe((event) => {
     if (event.type !== 'updated' || !['success', 'error'].includes(event.action.type)) return;
 
+    if (configurationChanged(event.mutation.options.mutationKey, event.action.type, scope)) {
+      refresh(false);
+
+      return;
+    }
+
     if (
-      configurationChanged(event.mutation.options.mutationKey, event.action.type, scope) ||
       taskMutationAffectsList(
         event.mutation.options.mutationKey,
         event.mutation.state.variables,
         scope,
         listId,
       )
-    )
-      refresh();
+    ) {
+      const code = event.action.type === 'error' ? apiError(event.mutation.state.error).code : null;
+      refresh(
+        !code ||
+          ['INTERNAL_ERROR', 'SERVICE_UNAVAILABLE', 'NETWORK_ERROR', 'RATE_LIMITED'].includes(code),
+      );
+    }
   });
 
   return () => {
@@ -89,37 +101,33 @@ export function useListQuery({
 
   const signature = writeListLocation(query);
 
+  const latest = useRef<{ signature: string; value: ReadyList } | null>(null);
+
   const [attempt, setAttempt] = useState({
     signature,
     generation: 0,
     queryRevision: 0,
     restarts: 0,
+    snapshot: null as ReadyList | null,
   });
 
-  useRealtime(listId, () =>
-    setAttempt((current) => ({
-      ...current,
-      signature,
-      generation: current.generation + 1,
-      restarts: 0,
-    })),
-  );
-
   const changed = attempt.signature !== signature;
-  const retry = () =>
-    setAttempt((current) => ({
-      ...current,
-      signature,
-      generation: current.generation + 1,
-      restarts: 0,
-    }));
 
-  useEffect(
-    () =>
-      subscribeChanges(client, scope, listId, () =>
-        setAttempt((current) => ({ ...current, generation: current.generation + 1, restarts: 0 })),
-      ),
-    [client, listId, scope],
+  const refresh = useCallback(
+    (retain = false) => {
+      const snapshot =
+        retain && latest.current?.signature === signature ? latest.current.value : null;
+      if (!retain) latest.current = null;
+
+      setAttempt((current) => ({
+        ...current,
+        signature,
+        generation: current.generation + 1,
+        restarts: 0,
+        snapshot,
+      }));
+    },
+    [signature],
   );
 
   const tags = [`list:${instance}:${attempt.generation}`];
@@ -189,25 +197,91 @@ export function useListQuery({
   const failed = [statusesQuery, fieldsQuery, tasks].find((entry) => entry.isError);
   const error = failed ? apiError(failed.error) : null;
   const stale = result.state === 'stale' || error?.code === 'CURSOR_STALE';
+  const restarting = changed || (stale && attempt.restarts < 2);
+
+  useEffect(() => {
+    if ((error && !restarting) || result.state === 'invalid') latest.current = null;
+    else if (!changed && result.state === 'ready') latest.current = { signature, value: result };
+  }, [changed, error, restarting, result, signature]);
+
+  const background = useBackgroundRefresh(
+    () => refresh(true),
+    restarting || result.state === 'pending',
+    Boolean(error && !restarting) || result.state === 'invalid',
+  );
+
+  useRealtime(listId, (event, context) => {
+    if (event.kind === 'list' || (event.kind === 'resync' && context?.listId === listId))
+      background.request();
+    else {
+      background.clear();
+      refresh();
+    }
+  });
+
+  useEffect(
+    () =>
+      subscribeChanges(client, scope, listId, (retain) => {
+        if (retain) background.request();
+        else {
+          background.clear();
+          refresh();
+        }
+      }),
+    [background, client, listId, refresh, scope],
+  );
+
+  const retry = background.request;
+  const retained =
+    !changed &&
+    attempt.snapshot &&
+    !error &&
+    result.state !== 'invalid' &&
+    (restarting || result.state === 'pending');
+  const visible = retained
+    ? attempt.snapshot!
+    : restarting
+      ? { state: 'pending' as const }
+      : result;
+  const refreshing = Boolean(retained);
+  if (
+    attempt.snapshot &&
+    !restarting &&
+    (result.state === 'ready' || error || result.state === 'invalid')
+  )
+    setAttempt({ ...attempt, snapshot: null });
+
   const atLimit =
     pages.length >= maxPages && result.state === 'ready' && result.nextCursor !== null;
   const loadMore = () => {
-    if (!tasks.isFetching && !atLimit && tasks.hasNextPage) void tasks.fetchNextPage();
+    if (!refreshing && !tasks.isFetching && !atLimit && tasks.hasNextPage)
+      void tasks.fetchNextPage();
   };
 
   if (changed) {
-    setAttempt({ ...attempt, signature, queryRevision: attempt.queryRevision + 1, restarts: 0 });
+    setAttempt({
+      ...attempt,
+      signature,
+      queryRevision: attempt.queryRevision + 1,
+      restarts: 0,
+      snapshot: null,
+    });
   } else if (stale && attempt.restarts < 2) {
     setAttempt({ ...attempt, generation: attempt.generation + 1, restarts: attempt.restarts + 1 });
   }
 
-  const restarting = changed || (stale && attempt.restarts < 2);
-
   return {
-    fields: fields.state === 'ready' ? fields.items : [],
-    statuses: statuses.state === 'ready' ? statuses.items : [],
-    configured,
-    result: restarting ? { state: 'pending' as const } : result,
+    fields:
+      visible.state === 'ready' ? visible.fields : fields.state === 'ready' ? fields.items : [],
+    statuses:
+      visible.state === 'ready'
+        ? visible.statuses
+        : statuses.state === 'ready'
+          ? statuses.items
+          : [],
+    configured: configured || visible.state === 'ready',
+    result: visible,
+    refreshing,
     error: restarting ? null : error,
     filterError: filter && !filter.ok ? filter.message : null,
     retry,

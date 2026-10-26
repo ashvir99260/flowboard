@@ -18,6 +18,12 @@ flowchart LR
 
 `packages/ui` owns all reusable presentation, the public primitive entry point, theme tokens, styled slots and controlled domain views. `apps/web` owns generated queries/mutations, URL/session state, permission decisions, RHF controllers and DnD orchestration. A web component that binds those concerns is an adapter, not a shared visual primitive. Never move API clients, router hooks, tenant decisions or server data into UI.
 
+## Initial loading and background refresh
+
+The feedback module exports `WorkspaceSkeleton`, `NavigationSkeleton`, `BoardSkeleton`, `TableSkeleton` and `TaskDetailSkeleton`. Use the shape that matches the region being loaded. `LoadingState` is the compact fallback for small sections. Shapes are decorative, deterministic and non-interactive; their shared region supplies one accessible loading message and busy state. Animation respects reduced motion and colors come from the existing theme. The loading stories show each layout.
+
+Do not replace previously loaded same-scope content with a skeleton during routine refreshes. Web's query hooks keep a validated snapshot and announce background work through `aria-busy`; permission/configuration/session changes still clear it. A table skeleton is shown before the real grid exists. Once mounted, the grid stays mounted during sort/filter changes so its filter panel and keyboard focus survive; rows clear and its loading overlay appears until the new query finishes. Terminal errors discard that initialized state. The loading message sits outside the decorative busy subtree so assistive technology can announce it immediately.
+
 ## Decisions and component contracts
 
 P21-01 organizes UI implementation under camelCase module-owned files. `modules/layout` owns Surface, Toolbar, AuthPanel and the workspace shell; `modules/primitives` owns authored controls; `modules/forms` owns visual field renderers; `modules/tasks`, `board`, `configuration`, `activity`, `notifications`, `overlays`, `feedback`, `navigation`, `content` and `theme` own their related presentation. This use of “modules” is a folder convention, not Nest dependency injection. Generic RHF bindings remain in the separate forms package.

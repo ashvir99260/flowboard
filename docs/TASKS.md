@@ -1651,3 +1651,35 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Manifest/planner review, diagram rendering, links, shared formatting and whitespace checks. Application suites and live deployments are not applicable to this documentation-only task.
   - **Commit:** `docs: define selective ecr deployment policy`.
   - **Completion evidence:** [P39-06](evidence/P39-06.md).
+
+## Phase 40 — Stable and polished workspace UI
+
+- [ ] **P40-01 — Preserve content during routine refreshes**
+  - **Goal:** Stop board/list flashes and redundant reload waves during ordinary background updates.
+  - **Requirements:** R179; preserve tenant, permission, cursor and optimistic-update guarantees.
+  - **Files:** Board/list/workspace query hooks, a small shared refresh coordinator if needed, and focused browser/unit regressions.
+  - **Dependencies:** P37-01 and existing query/realtime infrastructure.
+  - **Acceptance:** Focus, reconnect and ordinary task updates retain validated same-scope content while refreshing. Duplicate realtime acknowledgements do not start one full-board reload per list. A later invalidation still gets a trailing refresh. Access/configuration/identity changes and terminal errors clear stale content; list/query navigation cannot show another list's data. Preserve drag placement, focus and drawer drafts.
+  - **Validation:** Failing delayed-response and invalidation regressions; focused browser/query tests, then root build/lint/types/tests with unavailable checks reported honestly.
+  - **Commit:** `fix(web): preserve views during background refresh`.
+  - **Implementation evidence:** [P40-01](evidence/P40-01.md); focused behavior is verified, full integration remains pending.
+
+- [ ] **P40-02 — Replace page spinners with layout-matched skeletons**
+  - **Goal:** Keep first-load geometry stable and make waiting states useful.
+  - **Requirements:** R180.
+  - **Files:** Shared UI feedback components/exports/stories/tests; web shell, sidebar, board, table and task drawer loading branches.
+  - **Dependencies:** P40-01.
+  - **Acceptance:** Reusable skeletons match shell/board/table/drawer layout; initial loading has one accessible status, decorative shapes and no fake focus targets. Respect reduced motion. Background refresh retains content instead of replacing it with skeletons. Both themes and narrow/wide layouts remain usable.
+  - **Validation:** UI rendering/accessibility checks, stories, delayed browser flows and standard gates.
+  - **Commit:** `feat(ui): add stable workspace loading skeletons`.
+  - **Implementation evidence:** [P40-02](evidence/P40-02.md); focused behavior is verified, full integration remains pending.
+
+- [ ] **P40-03 — Refine workspace visual hierarchy**
+  - **Goal:** Make the existing MUI workspace calmer, denser and more consistent.
+  - **Requirements:** R181.
+  - **Files:** Shared board/column/card/layout components and relevant web toolbars, stories and visual tests.
+  - **Dependencies:** P40-02.
+  - **Acceptance:** Compact single-row column headers/counts, clear dividers, consistent card spacing and quieter toolbars. Keep full-card drag/open behavior, accessible labels, visible focus, 3.6rem controls/4.4rem coarse-pointer targets and semantic theme tokens. Validate light/dark and responsive layouts without introducing a new UI library.
+  - **Validation:** Interaction regressions, browser screenshots/story checks and standard gates.
+  - **Commit:** `style(ui): refine workspace visual hierarchy`.
+  - **Implementation evidence:** [P40-03](evidence/P40-03.md).

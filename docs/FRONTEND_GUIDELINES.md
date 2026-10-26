@@ -40,6 +40,8 @@ The [view import boundary test](../apps/web/test/data-hook-boundary.test.mjs) re
 
 Follow [useTaskWriteMutation.ts](../apps/web/src/features/tasks/useTaskWriteMutation.ts) for validated write results and [useTaskPlacementMutation.ts](../apps/web/src/features/board/useTaskPlacementMutation.ts) for placement changes. Validate authoritative responses before showing success. Preserve optimistic rollback, concurrent-write guards and newer updates. Loading, empty, forbidden and recoverable error states are part of the feature.
 
+Routine background refreshes retain only the current keyed view's validated snapshot, so focus/reconnect and task updates do not replace cards or rows with a page loader. `useBackgroundRefresh` coalesces overlapping requests and retains one trailing invalidation; hard workspace/configuration resets clear that queue and the visible snapshot. Clear terminal errors before storing any assembled ready result, because an infinite query may retain earlier pages after a later page is denied. A manual retry after denial must start without stale content. See D175 and the refresh/access browser regressions.
+
 ### Common mutation execution
 
 All nine feature write hooks delegate to `useApiMutation` in web infrastructure. It requires a mutation key and function, forwards native TanStack generic types/callbacks/context, and enforces the existing `retry: false` and `networkMode: 'always'` policy. The helper never adds a second fetch layer, changes a command, reports success, or chooses cache invalidation.

@@ -29,6 +29,23 @@ const fields = [
   },
 ];
 
+for (const [component, label] of [
+  ['BoardSkeleton', 'Loading board…'],
+  ['NavigationSkeleton', 'Loading navigation…'],
+  ['TableSkeleton', 'Loading tasks…'],
+  ['TaskDetailSkeleton', 'Loading task…'],
+  ['WorkspaceSkeleton', 'Opening Flowboard…'],
+])
+  test(`${component} has one accessible loading status and no fake controls`, () => {
+    const { container } = render(h(UI.ThemeProvider, {}, h(UI[component])));
+    assert.equal(screen.getAllByRole('status').length, 1);
+    assert.equal(screen.getByRole('status', { name: label }).textContent, label);
+    assert.equal(Boolean(screen.getByRole('status').closest('[aria-busy="true"]')), false);
+    assert.ok(container.querySelector('[aria-busy="true"]'));
+    assert.equal(container.querySelectorAll('button,input,a,select,textarea').length, 0);
+    assert.equal(container.querySelectorAll('.MuiCircularProgress-root').length, 0);
+  });
+
 test('shared data grid preserves caller order, zero/false values and task callbacks', async () => {
   const opened = [];
   const tasks = ['Second', 'First'].map((title, index) => ({
@@ -199,6 +216,8 @@ test('loading and workspace slots have accessible names and controlled navigatio
     ),
   );
   assert.equal(screen.getByRole('status').textContent, 'Opening board…');
+  assert.equal(Boolean(screen.getByRole('status').closest('[aria-busy="true"]')), false);
+  assert.ok(screen.getByRole('status').parentElement.querySelector('[aria-busy="true"]'));
   fireEvent.click(screen.getByRole('button', { name: 'Open navigation' }));
   assert.deepEqual(opened, [true]);
 });
@@ -383,4 +402,22 @@ test('dialog close icons preserve the guarded dismiss callback and busy state', 
   assert.equal(calls.length, 1);
   view.rerender(h(UI.Dialog, { open: true }, 'Non-dismissible'));
   assert.equal(screen.queryByRole('button', { name: 'Close dialog' }), null);
+});
+
+test('board headings show compact status labels and accessible numeric counts', () => {
+  render(
+    h(
+      UI.ThemeProvider,
+      {},
+      h(UI.KanbanColumn, {
+        count: 3,
+        status: { category: 'active', color: '#3571d6', name: 'In progress' },
+      }),
+      h(UI.WorkspaceColumn, { count: 2, name: 'Design backlog' }),
+    ),
+  );
+  assert.equal(screen.getByText('3 loaded tasks').textContent, '3 loaded tasks');
+  assert.equal(screen.getByText('2 loaded tasks').textContent, '2 loaded tasks');
+  assert.ok(screen.getByText('In progress', { exact: true }));
+  assert.equal(screen.queryByText('In progress · Active'), null);
 });

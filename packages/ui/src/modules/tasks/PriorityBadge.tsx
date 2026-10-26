@@ -7,8 +7,8 @@ import type { Priority } from '@flowboard/contracts';
 const priorities = {
   urgent: { label: 'Urgent', color: 'error' },
   high: { label: 'High', color: 'warning' },
-  normal: { label: 'Normal', color: 'info' },
-  low: { label: 'Low', color: 'success' },
+  normal: { label: 'Normal', color: 'default' },
+  low: { label: 'Low', color: 'default' },
   none: { label: 'No priority', color: 'default' },
 } as const;
 

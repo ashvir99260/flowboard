@@ -761,3 +761,23 @@ The user requested the Swagger link on the deployed Vercel demo. Enable it with 
 The future ECR path deploys only services affected by a production change, rather than redeploying every service for every merge to main. Reuse the existing per-app release planner and runtime dependency graph: shared jobs affect API/worker; UI/forms/client affect web; contracts affect every actual consumer, currently web/API/worker. Build-only API-to-OpenAPI coupling does not by itself deploy web. Documentation, tests and lint-only changes do not publish or deploy app images.
 
 Trunk-based development describes the single main branch and short-lived feature branches. Selective delivery and promotion are the deployment policies layered on it. Build each affected app's release image once, store it in ECR, and promote its exact digest through dev → qa → stage → prod. Environment-specific settings and secrets are injected at runtime. Preserve unaffected apps in each environment; a configuration-only update reuses the existing image. Pin the selected release set, check compatibility, and do not pull unrelated new main commits into an in-flight promotion. Current GHCR publication is already selective; current Vercel demo deployment remains a full-project source build. Selective ECR deployment and four-environment execution remain future work. [PROMOTION.md](PROMOTION.md) owns the detailed contract.
+
+## D175 — Stable background refresh within an authorized view
+
+Routine focus, reconnect and task invalidations retain the last validated board/table snapshot for the same keyed session, workspace, list and filter. Fresh reads still validate cursor/configuration/data versions before replacing that snapshot. Explicit workspace/configuration resyncs and terminal errors clear retained content; a denied later page must never become the next retry's placeholder.
+
+Use one small refresh queue per view to merge invalidations received during a read into one trailing refresh. Do not drop the trailing request, use a time-based debounce for correctness, or substitute snapshots across scopes. Placement writes keep their immediate optimistic projection and rollback policy. Expose background work through `aria-busy` without replacing the loaded layout. Initial-load skeletons are a separate presentation layer.
+
+D175 clarification: successful list-subscription catch-up is a routine refresh. Its origin is supplied only by the in-process realtime bus as optional callback context. Network/global resyncs never receive that context and keep their hard-clear behavior. No wire contract or authorization check changes.
+
+## D176 — Skeletons preserve initial loading geometry
+
+Use shared `WorkspaceSkeleton`, `NavigationSkeleton`, `BoardSkeleton`, `TableSkeleton` and `TaskDetailSkeleton` components for their corresponding initial loads. Keep `LoadingState` as a compact skeleton fallback for smaller sections. All use the existing MUI theme, deterministic shapes, one accessible loading status per region and no fake focusable content. Disable skeleton animation under reduced motion.
+
+A skeleton belongs only where no authorized data has loaded yet. D175 governs background refresh: retain the current validated content instead of flashing a skeleton or an empty Data Grid. `SessionLoading` selects the full workspace shape only at shell/session boundaries; nested content uses its own shape.
+
+## D177 — Compact workspace hierarchy without changing board behavior
+
+Keep the existing MUI theme and semantic status colors. Column headings use a single row with a short status/list name and a neutral numeric badge; its accessible label still explains that the count covers loaded tasks. Detailed status chips remain the default in configuration previews. Board cards use consistent padding and a quiet border hover instead of added elevation. Normal/low priority labels keep their text with neutral fills; urgent/high remain accented.
+
+Refresh actions use labelled icon buttons. The mobile create-task action uses a plus icon with the same accessible name, and mobile header actions wrap into their own row so all controls remain separate from the logo and search. Preserve keyboard actions, whole-card dragging/opening, focus restoration and coarse-pointer target sizes.
