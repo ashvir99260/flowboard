@@ -167,6 +167,150 @@ test('members cannot open administration controls through a direct URL', async (
   await expect(editor(page)).toHaveCount(0);
 });
 
+test('invalid container drafts stay local and can be corrected before creation', async ({
+  page,
+}) => {
+  await login(page);
+  await openBacklog(page);
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
+  await page.getByRole('button', { exact: true, name: 'New container' }).click();
+  let createRequests = 0;
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/v1/nodes')
+      createRequests++;
+  });
+  const name = editor(page).getByLabel(/^Container name/);
+  const save = editor(page).getByRole('button', { exact: true, name: 'Create container' });
+  await save.click();
+  await expect(name).toHaveAttribute('aria-invalid', 'true');
+  expect(createRequests).toBe(0);
+
+  await name.fill('Validated browser folder');
+  await selectAutocomplete(editor(page).getByLabel(/^Container type/), 'Folder');
+  const parent = editor(page).getByLabel(/^Parent container/);
+  await selectAutocomplete(parent, 'Choose a parent');
+  await save.click();
+  await expect(parent).toHaveAttribute('aria-invalid', 'true');
+  await expect(name).toHaveValue('Validated browser folder');
+  expect(createRequests).toBe(0);
+
+  await selectAutocomplete(parent, 'space: Engineering');
+  const created = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      new URL(response.url()).pathname === '/api/v1/nodes',
+  );
+  await save.click();
+  expect((await created).status()).toBe(201);
+  await expect(page.getByLabel(/^Selected container/)).toHaveValue(
+    'folder: Engineering / Validated browser folder',
+  );
+  expect(createRequests).toBe(1);
+  await page.reload();
+  await selectAutocomplete(
+    page.getByLabel(/^Selected container/),
+    'folder: Engineering / Validated browser folder',
+  );
+  await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Validated browser folder');
+});
+
+test('container type changes offer only valid parents and preserve the entered name', async ({
+  page,
+}) => {
+  await login(page);
+  await openBacklog(page);
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
+  await page.getByRole('button', { exact: true, name: 'New container' }).click();
+  await editor(page)
+    .getByLabel(/^Container name/)
+    .fill('Hierarchy browser draft');
+  const type = editor(page).getByLabel(/^Container type/);
+  const parent = editor(page).getByLabel(/^Parent container/);
+  await expect(parent).toHaveCount(0);
+
+  for (const [containerType, parentType] of [
+    ['Folder', 'space'],
+    ['List', 'folder'],
+  ] as const) {
+    await selectAutocomplete(type, containerType);
+    await expect(parent).toHaveValue(new RegExp(`^${parentType}:`));
+    await parent.click();
+    await expect(page.getByRole('option', { exact: true, name: 'Choose a parent' })).toBeVisible();
+    await expect(
+      page.getByRole('option', { name: new RegExp(`^${parentType}:`) }).first(),
+    ).toBeVisible();
+    const options = await page.getByRole('option').allTextContents();
+    expect(options.length).toBeGreaterThan(1);
+    expect(
+      options.every(
+        (option) => option === 'Choose a parent' || option.startsWith(`${parentType}:`),
+      ),
+    ).toBe(true);
+    await parent.press('Escape');
+  }
+
+  await selectAutocomplete(type, 'Space');
+  await expect(parent).toHaveCount(0);
+  await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Hierarchy browser draft');
+});
+
+test('unchanged containers skip writes and failed saves retain edits for a successful retry', async ({
+  page,
+}) => {
+  await login(page);
+  await openBacklog(page);
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
+  const nodeId = await createContainer(page, 'Retry browser space', 'space');
+  const nodeUrl = `**/api/v1/nodes/${nodeId}`;
+  let updateRequests = 0;
+  page.on('request', (request) => {
+    if (
+      request.method() === 'PATCH' &&
+      new URL(request.url()).pathname === `/api/v1/nodes/${nodeId}`
+    )
+      updateRequests++;
+  });
+  const save = editor(page).getByRole('button', { exact: true, name: 'Save container' });
+  await save.click();
+  await expect(editor(page).getByRole('alert')).toHaveText('No changes to save.');
+  expect(updateRequests).toBe(0);
+
+  const name = editor(page).getByLabel(/^Container name/);
+  const visibility = editor(page).getByLabel(/^Visibility/);
+  await name.fill('Retried browser space');
+  await selectAutocomplete(visibility, 'Private: explicit allow required');
+  await page.route(nodeUrl, async (route) => {
+    if (route.request().method() === 'PATCH') await route.abort('failed');
+    else await route.continue();
+  });
+  await save.click();
+  await expect(editor(page).getByRole('alert')).toHaveText(
+    'Unable to reach Flowboard. Please try again.',
+  );
+  await expect(save).toBeEnabled();
+  await expect(name).toHaveValue('Retried browser space');
+  await expect(visibility).toHaveValue('Private: explicit allow required');
+  await expect(page.getByLabel(/^Selected container/)).toHaveValue('space: Retry browser space');
+  expect(updateRequests).toBe(1);
+
+  await page.unroute(nodeUrl);
+  const saved = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' &&
+      new URL(response.url()).pathname === `/api/v1/nodes/${nodeId}`,
+  );
+  await save.click();
+  expect((await saved).status()).toBe(200);
+  await expect(page.getByLabel(/^Selected container/)).toHaveValue('space: Retried browser space');
+  expect(updateRequests).toBe(2);
+  await page.reload();
+  await selectAutocomplete(page.getByLabel(/^Selected container/), 'space: Retried browser space');
+  await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Retried browser space');
+  await expect(editor(page).getByLabel(/^Visibility/)).toHaveValue(
+    'Private: explicit allow required',
+  );
+});
+
 test('remote configuration changes preserve the dirty administration draft until explicit reload', async ({
   page,
   browser,
