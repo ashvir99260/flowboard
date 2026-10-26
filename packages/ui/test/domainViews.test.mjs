@@ -29,6 +29,23 @@ const fields = [
   },
 ];
 
+for (const [component, label] of [
+  ['BoardSkeleton', 'Loading board…'],
+  ['NavigationSkeleton', 'Loading navigation…'],
+  ['TableSkeleton', 'Loading tasks…'],
+  ['TaskDetailSkeleton', 'Loading task…'],
+  ['WorkspaceSkeleton', 'Opening Flowboard…'],
+])
+  test(`${component} has one accessible loading status and no fake controls`, () => {
+    const { container } = render(h(UI.ThemeProvider, {}, h(UI[component])));
+    assert.equal(screen.getAllByRole('status').length, 1);
+    assert.equal(screen.getByRole('status', { name: label }).textContent, label);
+    assert.equal(Boolean(screen.getByRole('status').closest('[aria-busy="true"]')), false);
+    assert.ok(container.querySelector('[aria-busy="true"]'));
+    assert.equal(container.querySelectorAll('button,input,a,select,textarea').length, 0);
+    assert.equal(container.querySelectorAll('.MuiCircularProgress-root').length, 0);
+  });
+
 test('shared data grid preserves caller order, zero/false values and task callbacks', async () => {
   const opened = [];
   const tasks = ['Second', 'First'].map((title, index) => ({
@@ -199,6 +216,8 @@ test('loading and workspace slots have accessible names and controlled navigatio
     ),
   );
   assert.equal(screen.getByRole('status').textContent, 'Opening board…');
+  assert.equal(Boolean(screen.getByRole('status').closest('[aria-busy="true"]')), false);
+  assert.ok(screen.getByRole('status').parentElement.querySelector('[aria-busy="true"]'));
   fireEvent.click(screen.getByRole('button', { name: 'Open navigation' }));
   assert.deepEqual(opened, [true]);
 });

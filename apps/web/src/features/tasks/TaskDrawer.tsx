@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, ConfirmDialog, DrawerPanel, ErrorState, Typography } from '@flowboard/ui';
+import { Button, ConfirmDialog, DrawerPanel, ErrorState, TaskDetailSkeleton } from '@flowboard/ui';
 import { useRef, useState } from 'react';
 
 import { ActivityFeed } from './ActivityFeed';
@@ -73,7 +73,7 @@ export function TaskDrawer({
           action={<Button onClick={retry}>Retry task</Button>}
         />
       ) : result.state !== 'ready' ? (
-        <Typography role="status">Loading task…</Typography>
+        <TaskDetailSkeleton />
       ) : (
         <>
           <TaskForm

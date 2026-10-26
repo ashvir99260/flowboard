@@ -1,6 +1,6 @@
 'use client';
 
-import { BoardViewport, Button, ErrorState, LoadingState, Stack, Typography } from '@flowboard/ui';
+import { BoardSkeleton, BoardViewport, Button, ErrorState, Stack, Typography } from '@flowboard/ui';
 
 import { BoardDnd } from './BoardDnd';
 import { useBoard } from './useBoard';
@@ -19,7 +19,7 @@ export function BoardContent({
   open: (selection: Selection) => void;
   pending: ReadonlySet<string>;
 }) {
-  if (board.state === 'loading') return <LoadingState>Loading board…</LoadingState>;
+  if (board.state === 'loading') return <BoardSkeleton />;
 
   if (board.state === 'error')
     return (

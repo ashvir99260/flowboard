@@ -1,7 +1,11 @@
 'use client';
 
-import { LoadingState } from '@flowboard/ui';
+import { LoadingState, WorkspaceSkeleton } from '@flowboard/ui';
 
-export function SessionLoading() {
-  return <LoadingState>Opening Flowboard…</LoadingState>;
+export function SessionLoading({ layout = 'content' }: { layout?: 'content' | 'workspace' }) {
+  return layout === 'workspace' ? (
+    <WorkspaceSkeleton />
+  ) : (
+    <LoadingState>Opening Flowboard…</LoadingState>
+  );
 }

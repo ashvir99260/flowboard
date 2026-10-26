@@ -1,11 +1,11 @@
 'use client';
 
 import {
+  BoardSkeleton,
   BoardViewport,
   Button,
   EmptyState,
   ErrorState,
-  LoadingState,
   Stack,
   Typography,
 } from '@flowboard/ui';
@@ -120,7 +120,7 @@ export function ConnectedWorkspaceBoard({
         <WorkspaceListSubscription key={list.id} listId={list.id} refresh={board.refreshTasks} />
       ))}
       {tree.state === 'loading' ? (
-        <LoadingState>Loading workspace lists…</LoadingState>
+        <BoardSkeleton label="Loading workspace lists…" />
       ) : tree.state === 'error' ? (
         <ErrorState
           title="Workspace lists unavailable"

@@ -17,5 +17,5 @@ export function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
     if (status === 'anonymous') router.replace('/login');
   }, [router, status]);
 
-  return status === 'authenticated' ? children : <SessionLoading />;
+  return status === 'authenticated' ? children : <SessionLoading layout="workspace" />;
 }

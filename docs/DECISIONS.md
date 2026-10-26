@@ -767,3 +767,9 @@ Trunk-based development describes the single main branch and short-lived feature
 Routine focus, reconnect and task invalidations retain the last validated board/table snapshot for the same keyed session, workspace, list and filter. Fresh reads still validate cursor/configuration/data versions before replacing that snapshot. Explicit workspace/configuration resyncs and terminal errors clear retained content; a denied later page must never become the next retry's placeholder.
 
 Use one small refresh queue per view to merge invalidations received during a read into one trailing refresh. Do not drop the trailing request, use a time-based debounce for correctness, or substitute snapshots across scopes. Placement writes keep their immediate optimistic projection and rollback policy. Expose background work through `aria-busy` without replacing the loaded layout. Initial-load skeletons are a separate presentation layer.
+
+## D176 — Skeletons preserve initial loading geometry
+
+Use shared `WorkspaceSkeleton`, `NavigationSkeleton`, `BoardSkeleton`, `TableSkeleton` and `TaskDetailSkeleton` components for their corresponding initial loads. Keep `LoadingState` as a compact skeleton fallback for smaller sections. All use the existing MUI theme, deterministic shapes, one accessible loading status per region and no fake focusable content. Disable skeleton animation under reduced motion.
+
+A skeleton belongs only where no authorized data has loaded yet. D175 governs background refresh: retain the current validated content instead of flashing a skeleton or an empty Data Grid. `SessionLoading` selects the full workspace shape only at shell/session boundaries; nested content uses its own shape.

@@ -1672,6 +1672,7 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** Reusable skeletons match shell/board/table/drawer layout; initial loading has one accessible status, decorative shapes and no fake focus targets. Respect reduced motion. Background refresh retains content instead of replacing it with skeletons. Both themes and narrow/wide layouts remain usable.
   - **Validation:** UI rendering/accessibility checks, stories, delayed browser flows and standard gates.
   - **Commit:** `feat(ui): add stable workspace loading skeletons`.
+  - **Implementation evidence:** [P40-02](evidence/P40-02.md); focused behavior is verified, full integration remains pending.
 
 - [ ] **P40-03 — Refine workspace visual hierarchy**
   - **Goal:** Make the existing MUI workspace calmer, denser and more consistent.
