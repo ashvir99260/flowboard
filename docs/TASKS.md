@@ -1651,3 +1651,39 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Manifest/planner review, diagram rendering, links, shared formatting and whitespace checks. Application suites and live deployments are not applicable to this documentation-only task.
   - **Commit:** `docs: define selective ecr deployment policy`.
   - **Completion evidence:** [P39-06](evidence/P39-06.md).
+
+- [ ] **P39-07 — Align demo compute with the existing Ohio datastores**
+  - **Goal:** Remove the known cross-region path between Vercel compute and the existing Neon/Upstash services.
+  - **Requirements:** R177; preserve R96–R98 and D174.
+  - **Files:** `vercel.json`, release-tool deployment readiness/tests, hosting/architecture references, task/matrix/decision/evidence records.
+  - **Dependencies:** P38-03/P39-05; live inventory confirms both datastores are in AWS Ohio (`us-east-2`).
+  - **Acceptance:** Pin web/API functions and the single worker to Vercel Ohio (`cle1`); reject a worker in another region. Preserve Hobby/Free plans, authentication, routing, TLS, data and global static CDN delivery. Do not disable scale-to-zero or add paid capacity.
+  - **Validation:** Failing region/configuration regressions, then passing release-tool tests, root build/lint/tests/types, applicable formatting and delivery configuration checks. P39-08 owns live rollout and timing evidence.
+  - **Commit:** `fix(deploy): colocate demo compute in ohio`.
+
+- [ ] **P39-08 — Verify the Ohio demo rollout**
+  - **Goal:** Apply the checked configuration and prove web, API and worker run beside Neon/Redis.
+  - **Requirements:** R177.
+  - **Files:** Deployment evidence and task/matrix completion; provider settings remain outside Git.
+  - **Dependencies:** P39-07; current authorized Vercel project access.
+  - **Acceptance:** Deploy the committed revision on the existing Hobby demo, verify Ohio function execution and one live worker, retain unchanged datastore identities and free plans, check health/authenticated reads and compare representative before/after timings. Record timing limits; do not equate colocation with removing cold starts or guarantee a speedup from a small sample.
+  - **Validation:** Real deployment inventory, HTTP/browser checks and bounded direct timing samples; no database migrations beyond the existing startup path, reset, reseed or paid upgrades.
+  - **Commit:** `docs: verify ohio demo deployment`.
+
+- [ ] **P39-09 — Activate CI-controlled deployment from main**
+  - **Goal:** Deploy the temporary Vercel demo from validated `main` commits through the existing release/deploy workflow.
+  - **Requirements:** R178; preserve R94–R98 and D169.
+  - **Files:** CI/deployment configuration if needed, operating documentation and evidence; credentials stay in the GitHub `demo` environment.
+  - **Dependencies:** P39-10; required `main` checks pass; reviewed region changes reach `main`; authorized Vercel automation credential with access required by the existing Hobby-plan preflight.
+  - **Acceptance:** Keep Vercel's production branch `main`; deploy only after main verification and release succeed. Configure the existing project/team identifiers and encrypted credential, then enable the CD gate. Keep competing direct Git deployments disabled and reject stale/non-main revisions. No paid upgrade or broadened token scope.
+  - **Validation:** Workflow/provider regressions, setting-name inspection, successful main run with source/region/worker verification; no secrets in logs or Git.
+  - **Commit:** `ci: activate main branch demo deployment`.
+
+- [ ] **P39-10 — Repair main-branch verification blockers**
+  - **Goal:** Make the existing verification pipeline usable before enabling main-branch deployment.
+  - **Requirements:** R178; preserve existing development reload and workspace lifecycle acceptance.
+  - **Files:** `scripts/check-compose-dev.mjs`, `apps/web/test/workspace-lifecycle-real.test.mjs`, task/evidence records.
+  - **Dependencies:** Failed main run `40242941493` provides the initial failure evidence.
+  - **Acceptance:** The reload test edits the current `apiProxy.ts` source. The workspace lifecycle browser closes before application cleanup, matching the working real-client fixtures; preserve assertions and graceful-shutdown checks.
+  - **Validation:** Rerun the real lifecycle scenario and development Compose check with isolated datastores, plus applicable build/static gates. Do not replace missing Docker checks with fixtures or a success claim.
+  - **Commit:** `fix(test): repair main deployment verification`.
