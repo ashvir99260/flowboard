@@ -21,6 +21,10 @@ const Header = styled('div')(({ theme }) => ({
   paddingInline: theme.spacing(2.4),
   borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
   backgroundColor: (theme.vars ?? theme).palette.background.paper,
+  [theme.breakpoints.down('sm')]: {
+    height: '10.4rem',
+    '@media (pointer: coarse)': { height: '11.2rem' },
+  },
 }));
 const Body = styled('div')(({ theme }) => ({
   display: 'grid',

@@ -1,6 +1,16 @@
 'use client';
 
-import { BoardSkeleton, BoardViewport, Button, ErrorState, Stack, Typography } from '@flowboard/ui';
+import {
+  BoardSkeleton,
+  BoardViewport,
+  Button,
+  ErrorState,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+  WorkspaceIcon,
+} from '@flowboard/ui';
 
 import { BoardDnd } from './BoardDnd';
 import { useBoard } from './useBoard';
@@ -36,12 +46,20 @@ export function BoardContent({
         direction="row"
         sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 0.8 }}
       >
-        <Typography component="h2" variant="h2">
-          Board
+        <Typography color="text.secondary" variant="body2">
+          {board.columns.length} status columns
         </Typography>
-        <Button disabled={board.refreshing} onClick={board.retry}>
-          Refresh board
-        </Button>
+        <Tooltip title="Refresh board">
+          <span>
+            <IconButton
+              aria-label="Refresh board"
+              disabled={board.refreshing}
+              onClick={board.retry}
+            >
+              <WorkspaceIcon name="refresh" />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Stack>
       <BoardViewport
         role="region"

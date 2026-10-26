@@ -1682,3 +1682,4 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** Compact single-row column headers/counts, clear dividers, consistent card spacing and quieter toolbars. Keep full-card drag/open behavior, accessible labels, visible focus, 3.6rem controls/4.4rem coarse-pointer targets and semantic theme tokens. Validate light/dark and responsive layouts without introducing a new UI library.
   - **Validation:** Interaction regressions, browser screenshots/story checks and standard gates.
   - **Commit:** `style(ui): refine workspace visual hierarchy`.
+  - **Implementation evidence:** [P40-03](evidence/P40-03.md).

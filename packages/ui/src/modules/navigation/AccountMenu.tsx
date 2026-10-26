@@ -18,6 +18,7 @@ const Identity = styled(Button)(({ theme }) => ({
   gap: theme.spacing(0.8),
   color: (theme.vars ?? theme).palette.text.primary,
   padding: theme.spacing(0.4, 0.6),
+  minWidth: '4.4rem',
   textTransform: 'none',
   textAlign: 'left',
 }));

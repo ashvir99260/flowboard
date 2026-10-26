@@ -6,8 +6,11 @@ import {
   Button,
   EmptyState,
   ErrorState,
+  IconButton,
   Stack,
+  Tooltip,
   Typography,
+  WorkspaceIcon,
 } from '@flowboard/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -141,18 +144,23 @@ export function ConnectedWorkspaceBoard({
             <Typography component="h1" variant="h1">
               Workspace board
             </Typography>
-            <Button
-              onClick={() => {
-                tree.retry();
-                board.retry();
-              }}
-            >
-              Refresh workspace board
-            </Button>
+            <Tooltip title="Refresh workspace board">
+              <span>
+                <IconButton
+                  aria-label="Refresh workspace board"
+                  disabled={board.refreshing}
+                  onClick={() => {
+                    tree.retry();
+                    board.retry();
+                  }}
+                >
+                  <WorkspaceIcon name="refresh" />
+                </IconButton>
+              </span>
+            </Tooltip>
           </Stack>
           <Typography color="text.secondary">
-            Each column is a list. Tasks stay grouped by status; drag within a group to reorder or
-            into another list to move.
+            Drag tasks between lists, or open a list to work by status.
           </Typography>
           <BoardViewport
             role="region"

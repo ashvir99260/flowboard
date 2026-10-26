@@ -403,3 +403,21 @@ test('dialog close icons preserve the guarded dismiss callback and busy state', 
   view.rerender(h(UI.Dialog, { open: true }, 'Non-dismissible'));
   assert.equal(screen.queryByRole('button', { name: 'Close dialog' }), null);
 });
+
+test('board headings show compact status labels and accessible numeric counts', () => {
+  render(
+    h(
+      UI.ThemeProvider,
+      {},
+      h(UI.KanbanColumn, {
+        count: 3,
+        status: { category: 'active', color: '#3571d6', name: 'In progress' },
+      }),
+      h(UI.WorkspaceColumn, { count: 2, name: 'Design backlog' }),
+    ),
+  );
+  assert.equal(screen.getByText('3 loaded tasks').textContent, '3 loaded tasks');
+  assert.equal(screen.getByText('2 loaded tasks').textContent, '2 loaded tasks');
+  assert.ok(screen.getByText('In progress', { exact: true }));
+  assert.equal(screen.queryByText('In progress · Active'), null);
+});
