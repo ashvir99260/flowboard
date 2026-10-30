@@ -16,6 +16,16 @@ export function createNotificationStore() {
     // Retain the current toast and the newest pending messages during a burst.
     publish(queue.length < 5 ? [...queue, next] : [queue[0]!, ...queue.slice(-3), next]);
   };
+  const reporter = (expected: number) => {
+    let reported = false;
+
+    return (message: string, severity: ToastSeverity) => {
+      if (expected !== generation || reported) return;
+
+      reported = true;
+      show(message, severity);
+    };
+  };
 
   return {
     subscribe(listener: () => void) {
@@ -35,15 +45,12 @@ export function createNotificationStore() {
       publish([]);
     },
     capture() {
+      return reporter(generation);
+    },
+    captureFactory() {
       const expected = generation;
-      let reported = false;
 
-      return (message: string, severity: ToastSeverity) => {
-        if (expected !== generation || reported) return;
-
-        reported = true;
-        show(message, severity);
-      };
+      return () => reporter(expected);
     },
     show,
     remote(eventId: string, message: string) {

@@ -1,10 +1,5 @@
 'use client';
 
-import {
-  getListResolvedFieldsOptions,
-  getListResolvedStatusesOptions,
-  listTasksInfiniteOptions,
-} from '@flowboard/api-client/tanstack-query';
 import { TaskPageSchema } from '@flowboard/contracts';
 import {
   focusManager,
@@ -19,8 +14,13 @@ import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { readBoardStatuses } from '../board/boardData';
 import { configurationChanged } from '../config/configurationEvents';
+import {
+  getListResolvedFieldsOptions,
+  getListResolvedStatusesOptions,
+} from '../config/configurationQueries';
 import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
+import { listTasksInfiniteOptions } from '../tasks/taskQueries';
 
 import { assembleTaskList, readListFields } from './listData';
 import { readListFilter } from './listFilter';
@@ -29,6 +29,12 @@ import { writeListLocation } from './listLocation';
 import type { TaskTableQuery } from './listLocation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type {
+  GetListResolvedFieldsQueryOptions,
+  GetListResolvedStatusesQueryOptions,
+} from '../config/configurationQueries';
+import type { ListTasksInfiniteQueryOptions } from '../tasks/taskQueries';
+import type { ResolvedField, ResolvedStatus } from '@flowboard/contracts';
 import type { QueryClient } from '@tanstack/react-query';
 
 const pagePolicy = {
@@ -73,17 +79,39 @@ function subscribeChanges(
   };
 }
 
-export function useListQuery({
-  listId,
-  runtime,
-  scope,
-  query,
-}: {
-  listId: string;
-  query: TaskTableQuery;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-}) {
+export type ListQueryOptions = {
+  fields?: GetListResolvedFieldsQueryOptions;
+  statuses?: GetListResolvedStatusesQueryOptions;
+  tasks?: ListTasksInfiniteQueryOptions;
+};
+
+export type ListQueryResult = {
+  atLimit: boolean;
+  configured: boolean;
+  error: ReturnType<typeof apiError> | null;
+  fields: ResolvedField[];
+  filterError: string | null;
+  loadingMore: boolean;
+  loadMore: () => void;
+  result: ReturnType<typeof assembleTaskList>;
+  retry: () => void;
+  statuses: ResolvedStatus[];
+};
+
+export function useListQuery(
+  {
+    listId,
+    runtime,
+    scope,
+    query,
+  }: {
+    listId: string;
+    query: TaskTableQuery;
+    runtime: ClientRuntime;
+    scope: QueryScope;
+  },
+  options: ListQueryOptions = {},
+): ListQueryResult {
   const instance = useId();
   const client = useQueryClient();
 
@@ -127,19 +155,23 @@ export function useListQuery({
 
   const statusesQuery = useQuery({
     ...withQueryScope(
-      getListResolvedStatusesOptions({ client: runtime.client, path: { listId } }),
+      getListResolvedStatusesOptions(
+        { client: runtime.client, path: { listId } },
+        { ...pagePolicy, ...options.statuses },
+      ),
       scope,
       tags,
     ),
-    ...pagePolicy,
   });
   const fieldsQuery = useQuery({
     ...withQueryScope(
-      getListResolvedFieldsOptions({ client: runtime.client, path: { listId } }),
+      getListResolvedFieldsOptions(
+        { client: runtime.client, path: { listId } },
+        { ...pagePolicy, ...options.fields },
+      ),
       scope,
       tags,
     ),
-    ...pagePolicy,
   });
 
   const statuses = readBoardStatuses(statusesQuery.data, scope.workspaceId!);
@@ -152,15 +184,17 @@ export function useListQuery({
 
   const tasks = useInfiniteQuery({
     ...withQueryScope(
-      listTasksInfiniteOptions({
-        client: runtime.client,
-        path: { listId },
-        query: { ...query, limit: '50' },
-      }),
+      listTasksInfiniteOptions(
+        {
+          client: runtime.client,
+          path: { listId },
+          query: { ...query, limit: '50' },
+        },
+        { ...pagePolicy, ...options.tasks },
+      ),
       scope,
       taskTags,
     ),
-    ...pagePolicy,
     enabled: configured && filter?.ok === true && !changed,
     initialPageParam: { path: { listId }, query: {} },
     getNextPageParam: (page, pages) => {

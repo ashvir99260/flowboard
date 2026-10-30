@@ -32,7 +32,12 @@ export function taskMutationAffectsList(
   );
 }
 
-export function isTaskBusy(client: QueryClient, scope: QueryScope, taskId: string) {
+export function isTaskBusy(
+  client: QueryClient,
+  scope: QueryScope,
+  taskId: string,
+  ownPending = false,
+) {
   return (
     client.isMutating({
       predicate: (entry) => {
@@ -44,6 +49,6 @@ export function isTaskBusy(client: QueryClient, scope: QueryScope, taskId: strin
           (variables?.taskId === taskId || variables?.tasks?.some(({ id }) => id === taskId)),
         );
       },
-    }) > 0
+    }) > (ownPending ? 1 : 0)
   );
 }

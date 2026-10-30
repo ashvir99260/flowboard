@@ -1,6 +1,5 @@
 'use client';
 
-import { listVisibleTreeInfiniteOptions } from '@flowboard/api-client/tanstack-query';
 import { TreePageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -10,7 +9,9 @@ import { withQueryScope } from '../../lib/queryScope';
 import { useRealtime } from '../realtime/useRealtime';
 
 import { assembleTree } from './assembleTree';
+import { listVisibleTreeInfiniteOptions } from './treeQueries';
 
+import type { ListVisibleTreeInfiniteQueryOptions } from './treeQueries';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
@@ -36,14 +37,25 @@ function treeProgress(value: unknown, hasNext: boolean, workspaceId: string) {
   };
 }
 
-export function useTree(runtime: ClientRuntime, scope: QueryScope) {
+export type TreeQueryOptions = ListVisibleTreeInfiniteQueryOptions;
+
+export type TreeQueryResult =
+  | { state: 'loading' }
+  | { message: string; retry: () => void; state: 'error' }
+  | (Extract<ReturnType<typeof treeProgress>, { state: 'ready' }> & { retry: () => void });
+
+export function useTree(
+  runtime: ClientRuntime,
+  scope: QueryScope,
+  options: TreeQueryOptions = {},
+): TreeQueryResult {
   const [attempt, setAttempt] = useState(0);
 
   useRealtime(undefined, () => setAttempt((current) => current + 1));
 
   const query = useInfiniteQuery({
     ...withQueryScope(
-      listVisibleTreeInfiniteOptions({ client: runtime.client, query: { limit: '50' } }),
+      listVisibleTreeInfiniteOptions({ client: runtime.client, query: { limit: '50' } }, options),
       scope,
       [`tree-attempt:${attempt}`],
     ),

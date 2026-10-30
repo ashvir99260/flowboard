@@ -1,10 +1,5 @@
 'use client';
 
-import {
-  listNodeGrantsInfiniteOptions,
-  listVisibleTreeInfiniteOptions,
-  listWorkspaceMembersInfiniteOptions,
-} from '@flowboard/api-client/tanstack-query';
 import { GrantPageSchema, MemberPageSchema, TreePageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useState } from 'react';
@@ -13,11 +8,18 @@ import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { configurationChanged } from '../config/configurationEvents';
 import { useRealtime } from '../realtime/useRealtime';
+import { listNodeGrantsInfiniteOptions, listVisibleTreeInfiniteOptions } from '../tree/treeQueries';
+import { listWorkspaceMembersInfiniteOptions } from '../workspaces/workspaceQueries';
 
 import { readAdministration } from './administrationData';
 
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type {
+  ListNodeGrantsInfiniteQueryOptions,
+  ListVisibleTreeInfiniteQueryOptions,
+} from '../tree/treeQueries';
+import type { ListWorkspaceMembersInfiniteQueryOptions } from '../workspaces/workspaceQueries';
 
 const policy = {
   retry: false,
@@ -27,7 +29,25 @@ const policy = {
   refetchOnWindowFocus: false,
 } as const;
 
-export function useAdministration(runtime: ClientRuntime, scope: QueryScope, nodeId?: string) {
+export type AdministrationQueryOptions = {
+  grants?: ListNodeGrantsInfiniteQueryOptions;
+  members?: ListWorkspaceMembersInfiniteQueryOptions;
+  tree?: ListVisibleTreeInfiniteQueryOptions;
+};
+
+export type AdministrationQueryResult = {
+  error: ReturnType<typeof apiError> | null;
+  generation: number;
+  refresh: () => void;
+  result: ReturnType<typeof readAdministration>;
+};
+
+export function useAdministration(
+  runtime: ClientRuntime,
+  scope: QueryScope,
+  nodeId?: string,
+  options: AdministrationQueryOptions = {},
+): AdministrationQueryResult {
   const instance = useId();
   const client = useQueryClient();
   const [attempt, setAttempt] = useState({ generation: 0, restarts: 0 });
@@ -54,11 +74,13 @@ export function useAdministration(runtime: ClientRuntime, scope: QueryScope, nod
 
   const tree = useInfiniteQuery({
     ...withQueryScope(
-      listVisibleTreeInfiniteOptions({ client: runtime.client, query: { limit: '50' } }),
+      listVisibleTreeInfiniteOptions(
+        { client: runtime.client, query: { limit: '50' } },
+        { ...policy, ...options.tree },
+      ),
       scope,
       tags,
     ),
-    ...policy,
     initialPageParam: { query: {} },
     getNextPageParam: (page, pages) => {
       const parsed = TreePageSchema.safeParse(page);
@@ -70,15 +92,17 @@ export function useAdministration(runtime: ClientRuntime, scope: QueryScope, nod
   });
   const members = useInfiniteQuery({
     ...withQueryScope(
-      listWorkspaceMembersInfiniteOptions({
-        client: runtime.client,
-        path: { workspaceId: scope.workspaceId! },
-        query: { limit: '50' },
-      }),
+      listWorkspaceMembersInfiniteOptions(
+        {
+          client: runtime.client,
+          path: { workspaceId: scope.workspaceId! },
+          query: { limit: '50' },
+        },
+        { ...policy, ...options.members },
+      ),
       scope,
       tags,
     ),
-    ...policy,
     initialPageParam: { path: { workspaceId: scope.workspaceId! }, query: {} },
     getNextPageParam: (page, pages) => {
       const parsed = MemberPageSchema.safeParse(page);
@@ -90,15 +114,17 @@ export function useAdministration(runtime: ClientRuntime, scope: QueryScope, nod
   });
   const grants = useInfiniteQuery({
     ...withQueryScope(
-      listNodeGrantsInfiniteOptions({
-        client: runtime.client,
-        path: { nodeId: nodeId ?? scope.workspaceId! },
-        query: { limit: '50' },
-      }),
+      listNodeGrantsInfiniteOptions(
+        {
+          client: runtime.client,
+          path: { nodeId: nodeId ?? scope.workspaceId! },
+          query: { limit: '50' },
+        },
+        { ...policy, ...options.grants },
+      ),
       scope,
       tags,
     ),
-    ...policy,
     enabled: Boolean(nodeId),
     initialPageParam: { path: { nodeId: nodeId ?? scope.workspaceId! }, query: {} },
     getNextPageParam: (page, pages) => {

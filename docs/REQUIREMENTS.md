@@ -231,6 +231,8 @@ R166: Drag tasks from the full card surface in both workspace-list and per-list 
 - **R169:** Header account avatar/name/role menu with Sign out, a theme toggle replacing header Settings, and permission-scoped global task/list search using a typed cursor-paginated API and generated client.
 
 - **R179:** Browse containers in an expandable hierarchy and statuses/custom fields in lists. Open the selected editor in a right-hand details panel with Add at the top right; preserve permissions, validation, drafts, keyboard use and narrow-screen access. The user selected right-hand panels on 30 October 2026.
+
+- **R180:** Standardize authored API hooks around exported typed request functions, protected options and explicit result types, following the user-supplied examples. Use native mutate/mutateAsync in mutation callers while preserving generated operations and existing behavior.
 ## Searchable input follow-up
 
 - **R170:** Use MUI Autocomplete for single/multiple field selections, assignees, direct dropdown fields and global search suggestions, preserving validation and stable values.

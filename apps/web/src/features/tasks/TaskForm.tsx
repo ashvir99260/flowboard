@@ -6,6 +6,7 @@ import { useZodForm } from '@flowboard/forms';
 import { Alert, Button, ConfirmDialog, Stack } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 
+import { apiError } from '../../lib/apiError';
 import { useRealtime } from '../realtime/useRealtime';
 
 import { TaskBuiltInFields } from './TaskBuiltInFields';
@@ -74,7 +75,7 @@ export function TaskForm({
 
   const inFlight = useRef(false);
   const errorFocus = useRef<FieldPath<TaskDraft> | null>(null);
-  const { submit } = useTaskWriteMutation(runtime, scope, detail);
+  const { mutateAsync } = useTaskWriteMutation(runtime, scope, detail);
   const {
     control,
     handleSubmit,
@@ -162,50 +163,51 @@ export function TaskForm({
         return;
       }
 
-      const result =
-        baseline && body
-          ? await submit({ kind: 'update', taskId: baseline.id, listId, body })
-          : await submit({
-              kind: 'create',
-              taskId: `new:${listId}`,
-              listId,
-              body: createTaskInput(draft, detail.configVersion),
-            });
-      if (result.success && result.response) {
-        onPersisted(result.response.data);
-        setBaseline(result.response.data);
-        reset(taskDefaults(detail.fields, detail.statuses, result.response.data));
-        setNotice(baseline ? 'Task saved.' : 'Task created.');
+      try {
+        const response =
+          baseline && body
+            ? await mutateAsync({ kind: 'update', taskId: baseline.id, listId, body })
+            : await mutateAsync({
+                kind: 'create',
+                taskId: `new:${listId}`,
+                listId,
+                body: createTaskInput(draft, detail.configVersion),
+              });
+        if (response) {
+          onPersisted(response.data);
+          setBaseline(response.data);
+          reset(taskDefaults(detail.fields, detail.statuses, response.data));
+          setNotice(baseline ? 'Task saved.' : 'Task created.');
 
-        return;
-      }
-
-      if (result.success) return;
-
-      setNotice(result.error.message);
-      setConflict(
-        ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(result.error.code),
-      );
-      const issues = 'details' in result.error ? (result.error.details ?? []) : [];
-      for (const issue of issues) {
-        const [first, second] = issue.path;
-        const path =
-          first === 'customFields' && detail.fields.some((field) => field.key === second)
-            ? `customFields.${String(second)}`
-            : [
-                  'title',
-                  'description',
-                  'statusId',
-                  'priority',
-                  'dueDate',
-                  'assigneeIds',
-                  'parentTaskId',
-                ].includes(String(first))
-              ? String(first)
-              : null;
-        if (path) {
-          errorFocus.current ??= path as FieldPath<TaskDraft>;
-          setError(path as FieldPath<TaskDraft>, { type: 'server', message: issue.message });
+          return;
+        }
+      } catch (cause) {
+        const error = apiError(cause);
+        setNotice(error.message);
+        setConflict(
+          ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(error.code),
+        );
+        const issues = error.details ?? [];
+        for (const issue of issues) {
+          const [first, second] = issue.path;
+          const path =
+            first === 'customFields' && detail.fields.some((field) => field.key === second)
+              ? `customFields.${String(second)}`
+              : [
+                    'title',
+                    'description',
+                    'statusId',
+                    'priority',
+                    'dueDate',
+                    'assigneeIds',
+                    'parentTaskId',
+                  ].includes(String(first))
+                ? String(first)
+                : null;
+          if (path) {
+            errorFocus.current ??= path as FieldPath<TaskDraft>;
+            setError(path as FieldPath<TaskDraft>, { type: 'server', message: issue.message });
+          }
         }
       }
     })(event)
@@ -221,22 +223,18 @@ export function TaskForm({
     inFlight.current = true;
     setBusy(true);
     setNotice(null);
-    void submit({
+    void mutateAsync({
       kind: 'archive',
       taskId: baseline.id,
       listId,
       body: { expectedVersion: baseline.version, expectedConfigVersion: detail.configVersion },
     })
-      .then((result) => {
-        if (result.success) {
-          onArchived();
-
-          return;
-        }
-
+      .then(() => onArchived())
+      .catch((cause) => {
+        const error = apiError(cause);
         setArchiveOpen(false);
-        setNotice(result.error.message);
-        setConflict(['VERSION_CONFLICT', 'CONFIG_CONFLICT'].includes(result.error.code));
+        setNotice(error.message);
+        setConflict(['VERSION_CONFLICT', 'CONFIG_CONFLICT'].includes(error.code));
       })
       .finally(() => {
         inFlight.current = false;
