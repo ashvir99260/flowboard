@@ -16,15 +16,13 @@ import { MoveForm } from '../board/MoveForm';
 import type { WorkspaceMoveSelection } from './workspaceBoardData';
 import type { useTaskPlacementMutation } from '../board/useTaskPlacementMutation';
 
-export function WorkspaceMoveRepair({
-  selection,
-  mutateAsync,
-  onClose,
-}: {
+type WorkspaceMoveRepairProps = {
   mutateAsync: ReturnType<typeof useTaskPlacementMutation>['mutateAsync'];
   onClose: () => void;
   selection: WorkspaceMoveSelection;
-}) {
+};
+
+export function WorkspaceMoveRepair({ selection, mutateAsync, onClose }: WorkspaceMoveRepairProps) {
   const id = useId();
   const [busy, setBusy] = useState(false);
 

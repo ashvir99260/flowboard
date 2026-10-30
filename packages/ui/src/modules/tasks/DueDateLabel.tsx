@@ -13,11 +13,13 @@ const calendar = new Intl.DateTimeFormat('en-US', {
   timeZone: 'UTC',
 });
 
-export function DueDateLabel({
-  date,
-  overdue = false,
-  variant = 'full',
-}: Readonly<{ date: Task['dueDate']; overdue?: boolean; variant?: 'full' | 'compact' }>) {
+type DueDateLabelProps = Readonly<{
+  date: Task['dueDate'];
+  overdue?: boolean;
+  variant?: 'full' | 'compact';
+}>;
+
+export function DueDateLabel({ date, overdue = false, variant = 'full' }: DueDateLabelProps) {
   if (date === null)
     return (
       <Typography color="text.secondary" component="span" variant="body2">

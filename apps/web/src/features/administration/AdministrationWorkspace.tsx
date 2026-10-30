@@ -34,15 +34,13 @@ type PendingAction =
   | { kind: 'reload' }
   | { command: AdministrationCommand; kind: 'command' };
 
-export function AdministrationWorkspace({
-  runtime,
-  scope,
-  active,
-}: {
+type AdministrationWorkspaceProps = {
   active: boolean;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function AdministrationWorkspace({ runtime, scope, active }: AdministrationWorkspaceProps) {
   const [selection, setSelection] = useState<AdministrationSelection>({ kind: 'create' });
   const [panelOpen, setPanelOpen] = useState(false);
   const [snapshot, setSnapshot] = useState<AdministrationSnapshot | null>(null);

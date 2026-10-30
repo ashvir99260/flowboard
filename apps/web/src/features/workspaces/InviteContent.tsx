@@ -11,11 +11,9 @@ import { useGetWorkspaceQuery } from './useGetWorkspaceQuery';
 
 import type { InvitationContext, InvitationFormState } from './invitationTypes';
 
-export function InviteContent({
-  runtime,
-  scope,
-  onState,
-}: InvitationContext & { onState: (state: InvitationFormState) => void }) {
+type InviteContentProps = InvitationContext & { onState: (state: InvitationFormState) => void };
+
+export function InviteContent({ runtime, scope, onState }: InviteContentProps) {
   const query = useGetWorkspaceQuery(runtime, scope);
   const [initialVersion, setInitialVersion] = useState<number | null>(null);
 

@@ -13,6 +13,15 @@ import type { TaskTableQuery } from './listLocation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
+type ConnectedListProps = {
+  listId: string;
+  onChange: (query: TaskTableQuery) => void;
+  pending: boolean;
+  query: TaskTableQuery;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+};
+
 export function ConnectedList({
   listId,
   runtime,
@@ -20,14 +29,7 @@ export function ConnectedList({
   query,
   onChange,
   pending,
-}: {
-  listId: string;
-  onChange: (query: TaskTableQuery) => void;
-  pending: boolean;
-  query: TaskTableQuery;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-}) {
+}: ConnectedListProps) {
   const view = useListQuery({ listId, runtime, scope, query });
   const selection = useBulkTaskSelection(
     view.result.state === 'ready' ? view.result.items : [],

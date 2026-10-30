@@ -9,3 +9,5 @@ JSON descriptors define presentation only. Reject unknown widgets/properties, un
 Follow [React section conventions](../../docs/CODE_STYLE.md#react-hooks-and-component-sections). Keep related state/refs together when dependencies allow, separate hook blocks/effects, and preserve hook order. Shared React `.ts` hooks receive the same correctness checks as components.
 
 Use PascalCase component files (`ControlledField.tsx`) and camelCase hook/helper files (`useZodForm.ts`). Split distinct components; keep private styled slots with their owner. Public exports remain stable.
+
+Declare named [component prop types](../../docs/CODE_STYLE.md#component-props-and-file-boundaries) above their component. Preserve imported types, generics, readonly/optional properties and callbacks; keep cohesive private styled slots with their owner.

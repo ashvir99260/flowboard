@@ -8,15 +8,13 @@ import { useFieldArray, useWatch } from 'react-hook-form';
 import type { FieldDraft } from './fieldFormData';
 import type { UseFormReturn } from 'react-hook-form';
 
-export function FieldInputs({
-  form,
-  busy,
-  editing,
-}: {
+type FieldInputsProps = {
   busy: boolean;
   editing: boolean;
   form: UseFormReturn<FieldDraft>;
-}) {
+};
+
+export function FieldInputs({ form, busy, editing }: FieldInputsProps) {
   const {
     control,
     setValue,

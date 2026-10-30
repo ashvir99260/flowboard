@@ -12,9 +12,9 @@ const categories: Record<StatusCategory, string> = {
   closed: 'Closed',
 };
 
-export function StatusChip({
-  status,
-}: Readonly<{ status: Pick<ResolvedStatus, 'category' | 'color' | 'name'> }>) {
+type StatusChipProps = Readonly<{ status: Pick<ResolvedStatus, 'category' | 'color' | 'name'> }>;
+
+export function StatusChip({ status }: StatusChipProps) {
   const label = `${status.name} · ${categories[status.category]}`;
 
   return (

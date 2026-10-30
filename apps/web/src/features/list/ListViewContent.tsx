@@ -13,6 +13,16 @@ import type { TaskTableQuery } from './listLocation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
+type ListViewContentProps = {
+  listId: string;
+  location: ReturnType<typeof readListLocation>;
+  onChange: (query: TaskTableQuery) => void;
+  pathname: string;
+  pending: boolean;
+  runtime: ClientRuntime | null;
+  scope: QueryScope | null;
+};
+
 export function ListViewContent({
   location,
   pathname,
@@ -21,15 +31,7 @@ export function ListViewContent({
   scope,
   pending,
   onChange,
-}: {
-  listId: string;
-  location: ReturnType<typeof readListLocation>;
-  onChange: (query: TaskTableQuery) => void;
-  pathname: string;
-  pending: boolean;
-  runtime: ClientRuntime | null;
-  scope: QueryScope | null;
-}) {
+}: ListViewContentProps) {
   if (!location.ok)
     return (
       <ErrorState

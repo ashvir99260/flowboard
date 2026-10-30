@@ -13,7 +13,9 @@ const Root = styled('div', { name: 'FlowboardLoading', slot: 'Root' })(({ theme 
   padding: theme.spacing(2.4),
 }));
 
-export function LoadingState({ children }: Readonly<{ children: ReactNode }>) {
+type LoadingStateProps = Readonly<{ children: ReactNode }>;
+
+export function LoadingState({ children }: LoadingStateProps) {
   return (
     <Root role="status">
       <CircularProgress aria-hidden="true" size={'2rem'} />

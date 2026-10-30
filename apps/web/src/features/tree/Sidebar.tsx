@@ -11,17 +11,14 @@ import { useTree } from './useTree';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
-export function Sidebar({
-  runtime,
-  scope,
-  selectedId,
-  onSelect,
-}: {
+type SidebarProps = {
   onSelect: () => void;
   runtime: ClientRuntime;
   scope: QueryScope;
   selectedId?: string;
-}) {
+};
+
+export function Sidebar({ runtime, scope, selectedId, onSelect }: SidebarProps) {
   const router = useRouter();
   const tree = useTree(runtime, scope);
 

@@ -6,7 +6,9 @@ import { RuntimeProviders } from './RuntimeProviders';
 
 import type { ReactNode } from 'react';
 
-export function AppProviders(props: Readonly<{ children: ReactNode; realtimeUrl: string | null }>) {
+type AppProvidersProps = Readonly<{ children: ReactNode; realtimeUrl: string | null }>;
+
+export function AppProviders(props: AppProvidersProps) {
   return (
     <NotificationProvider>
       <RuntimeProviders {...props} />

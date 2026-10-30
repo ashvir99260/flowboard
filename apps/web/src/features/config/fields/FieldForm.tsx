@@ -35,6 +35,18 @@ type Command =
   | NonNullable<ReturnType<typeof fieldCommand>>
   | { body: { expectedConfigVersion: number }; fieldId: string; kind: 'remove' };
 
+type FieldFormProps = {
+  active: boolean;
+  configuration: FieldConfiguration;
+  onClose: () => void;
+  onReload: () => void;
+  onSaved: () => void;
+  onState: (state: { busy: boolean; dirty: boolean }) => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  targetKey?: string;
+};
+
 export function FieldForm({
   active,
   configuration,
@@ -45,17 +57,7 @@ export function FieldForm({
   onClose,
   onSaved,
   onReload,
-}: {
-  active: boolean;
-  configuration: FieldConfiguration;
-  onClose: () => void;
-  onReload: () => void;
-  onSaved: () => void;
-  onState: (state: { busy: boolean; dirty: boolean }) => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  targetKey?: string;
-}) {
+}: FieldFormProps) {
   const owner = configuration.input.scopes.at(-1)!;
 
   const { mutateAsync } = useFieldMutation(runtime, scope, owner);

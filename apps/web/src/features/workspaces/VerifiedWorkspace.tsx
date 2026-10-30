@@ -27,17 +27,14 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ReactNode } from 'react';
 
-export function VerifiedWorkspace({
-  runtime,
-  scope,
-  listId,
-  children,
-}: {
+type VerifiedWorkspaceProps = {
   children: ReactNode;
   listId?: string;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function VerifiedWorkspace({ runtime, scope, listId, children }: VerifiedWorkspaceProps) {
   const { logout } = useSession();
   const [open, setOpen] = useState(false);
   const query = useGetCurrentUserQuery({ runtime, scope });

@@ -7,7 +7,9 @@ import { SessionLoading } from '../auth/SessionLoading';
 
 import { AdministrationWorkspace } from './AdministrationWorkspace';
 
-export function AdministrationSettings({ active }: { active: boolean }) {
+type AdministrationSettingsProps = { active: boolean };
+
+export function AdministrationSettings({ active }: AdministrationSettingsProps) {
   const { runtime, scope, session } = useSession();
 
   if (!runtime || !scope) return <SessionLoading />;

@@ -8,7 +8,9 @@ import { useWatch } from 'react-hook-form';
 import type { TaskDraft } from './taskFormData';
 import type { Control } from 'react-hook-form';
 
-export function TaskDescription({ control, busy }: { busy: boolean; control: Control<TaskDraft> }) {
+type TaskDescriptionProps = { busy: boolean; control: Control<TaskDraft> };
+
+export function TaskDescription({ control, busy }: TaskDescriptionProps) {
   const description = useWatch({ control, name: 'description' });
   const [preview, setPreview] = useState(false);
 

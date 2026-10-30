@@ -26,15 +26,13 @@ import type { SearchHit } from '@flowboard/contracts';
 
 const SearchFormSchema = z.strictObject({ q: SearchWorkspaceQuerySchema.shape.q });
 
-export function GlobalSearchResults({
-  runtime,
-  scope,
-  onSelect,
-}: {
+type GlobalSearchResultsProps = {
   onSelect: (hit: SearchHit) => void;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function GlobalSearchResults({ runtime, scope, onSelect }: GlobalSearchResultsProps) {
   const [submitted, setSubmitted] = useState({ attempt: 0, q: '' });
   const [open, setOpen] = useState(false);
   const { control, handleSubmit } = useZodForm(SearchFormSchema, { defaultValues: { q: '' } });

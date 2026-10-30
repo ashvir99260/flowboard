@@ -28,13 +28,12 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { Task } from '@flowboard/contracts';
 
-export function ConnectedWorkspaceBoard({
-  runtime,
-  scope,
-}: {
+type ConnectedWorkspaceBoardProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function ConnectedWorkspaceBoard({ runtime, scope }: ConnectedWorkspaceBoardProps) {
   const notifications = useNotifications();
   const tree = useTree(runtime, scope);
   const [listLimit, setListLimit] = useState(10);

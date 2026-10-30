@@ -14,15 +14,13 @@ const AuthRoot = styled('main', { name: 'FlowboardAuthPanel', slot: 'Root' })(({
 }));
 const AuthSurface = styled(Surface.Root)({ width: '100%', maxWidth: '42rem' });
 
-export function AuthPanel({
-  children,
-  description,
-  title,
-}: Readonly<{
+type AuthPanelProps = Readonly<{
   children: ReactNode;
   description?: string;
   title: string;
-}>) {
+}>;
+
+export function AuthPanel({ children, description, title }: AuthPanelProps) {
   return (
     <AuthRoot>
       <AuthSurface>

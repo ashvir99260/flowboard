@@ -6,11 +6,12 @@ import { TextField } from '../primitives/TextField.js';
 
 import type { TextFieldProps } from '@mui/material/TextField';
 
-export function FormField({
-  errorMessage,
-  hint,
-  ...props
-}: Omit<TextFieldProps, 'error' | 'helperText'> & { errorMessage?: string; hint?: string }) {
+type FormFieldProps = Omit<TextFieldProps, 'error' | 'helperText'> & {
+  errorMessage?: string;
+  hint?: string;
+};
+
+export function FormField({ errorMessage, hint, ...props }: FormFieldProps) {
   const generatedId = useId();
 
   return (

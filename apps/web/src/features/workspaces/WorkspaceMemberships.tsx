@@ -25,13 +25,12 @@ import { useWorkspaceMutation } from './useWorkspaceMutation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
-export function WorkspaceMemberships({
-  runtime,
-  scope,
-}: {
+type WorkspaceMembershipsProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function WorkspaceMemberships({ runtime, scope }: WorkspaceMembershipsProps) {
   const router = useRouter();
   const notifications = useNotifications();
   const { logout, switchWorkspace } = useSession();

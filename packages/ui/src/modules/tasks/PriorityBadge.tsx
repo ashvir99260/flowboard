@@ -12,7 +12,9 @@ const priorities = {
   none: { label: 'No priority', color: 'default' },
 } as const;
 
-export function PriorityBadge({ priority }: Readonly<{ priority: Priority }>) {
+type PriorityBadgeProps = Readonly<{ priority: Priority }>;
+
+export function PriorityBadge({ priority }: PriorityBadgeProps) {
   const { color, label } = priorities[priority];
 
   return <Chip color={color} label={label} size="small" variant="filled" />;

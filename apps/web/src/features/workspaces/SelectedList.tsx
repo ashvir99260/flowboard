@@ -11,15 +11,13 @@ import { useGetNodeQuery } from '../tree/useGetNodeQuery';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
-export function SelectedList({
-  listId,
-  runtime,
-  scope,
-}: {
+type SelectedListProps = {
   listId: string;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function SelectedList({ listId, runtime, scope }: SelectedListProps) {
   const query = useGetNodeQuery({ nodeId: listId, runtime, scope });
 
   if (query.isPending) return <SessionLoading />;

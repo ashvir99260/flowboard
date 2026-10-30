@@ -75,19 +75,15 @@ const Actions = styled(Stack)(({ theme }) => ({
   flexWrap: 'wrap',
 }));
 
-export function KanbanCard({
-  actions,
-  dragHandle,
-  metadata,
-  onOpen,
-  task,
-}: Readonly<{
+type KanbanCardProps = Readonly<{
   actions?: ReactNode;
   dragHandle?: ReactNode;
   metadata?: ReactNode;
   onOpen?: () => void;
   task: Pick<Task, 'id' | 'title' | 'priority' | 'dueDate' | 'assignees'>;
-}>) {
+}>;
+
+export function KanbanCard({ actions, dragHandle, metadata, onOpen, task }: KanbanCardProps) {
   return (
     <Card
       component="article"

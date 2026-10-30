@@ -29,6 +29,21 @@ const DraftSchema = z.strictObject({
 });
 type Draft = z.infer<typeof DraftSchema>;
 
+type MoveFormProps = {
+  busy: boolean;
+  columns: readonly BoardColumn[];
+  configVersion: number;
+  destinationListId: string;
+  fields: readonly ResolvedField[];
+  formId: string;
+  mutateAsync: ReturnType<typeof useTaskPlacementMutation>['mutateAsync'];
+  onBusyChange: (busy: boolean) => void;
+  onClose: () => void;
+  sourceStatus: ResolvedStatus;
+  statuses: readonly ResolvedStatus[];
+  task: Task;
+};
+
 export function MoveForm({
   busy,
   task,
@@ -42,20 +57,7 @@ export function MoveForm({
   mutateAsync,
   onClose,
   onBusyChange,
-}: {
-  busy: boolean;
-  columns: readonly BoardColumn[];
-  configVersion: number;
-  destinationListId: string;
-  fields: readonly ResolvedField[];
-  formId: string;
-  mutateAsync: ReturnType<typeof useTaskPlacementMutation>['mutateAsync'];
-  onBusyChange: (busy: boolean) => void;
-  onClose: () => void;
-  sourceStatus: ResolvedStatus;
-  statuses: readonly ResolvedStatus[];
-  task: Task;
-}) {
+}: MoveFormProps) {
   const inFlight = useRef(false);
   const [message, setMessage] = useState<string | null>(null);
 

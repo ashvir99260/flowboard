@@ -12,15 +12,13 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { AcceptedInvitationEnvelope } from '@flowboard/contracts';
 
-export function AcceptInvitationAction({
-  runtime,
-  scope,
-  token,
-}: {
+type AcceptInvitationActionProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
   token: string;
-}) {
+};
+
+export function AcceptInvitationAction({ runtime, scope, token }: AcceptInvitationActionProps) {
   const { mutateAsync } = useAcceptWorkspaceInvitationMutation(runtime, scope);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);

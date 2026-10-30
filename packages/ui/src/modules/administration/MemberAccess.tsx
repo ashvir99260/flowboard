@@ -14,17 +14,14 @@ import { Button } from '../primitives/Button.js';
 
 import type { Grant, Member } from '@flowboard/contracts';
 
-export function MemberAccess({
-  members,
-  grants,
-  busy,
-  onEdit,
-}: {
+type MemberAccessProps = {
   busy: boolean;
   grants: readonly Grant[];
   members: readonly Member[];
   onEdit: (userId: string) => void;
-}) {
+};
+
+export function MemberAccess({ members, grants, busy, onEdit }: MemberAccessProps) {
   const [page, setPage] = useState(0);
 
   const lastPage = Math.max(0, Math.ceil(members.length / 20) - 1);

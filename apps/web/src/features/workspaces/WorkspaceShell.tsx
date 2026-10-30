@@ -14,13 +14,12 @@ import { VerifiedWorkspace } from './VerifiedWorkspace';
 
 import type { ReactNode } from 'react';
 
-export function WorkspaceShell({
-  workspaceId,
-  children,
-}: {
+type WorkspaceShellProps = {
   children: ReactNode;
   workspaceId: string;
-}) {
+};
+
+export function WorkspaceShell({ workspaceId, children }: WorkspaceShellProps) {
   const { listId } = useParams<{ listId?: string }>();
   const { runtime, scope, status, switchWorkspace, session } = useSession();
   const [error, setError] = useState<string | null>(null);

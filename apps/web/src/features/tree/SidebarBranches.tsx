@@ -5,15 +5,13 @@ import { useState } from 'react';
 
 import type { TreeBranch } from './assembleTree';
 
-export function SidebarBranches({
-  items,
-  selectedId,
-  select,
-}: {
+type SidebarBranchesProps = {
   items: readonly TreeBranch[];
   select: (id: string) => void;
   selectedId?: string;
-}) {
+};
+
+export function SidebarBranches({ items, selectedId, select }: SidebarBranchesProps) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
 
   const toggle = (id: string) =>

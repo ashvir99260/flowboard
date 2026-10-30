@@ -8,17 +8,14 @@ import { useBoard } from './useBoard';
 import type { Selection } from './boardTypes';
 import type { Placement, Task } from '@flowboard/contracts';
 
-export function BoardContent({
-  board,
-  open,
-  move,
-  pending,
-}: {
+type BoardContentProps = {
   board: ReturnType<typeof useBoard>;
   move: (task: Task, statusId: string, placement: Placement) => void;
   open: (selection: Selection) => void;
   pending: ReadonlySet<string>;
-}) {
+};
+
+export function BoardContent({ board, open, move, pending }: BoardContentProps) {
   if (board.state === 'loading') return <LoadingState>Loading board…</LoadingState>;
 
   if (board.state === 'error')

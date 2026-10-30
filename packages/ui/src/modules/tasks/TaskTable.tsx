@@ -70,15 +70,7 @@ const autoRowHeight = () => 'auto' as const;
 const pageSizeOptions = [25, 50, 100];
 const initialState = { pagination: { paginationModel: { page: 0, pageSize: 50 } } };
 
-export function TaskTable({
-  items,
-  fields,
-  statuses,
-  onOpenTask,
-  selection,
-  controls,
-  loading = false,
-}: {
+type TaskTableProps = {
   controls?: TaskTableControls;
   fields: readonly ResolvedField[];
   items: readonly Task[];
@@ -90,7 +82,17 @@ export function TaskTable({
     onChange: (ids: string[]) => void;
   };
   statuses: readonly ResolvedStatus[];
-}) {
+};
+
+export function TaskTable({
+  items,
+  fields,
+  statuses,
+  onOpenTask,
+  selection,
+  controls,
+  loading = false,
+}: TaskTableProps) {
   const { ref: remRef, size: remSize } = useRemSize();
 
   const filterSignature = JSON.stringify([

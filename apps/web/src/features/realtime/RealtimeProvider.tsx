@@ -13,17 +13,14 @@ import type { ClientRuntime } from '../../providers/sessionContext';
 import type { SessionEnvelope } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
-export function RealtimeProvider({
-  children,
-  runtime,
-  session,
-  url,
-}: {
+type RealtimeProviderProps = {
   children: ReactNode;
   runtime: ClientRuntime | null;
   session: SessionEnvelope | null;
   url: string | null;
-}) {
+};
+
+export function RealtimeProvider({ children, runtime, session, url }: RealtimeProviderProps) {
   const [bus] = useState(createRealtimeBus);
   const notifications = useNotifications();
 

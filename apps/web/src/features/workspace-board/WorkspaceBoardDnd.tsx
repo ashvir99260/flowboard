@@ -20,6 +20,16 @@ import type { WorkspaceBoardColumn } from './workspaceBoardData';
 import type { Task } from '@flowboard/contracts';
 import type { DropResult, ResponderProvided } from '@hello-pangea/dnd';
 
+type WorkspaceBoardDndProps = {
+  columns: readonly WorkspaceColumnState[];
+  loadMore: (listId: string) => void;
+  move: (taskId: string, listId: string, index: number) => void;
+  openMove: (task: Task, column: WorkspaceBoardColumn) => void;
+  pending: ReadonlySet<string>;
+  retry: (listId: string) => void;
+  workspaceId: string;
+};
+
 export function WorkspaceBoardDnd({
   columns,
   pending,
@@ -28,15 +38,7 @@ export function WorkspaceBoardDnd({
   retry,
   loadMore,
   workspaceId,
-}: {
-  columns: readonly WorkspaceColumnState[];
-  loadMore: (listId: string) => void;
-  move: (taskId: string, listId: string, index: number) => void;
-  openMove: (task: Task, column: WorkspaceBoardColumn) => void;
-  pending: ReadonlySet<string>;
-  retry: (listId: string) => void;
-  workspaceId: string;
-}) {
+}: WorkspaceBoardDndProps) {
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const restoreFocus = (taskId: string) =>

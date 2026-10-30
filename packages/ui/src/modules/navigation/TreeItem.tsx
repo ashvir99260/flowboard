@@ -53,6 +53,16 @@ const Children = styled('ul')(({ theme }) => ({
 }));
 const typeIcon = { folder: 'folder', list: 'list', space: 'space', workspace: 'board' } as const;
 
+type TreeItemProps = Readonly<{
+  children?: ReactNode;
+  expanded?: boolean;
+  name: string;
+  onSelect: () => void;
+  onToggle?: () => void;
+  selected?: boolean;
+  type: NodeType;
+}>;
+
 export function TreeItem({
   children,
   expanded = false,
@@ -61,15 +71,7 @@ export function TreeItem({
   onToggle,
   selected = false,
   type,
-}: Readonly<{
-  children?: ReactNode;
-  expanded?: boolean;
-  name: string;
-  onSelect: () => void;
-  onToggle?: () => void;
-  selected?: boolean;
-  type: NodeType;
-}>) {
+}: TreeItemProps) {
   const id = useId();
 
   return (

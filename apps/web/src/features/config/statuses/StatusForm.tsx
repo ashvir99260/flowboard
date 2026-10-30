@@ -31,6 +31,18 @@ import type { ClientRuntime } from '../../../providers/sessionContext';
 import type { FormEvent } from 'react';
 import type { FieldPath } from 'react-hook-form';
 
+type StatusFormProps = {
+  active: boolean;
+  configuration: StatusConfiguration;
+  onClose: () => void;
+  onReload: () => void;
+  onSaved: () => void;
+  onState: (state: { busy: boolean; dirty: boolean }) => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  targetId?: string;
+};
+
 export function StatusForm({
   active,
   configuration,
@@ -41,17 +53,7 @@ export function StatusForm({
   onClose,
   onSaved,
   onReload,
-}: {
-  active: boolean;
-  configuration: StatusConfiguration;
-  onClose: () => void;
-  onReload: () => void;
-  onSaved: () => void;
-  onState: (state: { busy: boolean; dirty: boolean }) => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  targetId?: string;
-}) {
+}: StatusFormProps) {
   const owner = configuration.input.scopes.at(-1)!;
 
   const { mutateAsync } = useStatusMutation(runtime, scope, owner);

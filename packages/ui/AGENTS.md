@@ -23,3 +23,5 @@ TaskTable owns MUI Data Grid Community presentation and pagination of already-lo
 Use the [Storybook guide](../../docs/STORYBOOK.md) for component examples. Keep stories outside `src`, use typed CSF and local props, and add meaningful `play` interactions for important behaviors. Reuse the shared theme; do not import web fixtures, API clients or forms adapters. Run the story build/browser checks with the normal UI gates.
 
 Follow [React section conventions](../../docs/CODE_STYLE.md#react-hooks-and-component-sections). Group related state/refs, separate hook blocks and each effect, and preserve dependency-sensitive order. Lint fixes spacing only; never mechanically sort hooks. Rules of Hooks and dependency checks also apply to `.ts` hook files.
+
+Declare named [component prop types](../../docs/CODE_STYLE.md#component-props-and-file-boundaries) above their component. Preserve imported types, generics, readonly/optional properties and callbacks; keep cohesive private styled slots with their owner.

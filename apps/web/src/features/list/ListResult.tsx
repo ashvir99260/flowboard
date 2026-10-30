@@ -30,19 +30,15 @@ function failure(view: ListView) {
   return null;
 }
 
-export function ListResult({
-  view,
-  selection,
-  query,
-  onChange,
-  pending,
-}: {
+type ListResultProps = {
   onChange: (query: TaskTableQuery) => void;
   pending: boolean;
   query: TaskTableQuery;
   selection?: { disabled?: boolean; ids: readonly string[]; onChange: (ids: string[]) => void };
   view: ListView;
-}) {
+};
+
+export function ListResult({ view, selection, query, onChange, pending }: ListResultProps) {
   const error = failure(view);
   if (error)
     return (

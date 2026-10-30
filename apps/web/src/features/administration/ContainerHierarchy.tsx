@@ -5,15 +5,13 @@ import { useState } from 'react';
 
 import type { Container } from './administrationData';
 
-export function ContainerHierarchy({
-  nodes,
-  selectedId,
-  onSelect,
-}: {
+type ContainerHierarchyProps = {
   nodes: readonly Container[];
   onSelect: (nodeId: string) => void;
   selectedId?: string;
-}) {
+};
+
+export function ContainerHierarchy({ nodes, selectedId, onSelect }: ContainerHierarchyProps) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
 
   const toggle = (id: string) =>
