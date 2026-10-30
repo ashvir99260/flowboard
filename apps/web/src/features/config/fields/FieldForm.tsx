@@ -12,6 +12,8 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
+import { apiError } from '../../../lib/apiError';
+
 import {
   fieldCommand,
   fieldDefaults,
@@ -56,7 +58,7 @@ export function FieldForm({
 }) {
   const owner = configuration.input.scopes.at(-1)!;
 
-  const { submit } = useFieldMutation(runtime, scope, owner);
+  const { mutateAsync } = useFieldMutation(runtime, scope, owner);
   const form = useZodForm(fieldDraftSchema(targetKey), {
     defaultValues: fieldDefaults(configuration, targetKey),
     mode: 'onBlur',
@@ -116,26 +118,25 @@ export function FieldForm({
     setBusy(true);
     setNotice(null);
     focus.current = null;
-    const result = await submit(command);
-    if (result.success) {
+    try {
+      await mutateAsync(command);
       onSaved();
-
-      return;
-    }
-
-    setNotice(result.error.message);
-    setConflict(
-      ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(result.error.code),
-    );
-    for (const issue of 'details' in result.error ? (result.error.details ?? []) : []) {
-      const path = issue.path.join('.');
-      if (/^(key|name|type|required|position|options(?:\.\d+\.(?:id|label|color))?)$/.test(path)) {
-        const name = path as FieldPath<FieldDraft>;
-        // IDs are preserved internally; focus the matching option's editable label.
-        focus.current ??= path.endsWith('.id')
-          ? (path.replace(/\.id$/, '.label') as FieldPath<FieldDraft>)
-          : name;
-        setError(name, { type: 'server', message: issue.message });
+    } catch (cause) {
+      const error = apiError(cause);
+      setNotice(error.message);
+      setConflict(['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(error.code));
+      for (const issue of error.details ?? []) {
+        const path = issue.path.join('.');
+        if (
+          /^(key|name|type|required|position|options(?:\.\d+\.(?:id|label|color))?)$/.test(path)
+        ) {
+          const name = path as FieldPath<FieldDraft>;
+          // IDs are preserved internally; focus the matching option's editable label.
+          focus.current ??= path.endsWith('.id')
+            ? (path.replace(/\.id$/, '.label') as FieldPath<FieldDraft>)
+            : name;
+          setError(name, { type: 'server', message: issue.message });
+        }
       }
     }
   };

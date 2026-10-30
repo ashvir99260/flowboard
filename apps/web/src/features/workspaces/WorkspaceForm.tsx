@@ -5,6 +5,7 @@ import { Alert, Button, ConfirmDialog, Stack, Typography } from '@flowboard/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { apiError } from '../../lib/apiError';
 import { useNotifications } from '../notifications/useNotifications';
 
 import { useWorkspaceMutation } from './useWorkspaceMutation';
@@ -39,7 +40,7 @@ export function WorkspaceForm({
 }) {
   const router = useRouter();
   const [workspace] = useState(initialWorkspace);
-  const { submit } = useWorkspaceMutation(runtime, scope);
+  const { mutateAsync } = useWorkspaceMutation(runtime, scope);
   const notifications = useNotifications();
   const {
     control,
@@ -98,23 +99,25 @@ export function WorkspaceForm({
         workspaceId: workspace.data.id,
         expectedConfigVersion: workspace.configVersion,
       };
-      const result = await submit(
-        kind === 'rename' ? { ...command, kind, name: name! } : { ...command, kind },
-      );
-      if (!mounted.current) return;
-
-      if (!result.success) {
-        setNotice(result.error.message);
-        setConflict(
-          ['CONFIG_CONFLICT', 'INVALID_RESPONSE', 'WORKSPACE_ARCHIVED'].includes(result.error.code),
+      try {
+        await mutateAsync(
+          kind === 'rename' ? { ...command, kind, name: name! } : { ...command, kind },
         );
-        if ('details' in result.error)
-          for (const issue of result.error.details ?? []) {
-            if (issue.path.join('.') === 'name') {
-              setError('name', { type: 'server', message: issue.message });
-              focusName.current = true;
-            }
+        if (!mounted.current) return;
+      } catch (cause) {
+        if (!mounted.current) return;
+
+        const error = apiError(cause);
+        setNotice(error.message);
+        setConflict(
+          ['CONFIG_CONFLICT', 'INVALID_RESPONSE', 'WORKSPACE_ARCHIVED'].includes(error.code),
+        );
+        for (const issue of error.details ?? []) {
+          if (issue.path.join('.') === 'name') {
+            setError('name', { type: 'server', message: issue.message });
+            focusName.current = true;
           }
+        }
 
         return;
       }

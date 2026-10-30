@@ -1,11 +1,6 @@
 'use client';
 
 import {
-  getListResolvedFieldsOptions,
-  getListResolvedStatusesOptions,
-  listTasksOptions,
-} from '@flowboard/api-client/tanstack-query';
-import {
   focusManager,
   onlineManager,
   useQueries,
@@ -18,8 +13,13 @@ import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { useBackgroundRefresh } from '../../lib/useBackgroundRefresh';
 import { configurationChanged } from '../config/configurationEvents';
+import {
+  getListResolvedFieldsOptions,
+  getListResolvedStatusesOptions,
+} from '../config/configurationQueries';
 import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
+import { listTasksOptions } from '../tasks/taskQueries';
 
 import { assembleBoard, readBoardStatuses } from './boardData';
 import { projectPlacements } from './taskPlacement';
@@ -28,6 +28,11 @@ import type { BoardPageRequest, BoardResult } from './boardData';
 import type { TaskPlacement } from './taskPlacement';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type {
+  GetListResolvedFieldsQueryOptions,
+  GetListResolvedStatusesQueryOptions,
+} from '../config/configurationQueries';
+import type { ListTasksQueryOptions } from '../tasks/taskQueries';
 
 type ReadyBoard = Extract<BoardResult, { state: 'ready' }>;
 
@@ -69,15 +74,34 @@ function boardView(result: BoardResult, error: ReturnType<typeof apiError> | nul
   return result.state === 'ready' ? result : { state: 'loading' as const };
 }
 
-export function useBoard({
-  runtime,
-  scope,
-  listId,
-}: {
-  listId: string;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-}) {
+export type BoardQueryOptions = {
+  fields?: GetListResolvedFieldsQueryOptions;
+  statuses?: GetListResolvedStatusesQueryOptions;
+  tasks?: ListTasksQueryOptions;
+};
+
+export type BoardQueryResult =
+  | (Exclude<ReturnType<typeof boardView>, { state: 'ready' }> & { retry: () => void })
+  | (ReadyBoard & {
+      atLimit: Set<string>;
+      loading: Set<string>;
+      loadMore: (statusId: string) => void;
+      refreshing: boolean;
+      retry: () => void;
+    });
+
+export function useBoard(
+  {
+    runtime,
+    scope,
+    listId,
+  }: {
+    listId: string;
+    runtime: ClientRuntime;
+    scope: QueryScope;
+  },
+  options: BoardQueryOptions = {},
+): BoardQueryResult {
   const instance = useId();
   const queryClient = useQueryClient();
   const latest = useRef<{ generation: number; value: ReadyBoard } | null>(null);
@@ -105,26 +129,30 @@ export function useBoard({
         return { generation: current.generation + 1, restarts: 0, pages: [], snapshot };
       });
     },
-    [listId],
+    [listId, setAttempt],
   );
 
   const tags = [`board:${instance}:${attempt.generation}`];
 
   const statusesQuery = useQuery({
     ...withQueryScope(
-      getListResolvedStatusesOptions({ client: runtime.client, path: { listId } }),
+      getListResolvedStatusesOptions(
+        { client: runtime.client, path: { listId } },
+        { ...pagePolicy, ...options.statuses },
+      ),
       scope,
       tags,
     ),
-    ...pagePolicy,
   });
   const fieldsQuery = useQuery({
     ...withQueryScope(
-      getListResolvedFieldsOptions({ client: runtime.client, path: { listId } }),
+      getListResolvedFieldsOptions(
+        { client: runtime.client, path: { listId } },
+        { ...pagePolicy, ...options.fields },
+      ),
       scope,
       tags,
     ),
-    ...pagePolicy,
   });
 
   const statuses = readBoardStatuses(statusesQuery.data, scope.workspaceId ?? '');
@@ -136,15 +164,17 @@ export function useBoard({
   const taskQueries = useQueries({
     queries: requests.map(({ statusId, cursor }) => ({
       ...withQueryScope(
-        listTasksOptions({
-          client: runtime.client,
-          path: { listId },
-          query: { statusId, cursor, sort: 'manual', direction: 'asc', limit: '50' },
-        }),
+        listTasksOptions(
+          {
+            client: runtime.client,
+            path: { listId },
+            query: { statusId, cursor, sort: 'manual', direction: 'asc', limit: '50' },
+          },
+          { ...pagePolicy, ...options.tasks },
+        ),
         scope,
         tags,
       ),
-      ...pagePolicy,
     })),
   });
 

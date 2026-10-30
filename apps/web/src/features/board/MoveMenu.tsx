@@ -31,16 +31,16 @@ export function MoveMenu({
   columns,
   runtime,
   scope,
-  submit,
+  mutateAsync,
   onClose,
 }: {
   columns: readonly BoardColumn[];
   configVersion: number;
+  mutateAsync: ReturnType<typeof useTaskPlacementMutation>['mutateAsync'];
   onClose: () => void;
   runtime: ClientRuntime;
   scope: QueryScope;
   sourceStatus: ResolvedStatus;
-  submit: ReturnType<typeof useTaskPlacementMutation>['submit'];
   task: Task;
 }) {
   const id = useId();
@@ -100,7 +100,7 @@ export function MoveMenu({
               statuses={destination.statuses}
               columns={columns}
               formId={`${id}-form`}
-              submit={submit}
+              mutateAsync={mutateAsync}
               onClose={onClose}
               onBusyChange={setBusy}
             />

@@ -13,6 +13,8 @@ import { StatusPreview } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
+import { apiError } from '../../../lib/apiError';
+
 import { StatusFields } from './StatusFields';
 import {
   previewStatusEdit,
@@ -52,7 +54,7 @@ export function StatusForm({
 }) {
   const owner = configuration.input.scopes.at(-1)!;
 
-  const { submit } = useStatusMutation(runtime, scope, owner);
+  const { mutateAsync } = useStatusMutation(runtime, scope, owner);
   const {
     control,
     handleSubmit,
@@ -113,22 +115,19 @@ export function StatusForm({
     setBusy(true);
     setNotice(null);
     focus.current = null;
-    const result = await submit(command);
-    if (result.success) {
+    try {
+      await mutateAsync(command);
       onSaved();
-
-      return;
-    }
-
-    setNotice(result.error.message);
-    setConflict(
-      ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(result.error.code),
-    );
-    for (const issue of 'details' in result.error ? (result.error.details ?? []) : []) {
-      const name = issue.path[0];
-      if (['key', 'category', 'name', 'color', 'position', 'hidden'].includes(String(name))) {
-        focus.current ??= name as FieldPath<StatusDraft>;
-        setError(name as FieldPath<StatusDraft>, { type: 'server', message: issue.message });
+    } catch (cause) {
+      const error = apiError(cause);
+      setNotice(error.message);
+      setConflict(['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(error.code));
+      for (const issue of error.details ?? []) {
+        const name = issue.path[0];
+        if (['key', 'category', 'name', 'color', 'position', 'hidden'].includes(String(name))) {
+          focus.current ??= name as FieldPath<StatusDraft>;
+          setError(name as FieldPath<StatusDraft>, { type: 'server', message: issue.message });
+        }
       }
     }
   };

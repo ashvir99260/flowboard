@@ -1,10 +1,5 @@
 'use client';
 
-import {
-  getListResolvedFieldsOptions,
-  getListResolvedStatusesOptions,
-  listTasksOptions,
-} from '@flowboard/api-client/tanstack-query';
 import { focusManager, onlineManager, useQueries, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
@@ -12,9 +7,14 @@ import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { useBackgroundRefresh } from '../../lib/useBackgroundRefresh';
 import { configurationChanged } from '../config/configurationEvents';
+import {
+  getListResolvedFieldsOptions,
+  getListResolvedStatusesOptions,
+} from '../config/configurationQueries';
 import { assembleTaskList } from '../list/listData';
 import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
+import { listTasksOptions } from '../tasks/taskQueries';
 
 import { projectWorkspaceMoves, workspaceSnapshotState } from './workspaceBoardData';
 
@@ -22,6 +22,11 @@ import type { WorkspaceBoardColumn, WorkspaceListNode } from './workspaceBoardDa
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { TaskPlacement } from '../board/taskPlacement';
+import type {
+  GetListResolvedFieldsQueryOptions,
+  GetListResolvedStatusesQueryOptions,
+} from '../config/configurationQueries';
+import type { ListTasksQueryOptions } from '../tasks/taskQueries';
 
 type Attempt = { generation: number; pages: string[]; restarts: number };
 export type WorkspaceColumnState =
@@ -40,11 +45,26 @@ const pagePolicy = {
 } as const;
 const maxPages = 100;
 
+export type WorkspaceBoardQueryOptions = {
+  fields?: GetListResolvedFieldsQueryOptions;
+  statuses?: GetListResolvedStatusesQueryOptions;
+  tasks?: ListTasksQueryOptions;
+};
+
+export type WorkspaceBoardQueryResult = {
+  columns: WorkspaceColumnState[];
+  loadMore: (listId: string) => void;
+  refreshing: boolean;
+  refreshTasks: (placement?: TaskPlacement) => void;
+  retry: (listId?: string) => void;
+};
+
 export function useWorkspaceBoardQuery(
   runtime: ClientRuntime,
   scope: QueryScope,
   lists: readonly WorkspaceListNode[],
-) {
+  options: WorkspaceBoardQueryOptions = {},
+): WorkspaceBoardQueryResult {
   const instance = useId();
   const client = useQueryClient();
   const [attempts, setAttempts] = useState<Record<string, Attempt>>({});
@@ -106,21 +126,25 @@ export function useWorkspaceBoardQuery(
   const statuses = useQueries({
     queries: lists.map((list) => ({
       ...withQueryScope(
-        getListResolvedStatusesOptions({ client: runtime.client, path: { listId: list.id } }),
+        getListResolvedStatusesOptions(
+          { client: runtime.client, path: { listId: list.id } },
+          { ...pagePolicy, ...options.statuses },
+        ),
         scope,
         tags(list.id),
       ),
-      ...pagePolicy,
     })),
   });
   const fields = useQueries({
     queries: lists.map((list) => ({
       ...withQueryScope(
-        getListResolvedFieldsOptions({ client: runtime.client, path: { listId: list.id } }),
+        getListResolvedFieldsOptions(
+          { client: runtime.client, path: { listId: list.id } },
+          { ...pagePolicy, ...options.fields },
+        ),
         scope,
         tags(list.id),
       ),
-      ...pagePolicy,
     })),
   });
 
@@ -131,15 +155,17 @@ export function useWorkspaceBoardQuery(
   const tasks = useQueries({
     queries: requests.map(({ listId, cursor }) => ({
       ...withQueryScope(
-        listTasksOptions({
-          client: runtime.client,
-          path: { listId },
-          query: { sort: 'manual', direction: 'asc', limit: '50', ...(cursor ? { cursor } : {}) },
-        }),
+        listTasksOptions(
+          {
+            client: runtime.client,
+            path: { listId },
+            query: { sort: 'manual', direction: 'asc', limit: '50', ...(cursor ? { cursor } : {}) },
+          },
+          { ...pagePolicy, ...options.tasks },
+        ),
         scope,
         tags(listId),
       ),
-      ...pagePolicy,
     })),
   });
 

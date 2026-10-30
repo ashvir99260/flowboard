@@ -4,6 +4,7 @@ import { FormFields, useZodForm } from '@flowboard/forms';
 import { Alert, Button, Stack, TextField, Typography } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 
+import { apiError } from '../../lib/apiError';
 import { useNotifications } from '../notifications/useNotifications';
 
 import { InvitationDraftSchema, invitationLink } from './invitationData';
@@ -31,7 +32,7 @@ export function InvitationForm({
   const [link, setLink] = useState('');
   const pending = useRef(false);
   const linkInput = useRef<HTMLInputElement>(null);
-  const { submit } = useCreateWorkspaceInvitationMutation(runtime, scope);
+  const { mutateAsync } = useCreateWorkspaceInvitationMutation(runtime, scope);
   const notifications = useNotifications();
   const {
     control,
@@ -65,25 +66,21 @@ export function InvitationForm({
     setBusy(true);
     setNotice(null);
     try {
-      const result = await submit({ ...draft, expectedConfigVersion: configVersion });
-      if (result.success) {
-        setCreated(result.response);
-        setLink(invitationLink(result.response.data.token, window.location.origin));
-        reset(draft);
-
-        return;
-      }
-
-      setNotice(result.error.message);
+      const response = await mutateAsync({ ...draft, expectedConfigVersion: configVersion });
+      setCreated(response);
+      setLink(invitationLink(response.data.token, window.location.origin));
+      reset(draft);
+    } catch (cause) {
+      const error = apiError(cause);
+      setNotice(error.message);
       setConflict(
-        ['CONFIG_CONFLICT', 'INVALID_RESPONSE', 'WORKSPACE_ARCHIVED'].includes(result.error.code),
+        ['CONFIG_CONFLICT', 'INVALID_RESPONSE', 'WORKSPACE_ARCHIVED'].includes(error.code),
       );
-      if ('details' in result.error)
-        for (const issue of result.error.details ?? []) {
-          const name = issue.path[0];
-          if (name === 'email' || name === 'role')
-            setError(name, { type: 'server', message: issue.message });
-        }
+      for (const issue of error.details ?? []) {
+        const name = issue.path[0];
+        if (name === 'email' || name === 'role')
+          setError(name, { type: 'server', message: issue.message });
+      }
     } finally {
       pending.current = false;
       setBusy(false);

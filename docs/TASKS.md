@@ -1743,3 +1743,15 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Failing then passing real-service panel coverage; root build/lint/test/type/format and UI Storybook checks; G01–05/G09/G10.
   - **Commit:** `feat(web): add list-first settings panels`.
   - **Evidence:** [P41-01](evidence/P41-01.md).
+
+## Phase 42 — Typed API hook conventions
+
+- [x] **P42-01 — Standardize authored API request and hook structure**
+  - **Goal:** Apply the user's named request function, protected options and explicit hook-result pattern throughout the authored web API layer.
+  - **Requirements:** R180; preserve R68/R164 and all existing scope, pagination and mutation safeguards.
+  - **Files:** Web query/mutation hooks, feature-owned request/option helpers, shared mutation typing, tests and frontend/task/decision/evidence documentation.
+  - **Dependencies:** Existing generated client and shared mutation implementation; no backend or generator changes.
+  - **Acceptance:** All authored API hook modules use typed request/options/result seams. Convert mutation callers to native mutate/mutateAsync while preserving composite query contracts, cancellation, keys, bounded cursor paging, validation, optimistic cleanup and notification capture. Caller options cannot replace keys/functions or mutation retry policy.
+  - **Validation:** Failing then passing structural/type and callback behavior checks, existing real-service flows, root build/lint/types/tests/format and contract drift checks.
+  - **Commit:** `refactor(web): standardize typed api hooks`.
+  - **Evidence:** [P42-01](evidence/P42-01.md).

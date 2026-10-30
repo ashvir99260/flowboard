@@ -14,6 +14,7 @@ import {
 } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 
+import { apiError } from '../../lib/apiError';
 import { SessionLoading } from '../auth/SessionLoading';
 
 import { AdministrationEditor } from './AdministrationEditor';
@@ -61,7 +62,7 @@ export function AdministrationWorkspace({
   const nodeId = panelOpen && 'nodeId' in selection ? selection.nodeId : undefined;
 
   const data = useAdministration(runtime, scope, nodeId);
-  const { submit } = useAdministrationMutation(runtime, scope);
+  const { mutateAsync } = useAdministrationMutation(runtime, scope);
 
   if ((!snapshot || loadingSelection) && data.result.state === 'ready') {
     setSnapshot(data.result.snapshot);
@@ -155,16 +156,14 @@ export function AdministrationWorkspace({
     locked.current = true;
     setBusy(true);
     setNotice(null);
-    void submit(action.command)
-      .then((result) => {
-        if (result.success)
-          refreshAfterSave(result.response?.data.id, action.command.kind === 'archive');
-        else {
-          setNotice(result.error.message);
-          setBlocked(
-            ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(result.error.code),
-          );
-        }
+    void mutateAsync(action.command)
+      .then((response) => refreshAfterSave(response?.data.id, action.command.kind === 'archive'))
+      .catch((cause) => {
+        const error = apiError(cause);
+        setNotice(error.message);
+        setBlocked(
+          ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(error.code),
+        );
       })
       .finally(() => {
         locked.current = false;

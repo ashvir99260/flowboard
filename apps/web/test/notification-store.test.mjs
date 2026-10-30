@@ -3,6 +3,17 @@ import test from 'node:test';
 
 import { createNotificationStore } from '../src/features/notifications/notificationStore.ts';
 
+test('a captured reporter factory retains its session when native mutation preparation is delayed', () => {
+  const store = createNotificationStore();
+  const capture = store.captureFactory();
+  capture()('First saved.', 'success');
+  capture()('Second saved.', 'success');
+  assert.equal(store.snapshot().length, 2);
+  store.clear();
+  capture()('Late old-session result.', 'success');
+  assert.equal(store.snapshot().length, 0);
+});
+
 test('an action reports one result but independent repeated saves remain visible', () => {
   const store = createNotificationStore();
   const report = store.capture();
