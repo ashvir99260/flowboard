@@ -17,7 +17,7 @@ test(
     );
     await expect(
       page
-        .getByRole('region', { exact: true, name: 'Field effort' })
+        .getByRole('listitem', { exact: true, name: 'Field effort' })
         .getByText('Inherited', { exact: true }),
     ).toBeVisible();
     for (const type of ['text', 'number', 'single_select', 'multi_select', 'date', 'checkbox']) {
@@ -36,7 +36,7 @@ test(
         'Field saved',
       );
       await expect(
-        page.getByRole('region', { exact: true, name: `Field test_${type}` }),
+        page.getByRole('listitem', { exact: true, name: `Field test_${type}` }),
       ).toBeVisible();
     }
     await page.getByRole('button', { exact: true, name: 'Edit Test text' }).click();
@@ -54,15 +54,19 @@ test(
     await expect(
       page.getByRole('dialog', { name: 'Remove local field configuration?' }),
     ).toHaveCount(0);
-    await expect(page.getByRole('region', { exact: true, name: 'Field test_text' })).toHaveCount(0);
+    await expect(page.getByRole('listitem', { exact: true, name: 'Field test_text' })).toHaveCount(
+      0,
+    );
     await page.reload();
     await selectAutocomplete(
       page.getByLabel('Configuration scope', { exact: true }),
       'List: Product backlog',
     );
     await expect(
-      page.getByRole('region', { exact: true, name: 'Field test_checkbox' }),
+      page.getByRole('listitem', { exact: true, name: 'Field test_checkbox' }),
     ).toBeVisible();
-    await expect(page.getByRole('region', { exact: true, name: 'Field test_text' })).toHaveCount(0);
+    await expect(page.getByRole('listitem', { exact: true, name: 'Field test_text' })).toHaveCount(
+      0,
+    );
   },
 );

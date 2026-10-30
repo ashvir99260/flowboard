@@ -1,8 +1,19 @@
 'use client';
 
-import { Alert, Button, Chip, ErrorState, Stack, Typography } from '@flowboard/ui';
-import { StatusPreview } from '@flowboard/ui';
-import { useRef, useState } from 'react';
+import {
+  Alert,
+  Button,
+  Chip,
+  ErrorState,
+  SettingsLayout,
+  SettingsList,
+  Stack,
+  StatusChip,
+  Toolbar,
+  Typography,
+  WorkspaceIcon,
+} from '@flowboard/ui';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { SessionLoading } from '../../auth/SessionLoading';
 
@@ -30,6 +41,18 @@ export function StatusScopeConfiguration({
   const [editing, setEditing] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const origin = useRef<HTMLElement | null>(null);
+  const restoreFocus = useRef(false);
+  const focusId = useId();
+
+  useEffect(() => {
+    if (!active || !restoreFocus.current || result.state !== 'ready') return;
+
+    const target =
+      document.getElementById(origin.current?.id ?? '') ??
+      document.getElementById(`${focusId}-new`);
+    target?.focus();
+    restoreFocus.current = false;
+  }, [active, editing, focusId, result.state]);
 
   const open = (id: string) => {
     origin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -39,7 +62,7 @@ export function StatusScopeConfiguration({
   const close = () => {
     setEditing(null);
     onState({ busy: false, dirty: false });
-    requestAnimationFrame(() => origin.current?.isConnected && origin.current.focus());
+    restoreFocus.current = true;
   };
   const reload = () => {
     close();
@@ -63,63 +86,82 @@ export function StatusScopeConfiguration({
           {notice}
         </Alert>
       )}
-      <StatusPreview items={result.effective} />
-      <Stack component="section" aria-label="Status configuration" spacing={0.8}>
-        <Typography component="h2" variant="h3">
-          Statuses
-        </Typography>
-        {result.input.identities.map((identity) => {
-          const effective = result.effective.find((item) => item.id === identity.id);
-          const local = result.local.find((item) => item.identity.id === identity.id);
-          const name =
-            effective?.name ??
-            result.input.overrides.findLast(
-              (item) => item.statusId === identity.id && item.name !== null,
-            )?.name ??
-            identity.key;
-
-          return (
-            <Stack
-              component="section"
-              aria-label={`Status ${identity.key}`}
-              key={identity.id}
-              direction="row"
-              spacing={0.8}
-              sx={{ alignItems: 'center', flexWrap: 'wrap' }}
-            >
-              <Typography>{name}</Typography>
-              <Chip label={local ? 'Local' : 'Inherited'} size="small" />
-              {!effective && <Chip label="Hidden" size="small" />}
-              <Typography variant="caption">
-                {identity.key} · {identity.category}
+      <SettingsLayout
+        collection={
+          <Stack component="section" aria-label="Status configuration" spacing={1.6}>
+            <Toolbar.Root>
+              <Typography component="h2" variant="h3">
+                Statuses
               </Typography>
-              <Button disabled={editing !== null} onClick={() => open(identity.id)}>
-                Edit {name}
+              <Button
+                id={`${focusId}-new`}
+                variant="contained"
+                disabled={editing !== null}
+                onClick={() => open('new')}
+                startIcon={<WorkspaceIcon name="plus" />}
+              >
+                Add status
               </Button>
-            </Stack>
-          );
-        })}
-        <Button variant="outlined" disabled={editing !== null} onClick={() => open('new')}>
-          Add status
-        </Button>
-      </Stack>
-      {editing && (
-        <StatusForm
-          active={active}
-          key={editing}
-          configuration={result}
-          targetId={editing === 'new' ? undefined : editing}
-          runtime={runtime}
-          scope={scope}
-          onState={onState}
-          onClose={close}
-          onReload={reload}
-          onSaved={() => {
-            reload();
-            setNotice('Status saved.');
-          }}
-        />
-      )}
+            </Toolbar.Root>
+            <SettingsList.Root aria-label="Statuses">
+              {result.input.identities.map((identity) => {
+                const effective = result.effective.find((item) => item.id === identity.id);
+                const local = result.local.find((item) => item.identity.id === identity.id);
+                const name =
+                  effective?.name ??
+                  result.input.overrides.findLast(
+                    (item) => item.statusId === identity.id && item.name !== null,
+                  )?.name ??
+                  identity.key;
+
+                return (
+                  <SettingsList.Item
+                    id={`${focusId}-${identity.id}`}
+                    aria-label={`Edit ${name}`}
+                    itemLabel={`Status ${identity.key}`}
+                    key={identity.id}
+                    title={effective ? <StatusChip status={effective} /> : name}
+                    description={`${identity.key} · ${identity.category}`}
+                    selected={editing === identity.id}
+                    disabled={editing !== null}
+                    onClick={() => open(identity.id)}
+                  >
+                    <Stack
+                      component="span"
+                      direction="row"
+                      spacing={0.8}
+                      useFlexGap
+                      sx={{ flexWrap: 'wrap' }}
+                    >
+                      <Chip label={local ? 'Local' : 'Inherited'} size="small" />
+                      {!effective && <Chip label="Hidden" size="small" />}
+                    </Stack>
+                  </SettingsList.Item>
+                );
+              })}
+            </SettingsList.Root>
+          </Stack>
+        }
+        detail={
+          editing && (
+            <StatusForm
+              active={active}
+              key={editing}
+              configuration={result}
+              targetId={editing === 'new' ? undefined : editing}
+              runtime={runtime}
+              scope={scope}
+              onState={onState}
+              onClose={close}
+              onReload={reload}
+              onSaved={() => {
+                reload();
+                setNotice('Status saved.');
+              }}
+            />
+          )
+        }
+      />
     </Stack>
   );
 }

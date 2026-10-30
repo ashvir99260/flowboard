@@ -1,7 +1,14 @@
 'use client';
 
 import { useZodForm } from '@flowboard/forms';
-import { Alert, Button, ConfirmDialog, Stack, Typography } from '@flowboard/ui';
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  SettingsDetailPanel,
+  Stack,
+  Typography,
+} from '@flowboard/ui';
 import { StatusPreview } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
@@ -157,98 +164,106 @@ export function StatusForm({
   const removePreview = targetId ? previewStatusRemoval(configuration, targetId) : null;
 
   return (
-    <Stack
-      component="form"
-      aria-label="Status editor"
-      onSubmit={save}
-      noValidate
-      spacing={1.2}
-      aria-busy={busy}
+    <SettingsDetailPanel
+      active={active}
+      title={targetId ? 'Status details' : 'Add status'}
+      closeLabel="Close status details"
+      closeDisabled={busy}
+      onClose={() => request('close')}
     >
-      <Typography component="h2" variant="h3">
-        {targetId ? 'Edit status' : 'Add status'}
-      </Typography>
-      {notice && (
-        <Alert
-          aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
-          severity={notice === 'No changes to save.' ? 'info' : 'error'}
-        >
-          {notice}
-        </Alert>
-      )}
-      {conflict && (
-        <Button onClick={() => request('reload')} disabled={busy}>
-          Reload configuration
-        </Button>
-      )}
-      <StatusFields control={control} defining={!targetId} canInherit={canInherit} busy={busy} />
-      <StatusPreview
-        label="Draft status preview"
-        items={preview.success ? preview.items : []}
-        errors={preview.success ? [] : preview.issues.map((issue) => issue.message)}
-      />
-      <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
-        <Button type="submit" variant="contained" disabled={busy || conflict || !preview.success}>
-          {busy ? 'Saving…' : 'Save status'}
-        </Button>
-        <Button type="button" disabled={busy} onClick={() => request('close')}>
-          Cancel editing
-        </Button>
-        {local && (
-          <Button
-            type="button"
-            color="error"
-            disabled={busy || conflict || !removePreview?.success}
-            onClick={() => setConfirmation('remove')}
+      <Stack
+        component="form"
+        aria-label="Status editor"
+        onSubmit={save}
+        noValidate
+        spacing={1.2}
+        aria-busy={busy}
+      >
+        <Typography component="h2" variant="h3">
+          {targetId ? 'Edit status' : 'Add status'}
+        </Typography>
+        {notice && (
+          <Alert
+            aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
+            severity={notice === 'No changes to save.' ? 'info' : 'error'}
           >
-            {canInherit ? 'Remove local override' : 'Delete status'}
+            {notice}
+          </Alert>
+        )}
+        {conflict && (
+          <Button onClick={() => request('reload')} disabled={busy}>
+            Reload configuration
           </Button>
         )}
+        <StatusFields control={control} defining={!targetId} canInherit={canInherit} busy={busy} />
+        <StatusPreview
+          label="Draft status preview"
+          items={preview.success ? preview.items : []}
+          errors={preview.success ? [] : preview.issues.map((issue) => issue.message)}
+        />
+        <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
+          <Button type="submit" variant="contained" disabled={busy || conflict || !preview.success}>
+            {busy ? 'Saving…' : 'Save status'}
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => request('close')}>
+            Cancel editing
+          </Button>
+          {local && (
+            <Button
+              type="button"
+              color="error"
+              disabled={busy || conflict || !removePreview?.success}
+              onClick={() => setConfirmation('remove')}
+            >
+              {canInherit ? 'Remove local override' : 'Delete status'}
+            </Button>
+          )}
+        </Stack>
+        {local && removePreview && !removePreview.success && (
+          <Alert aria-live="off" severity="info">
+            This status cannot be removed:{' '}
+            {removePreview.issues.map((issue) => issue.message).join(' ')}
+          </Alert>
+        )}
+        <ConfirmDialog
+          open={active && confirmation !== null}
+          busy={busy}
+          title={
+            confirmation === 'remove'
+              ? 'Remove local status configuration?'
+              : 'Discard unsaved changes?'
+          }
+          description={
+            confirmation === 'remove'
+              ? 'This removes only the configuration at this scope. Inherited settings may become visible; tasks in use can block removal.'
+              : 'Your unsaved status edits will be discarded.'
+          }
+          confirmLabel={
+            confirmation === 'remove'
+              ? 'Remove configuration'
+              : confirmation === 'reload'
+                ? 'Discard and reload'
+                : 'Discard changes'
+          }
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            const action = confirmation;
+            setConfirmation(null);
+            if (action === 'remove' && targetId && !inFlight.current) {
+              inFlight.current = true;
+              void saveCommand({
+                kind: 'remove',
+                statusId: targetId,
+                body: { expectedConfigVersion: configuration.configVersion },
+              }).finally(() => {
+                inFlight.current = false;
+                setBusy(false);
+              });
+            } else if (action === 'reload') onReload();
+            else if (action === 'close') onClose();
+          }}
+        />
       </Stack>
-      {local && removePreview && !removePreview.success && (
-        <Alert aria-live="off" severity="info">
-          This status cannot be removed:{' '}
-          {removePreview.issues.map((issue) => issue.message).join(' ')}
-        </Alert>
-      )}
-      <ConfirmDialog
-        open={active && confirmation !== null}
-        busy={busy}
-        title={
-          confirmation === 'remove'
-            ? 'Remove local status configuration?'
-            : 'Discard unsaved changes?'
-        }
-        description={
-          confirmation === 'remove'
-            ? 'This removes only the configuration at this scope. Inherited settings may become visible; tasks in use can block removal.'
-            : 'Your unsaved status edits will be discarded.'
-        }
-        confirmLabel={
-          confirmation === 'remove'
-            ? 'Remove configuration'
-            : confirmation === 'reload'
-              ? 'Discard and reload'
-              : 'Discard changes'
-        }
-        onCancel={() => setConfirmation(null)}
-        onConfirm={() => {
-          const action = confirmation;
-          setConfirmation(null);
-          if (action === 'remove' && targetId && !inFlight.current) {
-            inFlight.current = true;
-            void saveCommand({
-              kind: 'remove',
-              statusId: targetId,
-              body: { expectedConfigVersion: configuration.configVersion },
-            }).finally(() => {
-              inFlight.current = false;
-              setBusy(false);
-            });
-          } else if (action === 'reload') onReload();
-          else if (action === 'close') onClose();
-        }}
-      />
-    </Stack>
+    </SettingsDetailPanel>
   );
 }

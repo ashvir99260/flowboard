@@ -1731,3 +1731,15 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Real-service administration Playwright suite; root build, lint, tests, types and applicable formatting. No runtime or API changes.
   - **Commit:** `test(web): cover container validation and save recovery`.
   - **Completion evidence:** [P40-01](evidence/P40-01.md).
+
+## Phase 41 — List-first settings
+
+- [x] **P41-01 — Show administration lists with right-hand details panels**
+  - **Goal:** Make containers, statuses and custom fields easy to browse before opening an editor.
+  - **Requirements:** R179; preserve R160, R37 and R68.
+  - **Files:** Shared settings UI, web administration/configuration views, browser/UI tests and stories, task/decision/matrix/evidence records.
+  - **Dependencies:** Existing NEXT-05 implementation and P10 status/field forms; no claim that broader NEXT-05 acceptance is complete.
+  - **Acceptance:** Expandable container hierarchy, selectable status/field rows, top-right Add, initially closed right-hand panels, responsive layout, keyboard focus and dirty-close protection. Preserve navigation, scope selection, validation, stale/failed-save recovery and admin-only access.
+  - **Validation:** Failing then passing real-service panel coverage; root build/lint/test/type/format and UI Storybook checks; G01–05/G09/G10.
+  - **Commit:** `feat(web): add list-first settings panels`.
+  - **Evidence:** [P41-01](evidence/P41-01.md).
