@@ -7,13 +7,12 @@ import { z } from 'zod';
 
 type ContainerNode = ReturnType<typeof NodeSchema.parse>;
 const DestinationSchema = z.strictObject({ listId: NodeSchema.shape.id });
-export function TaskDestinationForm({
-  nodes,
-  onSelect,
-}: {
+type TaskDestinationFormProps = {
   nodes: readonly ContainerNode[];
   onSelect: (listId: string) => void;
-}) {
+};
+
+export function TaskDestinationForm({ nodes, onSelect }: TaskDestinationFormProps) {
   const lists = nodes.filter(({ type }) => type === 'list');
 
   const { control, handleSubmit } = useZodForm(DestinationSchema, {

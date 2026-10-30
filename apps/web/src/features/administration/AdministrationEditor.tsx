@@ -10,6 +10,22 @@ import type { AdministrationCommand } from './useAdministrationMutation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
+type AdministrationEditorProps = {
+  active: boolean;
+  disabled: boolean;
+  epoch: number;
+  onCommand: (command: AdministrationCommand) => void;
+  onReload: () => void;
+  onSaved: (nodeId?: string) => void;
+  onSelect: (selection: AdministrationSelection) => void;
+  onState: (state: { busy: boolean; dirty: boolean }) => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  selection: AdministrationSelection;
+  snapshot: AdministrationSnapshot;
+  stale: boolean;
+};
+
 export function AdministrationEditor({
   active,
   disabled,
@@ -24,21 +40,7 @@ export function AdministrationEditor({
   onSaved,
   onSelect,
   onState,
-}: {
-  active: boolean;
-  disabled: boolean;
-  epoch: number;
-  onCommand: (command: AdministrationCommand) => void;
-  onReload: () => void;
-  onSaved: (nodeId?: string) => void;
-  onSelect: (selection: AdministrationSelection) => void;
-  onState: (state: { busy: boolean; dirty: boolean }) => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  selection: AdministrationSelection;
-  snapshot: AdministrationSnapshot;
-  stale: boolean;
-}) {
+}: AdministrationEditorProps) {
   const nodeId = 'nodeId' in selection ? selection.nodeId : undefined;
   const node = snapshot.nodes.find((item) => item.id === nodeId);
   const siblings = snapshot.nodes

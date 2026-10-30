@@ -10,17 +10,14 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ReactNode } from 'react';
 
-export function TaskEditorProvider({
-  children,
-  listId,
-  runtime,
-  scope,
-}: {
+type TaskEditorProviderProps = {
   children: ReactNode;
   listId?: string;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function TaskEditorProvider({ children, listId, runtime, scope }: TaskEditorProviderProps) {
   const [selection, setSelection] = useState<Selection | null>(null);
   const origin = useRef<HTMLElement | null>(null);
   const originTaskId = useRef<string | null>(null);

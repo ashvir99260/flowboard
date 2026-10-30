@@ -40,6 +40,18 @@ function taskNoticeProps(message: string) {
   } as const;
 }
 
+type TaskFormProps = {
+  detail: Detail;
+  listId: string;
+  onArchived: () => void;
+  onPersisted: (task: Task) => void;
+  onState: (state: { busy: boolean; dirty: boolean }) => void;
+  parentTaskId?: string;
+  reload: () => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+};
+
 export function TaskForm({
   detail,
   listId,
@@ -50,17 +62,7 @@ export function TaskForm({
   onArchived,
   onPersisted,
   parentTaskId,
-}: {
-  detail: Detail;
-  listId: string;
-  onArchived: () => void;
-  onPersisted: (task: Task) => void;
-  onState: (state: { busy: boolean; dirty: boolean }) => void;
-  parentTaskId?: string;
-  reload: () => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-}) {
+}: TaskFormProps) {
   const [baseline, setBaseline] = useState(detail.task);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);

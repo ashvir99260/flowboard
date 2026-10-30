@@ -7,15 +7,13 @@ import type { TaskDraft } from './taskFormData';
 import type { ResolvedField } from '@flowboard/contracts';
 import type { Control } from 'react-hook-form';
 
-export function TaskCustomFields({
-  fields,
-  control,
-  busy,
-}: {
+type TaskCustomFieldsProps = {
   busy: boolean;
   control: Control<TaskDraft>;
   fields: readonly ResolvedField[];
-}) {
+};
+
+export function TaskCustomFields({ fields, control, busy }: TaskCustomFieldsProps) {
   return fields.map((definition) => (
     <Stack key={definition.id} spacing={0.4}>
       <Typography color="text.secondary" variant="caption">

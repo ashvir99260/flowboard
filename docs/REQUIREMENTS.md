@@ -241,3 +241,7 @@ R166: Drag tasks from the full card surface in both workspace-list and per-list 
 ## Stable drag feedback follow-up
 
 - **R172:** Dragging a task to a new position or column keeps the board stable through saving and refresh, preserves rollback on failure, and shows a completion toast only after the server confirms the move/reorder.
+
+## Component declaration follow-up
+
+- **R181:** Declare component prop types above their components instead of inline in parameter annotations. Keep each distinct React component implementation in its own file, preserving existing prop contracts, generics, rendering, refs and callbacks.

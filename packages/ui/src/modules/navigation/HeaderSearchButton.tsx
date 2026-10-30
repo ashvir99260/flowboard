@@ -27,7 +27,9 @@ const SearchButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-export function HeaderSearchButton({ onClick }: Readonly<{ onClick: () => void }>) {
+type HeaderSearchButtonProps = Readonly<{ onClick: () => void }>;
+
+export function HeaderSearchButton({ onClick }: HeaderSearchButtonProps) {
   return (
     <SearchButton aria-label="Search tasks and lists" onClick={onClick}>
       <WorkspaceIcon name="search" />

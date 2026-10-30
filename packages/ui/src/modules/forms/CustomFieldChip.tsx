@@ -6,13 +6,12 @@ import { Chip } from '../primitives/Chip.js';
 
 import type { CustomFieldType, FieldValue, ResolvedField } from '@flowboard/contracts';
 
-export function CustomFieldChip({
-  field,
-  value,
-}: Readonly<{
+type CustomFieldChipProps = Readonly<{
   field: Pick<ResolvedField, 'name' | 'options' | 'type'>;
   value?: FieldValue | null;
-}>) {
+}>;
+
+export function CustomFieldChip({ field, value }: CustomFieldChipProps) {
   const option = (id: string) =>
     field.options.find((item) => item.id === id)?.label ?? 'Unknown option';
   const formatters: Record<CustomFieldType, (input: FieldValue) => string> = {

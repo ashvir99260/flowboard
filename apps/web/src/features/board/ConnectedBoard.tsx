@@ -15,15 +15,13 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { Placement, Task } from '@flowboard/contracts';
 
-export function ConnectedBoard({
-  listId,
-  runtime,
-  scope,
-}: {
+type ConnectedBoardProps = {
   listId: string;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function ConnectedBoard({ listId, runtime, scope }: ConnectedBoardProps) {
   const board = useBoard({ listId, runtime, scope });
   const { pending, mutate, mutateAsync } = useTaskPlacementMutation(runtime, scope);
   const [selection, setSelection] = useState<Selection | null>(null);

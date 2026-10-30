@@ -2,13 +2,12 @@
 
 import { useRealtime } from '../realtime/useRealtime';
 
-export function WorkspaceListSubscription({
-  listId,
-  refresh,
-}: {
+type WorkspaceListSubscriptionProps = {
   listId: string;
   refresh: () => void;
-}) {
+};
+
+export function WorkspaceListSubscription({ listId, refresh }: WorkspaceListSubscriptionProps) {
   useRealtime(listId, (event) => {
     if (event.kind === 'list' || event.kind === 'resync') refresh();
   });

@@ -16,6 +16,8 @@ import type { BulkTaskDetail, BulkTaskEditorProps } from './bulkTaskEditorTypes'
 import type { FormFieldConfig } from '@flowboard/forms';
 import type { FieldPath } from 'react-hook-form';
 
+type BulkTaskFormProps = BulkTaskEditorProps & { detail: BulkTaskDetail };
+
 export function BulkTaskForm({
   detail,
   listId,
@@ -24,7 +26,7 @@ export function BulkTaskForm({
   runtime,
   scope,
   tasks,
-}: BulkTaskEditorProps & { detail: BulkTaskDetail }) {
+}: BulkTaskFormProps) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);

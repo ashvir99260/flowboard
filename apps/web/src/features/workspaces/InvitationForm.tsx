@@ -13,17 +13,19 @@ import { useCreateWorkspaceInvitationMutation } from './useCreateWorkspaceInvita
 import type { InvitationContext, InvitationFormState } from './invitationTypes';
 import type { CreateInvitation, InvitationEnvelope } from '@flowboard/contracts';
 
+type InvitationFormProps = InvitationContext & {
+  configVersion: number;
+  onReload: () => Promise<number | null>;
+  onState: (state: InvitationFormState) => void;
+};
+
 export function InvitationForm({
   runtime,
   scope,
   configVersion: initialVersion,
   onState,
   onReload,
-}: InvitationContext & {
-  configVersion: number;
-  onReload: () => Promise<number | null>;
-  onState: (state: InvitationFormState) => void;
-}) {
+}: InvitationFormProps) {
   const [configVersion, setConfigVersion] = useState(initialVersion);
   const [busy, setBusy] = useState(false);
   const [conflict, setConflict] = useState(false);

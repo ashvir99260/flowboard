@@ -8,7 +8,9 @@ import { theme } from './theme.js';
 
 import type { ReactNode } from 'react';
 
-export function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
+type ThemeProviderProps = Readonly<{ children: ReactNode }>;
+
+export function ThemeProvider({ children }: ThemeProviderProps) {
   return (
     <AppRouterCacheProvider options={{ key: 'flowboard' }}>
       <MuiThemeProvider

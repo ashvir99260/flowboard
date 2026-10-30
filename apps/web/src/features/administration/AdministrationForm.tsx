@@ -24,6 +24,18 @@ import type { FormFieldConfig } from '@flowboard/forms';
 import type { FormEvent } from 'react';
 import type { FieldPath } from 'react-hook-form';
 
+type AdministrationFormProps = {
+  active: boolean;
+  onReload: () => void;
+  onSaved: (nodeId?: string) => void;
+  onState: (value: { busy: boolean; dirty: boolean }) => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  selection: AdministrationSelection;
+  snapshot: AdministrationSnapshot;
+  stale: boolean;
+};
+
 export function AdministrationForm({
   selection,
   snapshot,
@@ -34,17 +46,7 @@ export function AdministrationForm({
   onState,
   onSaved,
   onReload,
-}: {
-  active: boolean;
-  onReload: () => void;
-  onSaved: (nodeId?: string) => void;
-  onState: (value: { busy: boolean; dirty: boolean }) => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  selection: AdministrationSelection;
-  snapshot: AdministrationSnapshot;
-  stale: boolean;
-}) {
+}: AdministrationFormProps) {
   const { mutateAsync } = useAdministrationMutation(runtime, scope);
   const {
     control,

@@ -27,17 +27,19 @@ const fields = [
   },
 ] satisfies FormFieldConfig<{ name: string }>[];
 
+type WorkspaceFormProps = {
+  onReload: () => Promise<void>;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  workspace: WorkspaceEnvelope;
+};
+
 export function WorkspaceForm({
   workspace: initialWorkspace,
   runtime,
   scope,
   onReload,
-}: {
-  onReload: () => Promise<void>;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  workspace: WorkspaceEnvelope;
-}) {
+}: WorkspaceFormProps) {
   const router = useRouter();
   const [workspace] = useState(initialWorkspace);
   const { mutateAsync } = useWorkspaceMutation(runtime, scope);

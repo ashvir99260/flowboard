@@ -29,6 +29,15 @@ const Panel = styled('section', { name: 'FlowboardSettingsDetailPanel' })(({ the
   },
 }));
 
+type SettingsDetailPanelProps = {
+  active?: boolean;
+  children: ReactNode;
+  closeDisabled?: boolean;
+  closeLabel: string;
+  onClose: () => void;
+  title: string;
+};
+
 export function SettingsDetailPanel({
   children,
   title,
@@ -36,14 +45,7 @@ export function SettingsDetailPanel({
   closeDisabled = false,
   active = true,
   onClose,
-}: {
-  active?: boolean;
-  children: ReactNode;
-  closeDisabled?: boolean;
-  closeLabel: string;
-  onClose: () => void;
-  title: string;
-}) {
+}: SettingsDetailPanelProps) {
   const id = useId();
   const panel = useRef<HTMLElement>(null);
   const close = useRef<HTMLButtonElement>(null);

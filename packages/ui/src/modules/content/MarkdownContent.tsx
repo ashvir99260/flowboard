@@ -19,10 +19,9 @@ const Content = styled('section', { name: 'FlowboardMarkdown', slot: 'Root' })((
   },
 }));
 
-export function MarkdownContent({
-  children,
-  label = 'Description preview',
-}: Readonly<{ children: string; label?: string }>) {
+type MarkdownContentProps = Readonly<{ children: string; label?: string }>;
+
+export function MarkdownContent({ children, label = 'Description preview' }: MarkdownContentProps) {
   return (
     <Content aria-label={label}>
       <Markdown skipHtml>{children}</Markdown>

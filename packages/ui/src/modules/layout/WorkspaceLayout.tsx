@@ -89,6 +89,17 @@ const Main = styled('main', { name: 'FlowboardWorkspace', slot: 'Main' })(({ the
   [theme.breakpoints.up('md')]: { padding: theme.spacing(2.4) },
 }));
 
+type WorkspaceLayoutProps = Readonly<{
+  children: ReactNode;
+  header?: ReactNode;
+  headerActions?: ReactNode;
+  headerSearch?: ReactNode;
+  navigation: ReactNode;
+  onClose: () => void;
+  onOpen: () => void;
+  open: boolean;
+}>;
+
 export function WorkspaceLayout({
   children,
   header,
@@ -98,16 +109,7 @@ export function WorkspaceLayout({
   open,
   onOpen,
   onClose,
-}: Readonly<{
-  children: ReactNode;
-  header?: ReactNode;
-  headerActions?: ReactNode;
-  headerSearch?: ReactNode;
-  navigation: ReactNode;
-  onClose: () => void;
-  onOpen: () => void;
-  open: boolean;
-}>) {
+}: WorkspaceLayoutProps) {
   const desktop = useMediaQuery((theme) => theme.breakpoints.up('md'));
 
   const hasHeader = header !== undefined || headerActions !== undefined;

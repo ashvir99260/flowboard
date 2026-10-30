@@ -6,7 +6,9 @@ import { SessionLoading } from '../auth/SessionLoading';
 
 import { ConnectedListViews } from './ConnectedListViews';
 
-export function ListViews({ listId }: { listId: string }) {
+type ListViewsProps = { listId: string };
+
+export function ListViews({ listId }: ListViewsProps) {
   return (
     <Suspense fallback={<SessionLoading />}>
       <ConnectedListViews listId={listId} />

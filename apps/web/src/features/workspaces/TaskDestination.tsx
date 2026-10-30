@@ -9,15 +9,13 @@ import { TaskDestinationForm } from './TaskDestinationForm';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
-export function TaskDestination({
-  runtime,
-  scope,
-  onSelect,
-}: {
+type TaskDestinationProps = {
   onSelect: (id: string) => void;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function TaskDestination({ runtime, scope, onSelect }: TaskDestinationProps) {
   const tree = useTree(runtime, scope);
 
   if (tree.state === 'loading')

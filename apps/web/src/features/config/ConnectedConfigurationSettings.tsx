@@ -20,13 +20,18 @@ import type { StatusScope } from '@flowboard/contracts';
 
 type Editing = { busy: boolean; dirty: boolean };
 
+type ConnectedConfigurationSettingsProps = ConfigurationSettingsProps & {
+  runtime: ClientRuntime;
+  scope: QueryScope;
+};
+
 export function ConnectedConfigurationSettings({
   runtime,
   scope,
   active,
   kind,
   Editor,
-}: ConfigurationSettingsProps & { runtime: ClientRuntime; scope: QueryScope }) {
+}: ConnectedConfigurationSettingsProps) {
   const { session } = useSession();
   const tree = useTree(runtime, scope);
   const [owner, setOwner] = useState<StatusScope>({

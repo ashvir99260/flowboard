@@ -15,13 +15,12 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { WorkspaceEnvelope } from '@flowboard/contracts';
 
-export function WorkspaceSettingsContent({
-  runtime,
-  scope,
-}: {
+type WorkspaceSettingsContentProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function WorkspaceSettingsContent({ runtime, scope }: WorkspaceSettingsContentProps) {
   const query = useGetWorkspaceQuery(runtime, scope);
 
   useRealtime(undefined, (event) => {

@@ -15,6 +15,16 @@ import type { Task } from '@flowboard/contracts';
 
 type DrawerAction = { type: 'close' | 'reload' } | { selection: Selection; type: 'navigate' };
 
+type TaskDrawerProps = {
+  close: () => void;
+  listId: string;
+  navigate: (selection: Selection) => void;
+  parentTaskId?: string;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  taskId?: string;
+};
+
 export function TaskDrawer({
   taskId,
   listId,
@@ -23,15 +33,7 @@ export function TaskDrawer({
   close,
   navigate,
   parentTaskId,
-}: {
-  close: () => void;
-  listId: string;
-  navigate: (selection: Selection) => void;
-  parentTaskId?: string;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  taskId?: string;
-}) {
+}: TaskDrawerProps) {
   const [lookupTaskId, setLookupTaskId] = useState(taskId);
   const persistedId = useRef(taskId);
   const [activityTaskId, setActivityTaskId] = useState(taskId);

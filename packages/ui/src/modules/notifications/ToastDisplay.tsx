@@ -46,13 +46,12 @@ const Container = styled(ToastContainer)(({ theme }) => ({
   },
 }));
 
-export function ToastDisplay({
-  message,
-  onDismiss,
-}: {
+type ToastDisplayProps = {
   message: ToastMessage | undefined;
   onDismiss: (id: number) => void;
-}) {
+};
+
+export function ToastDisplay({ message, onDismiss }: ToastDisplayProps) {
   const root = useRef<HTMLDivElement>(null);
   const origin = useRef<HTMLElement | null>(null);
 

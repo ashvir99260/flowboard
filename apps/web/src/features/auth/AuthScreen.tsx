@@ -9,7 +9,9 @@ import { LoginForm } from './LoginForm';
 import { SessionLoading } from './SessionLoading';
 import { SignupForm } from './SignupForm';
 
-export function AuthScreen({ mode }: Readonly<{ mode: 'login' | 'signup' }>) {
+type AuthScreenProps = Readonly<{ mode: 'login' | 'signup' }>;
+
+export function AuthScreen({ mode }: AuthScreenProps) {
   const { runtime, status } = useSession();
   const router = useRouter();
 

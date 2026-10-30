@@ -31,21 +31,16 @@ function failure(view: ListView) {
   return null;
 }
 
-export function ListResult({
-  view,
-  selection,
-  query,
-  onChange,
-  pending,
-}: {
+type ListResultProps = {
   onChange: (query: TaskTableQuery) => void;
   pending: boolean;
   query: TaskTableQuery;
   selection?: { disabled?: boolean; ids: readonly string[]; onChange: (ids: string[]) => void };
   view: ListView;
-}) {
-  const [hasLoaded, setHasLoaded] = useState(false);
+};
 
+export function ListResult({ view, selection, query, onChange, pending }: ListResultProps) {
+  const [hasLoaded, setHasLoaded] = useState(false);
   const error = failure(view);
   const { result } = view;
   if (error && hasLoaded) setHasLoaded(false);

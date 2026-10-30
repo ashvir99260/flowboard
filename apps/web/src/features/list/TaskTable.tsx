@@ -9,13 +9,7 @@ import type { TaskTableQuery } from './listLocation';
 import type { ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
 import type { TaskTableControls } from '@flowboard/ui';
 
-export function TaskTable({
-  query,
-  onChange,
-  pending,
-  loading,
-  ...props
-}: {
+type TaskTableProps = {
   fields: readonly ResolvedField[];
   items: readonly Task[];
   loading: boolean;
@@ -28,7 +22,9 @@ export function TaskTable({
     onChange: (ids: string[]) => void;
   };
   statuses: readonly ResolvedStatus[];
-}) {
+};
+
+export function TaskTable({ query, onChange, pending, loading, ...props }: TaskTableProps) {
   const openTask = useTaskEditor();
 
   const filter = readListFilter(query, props.fields);

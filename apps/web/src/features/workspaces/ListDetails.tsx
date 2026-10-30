@@ -5,7 +5,9 @@ import { SessionLoading } from '../auth/SessionLoading';
 
 import { SelectedList } from './SelectedList';
 
-export function ListDetails({ listId }: { listId: string }) {
+type ListDetailsProps = { listId: string };
+
+export function ListDetails({ listId }: ListDetailsProps) {
   const { runtime, scope } = useSession();
 
   return runtime && scope ? (

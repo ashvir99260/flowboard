@@ -8,10 +8,9 @@ import { Toolbar } from '../layout/Toolbar.js';
 
 import type { ReactNode } from 'react';
 
-export function ActivityPanel({
-  actions,
-  children,
-}: Readonly<{ actions?: ReactNode; children: ReactNode }>) {
+type ActivityPanelProps = Readonly<{ actions?: ReactNode; children: ReactNode }>;
+
+export function ActivityPanel({ actions, children }: ActivityPanelProps) {
   const id = useId();
 
   return (

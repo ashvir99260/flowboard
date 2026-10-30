@@ -23,6 +23,8 @@ These conventions describe the current repository and the required patterns for 
 
 Do not infer that all names must be PascalCase. Do not change enum values, status keys, JSON fields, SQL mappings or operation IDs as a cosmetic rename.
 
+Component prop annotations use named types declared above the component; see [the prop declaration rule](CODE_STYLE.md#component-props-and-file-boundaries). New local extractions use `<ComponentName>Props`; existing named/imported types remain valid.
+
 D163 supersedes D146: all frontend component implementation files use PascalCase; hooks/helpers use camelCase. Keep test/story suffixes (`sourceLayout.test.mjs`, `fields.stories.tsx`) and reserved tooling filenames. Split distinct component implementations, including private React components; a cohesive compound component may keep its private styled parts. Public exports remain available from `@flowboard/ui`, regardless of internal file placement.
 
 ## Exact file patterns

@@ -12,17 +12,14 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ResolvedStatus } from '@flowboard/contracts';
 
-export function ActivityFeed({
-  taskId,
-  runtime,
-  scope,
-  statuses,
-}: {
+type ActivityFeedProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
   statuses: readonly ResolvedStatus[];
   taskId: string;
-}) {
+};
+
+export function ActivityFeed({ taskId, runtime, scope, statuses }: ActivityFeedProps) {
   const [cycle, setCycle] = useState({ generation: 0, restarts: 0 });
   const query = useListTaskActivityInfiniteQuery({
     generation: cycle.generation,

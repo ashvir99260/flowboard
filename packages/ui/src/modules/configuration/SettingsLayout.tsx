@@ -18,13 +18,12 @@ const Root = styled('div', { name: 'FlowboardSettingsLayout' })(({ theme }) => (
   },
 }));
 
-export function SettingsLayout({
-  collection,
-  detail,
-}: {
+type SettingsLayoutProps = {
   collection: ReactNode;
   detail?: ReactNode;
-}) {
+};
+
+export function SettingsLayout({ collection, detail }: SettingsLayoutProps) {
   return (
     <Root data-editing={Boolean(detail)}>
       <div>{collection}</div>

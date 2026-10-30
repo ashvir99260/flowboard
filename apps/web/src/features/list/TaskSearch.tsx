@@ -9,15 +9,13 @@ import type { TaskTableQuery } from './listLocation';
 
 const SearchSchema = z.strictObject({ q: textSchema(200, 0, true) });
 
-export function TaskSearch({
-  query,
-  onChange,
-  pending,
-}: {
+type TaskSearchProps = {
   onChange: (query: TaskTableQuery) => void;
   pending: boolean;
   query: TaskTableQuery;
-}) {
+};
+
+export function TaskSearch({ query, onChange, pending }: TaskSearchProps) {
   const { control, handleSubmit, reset } = useZodForm(SearchSchema, {
     defaultValues: { q: query.q ?? '' },
   });

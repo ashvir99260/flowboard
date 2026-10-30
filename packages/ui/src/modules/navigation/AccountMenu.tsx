@@ -36,15 +36,13 @@ const Avatar = styled('span')(({ theme }) => ({
   width: '3.2rem',
 }));
 
-export function AccountMenu({
-  name,
-  role,
-  onSignOut,
-}: Readonly<{
+type AccountMenuProps = Readonly<{
   name: string;
   onSignOut: () => void;
   role: WorkspaceRole;
-}>) {
+}>;
+
+export function AccountMenu({ name, role, onSignOut }: AccountMenuProps) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const menuId = useId();
 

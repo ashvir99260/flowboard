@@ -1765,3 +1765,15 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Document/source consistency, relative file and heading links, formatting and diff checks; G01/G04. No application changes or new automated enforcement.
   - **Commit:** `docs(frontend): codify api hook and settings rules`.
   - **Evidence:** [P42-02](evidence/P42-02.md).
+
+## Phase 43 — Component declaration consistency
+
+- [x] **P43-01 — Extract component prop types and keep one component per file**
+  - **Goal:** Give runtime React components readable named prop declarations above their implementation and separate any multiple component implementations.
+  - **Requirements:** R181; preserve R165 and all existing component behavior.
+  - **Files:** Web source/routes, UI/forms components, component structure tests, scoped rules/guides and task/evidence records.
+  - **Dependencies:** Existing P33 component organization and P41/P42 refinements.
+  - **Acceptance:** No inline object prop annotations in authored runtime components, including Readonly/intersection/generic cases; local prop declarations precede their component. No file contains multiple distinct component implementations. Preserve reserved route filenames, cohesive styled slots, render callbacks, defaults, generic inference, optional/readonly properties and public imports.
+  - **Validation:** Failing then passing structural fixtures/inventory; root build, lint, types, tests and format; UI/forms public and generic compatibility; independent review.
+  - **Commit:** `refactor(react): extract component prop types`.
+  - **Evidence:** [P43-01](evidence/P43-01.md).

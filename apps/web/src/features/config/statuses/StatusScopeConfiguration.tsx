@@ -24,19 +24,21 @@ import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
 import type { StatusScope } from '@flowboard/contracts';
 
+type StatusScopeConfigurationProps = {
+  active: boolean;
+  onState: (state: { busy: boolean; dirty: boolean }) => void;
+  owner: StatusScope;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+};
+
 export function StatusScopeConfiguration({
   active,
   owner,
   runtime,
   scope,
   onState,
-}: {
-  active: boolean;
-  onState: (state: { busy: boolean; dirty: boolean }) => void;
-  owner: StatusScope;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-}) {
+}: StatusScopeConfigurationProps) {
   const { result, error, retry } = useStatusConfiguration(runtime, scope, owner);
   const [editing, setEditing] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);

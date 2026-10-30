@@ -8,15 +8,17 @@ import { StatusChip } from '../tasks/StatusChip.js';
 
 import type { ResolvedStatus } from '@flowboard/contracts';
 
+type StatusPreviewProps = {
+  errors?: readonly string[];
+  items: readonly ResolvedStatus[];
+  label?: string;
+};
+
 export function StatusPreview({
   items,
   errors = [],
   label = 'Effective status preview',
-}: {
-  errors?: readonly string[];
-  items: readonly ResolvedStatus[];
-  label?: string;
-}) {
+}: StatusPreviewProps) {
   return (
     <Stack component="section" aria-label={label} spacing={0.8}>
       <Typography component="h2" variant="h3">
