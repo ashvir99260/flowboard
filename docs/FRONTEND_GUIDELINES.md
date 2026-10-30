@@ -34,7 +34,17 @@ Keep TanStack Query setup in feature-owned `.ts` hooks, separate from `.tsx` vie
 const query = useGetCurrentUserQuery({ runtime, scope });
 ```
 
-Leaf endpoint and mutation hooks export an async request function; all authored API hooks expose a typed options alias that omits owned keys/functions and an explicit result alias. Requests use the generated SDK with `throwOnError: true` and forward cancellation signals. Infinite requests delegate cursor merging to the generated query function and keep bounded, lazy pagination. Composite readers reuse feature-owned endpoint option factories and expose typed domain results. The hook owns generated query identity, scope tags and query policy; the view owns rendering, response-specific validation and user interaction. Preserve retry-generation tags when a caller restarts a paginated read. Existing composite hooks such as `useBoard` and `useTaskDetail` coordinate several reads and retain their descriptive names. Feature mutation hooks use `use<Operation>Mutation` and preserve their operation keys and optimistic behavior. Do not call individual hooks in a loop: dynamic parallel reads continue to use `useQueries` inside their coordinating hook.
+### API hook contract
+
+Apply this contract when adding or revising an authored API hook:
+
+1. Export the async request function from a leaf endpoint or mutation module, with an explicit Promise result. Use generated SDK operations and `throwOnError: true`; forward query cancellation signals. Keep transport configuration in the generated-client boundary.
+2. Export a typed options alias and an explicit result alias used by the hook return. Derive endpoint options from the relevant TanStack type with `Omit`; composite options reuse the endpoint option types. Callers cannot replace owned keys/functions. Mutation options also reserve retry/network policy and `onMutate`; pagination options reserve the hook's cursor lifecycle.
+3. Preserve the generated first query-key item, session scope tags and retry-generation tags. Infinite requests delegate cursor merging to the generated query function and retain bounded, lazy pagination.
+4. Let composite readers such as `useBoard` and `useTaskDetail` retain their domain results and descriptive names. Reuse feature-owned endpoint factories; dynamic parallel reads use `useQueries`, never individual hooks in a loop.
+5. Keep query/mutation policy and authoritative response validation in their existing owning layer. Views render data, handle user interactions and preserve inline errors and drafts; they do not configure TanStack queries.
+
+Use [the current-user query](../apps/web/src/features/auth/useGetCurrentUserQuery.ts), [cursor activity query](../apps/web/src/features/tasks/useListTaskActivityInfiniteQuery.ts), [task endpoint factories](../apps/web/src/features/tasks/taskQueries.ts) and [task write mutation](../apps/web/src/features/tasks/useTaskWriteMutation.ts) as concrete examples.
 
 The [view import boundary test](../apps/web/test/data-hook-boundary.test.mjs) rejects TanStack Query and generated query-option imports in feature `.tsx` files. Providers may still own `QueryClient` infrastructure. Imperative generated SDK verification, such as the task drawer's conflict check, is a separate responsibility and remains unchanged.
 
@@ -45,6 +55,10 @@ Follow [useTaskWriteMutation.ts](../apps/web/src/features/tasks/useTaskWriteMuta
 All nine feature write hooks delegate to `useApiMutation` in web infrastructure. It requires a mutation key and function, forwards native TanStack generic types/callbacks/context, and enforces the existing `retry: false` and `networkMode: 'always'` policy. It awaits lifecycle observers and reports sanitized observer failures without replacing the request outcome. The helper never adds a second fetch layer, changes a command, reports success, or chooses cache invalidation.
 
 Feature hooks such as `useTaskWriteMutation`, `useTaskPlacementMutation`, `useStatusMutation` and `useCreateWorkspaceInvitationMutation` own generated operations, trust-boundary validation, busy/conflict guards, captured notifications and cache behavior. Return native `UseMutationResult` and use `mutate` for fire-and-forget actions or `mutateAsync` with error handling for awaited forms. Keep owned lifecycle callbacks after caller options; chain caller observers after required cache/notification work. Busy guards run in synchronous `onMutate` and account for the current pending mutation. Capture notification generation before execution can be delayed, and clear immediate placement state in hook-level `onSettled`. Keep keys and variables stable: board/list observers and pending checks inspect them. Sessions continue through the coordinated runtime. The mutation boundary test rejects raw/aliased/namespace `useMutation` outside the common hook.
+
+### Existing enforcement
+
+The [API hook structure check](../apps/web/test/api-hook-style.test.mjs) checks exported options/result aliases and explicit returns for its listed hook modules; add a new API hook to that inventory. The [view/mutation boundary check](../apps/web/test/data-hook-boundary.test.mjs) keeps query setup out of views and mutation execution in the shared helper. [Request checks](../apps/web/test/api-request-functions.test.mjs) and [native mutation checks](../apps/web/test/native-api-mutations.test.mjs) cover representative cancellation, identity, error, concurrency and session behavior. Review still verifies that each endpoint uses the correct parameters, response validation and invalidation; these checks do not infer every semantic rule.
 
 ## Forms
 
@@ -57,6 +71,8 @@ Preserve unfinished numeric input, null/false/zero, disabled values, nested erro
 Reusable presentation belongs in UI and receives plain values, callbacks and composable children. MUI `styled()` uses semantic theme tokens; web consumes the public UI facade. Keep MUI/Emotion SSR. Use HSL authored colors and rem dimensions, with px borders/radii and the documented 62.5% root/10px MUI scale. Preserve user font preferences, media-query semantics and library drag geometry.
 
 Use labeled native/control semantics, visible focus, keyboard and button alternatives to drag, safe Markdown and focus restoration. Check long content, 320/768/1024/1440 viewports, reduced motion and contrast. Avoid speculative memoization and boolean-heavy component APIs. [The component guide](UI_COMPONENT_SYSTEM.md) owns the available composition patterns.
+
+Containers, Statuses and Custom Fields follow the [settings collection contract](UI_COMPONENT_SYSTEM.md#settings-collections-and-details). Reuse the shared presentation and keep selected items, form drafts, permissions and mutation handling in the feature adapter.
 
 ## Action and realtime feedback
 
