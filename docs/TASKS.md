@@ -1755,3 +1755,13 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Failing then passing structural/type and callback behavior checks, existing real-service flows, root build/lint/types/tests/format and contract drift checks.
   - **Commit:** `refactor(web): standardize typed api hooks`.
   - **Evidence:** [P42-01](evidence/P42-01.md).
+
+- [x] **P42-02 — Publish settings and API hook coding rules**
+  - **Goal:** Preserve the accepted P41/P42 patterns in the repository instructions used for future changes.
+  - **Requirements:** R179/R180; documentation follow-up, no new runtime behavior.
+  - **Files:** Web/UI scoped `AGENTS.md`, frontend/component guides, task and evidence records.
+  - **Dependencies:** P41-01 and P42-01, both committed and verified.
+  - **Acceptance:** Scoped rules link to one detailed owner; API guidance covers typed requests/options/results, native mutation callers and protected lifecycle work; settings guidance covers hierarchy/lists, right-hand panels, Add, responsive behavior, draft/focus and notifications. Existing checks are linked with their limits stated accurately.
+  - **Validation:** Document/source consistency, relative file and heading links, formatting and diff checks; G01/G04. No application changes or new automated enforcement.
+  - **Commit:** `docs(frontend): codify api hook and settings rules`.
+  - **Evidence:** [P42-02](evidence/P42-02.md).
