@@ -4,15 +4,15 @@ import { ScopeFieldCollectionSchema } from '@flowboard/contracts';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 
+import { listScopeFieldsOptions } from '../../../generated/apiHooks.gen';
 import { apiError } from '../../../lib/apiError';
 import { withQueryScope } from '../../../lib/queryScope';
-import { listScopeFieldsOptions } from '../configurationQueries';
 
 import { readFieldConfiguration } from './fieldConfiguration';
 
+import type { ListScopeFieldsQueryOptions } from '../../../generated/apiHooks.gen';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
-import type { ListScopeFieldsQueryOptions } from '../configurationQueries';
 import type { FieldScope } from '@flowboard/contracts';
 
 const policy = {

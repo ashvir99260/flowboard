@@ -1,8 +1,12 @@
 'use client';
 
-import { createScopeStatus, removeScopeStatus, updateScopeStatus } from '@flowboard/api-client/sdk';
 import { useQueryClient } from '@tanstack/react-query';
 
+import {
+  createScopeStatusMutation,
+  removeScopeStatusMutation,
+  updateScopeStatusMutation,
+} from '../../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../../lib/apiError';
 import { useApiMutation } from '../../../lib/useApiMutation';
 import { useNotifications } from '../../notifications/useNotifications';
@@ -14,7 +18,11 @@ import type { statusCommand } from './statusFormData';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
 import type { StatusScope } from '@flowboard/contracts';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 type Command =
   | NonNullable<ReturnType<typeof statusCommand>>
@@ -49,36 +57,29 @@ export async function requestStatus(
   scope: QueryScope,
   owner: StatusScope,
   command: StatusMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<StatusMutationData> {
   try {
     if (command.kind === 'remove') {
-      await removeScopeStatus({
-        ...{ path: { ...owner, statusId: command.statusId }, body: command.body },
-        client: requestClient,
-        throwOnError: true,
-      });
+      await removeScopeStatusMutation({ client: requestClient }).mutationFn(
+        { ...{ path: { ...owner, statusId: command.statusId }, body: command.body } },
+        mutationContext,
+      );
 
       return null;
     }
 
     const response =
       command.kind === 'create'
-        ? (
-            await createScopeStatus({
-              path: owner,
-              body: command.body,
-              client: requestClient,
-              throwOnError: true,
-            })
-          ).data
-        : (
-            await updateScopeStatus({
-              path: { ...owner, statusId: command.statusId },
-              body: command.body,
-              client: requestClient,
-              throwOnError: true,
-            })
-          ).data;
+        ? await createScopeStatusMutation({ client: requestClient }).mutationFn(
+            { path: owner, body: command.body },
+            mutationContext,
+          )
+        : await updateScopeStatusMutation({ client: requestClient }).mutationFn(
+            { path: { ...owner, statusId: command.statusId }, body: command.body },
+            mutationContext,
+          );
     const parsed = readStatusWriteResponse(response, {
       owner,
       workspaceId: scope.workspaceId,
@@ -121,7 +122,8 @@ export function useStatusMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestStatus(runtime.client, scope, owner, command),
+    mutationFn: (command, mutationContext) =>
+      requestStatus(runtime.client, scope, owner, command, mutationContext),
     onMutate: () => {
       const report = capture();
       if (

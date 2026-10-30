@@ -3,29 +3,29 @@
 import { focusManager, onlineManager, useQueries, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
-import { apiError } from '../../lib/apiError';
-import { withQueryScope } from '../../lib/queryScope';
-import { configurationChanged } from '../config/configurationEvents';
 import {
   getListResolvedFieldsOptions,
   getListResolvedStatusesOptions,
-} from '../config/configurationQueries';
+} from '../../generated/apiHooks.gen';
+import { listTasksOptions } from '../../generated/apiHooks.gen';
+import { apiError } from '../../lib/apiError';
+import { withQueryScope } from '../../lib/queryScope';
+import { configurationChanged } from '../config/configurationEvents';
 import { assembleTaskList } from '../list/listData';
 import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
-import { listTasksOptions } from '../tasks/taskQueries';
 
 import { projectWorkspaceMoves, workspaceSnapshotState } from './workspaceBoardData';
 
 import type { WorkspaceBoardColumn, WorkspaceListNode } from './workspaceBoardData';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
-import type { TaskPlacement } from '../board/taskPlacement';
 import type {
   GetListResolvedFieldsQueryOptions,
   GetListResolvedStatusesQueryOptions,
-} from '../config/configurationQueries';
-import type { ListTasksQueryOptions } from '../tasks/taskQueries';
+} from '../../generated/apiHooks.gen';
+import type { ListTasksQueryOptions } from '../../generated/apiHooks.gen';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { TaskPlacement } from '../board/taskPlacement';
 
 type Attempt = { generation: number; pages: string[]; restarts: number };
 export type WorkspaceColumnState =

@@ -4,14 +4,14 @@ import { TreePageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
+import { listVisibleTreeInfiniteOptions } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { useRealtime } from '../realtime/useRealtime';
 
 import { assembleTree } from './assembleTree';
-import { listVisibleTreeInfiniteOptions } from './treeQueries';
 
-import type { ListVisibleTreeInfiniteQueryOptions } from './treeQueries';
+import type { ListVisibleTreeInfiniteQueryOptions } from '../../generated/apiHooks.gen';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 

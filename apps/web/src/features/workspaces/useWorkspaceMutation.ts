@@ -1,9 +1,13 @@
 'use client';
 
-import { archiveWorkspace, restoreWorkspace, updateWorkspace } from '@flowboard/api-client/sdk';
-import { getCurrentUserOptions } from '@flowboard/api-client/tanstack-query';
 import { useQueryClient } from '@tanstack/react-query';
 
+import {
+  archiveWorkspaceMutation,
+  restoreWorkspaceMutation,
+  updateWorkspaceMutation,
+} from '../../generated/apiHooks.gen';
+import { getCurrentUserOptions } from '../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { useApiMutation } from '../../lib/useApiMutation';
@@ -14,7 +18,11 @@ import { readWorkspaceWrite } from './workspaceLifecycle';
 
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 type Command = { expectedConfigVersion: number; workspaceId: string } & (
   { kind: 'rename'; name: string } | { kind: 'archive' | 'restore' }
@@ -49,37 +57,27 @@ export async function requestWorkspace(
   requestClient: ClientRuntime['client'],
   scope: QueryScope,
   command: WorkspaceMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<WorkspaceMutationData> {
   try {
     const path = { workspaceId: command.workspaceId };
     const body = { expectedConfigVersion: command.expectedConfigVersion };
     const response =
       command.kind === 'rename'
-        ? (
-            await updateWorkspace({
-              path,
-              body: { ...body, name: command.name },
-              client: requestClient,
-              throwOnError: true,
-            })
-          ).data
+        ? await updateWorkspaceMutation({ client: requestClient }).mutationFn(
+            { path, body: { ...body, name: command.name } },
+            mutationContext,
+          )
         : command.kind === 'archive'
-          ? (
-              await archiveWorkspace({
-                path,
-                body,
-                client: requestClient,
-                throwOnError: true,
-              })
-            ).data
-          : (
-              await restoreWorkspace({
-                path,
-                body,
-                client: requestClient,
-                throwOnError: true,
-              })
-            ).data;
+          ? await archiveWorkspaceMutation({ client: requestClient }).mutationFn(
+              { path, body },
+              mutationContext,
+            )
+          : await restoreWorkspaceMutation({ client: requestClient }).mutationFn(
+              { path, body },
+              mutationContext,
+            );
     const result = readWorkspaceWrite(response, command);
     if (!result)
       throw new WorkspaceResponseError(
@@ -117,7 +115,8 @@ export function useWorkspaceMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestWorkspace(runtime.client, scope, command),
+    mutationFn: (command, mutationContext) =>
+      requestWorkspace(runtime.client, scope, command, mutationContext),
     onMutate: () => {
       const report = capture();
       if (

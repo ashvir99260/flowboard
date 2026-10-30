@@ -1,9 +1,9 @@
 'use client';
 
-import { createWorkspaceInvitation } from '@flowboard/api-client/sdk';
 import { CreateInvitationSchema } from '@flowboard/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { createWorkspaceInvitationMutation } from '../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../lib/apiError';
 import { useApiMutation } from '../../lib/useApiMutation';
 import { configurationChanged } from '../config/configurationEvents';
@@ -14,7 +14,11 @@ import { readCreatedInvitation } from './invitationData';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { CreateInvitation } from '@flowboard/contracts';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 class InvitationResponseError extends Error {}
 
@@ -48,17 +52,15 @@ export async function requestCreateWorkspaceInvitation(
   requestClient: ClientRuntime['client'],
   scope: QueryScope,
   command: CreateWorkspaceInvitationMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<CreateWorkspaceInvitationMutationData> {
   try {
     const body = CreateInvitationSchema.parse(command);
-    const response = (
-      await createWorkspaceInvitation({
-        path: { workspaceId: scope.workspaceId! },
-        body,
-        client: requestClient,
-        throwOnError: true,
-      })
-    ).data;
+    const response = await createWorkspaceInvitationMutation({ client: requestClient }).mutationFn(
+      { path: { workspaceId: scope.workspaceId! }, body },
+      mutationContext,
+    );
     const parsed = readCreatedInvitation(response, body.expectedConfigVersion);
     if (!parsed)
       throw new InvitationResponseError(
@@ -96,7 +98,8 @@ export function useCreateWorkspaceInvitationMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestCreateWorkspaceInvitation(runtime.client, scope, command),
+    mutationFn: (command, mutationContext) =>
+      requestCreateWorkspaceInvitation(runtime.client, scope, command, mutationContext),
     onMutate: () => {
       const report = capture();
       if (

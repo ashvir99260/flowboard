@@ -4,25 +4,25 @@ import { MemberPageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
 
-import { apiError } from '../../lib/apiError';
-import { withQueryScope } from '../../lib/queryScope';
 import {
   getListResolvedFieldsOptions,
   getListResolvedStatusesOptions,
-} from '../config/configurationQueries';
-import { listWorkspaceMembersInfiniteOptions } from '../workspaces/workspaceQueries';
+} from '../../generated/apiHooks.gen';
+import { listWorkspaceMembersInfiniteOptions } from '../../generated/apiHooks.gen';
+import { getTaskOptions } from '../../generated/apiHooks.gen';
+import { apiError } from '../../lib/apiError';
+import { withQueryScope } from '../../lib/queryScope';
 
 import { assembleTaskDetail } from './taskDetailData';
-import { getTaskOptions } from './taskQueries';
 
-import type { GetTaskQueryOptions } from './taskQueries';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
+import type { GetTaskQueryOptions } from '../../generated/apiHooks.gen';
 import type {
   GetListResolvedFieldsQueryOptions,
   GetListResolvedStatusesQueryOptions,
-} from '../config/configurationQueries';
-import type { ListWorkspaceMembersInfiniteQueryOptions } from '../workspaces/workspaceQueries';
+} from '../../generated/apiHooks.gen';
+import type { ListWorkspaceMembersInfiniteQueryOptions } from '../../generated/apiHooks.gen';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 
 const policy = {
   staleTime: Infinity,

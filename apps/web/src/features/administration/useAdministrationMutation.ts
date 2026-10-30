@@ -1,15 +1,6 @@
 'use client';
 
 import {
-  archiveNode,
-  createNode,
-  moveNode,
-  removeNodeGrant,
-  reorderNode,
-  updateNode,
-  upsertNodeGrant,
-} from '@flowboard/api-client/sdk';
-import {
   CreateNodeSchema,
   MoveNodeSchema,
   NodeVersionSchema,
@@ -19,6 +10,15 @@ import {
 } from '@flowboard/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 
+import {
+  archiveNodeMutation,
+  createNodeMutation,
+  moveNodeMutation,
+  removeNodeGrantMutation,
+  reorderNodeMutation,
+  updateNodeMutation,
+  upsertNodeGrantMutation,
+} from '../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../lib/apiError';
 import { useApiMutation } from '../../lib/useApiMutation';
 import { configurationChanged } from '../config/configurationEvents';
@@ -36,7 +36,11 @@ import type {
   UpdateNode,
   UpsertGrant,
 } from '@flowboard/contracts';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 export type AdministrationCommand =
   | { body: CreateNode; kind: 'create' }
@@ -82,37 +86,33 @@ export async function requestAdministration(
   requestClient: ClientRuntime['client'],
   scope: QueryScope,
   command: AdministrationMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<AdministrationMutationData> {
   try {
     if (command.kind === 'archive') {
-      await archiveNode({
-        ...{ path: { nodeId: command.nodeId }, body: NodeVersionSchema.parse(command.body) },
-        client: requestClient,
-        throwOnError: true,
-      });
+      await archiveNodeMutation({ client: requestClient }).mutationFn(
+        { ...{ path: { nodeId: command.nodeId }, body: NodeVersionSchema.parse(command.body) } },
+        mutationContext,
+      );
 
       return null;
     }
 
     if (command.kind === 'removeGrant') {
-      await removeNodeGrant({
-        ...{ path: { nodeId: command.nodeId, userId: command.userId }, body: command.body },
-        client: requestClient,
-        throwOnError: true,
-      });
+      await removeNodeGrantMutation({ client: requestClient }).mutationFn(
+        { ...{ path: { nodeId: command.nodeId, userId: command.userId }, body: command.body } },
+        mutationContext,
+      );
 
       return null;
     }
 
     if (command.kind === 'grant') {
-      const response = (
-        await upsertNodeGrant({
-          path: { nodeId: command.nodeId },
-          body: UpsertGrantSchema.parse(command.body),
-          client: requestClient,
-          throwOnError: true,
-        })
-      ).data;
+      const response = await upsertNodeGrantMutation({ client: requestClient }).mutationFn(
+        { path: { nodeId: command.nodeId }, body: UpsertGrantSchema.parse(command.body) },
+        mutationContext,
+      );
       const parsed = readGrantWrite(response, {
         nodeId: command.nodeId,
         ...command.body,
@@ -128,39 +128,24 @@ export async function requestAdministration(
 
     const response =
       command.kind === 'create'
-        ? (
-            await createNode({
-              body: CreateNodeSchema.parse(command.body),
-              client: requestClient,
-              throwOnError: true,
-            })
-          ).data
+        ? await createNodeMutation({ client: requestClient }).mutationFn(
+            { body: CreateNodeSchema.parse(command.body) },
+            mutationContext,
+          )
         : command.kind === 'update'
-          ? (
-              await updateNode({
-                path: { nodeId: command.nodeId },
-                body: UpdateNodeSchema.parse(command.body),
-                client: requestClient,
-                throwOnError: true,
-              })
-            ).data
+          ? await updateNodeMutation({ client: requestClient }).mutationFn(
+              { path: { nodeId: command.nodeId }, body: UpdateNodeSchema.parse(command.body) },
+              mutationContext,
+            )
           : command.kind === 'move'
-            ? (
-                await moveNode({
-                  path: { nodeId: command.nodeId },
-                  body: MoveNodeSchema.parse(command.body),
-                  client: requestClient,
-                  throwOnError: true,
-                })
-              ).data
-            : (
-                await reorderNode({
-                  path: { nodeId: command.nodeId },
-                  body: ReorderNodeSchema.parse(command.body),
-                  client: requestClient,
-                  throwOnError: true,
-                })
-              ).data;
+            ? await moveNodeMutation({ client: requestClient }).mutationFn(
+                { path: { nodeId: command.nodeId }, body: MoveNodeSchema.parse(command.body) },
+                mutationContext,
+              )
+            : await reorderNodeMutation({ client: requestClient }).mutationFn(
+                { path: { nodeId: command.nodeId }, body: ReorderNodeSchema.parse(command.body) },
+                mutationContext,
+              );
     const parsed = readContainerWrite(response, {
       workspaceId: scope.workspaceId!,
       ...('nodeId' in command ? { nodeId: command.nodeId } : {}),
@@ -222,7 +207,8 @@ export function useAdministrationMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestAdministration(runtime.client, scope, command),
+    mutationFn: (command, mutationContext) =>
+      requestAdministration(runtime.client, scope, command, mutationContext),
     onMutate: () => {
       const report = capture();
       if (

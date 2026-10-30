@@ -79,6 +79,37 @@ export const getReadinessOptions = (options?: Options<GetReadinessData>) => quer
     queryKey: getReadinessQueryKey(options)
 });
 
+export type MutationKey<TOptions extends Partial<Options>> = [
+    Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
+        _id: string;
+        tags?: ReadonlyArray<string>;
+    }
+];
+
+const createMutationKey = <TOptions extends Partial<Options>>(id: string, options?: TOptions, tags?: ReadonlyArray<string>): [
+    MutationKey<TOptions>[0]
+] => {
+    const params: MutationKey<TOptions>[0] = { _id: id, baseUrl: options?.baseUrl || (options?.client ?? client).getConfig().baseUrl };
+    if (tags) {
+        params.tags = tags;
+    }
+    if (options?.body) {
+        params.body = options.body;
+    }
+    if (options?.headers) {
+        params.headers = options.headers;
+    }
+    if (options?.path) {
+        params.path = options.path;
+    }
+    if (options?.query) {
+        params.query = options.query;
+    }
+    return [params];
+};
+
+export const logInMutationKey = (options?: Partial<Options<LogInData>>) => createMutationKey('logIn', options);
+
 /**
  * Sign in with email and password
  *
@@ -93,10 +124,13 @@ export const logInMutation = (options?: Partial<Options<LogInData>>): UseMutatio
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: logInMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const logOutMutationKey = (options?: Partial<Options<LogOutData>>) => createMutationKey('logOut', options);
 
 /**
  * Revoke the session family and clear its cookie
@@ -112,10 +146,13 @@ export const logOutMutation = (options?: Partial<Options<LogOutData>>): UseMutat
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: logOutMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const refreshSessionMutationKey = (options?: Partial<Options<RefreshSessionData>>) => createMutationKey('refreshSession', options);
 
 /**
  * Rotate a single-use refresh credential
@@ -131,10 +168,13 @@ export const refreshSessionMutation = (options?: Partial<Options<RefreshSessionD
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: refreshSessionMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const signUpMutationKey = (options?: Partial<Options<SignUpData>>) => createMutationKey('signUp', options);
 
 /**
  * Create an account and workspace
@@ -150,10 +190,13 @@ export const signUpMutation = (options?: Partial<Options<SignUpData>>): UseMutat
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: signUpMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const switchWorkspaceMutationKey = (options?: Partial<Options<SwitchWorkspaceData>>) => createMutationKey('switchWorkspace', options);
 
 /**
  * Select another workspace for this login
@@ -169,10 +212,13 @@ export const switchWorkspaceMutation = (options?: Partial<Options<SwitchWorkspac
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: switchWorkspaceMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const acceptWorkspaceInvitationMutationKey = (options?: Partial<Options<AcceptWorkspaceInvitationData>>) => createMutationKey('acceptWorkspaceInvitation', options);
 
 /**
  * Accept an invitation with a matching account
@@ -188,7 +234,8 @@ export const acceptWorkspaceInvitationMutation = (options?: Partial<Options<Acce
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: acceptWorkspaceInvitationMutationKey(options)
     };
     return mutationOptions;
 };
@@ -314,6 +361,8 @@ export const listTasksInfiniteOptions = (options: Options<ListTasksData>) => {
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+export const createTaskMutationKey = (options?: Partial<Options<CreateTaskData>>) => createMutationKey('createTask', options);
+
 /**
  * Create a task
  *
@@ -328,7 +377,8 @@ export const createTaskMutation = (options?: Partial<Options<CreateTaskData>>): 
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: createTaskMutationKey(options)
     };
     return mutationOptions;
 };
@@ -353,6 +403,8 @@ export const getCurrentUserOptions = (options?: Options<GetCurrentUserData>) => 
     queryKey: getCurrentUserQueryKey(options)
 });
 
+export const createNodeMutationKey = (options?: Partial<Options<CreateNodeData>>) => createMutationKey('createNode', options);
+
 /**
  * Create a hierarchy container
  *
@@ -367,10 +419,13 @@ export const createNodeMutation = (options?: Partial<Options<CreateNodeData>>): 
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: createNodeMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const archiveNodeMutationKey = (options?: Partial<Options<ArchiveNodeData>>) => createMutationKey('archiveNode', options);
 
 /**
  * Archive a hierarchy subtree
@@ -386,7 +441,8 @@ export const archiveNodeMutation = (options?: Partial<Options<ArchiveNodeData>>)
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: archiveNodeMutationKey(options)
     };
     return mutationOptions;
 };
@@ -411,6 +467,8 @@ export const getNodeOptions = (options: Options<GetNodeData>) => queryOptions<Ge
     queryKey: getNodeQueryKey(options)
 });
 
+export const updateNodeMutationKey = (options?: Partial<Options<UpdateNodeData>>) => createMutationKey('updateNode', options);
+
 /**
  * Update a hierarchy container
  *
@@ -425,7 +483,8 @@ export const updateNodeMutation = (options?: Partial<Options<UpdateNodeData>>): 
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: updateNodeMutationKey(options)
     };
     return mutationOptions;
 };
@@ -482,6 +541,8 @@ export const listNodeGrantsInfiniteOptions = (options: Options<ListNodeGrantsDat
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+export const upsertNodeGrantMutationKey = (options?: Partial<Options<UpsertNodeGrantData>>) => createMutationKey('upsertNodeGrant', options);
+
 /**
  * Set a container grant
  *
@@ -496,10 +557,13 @@ export const upsertNodeGrantMutation = (options?: Partial<Options<UpsertNodeGran
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: upsertNodeGrantMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const removeNodeGrantMutationKey = (options?: Partial<Options<RemoveNodeGrantData>>) => createMutationKey('removeNodeGrant', options);
 
 /**
  * Remove a container grant
@@ -515,10 +579,13 @@ export const removeNodeGrantMutation = (options?: Partial<Options<RemoveNodeGran
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: removeNodeGrantMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const moveNodeMutationKey = (options?: Partial<Options<MoveNodeData>>) => createMutationKey('moveNode', options);
 
 /**
  * Move a hierarchy container
@@ -534,10 +601,13 @@ export const moveNodeMutation = (options?: Partial<Options<MoveNodeData>>): UseM
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: moveNodeMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const reorderNodeMutationKey = (options?: Partial<Options<ReorderNodeData>>) => createMutationKey('reorderNode', options);
 
 /**
  * Reorder a container among siblings
@@ -553,7 +623,8 @@ export const reorderNodeMutation = (options?: Partial<Options<ReorderNodeData>>)
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: reorderNodeMutationKey(options)
     };
     return mutationOptions;
 };
@@ -578,6 +649,8 @@ export const listScopeFieldsOptions = (options: Options<ListScopeFieldsData>) =>
     queryKey: listScopeFieldsQueryKey(options)
 });
 
+export const createScopeFieldMutationKey = (options?: Partial<Options<CreateScopeFieldData>>) => createMutationKey('createScopeField', options);
+
 /**
  * Create local field configuration
  *
@@ -592,10 +665,13 @@ export const createScopeFieldMutation = (options?: Partial<Options<CreateScopeFi
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: createScopeFieldMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const removeScopeFieldMutationKey = (options?: Partial<Options<RemoveScopeFieldData>>) => createMutationKey('removeScopeField', options);
 
 /**
  * Remove local field configuration
@@ -611,10 +687,13 @@ export const removeScopeFieldMutation = (options?: Partial<Options<RemoveScopeFi
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: removeScopeFieldMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const updateScopeFieldMutationKey = (options?: Partial<Options<UpdateScopeFieldData>>) => createMutationKey('updateScopeField', options);
 
 /**
  * Update local field configuration
@@ -630,7 +709,8 @@ export const updateScopeFieldMutation = (options?: Partial<Options<UpdateScopeFi
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: updateScopeFieldMutationKey(options)
     };
     return mutationOptions;
 };
@@ -655,6 +735,8 @@ export const listScopeStatusesOptions = (options: Options<ListScopeStatusesData>
     queryKey: listScopeStatusesQueryKey(options)
 });
 
+export const createScopeStatusMutationKey = (options?: Partial<Options<CreateScopeStatusData>>) => createMutationKey('createScopeStatus', options);
+
 /**
  * Create local status configuration
  *
@@ -669,10 +751,13 @@ export const createScopeStatusMutation = (options?: Partial<Options<CreateScopeS
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: createScopeStatusMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const removeScopeStatusMutationKey = (options?: Partial<Options<RemoveScopeStatusData>>) => createMutationKey('removeScopeStatus', options);
 
 /**
  * Remove local status configuration
@@ -688,10 +773,13 @@ export const removeScopeStatusMutation = (options?: Partial<Options<RemoveScopeS
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: removeScopeStatusMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const updateScopeStatusMutationKey = (options?: Partial<Options<UpdateScopeStatusData>>) => createMutationKey('updateScopeStatus', options);
 
 /**
  * Update local status configuration
@@ -707,7 +795,8 @@ export const updateScopeStatusMutation = (options?: Partial<Options<UpdateScopeS
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: updateScopeStatusMutationKey(options)
     };
     return mutationOptions;
 };
@@ -764,6 +853,8 @@ export const searchWorkspaceInfiniteOptions = (options: Options<SearchWorkspaceD
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+export const bulkUpdateTasksMutationKey = (options?: Partial<Options<BulkUpdateTasksData>>) => createMutationKey('bulkUpdateTasks', options);
+
 /**
  * Update selected tasks atomically
  *
@@ -778,10 +869,13 @@ export const bulkUpdateTasksMutation = (options?: Partial<Options<BulkUpdateTask
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: bulkUpdateTasksMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const archiveTaskMutationKey = (options?: Partial<Options<ArchiveTaskData>>) => createMutationKey('archiveTask', options);
 
 /**
  * Archive a task
@@ -797,7 +891,8 @@ export const archiveTaskMutation = (options?: Partial<Options<ArchiveTaskData>>)
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: archiveTaskMutationKey(options)
     };
     return mutationOptions;
 };
@@ -822,6 +917,8 @@ export const getTaskOptions = (options: Options<GetTaskData>) => queryOptions<Ge
     queryKey: getTaskQueryKey(options)
 });
 
+export const updateTaskMutationKey = (options?: Partial<Options<UpdateTaskData>>) => createMutationKey('updateTask', options);
+
 /**
  * Update a task
  *
@@ -836,7 +933,8 @@ export const updateTaskMutation = (options?: Partial<Options<UpdateTaskData>>): 
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: updateTaskMutationKey(options)
     };
     return mutationOptions;
 };
@@ -893,6 +991,8 @@ export const listTaskActivityInfiniteOptions = (options: Options<ListTaskActivit
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+export const moveTaskMutationKey = (options?: Partial<Options<MoveTaskData>>) => createMutationKey('moveTask', options);
+
 /**
  * Move a task
  *
@@ -907,10 +1007,13 @@ export const moveTaskMutation = (options?: Partial<Options<MoveTaskData>>): UseM
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: moveTaskMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const reorderTaskMutationKey = (options?: Partial<Options<ReorderTaskData>>) => createMutationKey('reorderTask', options);
 
 /**
  * Reorder a task
@@ -926,7 +1029,8 @@ export const reorderTaskMutation = (options?: Partial<Options<ReorderTaskData>>)
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: reorderTaskMutationKey(options)
     };
     return mutationOptions;
 };
@@ -1055,6 +1159,8 @@ export const getWorkspaceOptions = (options: Options<GetWorkspaceData>) => query
     queryKey: getWorkspaceQueryKey(options)
 });
 
+export const updateWorkspaceMutationKey = (options?: Partial<Options<UpdateWorkspaceData>>) => createMutationKey('updateWorkspace', options);
+
 /**
  * Rename workspace
  *
@@ -1069,10 +1175,13 @@ export const updateWorkspaceMutation = (options?: Partial<Options<UpdateWorkspac
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: updateWorkspaceMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const archiveWorkspaceMutationKey = (options?: Partial<Options<ArchiveWorkspaceData>>) => createMutationKey('archiveWorkspace', options);
 
 /**
  * Archive workspace
@@ -1088,10 +1197,13 @@ export const archiveWorkspaceMutation = (options?: Partial<Options<ArchiveWorksp
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: archiveWorkspaceMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const createWorkspaceInvitationMutationKey = (options?: Partial<Options<CreateWorkspaceInvitationData>>) => createMutationKey('createWorkspaceInvitation', options);
 
 /**
  * Create a private workspace invitation
@@ -1107,7 +1219,8 @@ export const createWorkspaceInvitationMutation = (options?: Partial<Options<Crea
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: createWorkspaceInvitationMutationKey(options)
     };
     return mutationOptions;
 };
@@ -1164,6 +1277,8 @@ export const listWorkspaceMembersInfiniteOptions = (options: Options<ListWorkspa
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+export const addWorkspaceMemberMutationKey = (options?: Partial<Options<AddWorkspaceMemberData>>) => createMutationKey('addWorkspaceMember', options);
+
 /**
  * Add an existing account to this workspace
  *
@@ -1178,10 +1293,13 @@ export const addWorkspaceMemberMutation = (options?: Partial<Options<AddWorkspac
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: addWorkspaceMemberMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const removeWorkspaceMemberMutationKey = (options?: Partial<Options<RemoveWorkspaceMemberData>>) => createMutationKey('removeWorkspaceMember', options);
 
 /**
  * Remove a member and their workspace access
@@ -1197,10 +1315,13 @@ export const removeWorkspaceMemberMutation = (options?: Partial<Options<RemoveWo
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: removeWorkspaceMemberMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const updateWorkspaceMemberMutationKey = (options?: Partial<Options<UpdateWorkspaceMemberData>>) => createMutationKey('updateWorkspaceMember', options);
 
 /**
  * Change a workspace member’s role
@@ -1216,10 +1337,13 @@ export const updateWorkspaceMemberMutation = (options?: Partial<Options<UpdateWo
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: updateWorkspaceMemberMutationKey(options)
     };
     return mutationOptions;
 };
+
+export const restoreWorkspaceMutationKey = (options?: Partial<Options<RestoreWorkspaceData>>) => createMutationKey('restoreWorkspace', options);
 
 /**
  * Restore workspace
@@ -1235,7 +1359,8 @@ export const restoreWorkspaceMutation = (options?: Partial<Options<RestoreWorksp
                 throwOnError: true
             });
             return data;
-        }
+        },
+        mutationKey: restoreWorkspaceMutationKey(options)
     };
     return mutationOptions;
 };

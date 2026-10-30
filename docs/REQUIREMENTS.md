@@ -232,7 +232,7 @@ R166: Drag tasks from the full card surface in both workspace-list and per-list 
 
 - **R179:** Browse containers in an expandable hierarchy and statuses/custom fields in lists. Open the selected editor in a right-hand details panel with Add at the top right; preserve permissions, validation, drafts, keyboard use and narrow-screen access. The user selected right-hand panels on 30 October 2026.
 
-- **R180:** Standardize authored API hooks around exported typed request functions, protected options and explicit result types, following the user-supplied examples. Use native mutate/mutateAsync in mutation callers while preserving generated operations and existing behavior.
+- **R180:** Standardize authored API hooks around exported typed request functions, protected options and explicit result types, following the user-supplied examples. Use native mutate/mutateAsync in mutation callers while preserving generated operations and existing behavior. R182 later replaces handwritten endpoint plumbing with generated bindings.
 ## Searchable input follow-up
 
 - **R170:** Use MUI Autocomplete for single/multiple field selections, assignees, direct dropdown fields and global search suggestions, preserving validation and stable values.
@@ -245,3 +245,7 @@ R166: Drag tasks from the full card surface in both workspace-list and per-list 
 ## Component declaration follow-up
 
 - **R181:** Declare component prop types above their components instead of inline in parameter annotations. Keep each distinct React component implementation in its own file, preserving existing prop contracts, generics, rendering, refs and callbacks.
+
+## Generated UI API bindings
+
+- **R182:** Generate query/mutation keys and functions with Hey API, plus consistent typed UI bindings, so UI code consumes generated endpoint plumbing instead of recreating it. Preserve application-specific validation, session isolation, pagination and mutation behavior.

@@ -1,16 +1,20 @@
 'use client';
 
-import { acceptWorkspaceInvitation } from '@flowboard/api-client/sdk';
 import { AcceptedInvitationEnvelopeSchema, AcceptInvitationSchema } from '@flowboard/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { acceptWorkspaceInvitationMutation } from '../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../lib/apiError';
 import { useApiMutation } from '../../lib/useApiMutation';
 import { useNotifications } from '../notifications/useNotifications';
 
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 class InvitationResponseError extends Error {}
 
@@ -43,15 +47,14 @@ export type AcceptWorkspaceInvitationMutationResult = UseMutationResult<
 export async function requestAcceptWorkspaceInvitation(
   requestClient: ClientRuntime['client'],
   command: AcceptWorkspaceInvitationMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<AcceptWorkspaceInvitationMutationData> {
   try {
-    const response = (
-      await acceptWorkspaceInvitation({
-        body: AcceptInvitationSchema.parse({ token: command }),
-        client: requestClient,
-        throwOnError: true,
-      })
-    ).data;
+    const response = await acceptWorkspaceInvitationMutation({ client: requestClient }).mutationFn(
+      { body: AcceptInvitationSchema.parse({ token: command }) },
+      mutationContext,
+    );
     const result = AcceptedInvitationEnvelopeSchema.safeParse(response);
     if (!result.success || result.data.data.archivedAt !== null)
       throw new InvitationResponseError(
@@ -89,7 +92,8 @@ export function useAcceptWorkspaceInvitationMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestAcceptWorkspaceInvitation(runtime.client, command),
+    mutationFn: (command, mutationContext) =>
+      requestAcceptWorkspaceInvitation(runtime.client, command, mutationContext),
     onMutate: () => {
       const report = capture();
 

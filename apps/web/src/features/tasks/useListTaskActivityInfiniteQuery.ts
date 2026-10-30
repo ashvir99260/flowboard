@@ -1,12 +1,12 @@
 'use client';
 
-import {
-  listTaskActivityInfiniteOptions,
-  listTaskActivityInfiniteQueryKey,
-} from '@flowboard/api-client/tanstack-query';
 import { ActivityPageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
+import {
+  listTaskActivityInfiniteOptions,
+  listTaskActivityInfiniteQueryKey,
+} from '../../generated/apiHooks.gen';
 import { withQueryScope } from '../../lib/queryScope';
 
 import type { ApiRequestError } from '../../lib/apiError';
@@ -15,7 +15,6 @@ import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ListTaskActivityResponse } from '@flowboard/api-client/types';
 import type {
   InfiniteData,
-  QueryFunctionContext,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
 } from '@tanstack/react-query';
@@ -36,21 +35,6 @@ export type ListTaskActivityQueryOptions = Omit<
 
 export type ListTaskActivityQueryResult = UseInfiniteQueryResult<ActivityData, ApiRequestError>;
 
-export async function fetchTaskActivity(
-  client: ClientRuntime['client'],
-  taskId: string,
-  context: QueryFunctionContext<ActivityQueryKey, ActivityPageParam>,
-): Promise<ListTaskActivityResponse> {
-  const { queryFn } = listTaskActivityInfiniteOptions({
-    client,
-    path: { taskId },
-    query: { limit: '20' },
-  });
-  if (typeof queryFn !== 'function') throw new Error('Activity query is unavailable.');
-
-  return queryFn(context);
-}
-
 export function useListTaskActivityInfiniteQuery(
   {
     generation,
@@ -65,7 +49,7 @@ export function useListTaskActivityInfiniteQuery(
   },
   options: ListTaskActivityQueryOptions = {},
 ): ListTaskActivityQueryResult {
-  const { queryKey } = withQueryScope(
+  const { queryKey, queryFn } = withQueryScope(
     listTaskActivityInfiniteOptions({
       client: runtime.client,
       path: { taskId },
@@ -82,7 +66,7 @@ export function useListTaskActivityInfiniteQuery(
     refetchOnWindowFocus: false,
     ...options,
     queryKey,
-    queryFn: (context) => fetchTaskActivity(runtime.client, taskId, context),
+    queryFn,
     initialPageParam: { path: { taskId }, query: {} },
     getNextPageParam: (page) => {
       const parsed = ActivityPageSchema.safeParse(page);

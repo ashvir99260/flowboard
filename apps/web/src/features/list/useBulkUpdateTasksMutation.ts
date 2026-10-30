@@ -1,9 +1,9 @@
 'use client';
 
-import { bulkUpdateTasks } from '@flowboard/api-client/sdk';
 import { BulkUpdateTasksSchema } from '@flowboard/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { bulkUpdateTasksMutation } from '../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../lib/apiError';
 import { useApiMutation } from '../../lib/useApiMutation';
 import { useNotifications } from '../notifications/useNotifications';
@@ -14,7 +14,11 @@ import { readBulkTaskResponse } from './bulkTaskData';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { BulkUpdateTasks, ResolvedField, ResolvedStatus, Task } from '@flowboard/contracts';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 class BulkResponseError extends Error {}
 
@@ -54,11 +58,15 @@ export async function requestBulkUpdateTasks(
   scope: QueryScope,
   configuration: { fields: readonly ResolvedField[]; statuses: readonly ResolvedStatus[] },
   command: BulkUpdateTasksMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<BulkUpdateTasksMutationData> {
   try {
     const body = BulkUpdateTasksSchema.parse(command.body);
-    const response = (await bulkUpdateTasks({ body, client: requestClient, throwOnError: true }))
-      .data;
+    const response = await bulkUpdateTasksMutation({ client: requestClient }).mutationFn(
+      { body },
+      mutationContext,
+    );
     const parsed = readBulkTaskResponse(response, {
       ...configuration,
       command: body,
@@ -103,7 +111,8 @@ export function useBulkUpdateTasksMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestBulkUpdateTasks(runtime.client, scope, configuration, command),
+    mutationFn: (command, mutationContext) =>
+      requestBulkUpdateTasks(runtime.client, scope, configuration, command, mutationContext),
     onMutate: (command) => {
       const report = capture();
       if (command.tasks.some(({ id }) => isTaskBusy(client, scope, id, true))) {

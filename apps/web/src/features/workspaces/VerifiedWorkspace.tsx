@@ -12,10 +12,10 @@ import {
 import NextLink from 'next/link';
 import { useState } from 'react';
 
+import { useGetCurrentUserQuery } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { useSession } from '../../providers/useSession';
 import { SessionLoading } from '../auth/SessionLoading';
-import { useGetCurrentUserQuery } from '../auth/useGetCurrentUserQuery';
 import { ConfigurationSettingsHost } from '../config/ConfigurationSettingsHost';
 import { GlobalSearch } from '../search/GlobalSearch';
 import { TaskEditorProvider } from '../tasks/TaskEditorProvider';

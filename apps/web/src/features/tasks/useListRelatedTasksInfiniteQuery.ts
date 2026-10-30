@@ -4,16 +4,19 @@ import { TaskPageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
 
+import { listTasksInfiniteOptions } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { configurationChanged } from '../config/configurationEvents';
 import { useRealtime } from '../realtime/useRealtime';
 
 import { taskMutationAffectsList } from './taskEvents';
-import { listTasksInfiniteOptions } from './taskQueries';
 import { readTaskRelations } from './taskRelationsData';
 
-import type { ListTasksInfiniteQueryOptions, ListTasksPageData } from './taskQueries';
+import type {
+  ListTasksInfiniteQueryOptions,
+  ListTasksPageData,
+} from '../../generated/apiHooks.gen';
 import type { ApiRequestError } from '../../lib/apiError';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';

@@ -10,6 +10,7 @@ test('public package exports provide generated SDK and TanStack helpers', async 
   assert.equal(typeof options.listTasksOptions, 'function');
   assert.equal(typeof options.listTasksInfiniteOptions, 'function');
   assert.equal(typeof options.createTaskMutation, 'function');
+  assert.equal(typeof options.createTaskMutationKey, 'function');
   assert.deepEqual(Object.keys(types), []);
 });
 

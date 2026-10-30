@@ -10,30 +10,30 @@ import {
 } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
 
+import {
+  getListResolvedFieldsOptions,
+  getListResolvedStatusesOptions,
+} from '../../generated/apiHooks.gen';
+import { listTasksInfiniteOptions } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { readBoardStatuses } from '../board/boardData';
 import { configurationChanged } from '../config/configurationEvents';
-import {
-  getListResolvedFieldsOptions,
-  getListResolvedStatusesOptions,
-} from '../config/configurationQueries';
 import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
-import { listTasksInfiniteOptions } from '../tasks/taskQueries';
 
 import { assembleTaskList, readListFields } from './listData';
 import { readListFilter } from './listFilter';
 import { writeListLocation } from './listLocation';
 
 import type { TaskTableQuery } from './listLocation';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import type {
   GetListResolvedFieldsQueryOptions,
   GetListResolvedStatusesQueryOptions,
-} from '../config/configurationQueries';
-import type { ListTasksInfiniteQueryOptions } from '../tasks/taskQueries';
+} from '../../generated/apiHooks.gen';
+import type { ListTasksInfiniteQueryOptions } from '../../generated/apiHooks.gen';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ResolvedField, ResolvedStatus } from '@flowboard/contracts';
 import type { QueryClient } from '@tanstack/react-query';
 
