@@ -8,9 +8,11 @@
   },
   "scripts": {
     "dev": "next dev --hostname localhost",
-    "build": "next build && node scripts/prepare-standalone.mjs",
+    "build": "node scripts/generate-api-bindings.mjs --check && next build && node scripts/prepare-standalone.mjs",
     "start": "node .next/standalone/apps/web/server.js",
-    "typecheck": "next typegen && tsc -p tsconfig.json --noEmit",
+    "typecheck": "node scripts/generate-api-bindings.mjs --check && next typegen && tsc -p tsconfig.json --noEmit",
+    "api:generate": "node scripts/generate-api-bindings.mjs --write",
+    "client:check": "node scripts/generate-api-bindings.mjs --check",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint --fix . --max-warnings=0",
     "test": "node scripts/test.mjs",

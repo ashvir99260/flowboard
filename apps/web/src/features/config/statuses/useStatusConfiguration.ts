@@ -4,15 +4,15 @@ import { ScopeStatusCollectionSchema } from '@flowboard/contracts';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 
+import { listScopeStatusesOptions } from '../../../generated/apiHooks.gen';
 import { apiError } from '../../../lib/apiError';
 import { withQueryScope } from '../../../lib/queryScope';
-import { listScopeStatusesOptions } from '../configurationQueries';
 
 import { readStatusConfiguration } from './statusConfiguration';
 
+import type { ListScopeStatusesQueryOptions } from '../../../generated/apiHooks.gen';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
-import type { ListScopeStatusesQueryOptions } from '../configurationQueries';
 import type { StatusScope } from '@flowboard/contracts';
 
 const policy = {

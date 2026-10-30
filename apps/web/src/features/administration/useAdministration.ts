@@ -4,22 +4,25 @@ import { GrantPageSchema, MemberPageSchema, TreePageSchema } from '@flowboard/co
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useState } from 'react';
 
+import {
+  listNodeGrantsInfiniteOptions,
+  listVisibleTreeInfiniteOptions,
+} from '../../generated/apiHooks.gen';
+import { listWorkspaceMembersInfiniteOptions } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { configurationChanged } from '../config/configurationEvents';
 import { useRealtime } from '../realtime/useRealtime';
-import { listNodeGrantsInfiniteOptions, listVisibleTreeInfiniteOptions } from '../tree/treeQueries';
-import { listWorkspaceMembersInfiniteOptions } from '../workspaces/workspaceQueries';
 
 import { readAdministration } from './administrationData';
 
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import type {
   ListNodeGrantsInfiniteQueryOptions,
   ListVisibleTreeInfiniteQueryOptions,
-} from '../tree/treeQueries';
-import type { ListWorkspaceMembersInfiniteQueryOptions } from '../workspaces/workspaceQueries';
+} from '../../generated/apiHooks.gen';
+import type { ListWorkspaceMembersInfiniteQueryOptions } from '../../generated/apiHooks.gen';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 
 const policy = {
   retry: false,

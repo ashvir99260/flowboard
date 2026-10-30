@@ -1,9 +1,13 @@
 'use client';
 
-import { archiveTask, createTask, updateTask } from '@flowboard/api-client/sdk';
 import { ArchiveTaskSchema, CreateTaskSchema, UpdateTaskSchema } from '@flowboard/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 
+import {
+  archiveTaskMutation,
+  createTaskMutation,
+  updateTaskMutation,
+} from '../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../lib/apiError';
 import { useApiMutation } from '../../lib/useApiMutation';
 import { useNotifications } from '../notifications/useNotifications';
@@ -20,7 +24,11 @@ import type {
   ResolvedStatus,
   UpdateTask,
 } from '@flowboard/contracts';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 class TaskResponseError extends Error {}
 
@@ -60,36 +68,29 @@ export async function requestTaskWrite(
   scope: QueryScope,
   configuration: { fields: readonly ResolvedField[]; statuses: readonly ResolvedStatus[] },
   command: TaskWriteMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<TaskWriteMutationData> {
   try {
     if (command.kind === 'archive') {
-      await archiveTask({
-        ...{ path: { taskId: command.taskId }, body: ArchiveTaskSchema.parse(command.body) },
-        client: requestClient,
-        throwOnError: true,
-      });
+      await archiveTaskMutation({ client: requestClient }).mutationFn(
+        { ...{ path: { taskId: command.taskId }, body: ArchiveTaskSchema.parse(command.body) } },
+        mutationContext,
+      );
 
       return null;
     }
 
     const response =
       command.kind === 'create'
-        ? (
-            await createTask({
-              path: { listId: command.listId },
-              body: CreateTaskSchema.parse(command.body),
-              client: requestClient,
-              throwOnError: true,
-            })
-          ).data
-        : (
-            await updateTask({
-              path: { taskId: command.taskId },
-              body: UpdateTaskSchema.parse(command.body),
-              client: requestClient,
-              throwOnError: true,
-            })
-          ).data;
+        ? await createTaskMutation({ client: requestClient }).mutationFn(
+            { path: { listId: command.listId }, body: CreateTaskSchema.parse(command.body) },
+            mutationContext,
+          )
+        : await updateTaskMutation({ client: requestClient }).mutationFn(
+            { path: { taskId: command.taskId }, body: UpdateTaskSchema.parse(command.body) },
+            mutationContext,
+          );
     const parsed = readTaskWriteResponse(response, {
       ...configuration,
       workspaceId: scope.workspaceId,
@@ -135,7 +136,8 @@ export function useTaskWriteMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestTaskWrite(runtime.client, scope, configuration, command),
+    mutationFn: (command, mutationContext) =>
+      requestTaskWrite(runtime.client, scope, configuration, command, mutationContext),
     onMutate: (command) => {
       const report = capture();
       if (isTaskBusy(client, scope, command.taskId, true)) {

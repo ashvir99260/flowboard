@@ -1777,3 +1777,15 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Failing then passing structural fixtures/inventory; root build, lint, types, tests and format; UI/forms public and generic compatibility; independent review.
   - **Commit:** `refactor(react): extract component prop types`.
   - **Evidence:** [P43-01](evidence/P43-01.md).
+
+## Phase 44 — Generated UI API bindings
+
+- [x] **P44-01 — Generate and adopt typed UI API bindings**
+  - **Goal:** Remove repeated endpoint plumbing by consuming Hey API keys/functions through generated UI bindings.
+  - **Requirements:** R182; preserve R68/R164 and D178's application-policy boundaries.
+  - **Files:** API-client generator config/output/tests; web generator/runtime/generated bindings, affected hooks/callers/tests, generation scripts and frontend/task/evidence guidance.
+  - **Dependencies:** Existing Hey API generation, session runtime and P42 typed hooks.
+  - **Acceptance:** Native mutation keys generated; operation-named query/infinite/mutation bindings generated deterministically with protected keys/functions and runtime client/scope. Existing handwritten endpoint helpers replaced; composite and mutation business behavior remains intact. New endpoints enter generation automatically. Normal builds detect drift without changing sources; explicit generation refreshes both layers.
+  - **Validation:** Failing then passing generation/transport/scope/typing checks, drift failures, root build/lint/types/tests/format and independent review.
+  - **Commit:** `refactor(api): generate typed ui bindings from hey api`.
+  - **Evidence:** [P44-01](evidence/P44-01.md).

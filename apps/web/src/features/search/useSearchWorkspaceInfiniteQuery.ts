@@ -1,9 +1,5 @@
 'use client';
 
-import {
-  searchWorkspaceInfiniteOptions,
-  searchWorkspaceInfiniteQueryKey,
-} from '@flowboard/api-client/tanstack-query';
 import { SearchPageSchema } from '@flowboard/contracts';
 import {
   focusManager,
@@ -13,6 +9,10 @@ import {
 } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
+import {
+  searchWorkspaceInfiniteOptions,
+  searchWorkspaceInfiniteQueryKey,
+} from '../../generated/apiHooks.gen';
 import { withQueryScope } from '../../lib/queryScope';
 import { configurationChanged } from '../config/configurationEvents';
 import { useRealtime } from '../realtime/useRealtime';
@@ -23,7 +23,6 @@ import type { ClientRuntime } from '../../providers/sessionContext';
 import type { SearchWorkspaceResponse } from '@flowboard/api-client/types';
 import type {
   InfiniteData,
-  QueryFunctionContext,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
 } from '@tanstack/react-query';
@@ -43,17 +42,6 @@ export type SearchWorkspaceQueryOptions = Omit<
 >;
 
 export type SearchWorkspaceQueryResult = UseInfiniteQueryResult<SearchQueryData, ApiRequestError>;
-
-export async function fetchSearchResults(
-  client: ClientRuntime['client'],
-  q: string,
-  context: QueryFunctionContext<SearchQueryKey, SearchPageParam>,
-): Promise<SearchWorkspaceResponse> {
-  const { queryFn } = searchWorkspaceInfiniteOptions({ client, query: { q, limit: '20' } });
-  if (typeof queryFn !== 'function') throw new Error('Search query is unavailable.');
-
-  return queryFn(context);
-}
 
 export function useSearchWorkspaceInfiniteQuery(
   {
@@ -102,7 +90,7 @@ export function useSearchWorkspaceInfiniteQuery(
     };
   }, [client, scope]);
 
-  const { queryKey } = withQueryScope(
+  const { queryKey, queryFn } = withQueryScope(
     searchWorkspaceInfiniteOptions({ client: runtime.client, query: { q, limit: '20' } }),
     scope,
     [`search-generation:${generation}`, `search-attempt:${attempt}`],
@@ -122,7 +110,7 @@ export function useSearchWorkspaceInfiniteQuery(
     refetchOnReconnect: false,
     ...options,
     queryKey,
-    queryFn: (context) => fetchSearchResults(runtime.client, q, context),
+    queryFn,
     enabled: Boolean(q),
     initialPageParam: { query: { q } },
     getNextPageParam: (page) => {

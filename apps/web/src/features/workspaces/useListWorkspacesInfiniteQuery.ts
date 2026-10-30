@@ -1,12 +1,12 @@
 'use client';
 
-import {
-  listWorkspacesInfiniteOptions,
-  listWorkspacesInfiniteQueryKey,
-} from '@flowboard/api-client/tanstack-query';
 import { WorkspacePageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
+import {
+  listWorkspacesInfiniteOptions,
+  listWorkspacesInfiniteQueryKey,
+} from '../../generated/apiHooks.gen';
 import { withQueryScope } from '../../lib/queryScope';
 
 import type { ApiRequestError } from '../../lib/apiError';
@@ -15,7 +15,6 @@ import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ListWorkspacesResponse } from '@flowboard/api-client/types';
 import type {
   InfiniteData,
-  QueryFunctionContext,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
 } from '@tanstack/react-query';
@@ -37,16 +36,6 @@ export type ListWorkspacesQueryOptions = Omit<
 
 export type ListWorkspacesQueryResult = UseInfiniteQueryResult<WorkspacesData, ApiRequestError>;
 
-export async function fetchWorkspaces(
-  client: ClientRuntime['client'],
-  context: QueryFunctionContext<WorkspacesQueryKey, WorkspacesPageParam>,
-): Promise<ListWorkspacesResponse> {
-  const { queryFn } = listWorkspacesInfiniteOptions({ client, query: { limit: '50' } });
-  if (typeof queryFn !== 'function') throw new Error('Workspace query is unavailable.');
-
-  return queryFn(context);
-}
-
 export function useListWorkspacesInfiniteQuery(
   {
     generation,
@@ -59,7 +48,7 @@ export function useListWorkspacesInfiniteQuery(
   },
   options: ListWorkspacesQueryOptions = {},
 ): ListWorkspacesQueryResult {
-  const { queryKey } = withQueryScope(
+  const { queryKey, queryFn } = withQueryScope(
     listWorkspacesInfiniteOptions({ client: runtime.client, query: { limit: '50' } }),
     scope,
     [`memberships-attempt:${generation}`],
@@ -68,7 +57,7 @@ export function useListWorkspacesInfiniteQuery(
   return useInfiniteQuery({
     ...options,
     queryKey,
-    queryFn: (context) => fetchWorkspaces(runtime.client, context),
+    queryFn,
     initialPageParam: { query: {} },
     getNextPageParam: (page) => {
       const parsed = WorkspacePageSchema.safeParse(page);

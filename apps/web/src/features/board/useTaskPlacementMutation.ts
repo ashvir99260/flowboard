@@ -1,6 +1,5 @@
 'use client';
 
-import { moveTask, reorderTask } from '@flowboard/api-client/sdk';
 import {
   MoveTaskSchema,
   ReorderTaskSchema,
@@ -9,6 +8,7 @@ import {
 import { useMutationState, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { moveTaskMutation, reorderTaskMutation } from '../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../lib/apiError';
 import { useApiMutation } from '../../lib/useApiMutation';
 import { useNotifications } from '../notifications/useNotifications';
@@ -18,7 +18,11 @@ import type { TaskPlacement } from './taskPlacement';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { MoveTaskResponse } from '@flowboard/api-client/types';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 export type TaskPlacementMutationVariables = TaskPlacement;
 
@@ -48,6 +52,8 @@ export async function requestTaskPlacement(
   requestClient: ClientRuntime['client'],
   scope: QueryScope,
   command: TaskPlacementMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<TaskPlacementMutationData> {
   try {
     const body = MoveTaskSchema.required({ statusId: true }).parse(command.request);
@@ -57,19 +63,21 @@ export async function requestTaskPlacement(
       body.statusId === command.sourceStatusId &&
       Object.keys(body.customFields ?? {}).length === 0;
     const response = isReorder
-      ? (
-          await reorderTask({
+      ? await reorderTaskMutation({ client: requestClient }).mutationFn(
+          {
             path,
             body: ReorderTaskSchema.parse({
               expectedVersion: body.expectedVersion,
               expectedConfigVersion: body.expectedConfigVersion,
               placement: body.placement,
             }),
-            client: requestClient,
-            throwOnError: true,
-          })
-        ).data
-      : (await moveTask({ path, body, client: requestClient, throwOnError: true })).data;
+          },
+          mutationContext,
+        )
+      : await moveTaskMutation({ client: requestClient }).mutationFn(
+          { path, body },
+          mutationContext,
+        );
     const parsed = TaskMutationEnvelopeSchema.parse(response);
     if (
       parsed.data.id !== command.taskId ||
@@ -107,7 +115,8 @@ export function useTaskPlacementMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestTaskPlacement(runtime.client, scope, command),
+    mutationFn: (command, mutationContext) =>
+      requestTaskPlacement(runtime.client, scope, command, mutationContext),
     onMutate: (command) => {
       const report = capture();
       if (isTaskBusy(client, scope, command.taskId, true)) {

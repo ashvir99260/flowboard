@@ -345,8 +345,8 @@ for (const [label, root, isApp] of [
   ['shared form source', new URL('../../../packages/forms/src/', import.meta.url), false],
 ]) {
   test(`${label} uses PascalCase components and camelCase hooks/utilities`, async () => {
-    const files = (await readdir(root, { recursive: true })).filter((file) =>
-      /\.tsx?$/u.test(file),
+    const files = (await readdir(root, { recursive: true })).filter(
+      (file) => /\.tsx?$/u.test(file) && !file.startsWith('generated/'),
     );
     const violations = [];
     for (const file of files) {

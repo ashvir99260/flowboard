@@ -1,8 +1,12 @@
 'use client';
 
-import { createScopeField, removeScopeField, updateScopeField } from '@flowboard/api-client/sdk';
 import { useQueryClient } from '@tanstack/react-query';
 
+import {
+  createScopeFieldMutation,
+  removeScopeFieldMutation,
+  updateScopeFieldMutation,
+} from '../../../generated/apiHooks.gen';
 import { apiError, ApiMutationError } from '../../../lib/apiError';
 import { useApiMutation } from '../../../lib/useApiMutation';
 import { useNotifications } from '../../notifications/useNotifications';
@@ -14,7 +18,11 @@ import type { fieldCommand } from './fieldFormData';
 import type { QueryScope } from '../../../lib/queryScope';
 import type { ClientRuntime } from '../../../providers/sessionContext';
 import type { FieldScope } from '@flowboard/contracts';
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 type Command =
   | NonNullable<ReturnType<typeof fieldCommand>>
@@ -49,36 +57,29 @@ export async function requestField(
   scope: QueryScope,
   owner: FieldScope,
   command: FieldMutationVariables,
+
+  mutationContext: MutationFunctionContext,
 ): Promise<FieldMutationData> {
   try {
     if (command.kind === 'remove') {
-      await removeScopeField({
-        ...{ path: { ...owner, fieldId: command.fieldId }, body: command.body },
-        client: requestClient,
-        throwOnError: true,
-      });
+      await removeScopeFieldMutation({ client: requestClient }).mutationFn(
+        { ...{ path: { ...owner, fieldId: command.fieldId }, body: command.body } },
+        mutationContext,
+      );
 
       return null;
     }
 
     const response =
       command.kind === 'create'
-        ? (
-            await createScopeField({
-              path: owner,
-              body: command.body,
-              client: requestClient,
-              throwOnError: true,
-            })
-          ).data
-        : (
-            await updateScopeField({
-              path: { ...owner, fieldId: command.fieldId },
-              body: command.body,
-              client: requestClient,
-              throwOnError: true,
-            })
-          ).data;
+        ? await createScopeFieldMutation({ client: requestClient }).mutationFn(
+            { path: owner, body: command.body },
+            mutationContext,
+          )
+        : await updateScopeFieldMutation({ client: requestClient }).mutationFn(
+            { path: { ...owner, fieldId: command.fieldId }, body: command.body },
+            mutationContext,
+          );
     const parsed = readFieldWriteResponse(response, {
       owner,
       workspaceId: scope.workspaceId,
@@ -121,7 +122,8 @@ export function useFieldMutation(
   >({
     ...options,
     mutationKey,
-    mutationFn: (command) => requestField(runtime.client, scope, owner, command),
+    mutationFn: (command, mutationContext) =>
+      requestField(runtime.client, scope, owner, command, mutationContext),
     onMutate: () => {
       const report = capture();
       if (

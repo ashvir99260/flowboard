@@ -24,43 +24,52 @@ Use the [shared component creation checklist](UI_COMPONENT_SYSTEM.md#creating-a-
 
 ## Data and session flow
 
-Use generated query identities and paging functions from `@flowboard/api-client/tanstack-query`, and SDK operations from its public exports. Feature-owned options supply query and mutation policy. Never hand-write an endpoint fetch that the generator provides. Transport retries and cookie handling belong in [setup-client.ts](../packages/api-client/src/setup-client.ts); the server-only proxy forwards to a fixed origin and implements no domain API.
+Hey API generates SDK operations, query/infinite-query factories, query keys, mutation functions and mutation keys from the committed OpenAPI document. The web generator consumes that output inventory and produces [apiHooks.gen.ts](../apps/web/src/generated/apiHooks.gen.ts). Runtime code imports the API client's public exports; the generator's source reads are build-only inputs. Do not hand-edit either generated layer or recreate its endpoint plumbing.
 
-Use [withQueryScope](../apps/web/src/lib/queryScope.ts) without breaking the generated first query-key item. Scope caches by session revision, user and workspace; clear them on logout/workspace changes. Do not place access tokens in localStorage or mirror query results into a global store. Keep shareable list/filter/sort state in the URL.
+Transport retries and cookies remain in [setup-client.ts](../packages/api-client/src/setup-client.ts). The fixed-origin server proxy implements no domain API. Generated UI hooks require the current runtime and scope, bind the session client, and preserve the generated first key object with revision/user/workspace tags. Clear caches on logout/workspace changes; never store access tokens in localStorage.
 
-Keep TanStack Query setup in feature-owned `.ts` hooks, separate from `.tsx` views. Name an endpoint hook `use<Operation>Query`, matching the generated operation, and use `use<Operation>InfiniteQuery` for cursor collections. For example, [useGetCurrentUserQuery](../apps/web/src/features/auth/useGetCurrentUserQuery.ts) uses the generated `getCurrentUserQueryKey`; [useListTaskActivityInfiniteQuery](../apps/web/src/features/tasks/useListTaskActivityInfiniteQuery.ts) owns activity pagination and polling. Hook filenames match their camelCase exports.
+### Generated API binding contract
+
+Use operation-based names consistently:
+
+| Purpose                 | Example                                                          |
+| ----------------------- | ---------------------------------------------------------------- |
+| Query key / options     | `getNodeQueryKey` / `getNodeOptions`                             |
+| Query hook              | `useGetNodeQuery`                                                |
+| Infinite options / hook | `listTasksInfiniteOptions` / `useListTasksInfiniteQuery`         |
+| Mutation key / options  | `createTaskMutationKey` / `createTaskMutation`                   |
+| Mutation hook           | `useCreateTaskMutation`                                          |
+| Types                   | `GetNodeQueryInput`, `GetNodeQueryOptions`, `GetNodeQueryResult` |
 
 ```tsx
-const query = useGetCurrentUserQuery({ runtime, scope });
+import { useGetNodeQuery } from '../../generated/apiHooks.gen';
+
+const query = useGetNodeQuery({ runtime, scope, path: { nodeId } });
 ```
 
-### API hook contract
+Generated input types expose request body/path/query fields and the runtime/scope context. Options cannot replace owned keys/functions. Generated mutation hooks run through [useApiMutation](../apps/web/src/lib/useApiMutation.ts), preserving `retry: false`, `networkMode: 'always'`, and safe observer handling. The [binding runtime](../apps/web/src/lib/apiBindings.ts) keeps the client bound even if a JavaScript caller supplies an override.
 
-Apply this contract when adding or revising an authored API hook:
+Factories remain available to feature-owned `.ts` hooks that coordinate multiple reads. Apply [withQueryScope](../apps/web/src/lib/queryScope.ts) there; generated endpoint hooks do it automatically. Infinite hooks use Hey API's cursor merge/function, while the feature supplies validated next-page handling and page limits. Preserve retry-generation tags, cancellation and bounded lazy loading. Dynamic reads use `useQueries`, not hooks in loops.
 
-1. Export the async request function from a leaf endpoint or mutation module, with an explicit Promise result. Use generated SDK operations and `throwOnError: true`; forward query cancellation signals. Keep transport configuration in the generated-client boundary.
-2. Export a typed options alias and an explicit result alias used by the hook return. Derive endpoint options from the relevant TanStack type with `Omit`; composite options reuse the endpoint option types. Callers cannot replace owned keys/functions. Mutation options also reserve retry/network policy and `onMutate`; pagination options reserve the hook's cursor lifecycle.
-3. Preserve the generated first query-key item, session scope tags and retry-generation tags. Infinite requests delegate cursor merging to the generated query function and retain bounded, lazy pagination.
-4. Let composite readers such as `useBoard` and `useTaskDetail` retain their domain results and descriptive names. Reuse feature-owned endpoint factories; dynamic parallel reads use `useQueries`, never individual hooks in a loop.
-5. Keep query/mutation policy and authoritative response validation in their existing owning layer. Views render data, handle user interactions and preserve inline errors and drafts; they do not configure TanStack queries.
+### Feature policy and mutations
 
-Use [the current-user query](../apps/web/src/features/auth/useGetCurrentUserQuery.ts), [cursor activity query](../apps/web/src/features/tasks/useListTaskActivityInfiniteQuery.ts), [task endpoint factories](../apps/web/src/features/tasks/taskQueries.ts) and [task write mutation](../apps/web/src/features/tasks/useTaskWriteMutation.ts) as concrete examples.
+Keep domain behavior in feature hooks such as [useTaskWriteMutation](../apps/web/src/features/tasks/useTaskWriteMutation.ts), [useTaskPlacementMutation](../apps/web/src/features/board/useTaskPlacementMutation.ts) and composite readers such as `useBoard`/`useTaskDetail`. They consume generated options/functions instead of defining endpoint requests. Validate authoritative responses before success; preserve mixed-version rejection, dirty drafts, stale-page recovery and optimistic rollback.
 
-The [view import boundary test](../apps/web/test/data-hook-boundary.test.mjs) rejects TanStack Query and generated query-option imports in feature `.tsx` files. Providers may still own `QueryClient` infrastructure. Imperative generated SDK verification, such as the task drawer's conflict check, is a separate responsibility and remains unchanged.
+Logical mutation keys (`configuration-write`, `task-write`, `task-placement`) group several endpoint operations. Keep their scope tuple and command shapes because busy guards, refresh subscribers and pending projections inspect them. Generated operation keys belong to endpoint primitives; replacing a logical key with one operation ID changes behavior.
 
-Follow [useTaskWriteMutation.ts](../apps/web/src/features/tasks/useTaskWriteMutation.ts) for validated write results and [useTaskPlacementMutation.ts](../apps/web/src/features/board/useTaskPlacementMutation.ts) for placement changes. Validate authoritative responses before showing success. Preserve optimistic rollback, concurrent-write guards and newer updates. Loading, empty, forbidden and recoverable error states are part of the feature.
+Use native `mutate` or awaited `mutateAsync`. Keep synchronous busy guards in owned `onMutate`, account for the current pending mutation, capture notification generation before execution can be delayed, and clear immediate placement in hook-level `onSettled`. Required cache/notification work precedes caller observers. Pass the actual mutation context into generated mutation functions. UI components consume hooks rather than configuring query or mutation plumbing. The existing imperative task-save verification still uses the generated SDK for its authoritative conflict check; it does not define transport or cache machinery.
 
 Routine background refreshes retain only the current keyed view's validated snapshot, so focus/reconnect and task updates do not replace cards or rows with a page loader. `useBackgroundRefresh` coalesces overlapping requests and retains one trailing invalidation; hard workspace/configuration resets clear that queue and the visible snapshot. Clear terminal errors before storing any assembled ready result, because an infinite query may retain earlier pages after a later page is denied. A manual retry after denial must start without stale content. See D175 and the refresh/access browser regressions.
 
 ### Common mutation execution
 
-All nine feature write hooks delegate to `useApiMutation` in web infrastructure. It requires a mutation key and function, forwards native TanStack generic types/callbacks/context, and enforces the existing `retry: false` and `networkMode: 'always'` policy. It awaits lifecycle observers and reports sanitized observer failures without replacing the request outcome. The helper never adds a second fetch layer, changes a command, reports success, or chooses cache invalidation.
+Sign-in, sign-out, sign-up, refresh and workspace-switch operations stay in the coordinated session runtime. Health probes also stay outside generated UI hooks. The generator explicitly excludes those operations rather than bypassing session transitions.
 
-Feature hooks such as `useTaskWriteMutation`, `useTaskPlacementMutation`, `useStatusMutation` and `useCreateWorkspaceInvitationMutation` own generated operations, trust-boundary validation, busy/conflict guards, captured notifications and cache behavior. Return native `UseMutationResult` and use `mutate` for fire-and-forget actions or `mutateAsync` with error handling for awaited forms. Keep owned lifecycle callbacks after caller options; chain caller observers after required cache/notification work. Busy guards run in synchronous `onMutate` and account for the current pending mutation. Capture notification generation before execution can be delayed, and clear immediate placement state in hook-level `onSettled`. Keep keys and variables stable: board/list observers and pending checks inspect them. Sessions continue through the coordinated runtime. The mutation boundary test rejects raw/aliased/namespace `useMutation` outside the common hook.
+### Generation and enforcement
 
-### Existing enforcement
+Run `pnpm gen:api` to regenerate OpenAPI, Hey API output and web bindings in dependency order. Run `pnpm client:check` to verify both client layers. Normal web builds and type checks also reject stale bindings without rewriting files. Naming and coverage come from [the generator](../apps/web/scripts/api-bindings.mjs); a new supported operation is included automatically. Generation validates companion keys/types and fails on incomplete inputs or naming collisions.
 
-The [API hook structure check](../apps/web/test/api-hook-style.test.mjs) checks exported options/result aliases and explicit returns for its listed hook modules; add a new API hook to that inventory. The [view/mutation boundary check](../apps/web/test/data-hook-boundary.test.mjs) keeps query setup out of views and mutation execution in the shared helper. [Request checks](../apps/web/test/api-request-functions.test.mjs) and [native mutation checks](../apps/web/test/native-api-mutations.test.mjs) cover representative cancellation, identity, error, concurrency and session behavior. Review still verifies that each endpoint uses the correct parameters, response validation and invalidation; these checks do not infer every semantic rule.
+The [generation tests](../apps/web/test/api-bindings-generation.test.mjs) cover new operations, drift, protected client/key policy and typed output. [Feature hook checks](../apps/web/test/api-hook-style.test.mjs) retain explicit options/results and require generated endpoint bindings. The [view boundary](../apps/web/test/data-hook-boundary.test.mjs) keeps TanStack setup out of components. [Request tests](../apps/web/test/api-request-functions.test.mjs) and [native mutation tests](../apps/web/test/native-api-mutations.test.mjs) cover cancellation, scoped identity, validated errors and concurrency. Generated files are exempt from authored-file naming rules; they remain compiled and checked for drift. Review still owns business validation and invalidation choices.
 
 ## Forms
 

@@ -9,30 +9,30 @@ import {
 } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
+import {
+  getListResolvedFieldsOptions,
+  getListResolvedStatusesOptions,
+  listTasksOptions,
+} from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { useBackgroundRefresh } from '../../lib/useBackgroundRefresh';
 import { configurationChanged } from '../config/configurationEvents';
-import {
-  getListResolvedFieldsOptions,
-  getListResolvedStatusesOptions,
-} from '../config/configurationQueries';
 import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from '../tasks/taskEvents';
-import { listTasksOptions } from '../tasks/taskQueries';
 
 import { assembleBoard, readBoardStatuses } from './boardData';
 import { projectPlacements } from './taskPlacement';
 
-import type { BoardPageRequest, BoardResult } from './boardData';
-import type { TaskPlacement } from './taskPlacement';
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import type {
   GetListResolvedFieldsQueryOptions,
   GetListResolvedStatusesQueryOptions,
-} from '../config/configurationQueries';
-import type { ListTasksQueryOptions } from '../tasks/taskQueries';
+  ListTasksQueryOptions,
+} from '../../generated/apiHooks.gen';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
+import type { BoardPageRequest, BoardResult } from './boardData';
+import type { TaskPlacement } from './taskPlacement';
 
 type ReadyBoard = Extract<BoardResult, { state: 'ready' }>;
 

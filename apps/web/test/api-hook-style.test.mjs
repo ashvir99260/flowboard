@@ -5,9 +5,6 @@ import test from 'node:test';
 import ts from 'typescript';
 
 const modules = [
-  'auth/useGetCurrentUserQuery',
-  'tree/useGetNodeQuery',
-  'workspaces/useGetWorkspaceQuery',
   'workspaces/useListWorkspacesInfiniteQuery',
   'tasks/useListTaskActivityInfiniteQuery',
   'search/useSearchWorkspaceInfiniteQuery',
@@ -46,6 +43,18 @@ test('authored API hooks declare public option and result contracts', async () =
       (node) => ts.isFunctionDeclaration(node) && node.name?.text === modulePath.split('/').at(-1),
     );
     assert.ok(hook?.type, `${modulePath}: declare the hook result type`);
+    const manualEndpointImport = source.statements.some(
+      (node) =>
+        ts.isImportDeclaration(node) &&
+        ['@flowboard/api-client/sdk', '@flowboard/api-client/tanstack-query'].includes(
+          node.moduleSpecifier.text,
+        ),
+    );
+    assert.equal(
+      manualEndpointImport,
+      false,
+      `${modulePath}: consume generated web endpoint bindings`,
+    );
     const aliases = exported.filter(ts.isTypeAliasDeclaration).map((node) => node.name.text);
     assert.ok(
       aliases.some((name) => name.endsWith('Options')),

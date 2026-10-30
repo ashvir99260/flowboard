@@ -4,21 +4,21 @@ import { ResolvedFieldCollectionSchema } from '@flowboard/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { useId } from 'react';
 
-import { apiError } from '../../lib/apiError';
-import { withQueryScope } from '../../lib/queryScope';
 import {
   getListResolvedFieldsOptions,
   getListResolvedStatusesOptions,
-} from '../config/configurationQueries';
+} from '../../generated/apiHooks.gen';
+import { apiError } from '../../lib/apiError';
+import { withQueryScope } from '../../lib/queryScope';
 
 import { readBoardStatuses } from './boardData';
 
-import type { QueryScope } from '../../lib/queryScope';
-import type { ClientRuntime } from '../../providers/sessionContext';
 import type {
   GetListResolvedFieldsQueryOptions,
   GetListResolvedStatusesQueryOptions,
-} from '../config/configurationQueries';
+} from '../../generated/apiHooks.gen';
+import type { QueryScope } from '../../lib/queryScope';
+import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ResolvedField, ResolvedStatus } from '@flowboard/contracts';
 
 const policy = {
