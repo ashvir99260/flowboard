@@ -1,7 +1,14 @@
 'use client';
 
 import { useZodForm } from '@flowboard/forms';
-import { Alert, Button, ConfirmDialog, Stack, Typography } from '@flowboard/ui';
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  SettingsDetailPanel,
+  Stack,
+  Typography,
+} from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
@@ -164,98 +171,106 @@ export function FieldForm({
   const removePreview = targetKey ? previewFieldRemoval(configuration, targetKey) : null;
 
   return (
-    <Stack
-      component="form"
-      aria-label="Field editor"
-      onSubmit={save}
-      noValidate
-      spacing={1.2}
-      aria-busy={busy}
+    <SettingsDetailPanel
+      active={active}
+      title={targetKey ? 'Field details' : 'Add field'}
+      closeLabel="Close field details"
+      closeDisabled={busy}
+      onClose={() => request('close')}
     >
-      <Typography component="h2" variant="h3">
-        {targetKey ? (local ? 'Edit field' : 'Override inherited field') : 'Add field'}
-      </Typography>
-      {targetKey && !local && (
-        <Alert aria-live="off" severity="info">
-          Saving creates a complete local definition. Later ancestor edits will not change this
-          field at this scope.
-        </Alert>
-      )}
-      {notice && (
-        <Alert
-          aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
-          severity={notice === 'No changes to save.' ? 'info' : 'error'}
-        >
-          {notice}
-        </Alert>
-      )}
-      {conflict && (
-        <Button onClick={() => request('reload')} disabled={busy}>
-          Reload configuration
-        </Button>
-      )}
-      <FieldInputs form={form} busy={busy} editing={Boolean(targetKey)} />
-      <FieldPreview
-        label="Draft field preview"
-        items={preview.success ? preview.items : []}
-        errors={preview.success ? [] : preview.issues.map((issue) => issue.message)}
-      />
-      <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
-        <Button type="submit" variant="contained" disabled={busy || conflict || !preview.success}>
-          {busy ? 'Saving…' : 'Save field'}
-        </Button>
-        <Button type="button" disabled={busy} onClick={() => request('close')}>
-          Cancel editing
-        </Button>
-        {local && (
-          <Button
-            type="button"
-            color="error"
-            disabled={busy || conflict || !removePreview?.success}
-            onClick={() => setConfirmation('remove')}
+      <Stack
+        component="form"
+        aria-label="Field editor"
+        onSubmit={save}
+        noValidate
+        spacing={1.2}
+        aria-busy={busy}
+      >
+        <Typography component="h2" variant="h3">
+          {targetKey ? (local ? 'Edit field' : 'Override inherited field') : 'Add field'}
+        </Typography>
+        {targetKey && !local && (
+          <Alert aria-live="off" severity="info">
+            Saving creates a complete local definition. Later ancestor edits will not change this
+            field at this scope.
+          </Alert>
+        )}
+        {notice && (
+          <Alert
+            aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
+            severity={notice === 'No changes to save.' ? 'info' : 'error'}
           >
-            {canInherit ? 'Remove local override' : 'Delete field'}
+            {notice}
+          </Alert>
+        )}
+        {conflict && (
+          <Button onClick={() => request('reload')} disabled={busy}>
+            Reload configuration
           </Button>
         )}
+        <FieldInputs form={form} busy={busy} editing={Boolean(targetKey)} />
+        <FieldPreview
+          label="Draft field preview"
+          items={preview.success ? preview.items : []}
+          errors={preview.success ? [] : preview.issues.map((issue) => issue.message)}
+        />
+        <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
+          <Button type="submit" variant="contained" disabled={busy || conflict || !preview.success}>
+            {busy ? 'Saving…' : 'Save field'}
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => request('close')}>
+            Cancel editing
+          </Button>
+          {local && (
+            <Button
+              type="button"
+              color="error"
+              disabled={busy || conflict || !removePreview?.success}
+              onClick={() => setConfirmation('remove')}
+            >
+              {canInherit ? 'Remove local override' : 'Delete field'}
+            </Button>
+          )}
+        </Stack>
+        <ConfirmDialog
+          open={active && confirmation !== null}
+          busy={busy}
+          title={
+            confirmation === 'remove'
+              ? 'Remove local field configuration?'
+              : 'Discard unsaved changes?'
+          }
+          description={
+            confirmation === 'remove'
+              ? 'Inherited definitions may become visible again. Existing task values can block removal.'
+              : 'Your unsaved field edits will be discarded.'
+          }
+          confirmLabel={
+            confirmation === 'remove'
+              ? 'Remove configuration'
+              : confirmation === 'reload'
+                ? 'Discard and reload'
+                : 'Discard changes'
+          }
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            const action = confirmation;
+            setConfirmation(null);
+            if (action === 'remove' && local && !inFlight.current) {
+              inFlight.current = true;
+              void saveCommand({
+                kind: 'remove',
+                fieldId: local.id,
+                body: { expectedConfigVersion: configuration.configVersion },
+              }).finally(() => {
+                inFlight.current = false;
+                setBusy(false);
+              });
+            } else if (action === 'reload') onReload();
+            else if (action === 'close') onClose();
+          }}
+        />
       </Stack>
-      <ConfirmDialog
-        open={active && confirmation !== null}
-        busy={busy}
-        title={
-          confirmation === 'remove'
-            ? 'Remove local field configuration?'
-            : 'Discard unsaved changes?'
-        }
-        description={
-          confirmation === 'remove'
-            ? 'Inherited definitions may become visible again. Existing task values can block removal.'
-            : 'Your unsaved field edits will be discarded.'
-        }
-        confirmLabel={
-          confirmation === 'remove'
-            ? 'Remove configuration'
-            : confirmation === 'reload'
-              ? 'Discard and reload'
-              : 'Discard changes'
-        }
-        onCancel={() => setConfirmation(null)}
-        onConfirm={() => {
-          const action = confirmation;
-          setConfirmation(null);
-          if (action === 'remove' && local && !inFlight.current) {
-            inFlight.current = true;
-            void saveCommand({
-              kind: 'remove',
-              fieldId: local.id,
-              body: { expectedConfigVersion: configuration.configVersion },
-            }).finally(() => {
-              inFlight.current = false;
-              setBusy(false);
-            });
-          } else if (action === 'reload') onReload();
-          else if (action === 'close') onClose();
-        }}
-      />
-    </Stack>
+    </SettingsDetailPanel>
   );
 }

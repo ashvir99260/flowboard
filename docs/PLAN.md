@@ -376,3 +376,7 @@ D159 and [SEARCH.md](SEARCH.md) define indexed list search, delivered through P3
 # Frontend organization follow-up
 
 R164–R165 follow [the frontend refactor plan](FRONTEND_REFACTOR.md): one typed mutation execution hook with feature-owned validation, separate React components, PascalCase component files and camelCase hooks/helpers. Framework route names and backend/generated contracts keep their required spelling. P33-01 through P33-03 cover implementation and source-boundary checks.
+
+## List-first settings
+
+R179/P41-01 follows D175: show an expandable container hierarchy and selectable status/field lists, with Add at the top right and existing editors in responsive right-hand panels. The panels remain non-modal to preserve scope selection and workspace navigation; existing dirty-edit, permission and conflict rules remain in force. See [the work contract](evidence/P41-01.md).

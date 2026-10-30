@@ -5,17 +5,19 @@ import {
   Button,
   ConfirmDialog,
   ErrorState,
-  MemberAccess,
-  SelectionInput,
+  SettingsDetailPanel,
+  SettingsLayout,
   Stack,
+  Toolbar,
   Typography,
+  WorkspaceIcon,
 } from '@flowboard/ui';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { SessionLoading } from '../auth/SessionLoading';
 
-import { containerLabel } from './administrationData';
-import { AdministrationForm } from './AdministrationForm';
+import { AdministrationEditor } from './AdministrationEditor';
+import { ContainerHierarchy } from './ContainerHierarchy';
 import { useAdministration } from './useAdministration';
 import { useAdministrationMutation } from './useAdministrationMutation';
 
@@ -27,6 +29,7 @@ import type { ClientRuntime } from '../../providers/sessionContext';
 
 type PendingAction =
   | { kind: 'select'; selection: AdministrationSelection }
+  | { kind: 'close' }
   | { kind: 'reload' }
   | { command: AdministrationCommand; kind: 'command' };
 
@@ -40,7 +43,9 @@ export function AdministrationWorkspace({
   scope: QueryScope;
 }) {
   const [selection, setSelection] = useState<AdministrationSelection>({ kind: 'create' });
+  const [panelOpen, setPanelOpen] = useState(false);
   const [snapshot, setSnapshot] = useState<AdministrationSnapshot | null>(null);
+  const [loadingSelection, setLoadingSelection] = useState(false);
   const [editing, setEditing] = useState({ dirty: false, busy: false });
   const [pending, setPending] = useState<PendingAction | null>(null);
   const [epoch, setEpoch] = useState(0);
@@ -49,13 +54,19 @@ export function AdministrationWorkspace({
   const [blocked, setBlocked] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const locked = useRef(false);
+  const origin = useRef<HTMLElement | null>(null);
+  const createButton = useRef<HTMLButtonElement>(null);
+  const restoreFocus = useRef(false);
 
-  const nodeId = 'nodeId' in selection ? selection.nodeId : undefined;
+  const nodeId = panelOpen && 'nodeId' in selection ? selection.nodeId : undefined;
 
   const data = useAdministration(runtime, scope, nodeId);
   const { submit } = useAdministrationMutation(runtime, scope);
 
-  if (!snapshot && data.result.state === 'ready') setSnapshot(data.result.snapshot);
+  if ((!snapshot || loadingSelection) && data.result.state === 'ready') {
+    setSnapshot(data.result.snapshot);
+    setLoadingSelection(false);
+  }
 
   if (reloading !== null && data.generation >= reloading) {
     if (data.result.state === 'ready') {
@@ -71,26 +82,36 @@ export function AdministrationWorkspace({
     }
   }
 
-  const disabled = busy || editing.busy || reloading !== null;
+  const selectionFailed = Boolean(data.error) || ['invalid', 'stale'].includes(data.result.state);
+  const disabled =
+    busy || editing.busy || reloading !== null || (loadingSelection && !selectionFailed);
+
+  useEffect(() => {
+    if (!active || !restoreFocus.current || disabled) return;
+
+    let target = origin.current;
+    while (target && (!target.isConnected || target.getClientRects().length === 0))
+      target = target.closest('li')?.parentElement?.closest('li')?.querySelector('button') ?? null;
+
+    (target ?? createButton.current)?.focus();
+    restoreFocus.current = false;
+  }, [active, disabled, panelOpen]);
+
   const stale =
     blocked ||
     (snapshot !== null &&
       data.result.state === 'ready' &&
       data.result.snapshot.configVersion !== snapshot.configVersion);
   const node = snapshot?.nodes.find((item) => item.id === nodeId);
-  const siblings =
-    snapshot?.nodes
-      .filter((item) => item.parentId === node?.parentId)
-      .toSorted(
-        (left, right) => left.position - right.position || left.id.localeCompare(right.id),
-      ) ?? [];
-  const position = siblings.findIndex((item) => item.id === nodeId);
   const refreshAfterSave = (createdId?: string, archived = false) => {
-    if (archived) setSelection({ kind: 'create' });
-    else if (createdId && selection.kind === 'create')
+    if (archived) {
+      setPanelOpen(false);
+      setSelection({ kind: 'create' });
+      restoreFocus.current = true;
+    } else if (createdId && selection.kind === 'create')
       setSelection({ kind: 'details', nodeId: createdId });
 
-    setSnapshot(null);
+    setLoadingSelection(true);
     setEditing({ dirty: false, busy: false });
     setBlocked(false);
     setNotice(null);
@@ -99,9 +120,21 @@ export function AdministrationWorkspace({
   };
   const perform = (action: PendingAction) => {
     setPending(null);
+    if (action.kind === 'close') {
+      setPanelOpen(false);
+      setSelection({ kind: 'create' });
+      setEditing({ dirty: false, busy: false });
+      setLoadingSelection(false);
+      setEpoch((value) => value + 1);
+      restoreFocus.current = true;
+
+      return;
+    }
+
     if (action.kind === 'select') {
+      setPanelOpen(true);
       setSelection(action.selection);
-      setSnapshot(null);
+      setLoadingSelection(true);
       setEditing({ dirty: false, busy: false });
       setEpoch((value) => value + 1);
       setBlocked(false);
@@ -141,42 +174,47 @@ export function AdministrationWorkspace({
   const request = (action: PendingAction) => {
     if (disabled) return;
 
-    if (action.kind === 'select' && JSON.stringify(action.selection) === JSON.stringify(selection))
+    if (
+      panelOpen &&
+      action.kind === 'select' &&
+      JSON.stringify(action.selection) === JSON.stringify(selection)
+    )
       return;
+
+    if (
+      action.kind === 'select' &&
+      document.activeElement instanceof HTMLElement &&
+      !document.activeElement.closest('[data-settings-panel]')
+    )
+      origin.current = document.activeElement;
 
     if (editing.dirty || (action.kind === 'command' && action.command.kind === 'archive'))
       setPending(action);
     else perform(action);
   };
-  const reorder = (direction: 'up' | 'down') => {
-    if (!node || !snapshot) return;
-
-    const anchor = siblings[position + (direction === 'up' ? -1 : 1)];
-    if (!anchor) return;
-
-    request({
-      kind: 'command',
-      command: {
-        kind: 'reorder',
-        nodeId: node.id,
-        body: {
-          expectedConfigVersion: snapshot.configVersion,
-          expectedVersion: node.version,
-          placement: direction === 'up' ? { beforeId: anchor.id } : { afterId: anchor.id },
-        },
-      },
-    });
-  };
   const archiving = pending?.kind === 'command' && pending.command.kind === 'archive';
 
   return (
     <Stack spacing={2}>
-      <Typography component="h1" variant="h1">
-        Container administration
-      </Typography>
-      <Typography>
-        Create and arrange spaces, folders and lists, then manage member access.
-      </Typography>
+      <Toolbar.Root>
+        <Stack spacing={0.8}>
+          <Typography component="h1" variant="h1">
+            Containers and access
+          </Typography>
+          <Typography color="text.secondary">
+            Organize spaces, folders and lists. Select a container to manage its details and access.
+          </Typography>
+        </Stack>
+        <Button
+          ref={createButton}
+          variant="contained"
+          disabled={disabled || !snapshot}
+          startIcon={<WorkspaceIcon name="plus" />}
+          onClick={() => request({ kind: 'select', selection: { kind: 'create' } })}
+        >
+          New container
+        </Button>
+      </Toolbar.Root>
       {(notice || data.error) && <Alert severity="error">{notice ?? data.error?.message}</Alert>}
       {!snapshot ? (
         data.error || data.result.state === 'invalid' || data.result.state === 'stale' ? (
@@ -191,109 +229,67 @@ export function AdministrationWorkspace({
           <SessionLoading />
         )
       ) : (
-        <>
-          <SelectionInput
-            label="Selected container"
-            value={nodeId ?? ''}
-            disabled={disabled}
-            options={[
-              { value: '', label: 'New container' },
-              ...snapshot.nodes.map((item) => ({
-                value: item.id,
-                label: containerLabel(item, snapshot.nodes),
-              })),
-            ]}
-            onChange={(value) => {
-              if (typeof value !== 'string') return;
-
-              request({
-                kind: 'select',
-                selection: value ? { kind: 'details', nodeId: value } : { kind: 'create' },
-              });
-            }}
-          />
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-            <Button
-              disabled={disabled}
-              onClick={() => request({ kind: 'select', selection: { kind: 'create' } })}
-            >
-              New container
-            </Button>
-            {node && (
-              <>
-                <Button
-                  disabled={disabled}
-                  onClick={() =>
-                    request({ kind: 'select', selection: { kind: 'details', nodeId: node.id } })
+        <SettingsLayout
+          collection={
+            <Stack component="section" aria-label="Container hierarchy" spacing={1.6}>
+              <Typography component="h2" variant="h3">
+                All containers
+              </Typography>
+              {snapshot.nodes.length === 0 ? (
+                <Typography color="text.secondary">
+                  No containers yet. Create a space to get started.
+                </Typography>
+              ) : (
+                <ContainerHierarchy
+                  nodes={snapshot.nodes}
+                  selectedId={nodeId}
+                  onSelect={(id) =>
+                    request({ kind: 'select', selection: { kind: 'details', nodeId: id } })
                   }
-                >
-                  Edit details
-                </Button>
-                <Button disabled={disabled || stale || position <= 0} onClick={() => reorder('up')}>
-                  Move container up
-                </Button>
-                <Button
-                  disabled={disabled || stale || position < 0 || position >= siblings.length - 1}
-                  onClick={() => reorder('down')}
-                >
-                  Move container down
-                </Button>
-                {node.type !== 'space' && (
-                  <Button
-                    disabled={disabled || stale}
-                    onClick={() =>
-                      request({ kind: 'select', selection: { kind: 'move', nodeId: node.id } })
-                    }
-                  >
-                    Change parent
-                  </Button>
+                />
+              )}
+            </Stack>
+          }
+          detail={
+            panelOpen && (
+              <SettingsDetailPanel
+                active={active}
+                title={node ? 'Container details' : 'New container'}
+                closeLabel="Close container details"
+                closeDisabled={disabled}
+                onClose={() => request({ kind: 'close' })}
+              >
+                {loadingSelection ? (
+                  selectionFailed ? (
+                    <ErrorState
+                      title="Container unavailable"
+                      description={data.error?.message ?? 'The container could not be loaded.'}
+                      action={<Button onClick={data.refresh}>Retry container</Button>}
+                    />
+                  ) : (
+                    <SessionLoading />
+                  )
+                ) : (
+                  <AdministrationEditor
+                    active={active}
+                    disabled={disabled}
+                    epoch={epoch}
+                    runtime={runtime}
+                    scope={scope}
+                    selection={selection}
+                    snapshot={snapshot}
+                    stale={stale || reloading !== null || busy}
+                    onCommand={(command) => request({ kind: 'command', command })}
+                    onSelect={(next) => request({ kind: 'select', selection: next })}
+                    onState={setEditing}
+                    onSaved={refreshAfterSave}
+                    onReload={() => request({ kind: 'reload' })}
+                  />
                 )}
-                <Button
-                  color="error"
-                  disabled={disabled || stale}
-                  onClick={() =>
-                    request({
-                      kind: 'command',
-                      command: {
-                        kind: 'archive',
-                        nodeId: node.id,
-                        body: {
-                          expectedConfigVersion: snapshot.configVersion,
-                          expectedVersion: node.version,
-                        },
-                      },
-                    })
-                  }
-                >
-                  Archive container
-                </Button>
-              </>
-            )}
-          </Stack>
-          <AdministrationForm
-            key={epoch}
-            active={active}
-            snapshot={snapshot}
-            selection={selection}
-            runtime={runtime}
-            scope={scope}
-            stale={stale || reloading !== null || busy}
-            onState={setEditing}
-            onSaved={refreshAfterSave}
-            onReload={() => request({ kind: 'reload' })}
-          />
-          {node && (
-            <MemberAccess
-              key={node.id}
-              members={snapshot.members}
-              grants={snapshot.grants}
-              busy={disabled}
-              onEdit={(userId) =>
-                request({ kind: 'select', selection: { kind: 'grant', nodeId: node.id, userId } })
-              }
-            />
-          )}
-        </>
+              </SettingsDetailPanel>
+            )
+          }
+        />
       )}
       <ConfirmDialog
         open={active && pending !== null}

@@ -62,7 +62,7 @@ test(
         .click();
       await expect(
         page
-          .getByRole('region', { exact: true, name: 'Effective status preview' })
+          .getByRole('region', { exact: true, name: 'Status configuration' })
           .getByText(/^Working ·/),
       ).toBeVisible();
     } finally {

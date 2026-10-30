@@ -22,10 +22,7 @@ test(
       return body.items?.some((field) => field.key === 'team');
     });
     await choose(page, 'List: Product backlog');
-    const teamInput = page
-      .getByRole('region', { exact: true, name: 'Effective field preview' })
-      .getByLabel(/^Team/);
-    await expect(teamInput).toBeVisible();
+    await expect(page.getByRole('button', { exact: true, name: 'Edit Team' })).toBeVisible();
     const originalIds = (await (await originalDefinition).json()).items
       .find((field) => field.key === 'team')
       .options.map((option) => option.id);
@@ -64,7 +61,7 @@ test(
       .click();
     await expect(
       page
-        .getByRole('region', { exact: true, name: 'Field team' })
+        .getByRole('listitem', { exact: true, name: 'Field team' })
         .getByText('Inherited', { exact: true }),
     ).toBeVisible();
     await choose(page, 'List: Private launch');
