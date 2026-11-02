@@ -18,6 +18,7 @@ import { taskMutationAffectsList } from '../tasks/taskEvents';
 
 import { projectWorkspaceMoves, workspaceSnapshotState } from './workspaceBoardData';
 
+import type { WorkspaceBoardColumn, WorkspaceListNode } from './workspaceBoardData';
 import type {
   GetListResolvedFieldsQueryOptions,
   GetListResolvedStatusesQueryOptions,
@@ -26,7 +27,6 @@ import type {
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { TaskPlacement } from '../board/taskPlacement';
-import type { WorkspaceBoardColumn, WorkspaceListNode } from './workspaceBoardData';
 
 type Attempt = { generation: number; pages: string[]; restarts: number };
 export type WorkspaceColumnState =

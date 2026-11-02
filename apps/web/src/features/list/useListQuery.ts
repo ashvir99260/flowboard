@@ -101,13 +101,14 @@ export type ListQueryResult = {
   atLimit: boolean;
   configured: boolean;
   error: ReturnType<typeof apiError> | null;
-  fields: ResolvedField[];
+  fields: readonly ResolvedField[];
   filterError: string | null;
   loadingMore: boolean;
   loadMore: () => void;
+  refreshing: boolean;
   result: ReturnType<typeof assembleTaskList>;
   retry: () => void;
-  statuses: ResolvedStatus[];
+  statuses: readonly ResolvedStatus[];
 };
 
 export function useListQuery(

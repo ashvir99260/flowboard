@@ -41,6 +41,7 @@ type ListResultProps = {
 
 export function ListResult({ view, selection, query, onChange, pending }: ListResultProps) {
   const [hasLoaded, setHasLoaded] = useState(false);
+
   const error = failure(view);
   const { result } = view;
   if (error && hasLoaded) setHasLoaded(false);

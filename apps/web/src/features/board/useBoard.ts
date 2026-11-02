@@ -24,6 +24,8 @@ import { taskMutationAffectsList } from '../tasks/taskEvents';
 import { assembleBoard, readBoardStatuses } from './boardData';
 import { projectPlacements } from './taskPlacement';
 
+import type { BoardPageRequest, BoardResult } from './boardData';
+import type { TaskPlacement } from './taskPlacement';
 import type {
   GetListResolvedFieldsQueryOptions,
   GetListResolvedStatusesQueryOptions,
@@ -31,8 +33,6 @@ import type {
 } from '../../generated/apiHooks.gen';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
-import type { BoardPageRequest, BoardResult } from './boardData';
-import type { TaskPlacement } from './taskPlacement';
 
 type ReadyBoard = Extract<BoardResult, { state: 'ready' }>;
 

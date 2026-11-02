@@ -1788,4 +1788,14 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Acceptance:** Native mutation keys generated; operation-named query/infinite/mutation bindings generated deterministically with protected keys/functions and runtime client/scope. Existing handwritten endpoint helpers replaced; composite and mutation business behavior remains intact. New endpoints enter generation automatically. Normal builds detect drift without changing sources; explicit generation refreshes both layers.
   - **Validation:** Failing then passing generation/transport/scope/typing checks, drift failures, root build/lint/types/tests/format and independent review.
   - **Commit:** `refactor(api): generate typed ui bindings from hey api`.
-  - **Evidence:** [P44-01](evidence/P44-01.md).
+  - **Evidence:** [P45-01](evidence/P45-01.md).
+
+- [ ] **P44-02 — Restore the list query result build contract**
+  - **Goal:** Keep the explicit list-query result type aligned with its returned refresh state and immutable resolved configuration.
+  - **Requirements:** R186; preserve R179/R180 and existing list behavior.
+  - **Files:** `apps/web/src/features/list/useListQuery.ts`, web import/hook-spacing fixes found by the root lint gate, `docs/TASKS.md`, `docs/REQUIREMENTS_MATRIX.md`, `docs/evidence/P44-02.md`.
+  - **Dependencies:** P44-01.
+  - **Acceptance:** `ListQueryResult` exposes `refreshing` and readonly field/status collections; production web TypeScript build and root lint pass without changing runtime behavior or generated output.
+  - **Validation:** Reproduce the failing web build; then run web/root build, lint, typecheck, tests and format checks. Review the final diff and the unrelated environment warnings separately from the TypeScript failure.
+  - **Commit:** `fix(web): restore list query result build contract`.
+  - **Completion evidence:** [P44-02](evidence/P44-02.md).

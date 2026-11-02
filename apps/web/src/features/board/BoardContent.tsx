@@ -15,9 +15,8 @@ import {
 import { BoardDnd } from './BoardDnd';
 import { useBoard } from './useBoard';
 
-import type { Placement, Task } from '@flowboard/contracts';
-
 import type { Selection } from './boardTypes';
+import type { Placement, Task } from '@flowboard/contracts';
 
 type BoardContentProps = {
   board: ReturnType<typeof useBoard>;
