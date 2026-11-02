@@ -29,7 +29,7 @@ const services = [
 const daemon = {
   config: {
     image: { requested: 'worker:source', resolved: 'worker@sha256:fixture' },
-    instances: { iad1: 1 },
+    instances: { cle1: 1 },
     resources: { requests: { memory: '2Gi' } },
   },
   createdAt: '2026-10-26T00:00:00.000Z',
@@ -37,7 +37,7 @@ const daemon = {
   instances: {
     desired: 1,
     items: [
-      { alive: true, id: 'dmni_fixture', region: 'iad1', startedAt: '2026-10-26T00:00:00.000Z' },
+      { alive: true, id: 'dmni_fixture', region: 'cle1', startedAt: '2026-10-26T00:00:00.000Z' },
     ],
     ready: 1,
     total: 1,
@@ -157,6 +157,44 @@ test('one production deployment builds all services at the exact validated sourc
   });
 });
 
+test('Ohio worker satisfies readiness for the colocated deployment', async () => {
+  const { provider } = fixture({
+    daemons: () => ({
+      daemons: [
+        {
+          ...daemon,
+          instances: {
+            ...daemon.instances,
+            items: [{ ...daemon.instances.items[0], region: 'cle1' }],
+          },
+        },
+      ],
+    }),
+  });
+  assert.equal(await provider.vercel(source), 'https://flowboard-demo.vercel.app');
+});
+
+test('a stopped worker from the previous region does not block Ohio readiness', async () => {
+  const { provider } = fixture({
+    daemons: () => ({
+      daemons: [
+        {
+          ...daemon,
+          instances: {
+            ...daemon.instances,
+            items: [
+              daemon.instances.items[0],
+              { ...daemon.instances.items[0], region: 'iad1', stoppedAt: '2026-10-26T01:00:00Z' },
+            ],
+            total: 2,
+          },
+        },
+      ],
+    }),
+  });
+  assert.equal(await provider.vercel(source), 'https://flowboard-demo.vercel.app');
+});
+
 test('retry pages past preview and mismatched releases and reuses a matching production deployment', async () => {
   const { calls, provider } = fixture({
     listing: (page, query) => {
@@ -244,6 +282,22 @@ for (const [name, patch] of [
   ['stopped daemon', { status: 'stopped' }],
   ['unready instance', { instances: { ...daemon.instances, ready: 0 } }],
   ['disabled worker', { instances: { ...daemon.instances, desired: 0 } }],
+  [
+    'worker in another region',
+    {
+      instances: { ...daemon.instances, items: [{ ...daemon.instances.items[0], region: 'iad1' }] },
+    },
+  ],
+  [
+    'overlapping worker in another region',
+    {
+      instances: {
+        ...daemon.instances,
+        items: [daemon.instances.items[0], { ...daemon.instances.items[0], region: 'iad1' }],
+        total: 2,
+      },
+    },
+  ],
   [
     'dead instance',
     { instances: { ...daemon.instances, items: [{ ...daemon.instances.items[0], alive: false }] } },

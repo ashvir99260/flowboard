@@ -762,6 +762,12 @@ The future ECR path deploys only services affected by a production change, rathe
 
 Trunk-based development describes the single main branch and short-lived feature branches. Selective delivery and promotion are the deployment policies layered on it. Build each affected app's release image once, store it in ECR, and promote its exact digest through dev → qa → stage → prod. Environment-specific settings and secrets are injected at runtime. Preserve unaffected apps in each environment; a configuration-only update reuses the existing image. Pin the selected release set, check compatibility, and do not pull unrelated new main commits into an in-flight promotion. Current GHCR publication is already selective; current Vercel demo deployment remains a full-project source build. Selective ECR deployment and four-environment execution remain future work. [PROMOTION.md](PROMOTION.md) owns the detailed contract.
 
+## D174 — Colocate temporary demo compute in Ohio
+
+The live inventory on 26 October 2026 placed both the existing Neon database and Upstash Redis primary in AWS Ohio (`us-east-2`), while Vercel functions and the worker used Northern Virginia (`iad1`). Pin the dynamic web/API compute and the single worker to Ohio (`cle1`), avoiding a datastore migration. Preserve Vercel Hobby, Neon Free and Upstash Free; do not add paid observability, always-on capacity or new data services. Static assets still use the global CDN.
+
+Region alignment removes a known cross-region dependency, but does not eliminate free-tier cold starts or prove a latency improvement on its own. Record bounded before/after samples and live region evidence in P39-08. This is configuration for the temporary demo, not an ECR or AWS-runtime selection.
+
 ## D175 — Stable background refresh within an authorized view
 
 Routine focus, reconnect and task invalidations retain the last validated board/table snapshot for the same keyed session, workspace, list and filter. Fresh reads still validate cursor/configuration/data versions before replacing that snapshot. Explicit workspace/configuration resyncs and terminal errors clear retained content; a denied later page must never become the next retry's placeholder.

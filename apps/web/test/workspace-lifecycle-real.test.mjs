@@ -9,9 +9,9 @@ test(
   'real clients drop an archived workspace and can reopen it after administrator recovery',
   { timeout: 120000 },
   async (t) => {
-    const { origin } = await startRealApp(t, { realtime: true });
     const browser = await chromium.launch({ headless: true });
     t.after(() => browser.close());
+    const { origin } = await startRealApp(t, { realtime: true });
     const first = await browser.newContext();
     const second = await browser.newContext();
     const alice = await first.newPage();

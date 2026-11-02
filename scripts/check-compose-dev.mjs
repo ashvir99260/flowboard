@@ -273,7 +273,7 @@ try {
   );
   console.info(`[${project}] Web source reload passed`);
   await edit(
-    'apps/web/src/server/api-proxy.ts',
+    'apps/web/src/server/apiProxy.ts',
     'Request origin is not allowed',
     'Development proxy reloaded',
   );

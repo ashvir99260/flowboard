@@ -193,7 +193,7 @@ The planned ECR deployer consumes the existing per-app release plan: jobs/databa
 3. Explicit public `/docs`, `/docs/*`, `/docs-json`, `/docs-yaml`, `/health/live`, `/health/ready` and `/socket.io/*` rewrites go to API before the catch-all goes to web. Swagger is opt-in via `API_DOCS=true`; `API_DOCS_BASE_PATH=/api` controls its runtime document without changing the committed spec. Browser sockets use the public project origin, WebSocket transport and an in-memory JWT; API guards still verify session, membership and subscription access.
 4. Refresh cookies belong to the web origin, with the existing proxy allowlists and Origin checks. Neon URLs, Redis credentials and signing secrets remain server-only. The worker has no public ingress and no service binding; it uses PostgreSQL and Redis directly.
 
-The [Vercel configuration](../vercel.json) declares a 1 GiB worker daemon in `iad1`. Vercel's technical production target is needed for that daemon; it is still a temporary project demo. Automatic Vercel Git deployments are disabled. The repository's separate main-only deployment job waits for checks/publication and remains gated by protected settings. P38-03 is evidence of the manual live rollout, not evidence that protected GitHub CD has run.
+The [Vercel configuration](../vercel.json) declares a 1 GiB worker daemon in `cle1`. Vercel's technical production target is needed for that daemon; it is still a temporary project demo. Automatic Vercel Git deployments are disabled. The repository's separate main-only deployment job waits for checks/publication and remains gated by protected settings. P38-03 is evidence of the manual live rollout, not evidence that protected GitHub CD has run.
 
 ## Tests and limits
 
