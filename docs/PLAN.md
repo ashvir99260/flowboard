@@ -376,3 +376,7 @@ D159 and [SEARCH.md](SEARCH.md) define indexed list search, delivered through P3
 # Frontend organization follow-up
 
 R164–R165 follow [the frontend refactor plan](FRONTEND_REFACTOR.md): one typed mutation execution hook with feature-owned validation, separate React components, PascalCase component files and camelCase hooks/helpers. Framework route names and backend/generated contracts keep their required spelling. P33-01 through P33-03 cover implementation and source-boundary checks.
+
+## UI stability and loading refinement (Phase 40)
+
+The next UI pass first fixes routine refreshes that discard valid content, then adds layout-matched skeletons, then refines the workspace visual hierarchy. Preserve generated API operations, cursor/version validation, optimistic rollback and immediate clearing on access or identity changes. Routine focus, reconnect and task updates may retain only a validated snapshot for the same workspace/list/query while a new snapshot loads. Coalesce duplicate realtime refresh requests without losing a trailing invalidation. Skeletons represent the real shell/board/table/drawer geometry, contain no fake interactive content and respect reduced motion. Use the existing MUI styled components and semantic HSL/rem tokens; do not introduce a second design system.

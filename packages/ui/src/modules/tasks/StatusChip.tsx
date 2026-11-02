@@ -13,13 +13,17 @@ const categories: Record<StatusCategory, string> = {
 };
 
 export function StatusChip({
+  detail = 'category',
   status,
-}: Readonly<{ status: Pick<ResolvedStatus, 'category' | 'color' | 'name'> }>) {
+}: Readonly<{
+  detail?: 'category' | 'name';
+  status: Pick<ResolvedStatus, 'category' | 'color' | 'name'>;
+}>) {
   const label = `${status.name} · ${categories[status.category]}`;
 
   return (
     <Chip
-      label={label}
+      label={detail === 'name' ? status.name : label}
       size="small"
       title={label}
       variant="filled"

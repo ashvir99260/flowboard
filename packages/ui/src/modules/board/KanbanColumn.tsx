@@ -3,10 +3,11 @@
 import { default as Box } from '@mui/material/Box';
 import { default as Stack } from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
-import { default as Typography } from '@mui/material/Typography';
 
 import { Paper } from '../primitives/Paper.js';
 import { StatusChip } from '../tasks/StatusChip.js';
+
+import { LoadedTaskCount } from './LoadedTaskCount.js';
 
 import type { ResolvedStatus } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
@@ -23,16 +24,18 @@ const Column = styled(Paper, { name: 'FlowboardKanbanColumn', slot: 'Root' })(({
 const Header = styled(Stack)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
-  flexWrap: 'wrap',
+  flexWrap: 'nowrap',
   marginBottom: theme.spacing(1.2),
-  minHeight: '5.2rem',
+  minHeight: '4.4rem',
   paddingBottom: theme.spacing(1),
   borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
 }));
-const Summary = styled(Box)({ minWidth: 0 });
-const Count = styled(Typography)(({ theme }) => ({
-  marginTop: theme.spacing(0.6),
-  fontSize: '1.2rem',
+const Summary = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.8),
+  minWidth: 0,
+  '& .MuiChip-root': { minWidth: 0, maxWidth: '100%' },
 }));
 
 export function KanbanColumn({
@@ -50,10 +53,8 @@ export function KanbanColumn({
     <Column component="section" aria-label={`${status.name} column`} variant="outlined">
       <Header direction="row" useFlexGap spacing={0.8}>
         <Summary>
-          <StatusChip status={status} />
-          <Count color="text.secondary" variant="body2">
-            {count} loaded {count === 1 ? 'task' : 'tasks'}
-          </Count>
+          <StatusChip detail="name" status={status} />
+          <LoadedTaskCount count={count} />
         </Summary>
         {action}
       </Header>

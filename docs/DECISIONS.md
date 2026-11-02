@@ -767,3 +767,23 @@ Trunk-based development describes the single main branch and short-lived feature
 The live inventory on 26 October 2026 placed both the existing Neon database and Upstash Redis primary in AWS Ohio (`us-east-2`), while Vercel functions and the worker used Northern Virginia (`iad1`). Pin the dynamic web/API compute and the single worker to Ohio (`cle1`), avoiding a datastore migration. Preserve Vercel Hobby, Neon Free and Upstash Free; do not add paid observability, always-on capacity or new data services. Static assets still use the global CDN.
 
 Region alignment removes a known cross-region dependency, but does not eliminate free-tier cold starts or prove a latency improvement on its own. Record bounded before/after samples and live region evidence in P39-08. This is configuration for the temporary demo, not an ECR or AWS-runtime selection.
+
+## D175 — Stable background refresh within an authorized view
+
+Routine focus, reconnect and task invalidations retain the last validated board/table snapshot for the same keyed session, workspace, list and filter. Fresh reads still validate cursor/configuration/data versions before replacing that snapshot. Explicit workspace/configuration resyncs and terminal errors clear retained content; a denied later page must never become the next retry's placeholder.
+
+Use one small refresh queue per view to merge invalidations received during a read into one trailing refresh. Do not drop the trailing request, use a time-based debounce for correctness, or substitute snapshots across scopes. Placement writes keep their immediate optimistic projection and rollback policy. Expose background work through `aria-busy` without replacing the loaded layout. Initial-load skeletons are a separate presentation layer.
+
+D175 clarification: successful list-subscription catch-up is a routine refresh. Its origin is supplied only by the in-process realtime bus as optional callback context. Network/global resyncs never receive that context and keep their hard-clear behavior. No wire contract or authorization check changes.
+
+## D176 — Skeletons preserve initial loading geometry
+
+Use shared `WorkspaceSkeleton`, `NavigationSkeleton`, `BoardSkeleton`, `TableSkeleton` and `TaskDetailSkeleton` components for their corresponding initial loads. Keep `LoadingState` as a compact skeleton fallback for smaller sections. All use the existing MUI theme, deterministic shapes, one accessible loading status per region and no fake focusable content. Disable skeleton animation under reduced motion.
+
+A skeleton belongs only where no authorized data has loaded yet. D175 governs background refresh: retain the current validated content instead of flashing a skeleton or an empty Data Grid. `SessionLoading` selects the full workspace shape only at shell/session boundaries; nested content uses its own shape.
+
+## D177 — Compact workspace hierarchy without changing board behavior
+
+Keep the existing MUI theme and semantic status colors. Column headings use a single row with a short status/list name and a neutral numeric badge; its accessible label still explains that the count covers loaded tasks. Detailed status chips remain the default in configuration previews. Board cards use consistent padding and a quiet border hover instead of added elevation. Normal/low priority labels keep their text with neutral fills; urgent/high remain accented.
+
+Refresh actions use labelled icon buttons. The mobile create-task action uses a plus icon with the same accessible name, and mobile header actions wrap into their own row so all controls remain separate from the logo and search. Preserve keyboard actions, whole-card dragging/opening, focus restoration and coarse-pointer target sizes.

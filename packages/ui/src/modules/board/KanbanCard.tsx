@@ -14,11 +14,13 @@ import type { Task } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
 const Card = styled(Paper, { name: 'FlowboardKanbanCard', slot: 'Root' })(({ theme }) => ({
-  padding: theme.spacing(1),
+  padding: theme.spacing(1.2),
   minWidth: 0,
   borderRadius: 8,
   backgroundColor: (theme.vars ?? theme).palette.background.paper,
-  '&:hover': { boxShadow: theme.shadows[1] },
+  transition: 'border-color 120ms ease',
+  '&:hover': { borderColor: (theme.vars ?? theme).palette.text.secondary },
+  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
 })) as typeof Paper;
 const Header = styled('div')(({ theme }) => ({
   alignItems: 'flex-start',
@@ -62,7 +64,7 @@ const Summary = styled(Stack)(({ theme }) => ({
   flexWrap: 'wrap',
   alignItems: 'center',
   justifyContent: 'flex-start',
-  marginTop: theme.spacing(0.4),
+  marginTop: theme.spacing(0.8),
 }));
 const Metadata = styled(Stack)(({ theme }) => ({
   alignItems: 'flex-start',

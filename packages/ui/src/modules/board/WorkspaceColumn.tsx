@@ -7,6 +7,8 @@ import { default as Typography } from '@mui/material/Typography';
 
 import { Paper } from '../primitives/Paper.js';
 
+import { LoadedTaskCount } from './LoadedTaskCount.js';
+
 import type { ReactNode } from 'react';
 
 export type WorkspaceColumnProps = {
@@ -30,14 +32,23 @@ const Header = styled(Stack)(({ theme }) => ({
   borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
   justifyContent: 'space-between',
   marginBottom: theme.spacing(1.2),
-  minHeight: '5.2rem',
+  minHeight: '4.4rem',
   paddingBottom: theme.spacing(0.8),
 }));
 const Title = styled(Typography)({
+  minWidth: 0,
   fontSize: '1.3rem',
   fontWeight: 650,
-  overflowWrap: 'anywhere',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 }) as typeof Typography;
+const Summary = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.8),
+  minWidth: 0,
+}));
 
 export function WorkspaceColumn({
   actions,
@@ -48,12 +59,12 @@ export function WorkspaceColumn({
   return (
     <Column component="section" aria-label={`${name} list column`}>
       <Header direction="row" spacing={0.8}>
-        <Box sx={{ minWidth: 0 }}>
-          <Title component="h2">{name}</Title>
-          <Typography color="text.secondary" variant="body2">
-            {count} loaded {count === 1 ? 'task' : 'tasks'}
-          </Typography>
-        </Box>
+        <Summary>
+          <Title component="h2" title={name}>
+            {name}
+          </Title>
+          <LoadedTaskCount count={count} />
+        </Summary>
         {actions}
       </Header>
       <Stack spacing={1.2}>{children}</Stack>

@@ -1,9 +1,7 @@
 'use client';
 
-import { Button, EmptyState, ErrorState } from '@flowboard/ui';
+import { Button, EmptyState, ErrorState, NavigationSkeleton } from '@flowboard/ui';
 import { useRouter } from 'next/navigation';
-
-import { SessionLoading } from '../auth/SessionLoading';
 
 import { SidebarBranches } from './SidebarBranches';
 import { useTree } from './useTree';
@@ -25,7 +23,7 @@ export function Sidebar({
   const router = useRouter();
   const tree = useTree(runtime, scope);
 
-  if (tree.state === 'loading') return <SessionLoading />;
+  if (tree.state === 'loading') return <NavigationSkeleton />;
 
   if (tree.state === 'error')
     return (

@@ -62,6 +62,7 @@ const glyphs = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  refresh: <path d="M20 11a8 8 0 1 0-2.4 6.7M20 4v7h-7" />,
   search: (
     <>
       <circle cx="10.5" cy="10.5" r="6.5" />

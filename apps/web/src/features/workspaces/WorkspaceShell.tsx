@@ -84,7 +84,7 @@ export function WorkspaceShell({
           {children}
         </VerifiedWorkspace>
       ) : (
-        <SessionLoading />
+        <SessionLoading layout="workspace" />
       )}
     </SessionGate>
   );

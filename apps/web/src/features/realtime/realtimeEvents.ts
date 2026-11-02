@@ -2,6 +2,11 @@ import { RealtimeInvalidationSchema } from '@flowboard/contracts';
 
 import type { RealtimeInvalidation } from '@flowboard/contracts';
 
+/** Local delivery metadata, never accepted from a network invalidation. */
+export type RealtimeDeliveryContext = Readonly<{ listId: string }>;
+
+type RealtimeHandler = (event: RealtimeInvalidation, context?: RealtimeDeliveryContext) => void;
+
 /** Invalidations refetch current state, so a late event cannot restore an older task. */
 export function createInvalidationTracker() {
   const seen = new Set<string>();
@@ -24,7 +29,7 @@ export function createInvalidationTracker() {
 }
 
 export function createRealtimeBus() {
-  const listeners = new Set<{ handler: (event: RealtimeInvalidation) => void; listId?: string }>();
+  const listeners = new Set<{ handler: RealtimeHandler; listId?: string }>();
 
   const changes = new Set<() => void>();
   const changed = () => {
@@ -42,7 +47,7 @@ export function createRealtimeBus() {
     lists() {
       return [...new Set([...listeners].flatMap((entry) => entry.listId ?? []))];
     },
-    listen(listId: string | undefined, handler: (event: RealtimeInvalidation) => void) {
+    listen(listId: string | undefined, handler: RealtimeHandler) {
       const entry = { listId, handler };
       listeners.add(entry);
       changed();
@@ -58,7 +63,7 @@ export function createRealtimeBus() {
     },
     resyncList(listId: string) {
       for (const listener of listeners)
-        if (listener.listId === listId) listener.handler({ kind: 'resync' });
+        if (listener.listId === listId) listener.handler({ kind: 'resync' }, { listId });
     },
   };
 }

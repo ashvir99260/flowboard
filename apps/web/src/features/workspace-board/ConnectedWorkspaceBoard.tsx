@@ -1,13 +1,16 @@
 'use client';
 
 import {
+  BoardSkeleton,
   BoardViewport,
   Button,
   EmptyState,
   ErrorState,
-  LoadingState,
+  IconButton,
   Stack,
+  Tooltip,
   Typography,
+  WorkspaceIcon,
 } from '@flowboard/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -120,7 +123,7 @@ export function ConnectedWorkspaceBoard({
         <WorkspaceListSubscription key={list.id} listId={list.id} refresh={board.refreshTasks} />
       ))}
       {tree.state === 'loading' ? (
-        <LoadingState>Loading workspace lists…</LoadingState>
+        <BoardSkeleton label="Loading workspace lists…" />
       ) : tree.state === 'error' ? (
         <ErrorState
           title="Workspace lists unavailable"
@@ -141,20 +144,30 @@ export function ConnectedWorkspaceBoard({
             <Typography component="h1" variant="h1">
               Workspace board
             </Typography>
-            <Button
-              onClick={() => {
-                tree.retry();
-                board.retry();
-              }}
-            >
-              Refresh workspace board
-            </Button>
+            <Tooltip title="Refresh workspace board">
+              <span>
+                <IconButton
+                  aria-label="Refresh workspace board"
+                  disabled={board.refreshing}
+                  onClick={() => {
+                    tree.retry();
+                    board.retry();
+                  }}
+                >
+                  <WorkspaceIcon name="refresh" />
+                </IconButton>
+              </span>
+            </Tooltip>
           </Stack>
           <Typography color="text.secondary">
-            Each column is a list. Tasks stay grouped by status; drag within a group to reorder or
-            into another list to move.
+            Drag tasks between lists, or open a list to work by status.
           </Typography>
-          <BoardViewport role="region" aria-label="Workspace lists board" tabIndex={0}>
+          <BoardViewport
+            role="region"
+            aria-label="Workspace lists board"
+            aria-busy={board.refreshing}
+            tabIndex={0}
+          >
             <WorkspaceBoardDnd
               columns={columns}
               pending={

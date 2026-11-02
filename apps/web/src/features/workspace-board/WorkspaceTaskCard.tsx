@@ -63,7 +63,7 @@ export function WorkspaceTaskCard({
             onOpen={() => openTask(task.id, task.primaryListId)}
             metadata={
               <Stack direction="row" useFlexGap spacing={0.4} sx={{ flexWrap: 'wrap' }}>
-                <StatusChip status={status} />
+                <StatusChip detail="name" status={status} />
                 {field && <CustomFieldChip field={field} value={task.customFields[field.key]} />}
               </Stack>
             }

@@ -74,6 +74,16 @@ export { MarkdownContent } from './modules/content/MarkdownContent.js';
 
 export { LoadingState } from './modules/feedback/LoadingState.js';
 
+export { BoardSkeleton } from './modules/feedback/BoardSkeleton.js';
+
+export { NavigationSkeleton } from './modules/feedback/NavigationSkeleton.js';
+
+export { TableSkeleton } from './modules/feedback/TableSkeleton.js';
+
+export { TaskDetailSkeleton } from './modules/feedback/TaskDetailSkeleton.js';
+
+export { WorkspaceSkeleton } from './modules/feedback/WorkspaceSkeleton.js';
+
 export { WorkspaceLayout } from './modules/layout/WorkspaceLayout.js';
 
 export { FlowboardLogo } from './modules/layout/FlowboardLogo.js';

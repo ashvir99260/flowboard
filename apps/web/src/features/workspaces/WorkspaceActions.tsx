@@ -49,11 +49,22 @@ export function WorkspaceActions({
         sx={{ alignItems: 'center', flexWrap: 'nowrap' }}
       >
         <Button
+          aria-label="New task"
+          title="New task"
           variant="contained"
-          sx={{ whiteSpace: 'nowrap', minWidth: 'auto', px: { xs: 0.8, sm: 1.2 } }}
+          sx={{
+            whiteSpace: 'nowrap',
+            gap: 0.6,
+            minWidth: '3.6rem',
+            px: { xs: 0.8, sm: 1.2 },
+            '@media (pointer: coarse)': { minWidth: '4.4rem' },
+          }}
           onClick={() => (listId ? openTask(null) : setChooseList(true))}
         >
-          New task
+          <WorkspaceIcon name="plus" />
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            New task
+          </Box>
         </Button>
         {admin && (
           <>

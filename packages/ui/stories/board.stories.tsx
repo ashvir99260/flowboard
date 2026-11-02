@@ -35,6 +35,10 @@ export const Card: Story = {
 };
 
 export const Columns: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('1 loaded task')).toHaveTextContent('1 loaded task');
+  },
   parameters: { controls: { disable: true } },
   render: () => (
     <BoardViewport>

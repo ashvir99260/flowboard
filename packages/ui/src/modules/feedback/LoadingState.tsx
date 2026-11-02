@@ -1,23 +1,27 @@
 'use client';
 
-import { default as CircularProgress } from '@mui/material/CircularProgress';
 import { styled } from '@mui/material/styles';
-import { default as Typography } from '@mui/material/Typography';
+
+import { SkeletonBlock } from './SkeletonBlock.js';
+import { SkeletonRegion } from './SkeletonRegion.js';
 
 import type { ReactNode } from 'react';
 
 const Root = styled('div', { name: 'FlowboardLoading', slot: 'Root' })(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
+  display: 'grid',
   gap: theme.spacing(1.2),
-  padding: theme.spacing(2.4),
+  padding: theme.spacing(1.6),
+  minHeight: '8rem',
 }));
 
 export function LoadingState({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <Root role="status">
-      <CircularProgress aria-hidden="true" size={'2rem'} />
-      <Typography>{children}</Typography>
-    </Root>
+    <SkeletonRegion label={children}>
+      <Root>
+        <SkeletonBlock height="1.4rem" width="65%" />
+        <SkeletonBlock height="1.4rem" width="85%" />
+        <SkeletonBlock height="1.4rem" width="50%" />
+      </Root>
+    </SkeletonRegion>
   );
 }

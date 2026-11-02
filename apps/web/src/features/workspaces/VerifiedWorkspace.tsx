@@ -42,7 +42,7 @@ export function VerifiedWorkspace({
   const [open, setOpen] = useState(false);
   const query = useGetCurrentUserQuery({ runtime, scope });
 
-  if (query.isPending) return <SessionLoading />;
+  if (query.isPending) return <SessionLoading layout="workspace" />;
 
   const refreshError = query.isError ? apiError(query.error) : null;
   const canRetainWorkspace =

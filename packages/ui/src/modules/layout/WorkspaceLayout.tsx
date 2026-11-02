@@ -23,13 +23,19 @@ const Header = styled('header', { name: 'FlowboardWorkspace', slot: 'Header' })(
   borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
   boxSizing: 'border-box',
   display: 'flex',
-  gap: theme.spacing(1.6),
+  gap: theme.spacing(0.8),
   height: designTokens.layout.headerHeight,
-  paddingInline: theme.spacing(1.6),
+  paddingInline: theme.spacing(1.2),
   position: 'sticky',
   top: 0,
   zIndex: theme.zIndex.appBar,
-  [theme.breakpoints.up('md')]: { paddingInline: theme.spacing(2.4) },
+  [theme.breakpoints.up('md')]: { paddingInline: theme.spacing(2.4), gap: theme.spacing(1.6) },
+  [theme.breakpoints.down('sm')]: {
+    flexWrap: 'wrap',
+    height: 'auto',
+    minHeight: designTokens.layout.headerHeight,
+    paddingBlock: theme.spacing(0.8),
+  },
 }));
 const HeaderContent = styled('div')(({ theme }) => ({
   alignItems: 'center',
@@ -43,6 +49,7 @@ const HeaderActions = styled('div')(({ theme }) => ({
   display: 'flex',
   flexShrink: 0,
   gap: theme.spacing(0.8),
+  [theme.breakpoints.down('sm')]: { flexBasis: '100%', justifyContent: 'flex-end' },
 }));
 const Body = styled('div')({ display: 'flex', flex: 1, minWidth: 0 });
 const Sidebar = styled(Drawer, {
