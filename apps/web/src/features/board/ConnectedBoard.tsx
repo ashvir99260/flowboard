@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { ApiMutationError } from '../../lib/apiError';
+
 import { BoardContent } from './BoardContent';
 import { MoveMenu } from './MoveMenu';
 import { projectPlacements } from './taskPlacement';
@@ -13,17 +15,15 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { Placement, Task } from '@flowboard/contracts';
 
-export function ConnectedBoard({
-  listId,
-  runtime,
-  scope,
-}: {
+type ConnectedBoardProps = {
   listId: string;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function ConnectedBoard({ listId, runtime, scope }: ConnectedBoardProps) {
   const board = useBoard({ listId, runtime, scope });
-  const { pending, submit } = useTaskPlacementMutation(runtime, scope);
+  const { pending, mutate, mutateAsync } = useTaskPlacementMutation(runtime, scope);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [focusTick, setFocusTick] = useState(0);
   const focusTask = useRef<{ id: string; kind: 'drag' | 'move' } | null>(null);
@@ -53,18 +53,21 @@ export function ConnectedBoard({
   const move = (task: Task, statusId: string, placement: Placement) => {
     if (board.state !== 'ready' || board.refreshing) return;
 
-    void submit({
-      taskId: task.id,
-      sourceListId: task.primaryListId,
-      sourceStatusId: task.statusId,
-      request: {
-        destinationListId: listId,
-        statusId,
-        placement,
-        expectedVersion: task.version,
-        expectedConfigVersion: board.configVersion,
+    mutate(
+      {
+        taskId: task.id,
+        sourceListId: task.primaryListId,
+        sourceStatusId: task.statusId,
+        request: {
+          destinationListId: listId,
+          statusId,
+          placement,
+          expectedVersion: task.version,
+          expectedConfigVersion: board.configVersion,
+        },
       },
-    }).then(() => requestFocus(task.id, 'drag'));
+      { onSettled: () => requestFocus(task.id, 'drag') },
+    );
   };
 
   return (
@@ -90,13 +93,15 @@ export function ConnectedBoard({
           columns={board.state === 'ready' ? board.columns : []}
           runtime={runtime}
           scope={scope}
-          submit={(command) =>
+          mutateAsync={(command) =>
             board.state === 'ready' && !board.refreshing
-              ? submit(command)
-              : Promise.resolve({
-                  success: false as const,
-                  error: { code: 'BUSY', message: 'Wait for the board to finish refreshing.' },
-                })
+              ? mutateAsync(command)
+              : Promise.reject(
+                  new ApiMutationError({
+                    code: 'BUSY',
+                    message: 'Wait for the board to finish refreshing.',
+                  }),
+                )
           }
           onClose={() => {
             requestFocus(selection.task.id, 'move');

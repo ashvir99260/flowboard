@@ -3,15 +3,13 @@
 import { IconButton, Tooltip, WorkspaceIcon } from '@flowboard/ui';
 import NextLink from 'next/link';
 
-export function ListViewLink({
-  active,
-  href,
-  view,
-}: {
+type ListViewLinkProps = {
   active: boolean;
   href: string;
   view: 'board' | 'list';
-}) {
+};
+
+export function ListViewLink({ active, href, view }: ListViewLinkProps) {
   const label = view === 'board' ? 'Board view' : 'List view';
 
   return (

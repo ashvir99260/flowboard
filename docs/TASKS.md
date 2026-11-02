@@ -1719,3 +1719,73 @@ Other future capabilities (OIDC integration, teams, webhook delivery, general co
   - **Validation:** Interaction regressions, browser screenshots/story checks and standard gates.
   - **Commit:** `style(ui): refine workspace visual hierarchy`.
   - **Implementation evidence:** [P40-03](evidence/P40-03.md).
+
+## Phase 41 — Focused browser coverage
+
+- [x] **P41-01 — Cover container form validation and save recovery**
+  - **Goal:** Add focused browser cases for the existing containers page on a branch from current main.
+  - **Requirements:** R160; preserve R37 and R68.
+  - **Files:** `apps/web/e2e/administration.spec.ts`, task/matrix/evidence records.
+  - **Dependencies:** NEXT-05 implementation; this test-only follow-up does not close its pending full acceptance.
+  - **Acceptance:** Blank names and missing parents send no creation request; corrected input persists. Container types offer only valid parent types and retain the name. Unchanged details send no update; an interrupted save reports failure, retains name/visibility, and permits a successful persisted retry.
+  - **Validation:** Real-service administration Playwright suite; root build, lint, tests, types and applicable formatting. No runtime or API changes.
+  - **Commit:** `test(web): cover container validation and save recovery`.
+  - **Completion evidence:** [P40-01](evidence/P40-01.md).
+
+## Phase 41 — List-first settings
+
+- [x] **P41-01 — Show administration lists with right-hand details panels**
+  - **Goal:** Make containers, statuses and custom fields easy to browse before opening an editor.
+  - **Requirements:** R179; preserve R160, R37 and R68.
+  - **Files:** Shared settings UI, web administration/configuration views, browser/UI tests and stories, task/decision/matrix/evidence records.
+  - **Dependencies:** Existing NEXT-05 implementation and P10 status/field forms; no claim that broader NEXT-05 acceptance is complete.
+  - **Acceptance:** Expandable container hierarchy, selectable status/field rows, top-right Add, initially closed right-hand panels, responsive layout, keyboard focus and dirty-close protection. Preserve navigation, scope selection, validation, stale/failed-save recovery and admin-only access.
+  - **Validation:** Failing then passing real-service panel coverage; root build/lint/test/type/format and UI Storybook checks; G01–05/G09/G10.
+  - **Commit:** `feat(web): add list-first settings panels`.
+  - **Evidence:** [P41-01](evidence/P41-01.md).
+
+## Phase 42 — Typed API hook conventions
+
+- [x] **P42-01 — Standardize authored API request and hook structure**
+  - **Goal:** Apply the user's named request function, protected options and explicit hook-result pattern throughout the authored web API layer.
+  - **Requirements:** R180; preserve R68/R164 and all existing scope, pagination and mutation safeguards.
+  - **Files:** Web query/mutation hooks, feature-owned request/option helpers, shared mutation typing, tests and frontend/task/decision/evidence documentation.
+  - **Dependencies:** Existing generated client and shared mutation implementation; no backend or generator changes.
+  - **Acceptance:** All authored API hook modules use typed request/options/result seams. Convert mutation callers to native mutate/mutateAsync while preserving composite query contracts, cancellation, keys, bounded cursor paging, validation, optimistic cleanup and notification capture. Caller options cannot replace keys/functions or mutation retry policy.
+  - **Validation:** Failing then passing structural/type and callback behavior checks, existing real-service flows, root build/lint/types/tests/format and contract drift checks.
+  - **Commit:** `refactor(web): standardize typed api hooks`.
+  - **Evidence:** [P42-01](evidence/P42-01.md).
+
+- [x] **P42-02 — Publish settings and API hook coding rules**
+  - **Goal:** Preserve the accepted P41/P42 patterns in the repository instructions used for future changes.
+  - **Requirements:** R179/R180; documentation follow-up, no new runtime behavior.
+  - **Files:** Web/UI scoped `AGENTS.md`, frontend/component guides, task and evidence records.
+  - **Dependencies:** P41-01 and P42-01, both committed and verified.
+  - **Acceptance:** Scoped rules link to one detailed owner; API guidance covers typed requests/options/results, native mutation callers and protected lifecycle work; settings guidance covers hierarchy/lists, right-hand panels, Add, responsive behavior, draft/focus and notifications. Existing checks are linked with their limits stated accurately.
+  - **Validation:** Document/source consistency, relative file and heading links, formatting and diff checks; G01/G04. No application changes or new automated enforcement.
+  - **Commit:** `docs(frontend): codify api hook and settings rules`.
+  - **Evidence:** [P42-02](evidence/P42-02.md).
+
+## Phase 43 — Component declaration consistency
+
+- [x] **P43-01 — Extract component prop types and keep one component per file**
+  - **Goal:** Give runtime React components readable named prop declarations above their implementation and separate any multiple component implementations.
+  - **Requirements:** R181; preserve R165 and all existing component behavior.
+  - **Files:** Web source/routes, UI/forms components, component structure tests, scoped rules/guides and task/evidence records.
+  - **Dependencies:** Existing P33 component organization and P41/P42 refinements.
+  - **Acceptance:** No inline object prop annotations in authored runtime components, including Readonly/intersection/generic cases; local prop declarations precede their component. No file contains multiple distinct component implementations. Preserve reserved route filenames, cohesive styled slots, render callbacks, defaults, generic inference, optional/readonly properties and public imports.
+  - **Validation:** Failing then passing structural fixtures/inventory; root build, lint, types, tests and format; UI/forms public and generic compatibility; independent review.
+  - **Commit:** `refactor(react): extract component prop types`.
+  - **Evidence:** [P43-01](evidence/P43-01.md).
+
+## Phase 44 — Generated UI API bindings
+
+- [x] **P44-01 — Generate and adopt typed UI API bindings**
+  - **Goal:** Remove repeated endpoint plumbing by consuming Hey API keys/functions through generated UI bindings.
+  - **Requirements:** R182; preserve R68/R164 and D178's application-policy boundaries.
+  - **Files:** API-client generator config/output/tests; web generator/runtime/generated bindings, affected hooks/callers/tests, generation scripts and frontend/task/evidence guidance.
+  - **Dependencies:** Existing Hey API generation, session runtime and P42 typed hooks.
+  - **Acceptance:** Native mutation keys generated; operation-named query/infinite/mutation bindings generated deterministically with protected keys/functions and runtime client/scope. Existing handwritten endpoint helpers replaced; composite and mutation business behavior remains intact. New endpoints enter generation automatically. Normal builds detect drift without changing sources; explicit generation refreshes both layers.
+  - **Validation:** Failing then passing generation/transport/scope/typing checks, drift failures, root build/lint/types/tests/format and independent review.
+  - **Commit:** `refactor(api): generate typed ui bindings from hey api`.
+  - **Evidence:** [P44-01](evidence/P44-01.md).

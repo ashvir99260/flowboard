@@ -4,19 +4,17 @@ import { WorkspaceEnvelopeSchema } from '@flowboard/contracts';
 import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 import { useState } from 'react';
 
+import { useGetWorkspaceQuery } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 
 import { InvitationForm } from './InvitationForm';
-import { useGetWorkspaceQuery } from './useGetWorkspaceQuery';
 
 import type { InvitationContext, InvitationFormState } from './invitationTypes';
 
-export function InviteContent({
-  runtime,
-  scope,
-  onState,
-}: InvitationContext & { onState: (state: InvitationFormState) => void }) {
-  const query = useGetWorkspaceQuery(runtime, scope);
+type InviteContentProps = InvitationContext & { onState: (state: InvitationFormState) => void };
+
+export function InviteContent({ runtime, scope, onState }: InviteContentProps) {
+  const query = useGetWorkspaceQuery({ runtime, scope, path: { workspaceId: scope.workspaceId! } });
   const [initialVersion, setInitialVersion] = useState<number | null>(null);
 
   const parsed = WorkspaceEnvelopeSchema.safeParse(query.data);

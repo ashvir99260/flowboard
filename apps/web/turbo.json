@@ -1,9 +1,17 @@
 {
   "extends": ["//"],
   "tasks": {
+    "api:generate": {
+      "cache": false,
+      "dependsOn": ["^api:generate"]
+    },
     "build": {
       "env": ["NEXT_TELEMETRY_DISABLED"],
       "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "client:check": {
+      "cache": false,
+      "dependsOn": ["^build"]
     },
     "dev": {
       "env": [

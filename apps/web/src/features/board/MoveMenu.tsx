@@ -24,6 +24,17 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ResolvedStatus, Task } from '@flowboard/contracts';
 
+type MoveMenuProps = {
+  columns: readonly BoardColumn[];
+  configVersion: number;
+  mutateAsync: ReturnType<typeof useTaskPlacementMutation>['mutateAsync'];
+  onClose: () => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  sourceStatus: ResolvedStatus;
+  task: Task;
+};
+
 export function MoveMenu({
   task,
   sourceStatus,
@@ -31,18 +42,9 @@ export function MoveMenu({
   columns,
   runtime,
   scope,
-  submit,
+  mutateAsync,
   onClose,
-}: {
-  columns: readonly BoardColumn[];
-  configVersion: number;
-  onClose: () => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  sourceStatus: ResolvedStatus;
-  submit: ReturnType<typeof useTaskPlacementMutation>['submit'];
-  task: Task;
-}) {
+}: MoveMenuProps) {
   const id = useId();
   const tree = useTree(runtime, scope);
   const [destinationListId, setDestinationListId] = useState(task.primaryListId);
@@ -100,7 +102,7 @@ export function MoveMenu({
               statuses={destination.statuses}
               columns={columns}
               formId={`${id}-form`}
-              submit={submit}
+              mutateAsync={mutateAsync}
               onClose={onClose}
               onBusyChange={setBusy}
             />

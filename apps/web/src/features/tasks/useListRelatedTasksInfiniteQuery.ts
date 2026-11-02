@@ -1,10 +1,10 @@
 'use client';
 
-import { listTasksInfiniteOptions } from '@flowboard/api-client/tanstack-query';
 import { TaskPageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
 
+import { listTasksInfiniteOptions } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 import { configurationChanged } from '../config/configurationEvents';
@@ -13,22 +13,43 @@ import { useRealtime } from '../realtime/useRealtime';
 import { taskMutationAffectsList } from './taskEvents';
 import { readTaskRelations } from './taskRelationsData';
 
+import type {
+  ListTasksInfiniteQueryOptions,
+  ListTasksPageData,
+} from '../../generated/apiHooks.gen';
+import type { ApiRequestError } from '../../lib/apiError';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type { UseInfiniteQueryResult } from '@tanstack/react-query';
 
-export function useListRelatedTasksInfiniteQuery({
-  enabled = true,
-  listId,
-  parentTaskId,
-  runtime,
-  scope,
-}: {
-  enabled?: boolean;
-  listId: string;
-  parentTaskId?: string;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-}) {
+export type ListRelatedTasksQueryOptions = Omit<
+  ListTasksInfiniteQueryOptions,
+  'enabled' | 'select'
+>;
+
+export type ListRelatedTasksQueryResult = {
+  error: ReturnType<typeof apiError> | null;
+  query: UseInfiniteQueryResult<ListTasksPageData, ApiRequestError>;
+  refresh: () => void;
+  result: ReturnType<typeof readTaskRelations>;
+};
+
+export function useListRelatedTasksInfiniteQuery(
+  {
+    enabled = true,
+    listId,
+    parentTaskId,
+    runtime,
+    scope,
+  }: {
+    enabled?: boolean;
+    listId: string;
+    parentTaskId?: string;
+    runtime: ClientRuntime;
+    scope: QueryScope;
+  },
+  options: ListRelatedTasksQueryOptions = {},
+): ListRelatedTasksQueryResult {
   const instance = useId();
   const client = useQueryClient();
   const [attempt, setAttempt] = useState({ generation: 0, restarts: 0 });
@@ -63,11 +84,14 @@ export function useListRelatedTasksInfiniteQuery({
 
   const query = useInfiniteQuery({
     ...withQueryScope(
-      listTasksInfiniteOptions({
-        client: runtime.client,
-        path: { listId },
-        query: { limit: '50', ...(parentTaskId ? { parentTaskId } : {}) },
-      }),
+      listTasksInfiniteOptions(
+        {
+          client: runtime.client,
+          path: { listId },
+          query: { limit: '50', ...(parentTaskId ? { parentTaskId } : {}) },
+        },
+        options,
+      ),
       scope,
       [`task-relations:${instance}:${attempt.generation}`],
     ),

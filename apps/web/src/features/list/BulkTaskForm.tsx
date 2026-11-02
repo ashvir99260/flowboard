@@ -6,6 +6,8 @@ import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 import { useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
+import { apiError } from '../../lib/apiError';
+
 import { bulkTaskDefaults, bulkTaskDraftSchema, bulkTaskInput } from './bulkTaskData';
 import { useBulkUpdateTasksMutation } from './useBulkUpdateTasksMutation';
 
@@ -13,6 +15,8 @@ import type { BulkTaskDraft } from './bulkTaskData';
 import type { BulkTaskDetail, BulkTaskEditorProps } from './bulkTaskEditorTypes';
 import type { FormFieldConfig } from '@flowboard/forms';
 import type { FieldPath } from 'react-hook-form';
+
+type BulkTaskFormProps = BulkTaskEditorProps & { detail: BulkTaskDetail };
 
 export function BulkTaskForm({
   detail,
@@ -22,12 +26,12 @@ export function BulkTaskForm({
   runtime,
   scope,
   tasks,
-}: BulkTaskEditorProps & { detail: BulkTaskDetail }) {
+}: BulkTaskFormProps) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
   const inFlight = useRef(false);
-  const { submit } = useBulkUpdateTasksMutation(runtime, scope, detail);
+  const { mutateAsync } = useBulkUpdateTasksMutation(runtime, scope, detail);
   const { control, handleSubmit, setError } = useZodForm(
     bulkTaskDraftSchema(detail.fields, detail.statuses, tasks),
     { defaultValues: bulkTaskDefaults(detail.fields, detail.statuses), mode: 'onBlur' },
@@ -84,23 +88,18 @@ export function BulkTaskForm({
     setBusy(true);
     setNotice(null);
     try {
-      const result = await submit({
+      await mutateAsync({
         body: bulkTaskInput(draft, tasks, detail.configVersion),
         listId,
         tasks,
       });
-      if (result.success) {
-        onSaved();
-        onClose();
-
-        return;
-      }
-
-      setNotice(result.error.message);
-      setConflict(
-        ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(result.error.code),
-      );
-      const issues = 'details' in result.error ? result.error.details : [];
+      onSaved();
+      onClose();
+    } catch (cause) {
+      const error = apiError(cause);
+      setNotice(error.message);
+      setConflict(['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(error.code));
+      const issues = error.details;
       for (const issue of issues ?? []) {
         const customIndex = issue.path.indexOf('customFields');
         const key = issue.path[customIndex + 1];

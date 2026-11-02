@@ -5,6 +5,9 @@ import { login, openBacklog, selectAutocomplete } from './helpers';
 import type { Page } from '@playwright/test';
 
 const editor = (page: Page) => page.getByRole('form', { name: 'Administration editor' });
+const hierarchy = (page: Page) => page.getByRole('region', { name: 'Container hierarchy' });
+const container = (page: Page, name: string) =>
+  hierarchy(page).getByRole('button', { exact: true, name });
 
 async function createContainer(
   page: Page,
@@ -36,7 +39,7 @@ async function createContainer(
   const saved = await response;
   expect(saved.status()).toBe(201);
   const id = (await saved.json()).data.id as string;
-  await expect(page.getByLabel(/^Selected container/)).toHaveValue(new RegExp(name));
+  await expect(container(page, name)).toHaveAttribute('aria-current', 'page');
   await expect(editor(page).getByLabel(/^Container name/)).toHaveValue(name);
 
   return id;
@@ -105,7 +108,7 @@ test('administrators arrange containers and manage allow, deny and removed grant
     .click();
   await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Kept unsaved name');
   await editor(page).getByRole('button', { exact: true, name: 'Save container' }).click();
-  await expect(page.getByLabel(/^Selected container/)).toHaveValue(/Kept unsaved name/);
+  await expect(container(page, 'Kept unsaved name')).toHaveAttribute('aria-current', 'page');
 
   await createContainer(
     page,
@@ -128,15 +131,18 @@ test('administrators arrange containers and manage allow, deny and removed grant
   );
   await editor(page).getByRole('button', { exact: true, name: 'Move container' }).click();
   expect((await moved).status()).toBe(200);
-  await expect(page.getByLabel(/^Selected container/)).toHaveValue(
-    'list: Engineering / Delivery / Admin browser sibling',
-  );
+  await expect(
+    container(page, 'Delivery')
+      .locator('..')
+      .locator('..')
+      .getByRole('button', { exact: true, name: 'Admin browser sibling' }),
+  ).toBeVisible();
 
-  await selectAutocomplete(page.getByLabel(/^Selected container/), 'space: Admin browser space');
+  await container(page, 'Admin browser space').click();
   await page.getByRole('button', { exact: true, name: 'Archive container' }).click();
   const dialog = page.getByRole('dialog', { name: 'Archive container and descendants?' });
   await dialog.getByRole('button', { exact: true, name: 'Cancel' }).click();
-  await expect(page.getByLabel(/^Selected container/)).toHaveValue('space: Admin browser space');
+  await expect(container(page, 'Admin browser space')).toHaveAttribute('aria-current', 'page');
   await page.getByRole('button', { exact: true, name: 'Archive container' }).click();
   const archived = page.waitForResponse(
     (item) =>
@@ -145,12 +151,7 @@ test('administrators arrange containers and manage allow, deny and removed grant
   );
   await dialog.getByRole('button', { exact: true, name: 'Archive subtree' }).click();
   expect((await archived).status()).toBe(204);
-  const selectedContainer = page.getByRole('combobox', { exact: true, name: 'Selected container' });
-  await selectedContainer.click();
-  await selectedContainer.fill('Admin browser space');
-  await expect(
-    page.getByRole('option', { exact: true, name: 'space: Admin browser space' }),
-  ).toHaveCount(0);
+  await expect(container(page, 'Admin browser space')).toHaveCount(0);
 });
 
 test('members cannot open administration controls through a direct URL', async ({ page }) => {
@@ -165,6 +166,145 @@ test('members cannot open administration controls through a direct URL', async (
     'Only workspace administrators can manage containers and grants.',
   );
   await expect(editor(page)).toHaveCount(0);
+});
+
+test('invalid container drafts stay local and can be corrected before creation', async ({
+  page,
+}) => {
+  await login(page);
+  await openBacklog(page);
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
+  await page.getByRole('button', { exact: true, name: 'New container' }).click();
+  let createRequests = 0;
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/v1/nodes')
+      createRequests++;
+  });
+  const name = editor(page).getByLabel(/^Container name/);
+  const save = editor(page).getByRole('button', { exact: true, name: 'Create container' });
+  await save.click();
+  await expect(name).toHaveAttribute('aria-invalid', 'true');
+  expect(createRequests).toBe(0);
+
+  await name.fill('Validated browser folder');
+  await selectAutocomplete(editor(page).getByLabel(/^Container type/), 'Folder');
+  const parent = editor(page).getByLabel(/^Parent container/);
+  await selectAutocomplete(parent, 'Choose a parent');
+  await save.click();
+  await expect(parent).toHaveAttribute('aria-invalid', 'true');
+  await expect(name).toHaveValue('Validated browser folder');
+  expect(createRequests).toBe(0);
+
+  await selectAutocomplete(parent, 'space: Engineering');
+  const created = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      new URL(response.url()).pathname === '/api/v1/nodes',
+  );
+  await save.click();
+  expect((await created).status()).toBe(201);
+  await expect(container(page, 'Validated browser folder')).toHaveAttribute('aria-current', 'page');
+  expect(createRequests).toBe(1);
+  await page.reload();
+  await container(page, 'Validated browser folder').click();
+  await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Validated browser folder');
+});
+
+test('container type changes offer only valid parents and preserve the entered name', async ({
+  page,
+}) => {
+  await login(page);
+  await openBacklog(page);
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
+  await page.getByRole('button', { exact: true, name: 'New container' }).click();
+  await editor(page)
+    .getByLabel(/^Container name/)
+    .fill('Hierarchy browser draft');
+  const type = editor(page).getByLabel(/^Container type/);
+  const parent = editor(page).getByLabel(/^Parent container/);
+  await expect(parent).toHaveCount(0);
+
+  for (const [containerType, parentType] of [
+    ['Folder', 'space'],
+    ['List', 'folder'],
+  ] as const) {
+    await selectAutocomplete(type, containerType);
+    await expect(parent).toHaveValue(new RegExp(`^${parentType}:`));
+    await parent.click();
+    await expect(page.getByRole('option', { exact: true, name: 'Choose a parent' })).toBeVisible();
+    await expect(
+      page.getByRole('option', { name: new RegExp(`^${parentType}:`) }).first(),
+    ).toBeVisible();
+    const options = await page.getByRole('option').allTextContents();
+    expect(options.length).toBeGreaterThan(1);
+    expect(
+      options.every(
+        (option) => option === 'Choose a parent' || option.startsWith(`${parentType}:`),
+      ),
+    ).toBe(true);
+    await parent.press('Escape');
+  }
+
+  await selectAutocomplete(type, 'Space');
+  await expect(parent).toHaveCount(0);
+  await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Hierarchy browser draft');
+});
+
+test('unchanged containers skip writes and failed saves retain edits for a successful retry', async ({
+  page,
+}) => {
+  await login(page);
+  await openBacklog(page);
+  await page.getByRole('link', { exact: true, name: 'Containers and access' }).click();
+  const nodeId = await createContainer(page, 'Retry browser space', 'space');
+  const nodeUrl = `**/api/v1/nodes/${nodeId}`;
+  let updateRequests = 0;
+  page.on('request', (request) => {
+    if (
+      request.method() === 'PATCH' &&
+      new URL(request.url()).pathname === `/api/v1/nodes/${nodeId}`
+    )
+      updateRequests++;
+  });
+  const save = editor(page).getByRole('button', { exact: true, name: 'Save container' });
+  await save.click();
+  await expect(editor(page).getByRole('alert')).toHaveText('No changes to save.');
+  expect(updateRequests).toBe(0);
+
+  const name = editor(page).getByLabel(/^Container name/);
+  const visibility = editor(page).getByLabel(/^Visibility/);
+  await name.fill('Retried browser space');
+  await selectAutocomplete(visibility, 'Private: explicit allow required');
+  await page.route(nodeUrl, async (route) => {
+    if (route.request().method() === 'PATCH') await route.abort('failed');
+    else await route.continue();
+  });
+  await save.click();
+  await expect(editor(page).getByRole('alert')).toHaveText(
+    'Unable to reach Flowboard. Please try again.',
+  );
+  await expect(save).toBeEnabled();
+  await expect(name).toHaveValue('Retried browser space');
+  await expect(visibility).toHaveValue('Private: explicit allow required');
+  await expect(container(page, 'Retry browser space')).toHaveAttribute('aria-current', 'page');
+  expect(updateRequests).toBe(1);
+
+  await page.unroute(nodeUrl);
+  const saved = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' &&
+      new URL(response.url()).pathname === `/api/v1/nodes/${nodeId}`,
+  );
+  await save.click();
+  expect((await saved).status()).toBe(200);
+  await expect(container(page, 'Retried browser space')).toHaveAttribute('aria-current', 'page');
+  expect(updateRequests).toBe(2);
+  await page.reload();
+  await container(page, 'Retried browser space').click();
+  await expect(editor(page).getByLabel(/^Container name/)).toHaveValue('Retried browser space');
+  await expect(editor(page).getByLabel(/^Visibility/)).toHaveValue(
+    'Private: explicit allow required',
+  );
 });
 
 test('remote configuration changes preserve the dirty administration draft until explicit reload', async ({

@@ -9,19 +9,21 @@ import { Sidebar } from '../tree/Sidebar';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
+type WorkspaceNavigationProps = {
+  onSelect: () => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  selectedId?: string;
+  workspace: { name: string; role: 'admin' | 'member' };
+};
+
 export function WorkspaceNavigation({
   runtime,
   scope,
   selectedId,
   workspace,
   onSelect,
-}: {
-  onSelect: () => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  selectedId?: string;
-  workspace: { name: string; role: 'admin' | 'member' };
-}) {
+}: WorkspaceNavigationProps) {
   const pathname = usePathname();
 
   const home = `/w/${scope.workspaceId}`;

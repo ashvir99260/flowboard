@@ -1,10 +1,19 @@
 'use client';
 
 import { useZodForm } from '@flowboard/forms';
-import { Alert, Button, ConfirmDialog, Stack, Typography } from '@flowboard/ui';
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  SettingsDetailPanel,
+  Stack,
+  Typography,
+} from '@flowboard/ui';
 import { StatusPreview } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
+
+import { apiError } from '../../../lib/apiError';
 
 import { StatusFields } from './StatusFields';
 import {
@@ -22,6 +31,18 @@ import type { ClientRuntime } from '../../../providers/sessionContext';
 import type { FormEvent } from 'react';
 import type { FieldPath } from 'react-hook-form';
 
+type StatusFormProps = {
+  active: boolean;
+  configuration: StatusConfiguration;
+  onClose: () => void;
+  onReload: () => void;
+  onSaved: () => void;
+  onState: (state: { busy: boolean; dirty: boolean }) => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  targetId?: string;
+};
+
 export function StatusForm({
   active,
   configuration,
@@ -32,20 +53,10 @@ export function StatusForm({
   onClose,
   onSaved,
   onReload,
-}: {
-  active: boolean;
-  configuration: StatusConfiguration;
-  onClose: () => void;
-  onReload: () => void;
-  onSaved: () => void;
-  onState: (state: { busy: boolean; dirty: boolean }) => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  targetId?: string;
-}) {
+}: StatusFormProps) {
   const owner = configuration.input.scopes.at(-1)!;
 
-  const { submit } = useStatusMutation(runtime, scope, owner);
+  const { mutateAsync } = useStatusMutation(runtime, scope, owner);
   const {
     control,
     handleSubmit,
@@ -106,22 +117,19 @@ export function StatusForm({
     setBusy(true);
     setNotice(null);
     focus.current = null;
-    const result = await submit(command);
-    if (result.success) {
+    try {
+      await mutateAsync(command);
       onSaved();
-
-      return;
-    }
-
-    setNotice(result.error.message);
-    setConflict(
-      ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(result.error.code),
-    );
-    for (const issue of 'details' in result.error ? (result.error.details ?? []) : []) {
-      const name = issue.path[0];
-      if (['key', 'category', 'name', 'color', 'position', 'hidden'].includes(String(name))) {
-        focus.current ??= name as FieldPath<StatusDraft>;
-        setError(name as FieldPath<StatusDraft>, { type: 'server', message: issue.message });
+    } catch (cause) {
+      const error = apiError(cause);
+      setNotice(error.message);
+      setConflict(['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(error.code));
+      for (const issue of error.details ?? []) {
+        const name = issue.path[0];
+        if (['key', 'category', 'name', 'color', 'position', 'hidden'].includes(String(name))) {
+          focus.current ??= name as FieldPath<StatusDraft>;
+          setError(name as FieldPath<StatusDraft>, { type: 'server', message: issue.message });
+        }
       }
     }
   };
@@ -157,98 +165,106 @@ export function StatusForm({
   const removePreview = targetId ? previewStatusRemoval(configuration, targetId) : null;
 
   return (
-    <Stack
-      component="form"
-      aria-label="Status editor"
-      onSubmit={save}
-      noValidate
-      spacing={1.2}
-      aria-busy={busy}
+    <SettingsDetailPanel
+      active={active}
+      title={targetId ? 'Status details' : 'Add status'}
+      closeLabel="Close status details"
+      closeDisabled={busy}
+      onClose={() => request('close')}
     >
-      <Typography component="h2" variant="h3">
-        {targetId ? 'Edit status' : 'Add status'}
-      </Typography>
-      {notice && (
-        <Alert
-          aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
-          severity={notice === 'No changes to save.' ? 'info' : 'error'}
-        >
-          {notice}
-        </Alert>
-      )}
-      {conflict && (
-        <Button onClick={() => request('reload')} disabled={busy}>
-          Reload configuration
-        </Button>
-      )}
-      <StatusFields control={control} defining={!targetId} canInherit={canInherit} busy={busy} />
-      <StatusPreview
-        label="Draft status preview"
-        items={preview.success ? preview.items : []}
-        errors={preview.success ? [] : preview.issues.map((issue) => issue.message)}
-      />
-      <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
-        <Button type="submit" variant="contained" disabled={busy || conflict || !preview.success}>
-          {busy ? 'Saving…' : 'Save status'}
-        </Button>
-        <Button type="button" disabled={busy} onClick={() => request('close')}>
-          Cancel editing
-        </Button>
-        {local && (
-          <Button
-            type="button"
-            color="error"
-            disabled={busy || conflict || !removePreview?.success}
-            onClick={() => setConfirmation('remove')}
+      <Stack
+        component="form"
+        aria-label="Status editor"
+        onSubmit={save}
+        noValidate
+        spacing={1.2}
+        aria-busy={busy}
+      >
+        <Typography component="h2" variant="h3">
+          {targetId ? 'Edit status' : 'Add status'}
+        </Typography>
+        {notice && (
+          <Alert
+            aria-live={notice === 'No changes to save.' ? 'polite' : 'off'}
+            severity={notice === 'No changes to save.' ? 'info' : 'error'}
           >
-            {canInherit ? 'Remove local override' : 'Delete status'}
+            {notice}
+          </Alert>
+        )}
+        {conflict && (
+          <Button onClick={() => request('reload')} disabled={busy}>
+            Reload configuration
           </Button>
         )}
+        <StatusFields control={control} defining={!targetId} canInherit={canInherit} busy={busy} />
+        <StatusPreview
+          label="Draft status preview"
+          items={preview.success ? preview.items : []}
+          errors={preview.success ? [] : preview.issues.map((issue) => issue.message)}
+        />
+        <Stack direction="row" spacing={0.8} useFlexGap sx={{ flexWrap: 'wrap' }}>
+          <Button type="submit" variant="contained" disabled={busy || conflict || !preview.success}>
+            {busy ? 'Saving…' : 'Save status'}
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => request('close')}>
+            Cancel editing
+          </Button>
+          {local && (
+            <Button
+              type="button"
+              color="error"
+              disabled={busy || conflict || !removePreview?.success}
+              onClick={() => setConfirmation('remove')}
+            >
+              {canInherit ? 'Remove local override' : 'Delete status'}
+            </Button>
+          )}
+        </Stack>
+        {local && removePreview && !removePreview.success && (
+          <Alert aria-live="off" severity="info">
+            This status cannot be removed:{' '}
+            {removePreview.issues.map((issue) => issue.message).join(' ')}
+          </Alert>
+        )}
+        <ConfirmDialog
+          open={active && confirmation !== null}
+          busy={busy}
+          title={
+            confirmation === 'remove'
+              ? 'Remove local status configuration?'
+              : 'Discard unsaved changes?'
+          }
+          description={
+            confirmation === 'remove'
+              ? 'This removes only the configuration at this scope. Inherited settings may become visible; tasks in use can block removal.'
+              : 'Your unsaved status edits will be discarded.'
+          }
+          confirmLabel={
+            confirmation === 'remove'
+              ? 'Remove configuration'
+              : confirmation === 'reload'
+                ? 'Discard and reload'
+                : 'Discard changes'
+          }
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            const action = confirmation;
+            setConfirmation(null);
+            if (action === 'remove' && targetId && !inFlight.current) {
+              inFlight.current = true;
+              void saveCommand({
+                kind: 'remove',
+                statusId: targetId,
+                body: { expectedConfigVersion: configuration.configVersion },
+              }).finally(() => {
+                inFlight.current = false;
+                setBusy(false);
+              });
+            } else if (action === 'reload') onReload();
+            else if (action === 'close') onClose();
+          }}
+        />
       </Stack>
-      {local && removePreview && !removePreview.success && (
-        <Alert aria-live="off" severity="info">
-          This status cannot be removed:{' '}
-          {removePreview.issues.map((issue) => issue.message).join(' ')}
-        </Alert>
-      )}
-      <ConfirmDialog
-        open={active && confirmation !== null}
-        busy={busy}
-        title={
-          confirmation === 'remove'
-            ? 'Remove local status configuration?'
-            : 'Discard unsaved changes?'
-        }
-        description={
-          confirmation === 'remove'
-            ? 'This removes only the configuration at this scope. Inherited settings may become visible; tasks in use can block removal.'
-            : 'Your unsaved status edits will be discarded.'
-        }
-        confirmLabel={
-          confirmation === 'remove'
-            ? 'Remove configuration'
-            : confirmation === 'reload'
-              ? 'Discard and reload'
-              : 'Discard changes'
-        }
-        onCancel={() => setConfirmation(null)}
-        onConfirm={() => {
-          const action = confirmation;
-          setConfirmation(null);
-          if (action === 'remove' && targetId && !inFlight.current) {
-            inFlight.current = true;
-            void saveCommand({
-              kind: 'remove',
-              statusId: targetId,
-              body: { expectedConfigVersion: configuration.configVersion },
-            }).finally(() => {
-              inFlight.current = false;
-              setBusy(false);
-            });
-          } else if (action === 'reload') onReload();
-          else if (action === 'close') onClose();
-        }}
-      />
-    </Stack>
+    </SettingsDetailPanel>
   );
 }

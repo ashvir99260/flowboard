@@ -14,7 +14,9 @@ const Root = styled('div', { name: 'FlowboardLoading', slot: 'Root' })(({ theme 
   minHeight: '8rem',
 }));
 
-export function LoadingState({ children }: Readonly<{ children: ReactNode }>) {
+type LoadingStateProps = Readonly<{ children: ReactNode }>;
+
+export function LoadingState({ children }: LoadingStateProps) {
   return (
     <SkeletonRegion label={children}>
       <Root>

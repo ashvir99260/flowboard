@@ -13,17 +13,14 @@ import type { Control } from 'react-hook-form';
 
 type Detail = Extract<ReturnType<typeof assembleTaskDetail>, { state: 'ready' }>;
 
-export function TaskBuiltInFields({
-  baseline,
-  busy,
-  control,
-  detail,
-}: {
+type TaskBuiltInFieldsProps = {
   baseline?: Task;
   busy: boolean;
   control: Control<TaskDraft>;
   detail: Detail;
-}) {
+};
+
+export function TaskBuiltInFields({ baseline, busy, control, detail }: TaskBuiltInFieldsProps) {
   const fields: FormFieldConfig<TaskDraft>[] = [
     {
       kind: 'select',

@@ -4,25 +4,24 @@ import { WorkspaceEnvelopeSchema } from '@flowboard/contracts';
 import { Alert, Button, ErrorState, Stack, Typography } from '@flowboard/ui';
 import { useState } from 'react';
 
+import { useGetWorkspaceQuery } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { SessionLoading } from '../auth/SessionLoading';
 import { useRealtime } from '../realtime/useRealtime';
 
-import { useGetWorkspaceQuery } from './useGetWorkspaceQuery';
 import { WorkspaceForm } from './WorkspaceForm';
 
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { WorkspaceEnvelope } from '@flowboard/contracts';
 
-export function WorkspaceSettingsContent({
-  runtime,
-  scope,
-}: {
+type WorkspaceSettingsContentProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
-  const query = useGetWorkspaceQuery(runtime, scope);
+};
+
+export function WorkspaceSettingsContent({ runtime, scope }: WorkspaceSettingsContentProps) {
+  const query = useGetWorkspaceQuery({ runtime, scope, path: { workspaceId: scope.workspaceId! } });
 
   useRealtime(undefined, (event) => {
     if (event.kind === 'workspace' || event.kind === 'resync') void query.refetch();

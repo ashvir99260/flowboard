@@ -1,12 +1,22 @@
 'use client';
 
-import { Alert, Button, Chip, ErrorState, Stack, Typography } from '@flowboard/ui';
-import { useRef, useState } from 'react';
+import {
+  Alert,
+  Button,
+  Chip,
+  ErrorState,
+  SettingsLayout,
+  SettingsList,
+  Stack,
+  Toolbar,
+  Typography,
+  WorkspaceIcon,
+} from '@flowboard/ui';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { SessionLoading } from '../../auth/SessionLoading';
 
 import { FieldForm } from './FieldForm';
-import { FieldPreview } from './FieldPreview';
 import { useFieldConfiguration } from './useFieldConfiguration';
 
 import type { ConfigurationEditorProps } from '../configurationTypes';
@@ -22,6 +32,18 @@ export function FieldScopeConfiguration({
   const [editing, setEditing] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const origin = useRef<HTMLElement | null>(null);
+  const restoreFocus = useRef(false);
+  const focusId = useId();
+
+  useEffect(() => {
+    if (!active || !restoreFocus.current || result.state !== 'ready') return;
+
+    const target =
+      document.getElementById(origin.current?.id ?? '') ??
+      document.getElementById(`${focusId}-new`);
+    target?.focus();
+    restoreFocus.current = false;
+  }, [active, editing, focusId, result.state]);
 
   const open = (key: string) => {
     origin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -31,7 +53,7 @@ export function FieldScopeConfiguration({
   const close = () => {
     setEditing(null);
     onState({ busy: false, dirty: false });
-    requestAnimationFrame(() => origin.current?.isConnected && origin.current.focus());
+    restoreFocus.current = true;
   };
   const reload = () => {
     close();
@@ -55,52 +77,69 @@ export function FieldScopeConfiguration({
           {notice}
         </Alert>
       )}
-      <FieldPreview items={result.effective} />
-      <Stack component="section" aria-label="Field configuration" spacing={0.8}>
-        <Typography component="h2" variant="h3">
-          Fields
-        </Typography>
-        {result.effective.map((field) => (
-          <Stack
-            component="section"
-            aria-label={`Field ${field.key}`}
-            key={field.key}
-            direction="row"
-            spacing={0.8}
-            sx={{ alignItems: 'center', flexWrap: 'wrap' }}
-          >
-            <Typography>{field.name}</Typography>
-            <Chip label={field.isInherited ? 'Inherited' : 'Local'} size="small" />
-            <Typography variant="caption">
-              {field.key} · {field.type}
-              {field.required ? ' · Required' : ''}
-            </Typography>
-            <Button disabled={editing !== null} onClick={() => open(field.key)}>
-              Edit {field.name}
-            </Button>
+      <SettingsLayout
+        collection={
+          <Stack component="section" aria-label="Field configuration" spacing={1.6}>
+            <Toolbar.Root>
+              <Typography component="h2" variant="h3">
+                Custom fields
+              </Typography>
+              <Button
+                id={`${focusId}-new`}
+                variant="contained"
+                disabled={editing !== null}
+                onClick={() => open('')}
+                startIcon={<WorkspaceIcon name="plus" />}
+              >
+                Add field
+              </Button>
+            </Toolbar.Root>
+            <SettingsList.Root aria-label="Custom fields">
+              {result.effective.map((field) => (
+                <SettingsList.Item
+                  id={`${focusId}-${field.key}`}
+                  aria-label={`Edit ${field.name}`}
+                  itemLabel={`Field ${field.key}`}
+                  key={field.key}
+                  title={field.name}
+                  description={`${field.key} · ${field.type}${field.required ? ' · Required' : ''}`}
+                  selected={editing === field.key}
+                  disabled={editing !== null}
+                  onClick={() => open(field.key)}
+                >
+                  <span>
+                    <Chip label={field.isInherited ? 'Inherited' : 'Local'} size="small" />
+                  </span>
+                </SettingsList.Item>
+              ))}
+            </SettingsList.Root>
+            {result.effective.length === 0 && (
+              <Typography color="text.secondary">
+                No custom fields at this scope. Add a field to get started.
+              </Typography>
+            )}
           </Stack>
-        ))}
-        <Button variant="outlined" disabled={editing !== null} onClick={() => open('')}>
-          Add field
-        </Button>
-      </Stack>
-      {editing !== null && (
-        <FieldForm
-          key={editing}
-          active={active}
-          configuration={result}
-          targetKey={editing || undefined}
-          runtime={runtime}
-          scope={scope}
-          onState={onState}
-          onClose={close}
-          onReload={reload}
-          onSaved={() => {
-            reload();
-            setNotice('Field saved.');
-          }}
-        />
-      )}
+        }
+        detail={
+          editing !== null && (
+            <FieldForm
+              key={editing}
+              active={active}
+              configuration={result}
+              targetKey={editing || undefined}
+              runtime={runtime}
+              scope={scope}
+              onState={onState}
+              onClose={close}
+              onReload={reload}
+              onSaved={() => {
+                reload();
+                setNotice('Field saved.');
+              }}
+            />
+          )
+        }
+      />
     </Stack>
   );
 }

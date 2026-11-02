@@ -9,6 +9,16 @@ import { useId, useRef } from 'react';
 
 import { Dialog } from './Dialog.js';
 
+type ConfirmDialogProps = Readonly<{
+  busy?: boolean;
+  confirmLabel?: string;
+  description: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+  open: boolean;
+  title: string;
+}>;
+
 export function ConfirmDialog({
   busy = false,
   confirmLabel = 'Confirm',
@@ -17,15 +27,7 @@ export function ConfirmDialog({
   onConfirm,
   open,
   title,
-}: Readonly<{
-  busy?: boolean;
-  confirmLabel?: string;
-  description: string;
-  onCancel: () => void;
-  onConfirm: () => void;
-  open: boolean;
-  title: string;
-}>) {
+}: ConfirmDialogProps) {
   const id = useId();
   const cancel = useRef<HTMLButtonElement>(null);
 

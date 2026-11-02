@@ -13,11 +13,9 @@ const Root = styled(Alert, { name: 'FlowboardErrorState', slot: 'Root' })(({ the
   '& .MuiButton-root': { maxWidth: '100%', whiteSpace: 'normal', textAlign: 'left' },
 }));
 
-export function ErrorState({
-  action,
-  description,
-  title,
-}: Readonly<{ action?: ReactNode; description: string; title: string }>) {
+type ErrorStateProps = Readonly<{ action?: ReactNode; description: string; title: string }>;
+
+export function ErrorState({ action, description, title }: ErrorStateProps) {
   return (
     <Root severity="error" icon={false} aria-label={title} action={action}>
       <AlertTitle>{title}</AlertTitle>

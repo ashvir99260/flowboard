@@ -1,59 +1,114 @@
 'use client';
 
-import { acceptWorkspaceInvitationMutation } from '@flowboard/api-client/tanstack-query';
 import { AcceptedInvitationEnvelopeSchema, AcceptInvitationSchema } from '@flowboard/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { apiError } from '../../lib/apiError';
+import { acceptWorkspaceInvitationMutation } from '../../generated/apiHooks.gen';
+import { apiError, ApiMutationError } from '../../lib/apiError';
 import { useApiMutation } from '../../lib/useApiMutation';
 import { useNotifications } from '../notifications/useNotifications';
 
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 class InvitationResponseError extends Error {}
 
-export function useAcceptWorkspaceInvitationMutation(runtime: ClientRuntime, scope: QueryScope) {
+export type AcceptWorkspaceInvitationMutationVariables = string;
+
+export type AcceptWorkspaceInvitationMutationData = ReturnType<
+  typeof AcceptedInvitationEnvelopeSchema.parse
+>;
+
+type AcceptWorkspaceInvitationMutationContext = {
+  report: ReturnType<ReturnType<typeof useNotifications>['capture']>;
+};
+export type AcceptWorkspaceInvitationMutationOptions = Omit<
+  UseMutationOptions<
+    AcceptWorkspaceInvitationMutationData,
+    ApiMutationError,
+    AcceptWorkspaceInvitationMutationVariables,
+    AcceptWorkspaceInvitationMutationContext
+  >,
+  'mutationKey' | 'mutationFn' | 'retry' | 'networkMode' | 'onMutate'
+>;
+
+export type AcceptWorkspaceInvitationMutationResult = UseMutationResult<
+  AcceptWorkspaceInvitationMutationData,
+  ApiMutationError,
+  AcceptWorkspaceInvitationMutationVariables,
+  AcceptWorkspaceInvitationMutationContext
+>;
+
+export async function requestAcceptWorkspaceInvitation(
+  requestClient: ClientRuntime['client'],
+  command: AcceptWorkspaceInvitationMutationVariables,
+
+  mutationContext: MutationFunctionContext,
+): Promise<AcceptWorkspaceInvitationMutationData> {
+  try {
+    const response = await acceptWorkspaceInvitationMutation({ client: requestClient }).mutationFn(
+      { body: AcceptInvitationSchema.parse({ token: command }) },
+      mutationContext,
+    );
+    const result = AcceptedInvitationEnvelopeSchema.safeParse(response);
+    if (!result.success || result.data.data.archivedAt !== null)
+      throw new InvitationResponseError(
+        'The invitation result could not be validated. Open your workspace list to check membership.',
+      );
+
+    return result.data;
+  } catch (cause) {
+    throw new ApiMutationError(
+      cause instanceof InvitationResponseError
+        ? { code: 'INVALID_RESPONSE', message: cause.message }
+        : apiError(cause),
+    );
+  }
+}
+
+export function useAcceptWorkspaceInvitationMutation(
+  runtime: ClientRuntime,
+  scope: QueryScope,
+  options: AcceptWorkspaceInvitationMutationOptions = {},
+): AcceptWorkspaceInvitationMutationResult {
   const notifications = useNotifications();
+
+  const capture = notifications.captureFactory();
+
   const client = useQueryClient();
 
-  const generated = acceptWorkspaceInvitationMutation({ client: runtime.client });
+  const mutationKey = ['accept-invitation', scope.revision, scope.userId];
 
-  const mutation = useApiMutation({
-    mutationKey: ['accept-invitation', scope.revision, scope.userId],
-    mutationFn: async (token: string, context) => {
-      const response = await generated.mutationFn!(
-        { body: AcceptInvitationSchema.parse({ token }) },
-        context,
-      );
-      const result = AcceptedInvitationEnvelopeSchema.safeParse(response);
-      if (!result.success || result.data.data.archivedAt !== null)
-        throw new InvitationResponseError(
-          'The invitation result could not be validated. Open your workspace list to check membership.',
-        );
+  const mutation = useApiMutation<
+    AcceptWorkspaceInvitationMutationData,
+    ApiMutationError,
+    AcceptWorkspaceInvitationMutationVariables,
+    AcceptWorkspaceInvitationMutationContext
+  >({
+    ...options,
+    mutationKey,
+    mutationFn: (command, mutationContext) =>
+      requestAcceptWorkspaceInvitation(runtime.client, command, mutationContext),
+    onMutate: () => {
+      const report = capture();
 
-      return result.data;
+      return { report };
+    },
+    onSuccess: async (response, command, context, mutationContext) => {
+      await client.invalidateQueries();
+      context?.report('Invitation accepted. You can now open the workspace.', 'success');
+      await options.onSuccess?.(response, command, context, mutationContext);
+    },
+    onError: async (error, command, context, mutationContext) => {
+      context?.report(error.message, 'error');
+      await options.onError?.(error, command, context, mutationContext);
     },
   });
 
-  const submit = async (token: string) => {
-    const report = notifications.capture();
-    try {
-      const response = await mutation.mutateAsync(token);
-      await client.invalidateQueries();
-      report('Invitation accepted. You can now open the workspace.', 'success');
-
-      return { success: true as const, response };
-    } catch (cause) {
-      const error =
-        cause instanceof InvitationResponseError
-          ? { code: 'INVALID_RESPONSE', message: cause.message }
-          : apiError(cause);
-      report(error.message, 'error');
-
-      return { success: false as const, error };
-    }
-  };
-
-  return { submit };
+  return mutation;
 }

@@ -16,6 +16,15 @@ import { useTaskEditor } from '../tasks/useTaskEditor';
 import type { WorkspaceBoardColumn } from './workspaceBoardData';
 import type { Task } from '@flowboard/contracts';
 
+type WorkspaceTaskCardProps = {
+  column: WorkspaceBoardColumn;
+  index: number;
+  openMove: () => void;
+  pending: boolean;
+  reduced: boolean;
+  task: Task;
+};
+
 export function WorkspaceTaskCard({
   task,
   column,
@@ -23,14 +32,7 @@ export function WorkspaceTaskCard({
   pending,
   reduced,
   openMove,
-}: {
-  column: WorkspaceBoardColumn;
-  index: number;
-  openMove: () => void;
-  pending: boolean;
-  reduced: boolean;
-  task: Task;
-}) {
+}: WorkspaceTaskCardProps) {
   const openTask = useTaskEditor();
 
   const status = column.statuses.find((item) => item.id === task.statusId)!;

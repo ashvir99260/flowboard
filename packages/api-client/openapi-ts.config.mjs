@@ -13,6 +13,11 @@ export default await defineConfig({
     '@hey-api/typescript',
     '@hey-api/client-fetch',
     '@hey-api/sdk',
-    { mutationOptions: true, name: '@tanstack/react-query', queryOptions: true },
+    {
+      mutationKeys: true,
+      mutationOptions: true,
+      name: '@tanstack/react-query',
+      queryOptions: true,
+    },
   ],
 });

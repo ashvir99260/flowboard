@@ -11,6 +11,15 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { Control } from 'react-hook-form';
 
+type TaskParentFieldProps = {
+  busy: boolean;
+  control: Control<TaskDraft>;
+  listId: string;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  taskId?: string;
+};
+
 export function TaskParentField({
   control,
   busy,
@@ -18,14 +27,7 @@ export function TaskParentField({
   listId,
   runtime,
   scope,
-}: {
-  busy: boolean;
-  control: Control<TaskDraft>;
-  listId: string;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  taskId?: string;
-}) {
+}: TaskParentFieldProps) {
   const selected = useWatch({ control, name: 'parentTaskId' });
   const { result, error, query, refresh } = useListRelatedTasksInfiniteQuery({
     listId,

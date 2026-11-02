@@ -31,9 +31,9 @@ function initials(name: string): string {
   return `${first}${last}`.toLocaleUpperCase('en-US');
 }
 
-export function AssigneeAvatarGroup({
-  assignees,
-}: Readonly<{ assignees: ReadonlyArray<Task['assignees'][number]> }>) {
+type AssigneeAvatarGroupProps = Readonly<{ assignees: ReadonlyArray<Task['assignees'][number]> }>;
+
+export function AssigneeAvatarGroup({ assignees }: AssigneeAvatarGroupProps) {
   if (!assignees.length)
     return (
       <Unassigned aria-label="Unassigned" role="img" title="Unassigned">

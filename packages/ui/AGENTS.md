@@ -16,8 +16,12 @@ Use 3.6rem desktop controls and at least 4.4rem coarse-pointer targets; multilin
 
 Test public rendering/interaction and responsive/light/dark accessibility behavior. Domain examples are fixtures, never fake runtime API responses. Export through the package entry point.
 
+Settings screens reuse `SettingsLayout`, `SettingsList` and `SettingsDetailPanel` from public exports. Follow the [settings collection contract](../../docs/UI_COMPONENT_SYSTEM.md#settings-collections-and-details) for responsive layout, non-modal behavior, focus and active-panel notifications. Keep draft state and authorization in web.
+
 TaskTable owns MUI Data Grid Community presentation and pagination of already-loaded rows. Keep web's URL sort/filter and cursor loading authoritative. Preserve title-button roving focus, drawer focus attributes, inherited/local labels and rem-derived geometry; see the component system guide before changing grid behavior.
 
 Use the [Storybook guide](../../docs/STORYBOOK.md) for component examples. Keep stories outside `src`, use typed CSF and local props, and add meaningful `play` interactions for important behaviors. Reuse the shared theme; do not import web fixtures, API clients or forms adapters. Run the story build/browser checks with the normal UI gates.
 
 Follow [React section conventions](../../docs/CODE_STYLE.md#react-hooks-and-component-sections). Group related state/refs, separate hook blocks and each effect, and preserve dependency-sensitive order. Lint fixes spacing only; never mechanically sort hooks. Rules of Hooks and dependency checks also apply to `.ts` hook files.
+
+Declare named [component prop types](../../docs/CODE_STYLE.md#component-props-and-file-boundaries) above their component. Preserve imported types, generics, readonly/optional properties and callbacks; keep cohesive private styled slots with their owner.

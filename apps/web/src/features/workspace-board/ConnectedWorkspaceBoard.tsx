@@ -14,6 +14,7 @@ import {
 } from '@flowboard/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { ApiMutationError } from '../../lib/apiError';
 import { MoveMenu } from '../board/MoveMenu';
 import { useTaskPlacementMutation } from '../board/useTaskPlacementMutation';
 import { useNotifications } from '../notifications/useNotifications';
@@ -30,13 +31,12 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { Task } from '@flowboard/contracts';
 
-export function ConnectedWorkspaceBoard({
-  runtime,
-  scope,
-}: {
+type ConnectedWorkspaceBoardProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function ConnectedWorkspaceBoard({ runtime, scope }: ConnectedWorkspaceBoardProps) {
   const notifications = useNotifications();
   const tree = useTree(runtime, scope);
   const [listLimit, setListLimit] = useState(10);
@@ -52,7 +52,7 @@ export function ConnectedWorkspaceBoard({
 
   const visible = useMemo(() => lists.slice(0, listLimit), [listLimit, lists]);
   const board = useWorkspaceBoardQuery(runtime, scope, visible);
-  const { pending, submit } = useTaskPlacementMutation(runtime, scope);
+  const { pending, mutate, mutateAsync } = useTaskPlacementMutation(runtime, scope);
 
   const ready = board.columns.filter((column) => column.state === 'ready');
   const projected = projectWorkspaceMoves(ready, pending);
@@ -62,13 +62,12 @@ export function ConnectedWorkspaceBoard({
       : column,
   );
   const visibleIds = tree.state === 'ready' ? lists.map((list) => list.id).join(',') : null;
-  const submitMove: typeof submit = (command) =>
+  const submitMove: typeof mutateAsync = (command) =>
     board.refreshing
-      ? Promise.resolve({
-          success: false,
-          error: { code: 'BUSY', message: 'Wait for the board to finish updating.' },
-        })
-      : submit(command);
+      ? Promise.reject(
+          new ApiMutationError({ code: 'BUSY', message: 'Wait for the board to finish updating.' }),
+        )
+      : mutateAsync(command);
 
   if (visibleIds !== null) {
     const allowed = new Set(visibleIds.split(','));
@@ -114,7 +113,7 @@ export function ConnectedWorkspaceBoard({
       return;
     }
 
-    void submit(plan.command).then(restoreFocus);
+    mutate(plan.command, { onSettled: restoreFocus });
   };
 
   return (
@@ -199,7 +198,7 @@ export function ConnectedWorkspaceBoard({
       {repair && (
         <WorkspaceMoveRepair
           selection={repair}
-          submit={submitMove}
+          mutateAsync={submitMove}
           onClose={() => {
             setRepair(null);
             restoreFocus();
@@ -218,7 +217,7 @@ export function ConnectedWorkspaceBoard({
           }))}
           runtime={runtime}
           scope={scope}
-          submit={submitMove}
+          mutateAsync={submitMove}
           onClose={() => {
             setMenu(null);
             restoreFocus();

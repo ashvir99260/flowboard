@@ -8,17 +8,14 @@ import type { StatusDraft } from './statusFormData';
 import type { FormFieldConfig } from '@flowboard/forms';
 import type { Control } from 'react-hook-form';
 
-export function StatusFields({
-  control,
-  busy,
-  defining,
-  canInherit,
-}: {
+type StatusFieldsProps = {
   busy: boolean;
   canInherit: boolean;
   control: Control<StatusDraft>;
   defining: boolean;
-}) {
+};
+
+export function StatusFields({ control, busy, defining, canInherit }: StatusFieldsProps) {
   const displayFields: FormFieldConfig<StatusDraft>[] = [
     {
       kind: 'text',

@@ -45,7 +45,7 @@ Each independent public component has its own file. Surface and Toolbar retain t
 | Reusable presentation          | `packages/ui/src/modules/<area>/`        | PascalCase file and component; for example `TaskTable.tsx` / `TaskTable` |
 | Generic UI helper/hook         | `packages/ui/src/utils/` or `src/hooks/` | camelCase; for example `useRemSize.ts` / `useRemSize`                    |
 | React Hook Form bindings       | `packages/forms/src/`                    | Follow that package's existing conventions; do not put RHF in UI         |
-| API/session/URL-aware adapter  | `apps/web/src/features/<feature>/`       | Kebab-case file; PascalCase component, named query hooks in `.ts`        |
+| API/session/URL-aware adapter  | `apps/web/src/features/<feature>/`       | PascalCase component file; camelCase named query hooks in `.ts`          |
 | Component stories              | `packages/ui/stories/`                   | `<camelCase>.stories.tsx` with typed CSF                                 |
 | UI rendering/interaction tests | `packages/ui/test/`                      | `<camelCase>.test.mjs`, using the public exports                         |
 
@@ -100,6 +100,18 @@ import { Button, Surface, TaskTable, Toolbar } from '@flowboard/ui';
 The development-only `/playground` page demonstrates controls, compound parts and domain views without making API calls. Its examples are validated sample props, separate from runtime data. Browser tests exercise both themes, four viewport widths, focus, contrast, reduced motion, callback behavior and safe Markdown. The production build keeps this route unavailable.
 
 The executable ESLint boundary rejects direct `@mui/*` imports/reexports/dynamic imports in web `src` and `app`. MUI imports belong in UI; test fixtures remain allowed. UI also rejects data clients, router hooks and React Hook Form. Existing package-layer checks continue to reject app imports and package source-path shortcuts. Review is still needed for component ownership, visual quality and excessive local layout styles; those cannot be proved by an import rule.
+
+## Settings collections and details
+
+Containers, Statuses and Custom Fields use the list-first pattern selected in D175:
+
+- Compose `SettingsLayout`, `SettingsList.Root`/`.Item` and `SettingsDetailPanel` through the public UI exports. Containers show an expandable hierarchy; statuses and fields show selectable rows.
+- Start with the collection visible and the editor closed. Place the Add action at the top right; selecting a row or Add opens the relevant details or creation form.
+- Keep the collection on the left and the optional editor on the right. At narrow widths put the editor before the collection. The panel is non-modal, so scope and sidebar navigation remain usable.
+- Route Close and Escape through the feature's dirty-edit guard. Preserve canceled-close drafts and restore focus to the selected row or a visible ancestor. Selection, permissions, forms and query state remain in web.
+- Register inline notifications only while the panel's route is active. Release that region on inactive views and keep notifications from covering actions. Long content, including member grants, must remain reachable by keyboard without squeezing action columns.
+
+Use [the shared settings story](../packages/ui/stories/settings.stories.tsx) and [container feature adapter](../apps/web/src/features/administration/AdministrationWorkspace.tsx) as examples. [Public UI checks](../packages/ui/test/settings.test.mjs) cover row semantics, notification ownership and scroll access; [real-service panel journeys](../apps/web/e2e/settings-panels.spec.ts) cover hierarchy, panel placement, dirty closing, focus and responsive views. Review new screens against the same behavior rather than treating a screenshot as proof of every rule.
 
 ## Task Data Grid
 

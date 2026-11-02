@@ -12,10 +12,10 @@ import {
 import NextLink from 'next/link';
 import { useState } from 'react';
 
+import { useGetCurrentUserQuery } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { useSession } from '../../providers/useSession';
 import { SessionLoading } from '../auth/SessionLoading';
-import { useGetCurrentUserQuery } from '../auth/useGetCurrentUserQuery';
 import { ConfigurationSettingsHost } from '../config/ConfigurationSettingsHost';
 import { GlobalSearch } from '../search/GlobalSearch';
 import { TaskEditorProvider } from '../tasks/TaskEditorProvider';
@@ -27,17 +27,14 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { ReactNode } from 'react';
 
-export function VerifiedWorkspace({
-  runtime,
-  scope,
-  listId,
-  children,
-}: {
+type VerifiedWorkspaceProps = {
   children: ReactNode;
   listId?: string;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function VerifiedWorkspace({ runtime, scope, listId, children }: VerifiedWorkspaceProps) {
   const { logout } = useSession();
   const [open, setOpen] = useState(false);
   const query = useGetCurrentUserQuery({ runtime, scope });

@@ -7,12 +7,9 @@ import { InviteContent } from './InviteContent';
 
 import type { InvitationContext, InvitationFormState } from './invitationTypes';
 
-export function InviteMembers({
-  open,
-  onClose,
-  runtime,
-  scope,
-}: InvitationContext & { onClose: () => void; open: boolean }) {
+type InviteMembersProps = InvitationContext & { onClose: () => void; open: boolean };
+
+export function InviteMembers({ open, onClose, runtime, scope }: InviteMembersProps) {
   const [state, setState] = useState<InvitationFormState>({ busy: false, dirty: false });
   const [confirm, setConfirm] = useState(false);
   const onState = useCallback((value: InvitationFormState) => setState(value), []);

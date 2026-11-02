@@ -15,11 +15,9 @@ const Title = styled(Typography)({ fontWeight: 600 }) as typeof Typography;
 const Description = styled(Typography)(({ theme }) => ({ marginTop: theme.spacing(0.4) }));
 const Action = styled('div')(({ theme }) => ({ marginTop: theme.spacing(0.8) }));
 
-export function EmptyState({
-  action,
-  description,
-  title,
-}: Readonly<{ action?: ReactNode; description: string; title: string }>) {
+type EmptyStateProps = Readonly<{ action?: ReactNode; description: string; title: string }>;
+
+export function EmptyState({ action, description, title }: EmptyStateProps) {
   return (
     <Root role="status" aria-label={title}>
       <Title component="p">{title}</Title>

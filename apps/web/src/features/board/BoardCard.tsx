@@ -7,21 +7,16 @@ import { useTaskEditor } from '../tasks/useTaskEditor';
 
 import type { ResolvedField, Task } from '@flowboard/contracts';
 
-export function BoardCard({
-  task,
-  index,
-  fields,
-  pending,
-  open,
-  reduced,
-}: {
+type BoardCardProps = {
   fields: readonly ResolvedField[];
   index: number;
   open: () => void;
   pending: boolean;
   reduced: boolean;
   task: Task;
-}) {
+};
+
+export function BoardCard({ task, index, fields, pending, open, reduced }: BoardCardProps) {
   const openTask = useTaskEditor();
 
   const field = fields.find(({ key }) => Object.hasOwn(task.customFields, key));

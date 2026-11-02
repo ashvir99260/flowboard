@@ -12,8 +12,10 @@ import { StatusSettings } from './statuses/StatusSettings';
 
 import type { ReactNode } from 'react';
 
+type ConfigurationSettingsHostProps = { children: ReactNode };
+
 // The verified workspace owns the editor, so local navigation never unmounts a dirty form.
-export function ConfigurationSettingsHost({ children }: { children: ReactNode }) {
+export function ConfigurationSettingsHost({ children }: ConfigurationSettingsHostProps) {
   const pathname = usePathname();
 
   const workspaceActive = /^\/w\/[^/]+\/settings\/workspace\/?$/.test(pathname);

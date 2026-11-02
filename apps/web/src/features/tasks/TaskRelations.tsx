@@ -8,6 +8,16 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { Task } from '@flowboard/contracts';
 
+type TaskRelationsProps = {
+  busy: boolean;
+  create: (parentTaskId: string) => void;
+  listId: string;
+  open: (taskId: string) => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  task: Task;
+};
+
 export function TaskRelations({
   task,
   busy,
@@ -16,15 +26,7 @@ export function TaskRelations({
   scope,
   open,
   create,
-}: {
-  busy: boolean;
-  create: (parentTaskId: string) => void;
-  listId: string;
-  open: (taskId: string) => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  task: Task;
-}) {
+}: TaskRelationsProps) {
   const { result, error, query, refresh } = useListRelatedTasksInfiniteQuery({
     listId,
     runtime,

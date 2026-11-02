@@ -16,10 +16,9 @@ import type { ClientRuntime, SessionState } from './sessionContext';
 import type { SessionEnvelope } from '@flowboard/contracts';
 import type { ReactNode } from 'react';
 
-export function RuntimeProviders({
-  children,
-  realtimeUrl,
-}: Readonly<{ children: ReactNode; realtimeUrl: string | null }>) {
+type RuntimeProvidersProps = Readonly<{ children: ReactNode; realtimeUrl: string | null }>;
+
+export function RuntimeProviders({ children, realtimeUrl }: RuntimeProvidersProps) {
   const notifications = useNotifications();
   const [queryClient] = useState(
     () => new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 15000 } } }),

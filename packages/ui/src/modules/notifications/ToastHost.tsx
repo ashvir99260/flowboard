@@ -8,15 +8,13 @@ import { ToastDisplay } from './ToastDisplay.js';
 import type { ToastMessage } from './toastTypes.js';
 import type { ReactNode } from 'react';
 
-export function ToastHost({
-  children,
-  message,
-  onDismiss,
-}: {
+type ToastHostProps = {
   children: ReactNode;
   message: ToastMessage | undefined;
   onDismiss: (id: number) => void;
-}) {
+};
+
+export function ToastHost({ children, message, onDismiss }: ToastHostProps) {
   const [regions, setRegions] = useState<HTMLElement[]>([]);
   const [root, setRoot] = useState<HTMLElement | null>(null);
   const register = useCallback((element: HTMLElement) => {

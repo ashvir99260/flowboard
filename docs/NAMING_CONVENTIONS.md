@@ -23,6 +23,8 @@ These conventions describe the current repository and the required patterns for 
 
 Do not infer that all names must be PascalCase. Do not change enum values, status keys, JSON fields, SQL mappings or operation IDs as a cosmetic rename.
 
+Component prop annotations use named types declared above the component; see [the prop declaration rule](CODE_STYLE.md#component-props-and-file-boundaries). New local extractions use `<ComponentName>Props`; existing named/imported types remain valid.
+
 D163 supersedes D146: all frontend component implementation files use PascalCase; hooks/helpers use camelCase. Keep test/story suffixes (`sourceLayout.test.mjs`, `fields.stories.tsx`) and reserved tooling filenames. Split distinct component implementations, including private React components; a cohesive compound component may keep its private styled parts. Public exports remain available from `@flowboard/ui`, regardless of internal file placement.
 
 ## Exact file patterns
@@ -45,7 +47,7 @@ Use the full suffix, including the language extension. Write `spec` in the singu
 | Web feature component                | `<PascalCase>.tsx`                       | `TaskForm.tsx` exports `TaskForm`                            |
 | Browser acceptance test              | `<subject>.spec.ts` in web `e2e`         | `task-edit.spec.ts`                                          |
 
-Web query/mutation and generic hook files use camelCase matching their export: `useGetCurrentUserQuery.ts`, `useTaskWriteMutation.ts`, `useTaskEditor.ts`. The source-name and mutation-boundary tests enforce these frontend conventions. Pure reexport barrels and shared context/type modules use camelCase `.ts`; component files do not implement hooks alongside the component.
+Web query/mutation and generic hook files use camelCase matching their export: `useListTaskActivityInfiniteQuery.ts`, `useTaskWriteMutation.ts`, `useTaskEditor.ts`. The source-name and mutation-boundary tests enforce these authored frontend conventions. Endpoint bindings in `src/generated/apiHooks.gen.ts` use the same operation-based names but are generated as one module; generation/type checks replace authored-file naming checks for that directory. Pure reexport barrels and shared context/type modules use camelCase `.ts`; component files do not implement hooks alongside the component.
 
 Keep test formats aligned with their runners: API Jest executes `.mjs` against built ESM, UI/web Node tests use `.test.mjs`, and Playwright uses `.spec.ts`. Do not rename one category to another without changing and verifying discovery. The API still has six shared legacy suites with plain `.spec.mjs` names; their exact location and retained status are documented in [backend test rules](BACKEND_GUIDELINES.md#test-file-rules). These suffixes are authoring/review rules, not a claim that a filename linter enforces every pattern.
 

@@ -4,22 +4,22 @@ import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 import NextLink from 'next/link';
 import { useRef, useState } from 'react';
 
+import { apiError } from '../../lib/apiError';
+
 import { useAcceptWorkspaceInvitationMutation } from './useAcceptWorkspaceInvitationMutation';
 
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { AcceptedInvitationEnvelope } from '@flowboard/contracts';
 
-export function AcceptInvitationAction({
-  runtime,
-  scope,
-  token,
-}: {
+type AcceptInvitationActionProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
   token: string;
-}) {
-  const { submit } = useAcceptWorkspaceInvitationMutation(runtime, scope);
+};
+
+export function AcceptInvitationAction({ runtime, scope, token }: AcceptInvitationActionProps) {
+  const { mutateAsync } = useAcceptWorkspaceInvitationMutation(runtime, scope);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [accepted, setAccepted] = useState<AcceptedInvitationEnvelope | null>(null);
@@ -32,15 +32,11 @@ export function AcceptInvitationAction({
     setBusy(true);
     setMessage(null);
     try {
-      const result = await submit(token);
-      if (!result.success) {
-        setMessage(result.error.message);
-
-        return;
-      }
-
+      const response = await mutateAsync(token);
       window.history.replaceState(window.history.state, '', window.location.pathname);
-      setAccepted(result.response);
+      setAccepted(response);
+    } catch (cause) {
+      setMessage(apiError(cause).message);
     } finally {
       pending.current = false;
       setBusy(false);

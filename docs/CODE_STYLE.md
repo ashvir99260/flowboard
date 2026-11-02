@@ -52,6 +52,22 @@ function Counter() {
 
 State/effect grouping that depends on data flow remains a review responsibility. Do not add memoization or suppress dependency checks merely to fit the suggested layout. A trailing line-sensitive directive is reported without an autofix; move it above its target statement and put the separator before the directive so its meaning stays intact.
 
+## Component props and file boundaries
+
+Declare component prop types above the component rather than inline in its parameter list. When extracting an inline annotation, use a local `<ComponentName>Props` alias and preserve the original readonly wrappers, intersections, optional properties, callbacks and generic constraints/defaults. Existing named/imported prop types and framework-provided `PageProps`/`LayoutProps` remain valid. A local extraction does not require a new public export.
+
+```tsx
+type ProfileProps = Readonly<{ name: string }>;
+
+export function Profile({ name }: ProfileProps) {
+  return <p>{name}</p>;
+}
+```
+
+Keep each distinct React component implementation in its own file, including private components. Preserve required route filenames. Cohesive private styled slots and render callbacks remain with their owner; they are not separate component implementations. See [naming conventions](NAMING_CONVENTIONS.md#exact-file-patterns).
+
+The [component structure checks](../apps/web/test/source-naming.test.mjs) scan runtime web source/routes and shared UI/forms components for inline prop objects, late local prop declarations and multiple component implementations. Fixtures include Readonly/intersection types, generics, memo/forwardRef wrappers, imported types, render callbacks and styled slots. Existing source-layout checks continue to enforce filenames and public component boundaries.
+
 ## Existing conventions
 
 [NAMING_CONVENTIONS.md](NAMING_CONVENTIONS.md) maps names and file roles to actual source examples and identifies which rules are automated.

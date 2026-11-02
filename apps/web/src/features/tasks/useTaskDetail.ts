@@ -1,20 +1,26 @@
 'use client';
 
-import {
-  getListResolvedFieldsOptions,
-  getListResolvedStatusesOptions,
-  getTaskOptions,
-  listWorkspaceMembersInfiniteOptions,
-} from '@flowboard/api-client/tanstack-query';
 import { MemberPageSchema } from '@flowboard/contracts';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
 
+import {
+  getListResolvedFieldsOptions,
+  getListResolvedStatusesOptions,
+} from '../../generated/apiHooks.gen';
+import { listWorkspaceMembersInfiniteOptions } from '../../generated/apiHooks.gen';
+import { getTaskOptions } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { withQueryScope } from '../../lib/queryScope';
 
 import { assembleTaskDetail } from './taskDetailData';
 
+import type { GetTaskQueryOptions } from '../../generated/apiHooks.gen';
+import type {
+  GetListResolvedFieldsQueryOptions,
+  GetListResolvedStatusesQueryOptions,
+} from '../../generated/apiHooks.gen';
+import type { ListWorkspaceMembersInfiniteQueryOptions } from '../../generated/apiHooks.gen';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
@@ -25,12 +31,26 @@ const policy = {
   refetchOnReconnect: false,
 } as const;
 
+export type TaskDetailQueryOptions = {
+  fields?: GetListResolvedFieldsQueryOptions;
+  members?: ListWorkspaceMembersInfiniteQueryOptions;
+  statuses?: GetListResolvedStatusesQueryOptions;
+  task?: GetTaskQueryOptions;
+};
+
+export type TaskDetailQueryResult = {
+  error: ReturnType<typeof apiError> | null;
+  result: ReturnType<typeof assembleTaskDetail>;
+  retry: () => void;
+};
+
 export function useTaskDetail(
   runtime: ClientRuntime,
   scope: QueryScope,
   listId: string,
   taskId?: string,
-) {
+  options: TaskDetailQueryOptions = {},
+): TaskDetailQueryResult {
   const id = useId();
   const [attempt, setAttempt] = useState({ generation: 0, restarts: 0 });
 
@@ -39,27 +59,41 @@ export function useTaskDetail(
     withQueryScope(options, scope, tags);
 
   const statuses = useQuery({
-    ...scoped(getListResolvedStatusesOptions({ client: runtime.client, path: { listId } })),
-    ...policy,
+    ...scoped(
+      getListResolvedStatusesOptions(
+        { client: runtime.client, path: { listId } },
+        { ...policy, ...options.statuses },
+      ),
+    ),
   });
   const fields = useQuery({
-    ...scoped(getListResolvedFieldsOptions({ client: runtime.client, path: { listId } })),
-    ...policy,
+    ...scoped(
+      getListResolvedFieldsOptions(
+        { client: runtime.client, path: { listId } },
+        { ...policy, ...options.fields },
+      ),
+    ),
   });
   const task = useQuery({
-    ...scoped(getTaskOptions({ client: runtime.client, path: { taskId: taskId ?? listId } })),
-    ...policy,
+    ...scoped(
+      getTaskOptions(
+        { client: runtime.client, path: { taskId: taskId ?? listId } },
+        { ...policy, ...options.task },
+      ),
+    ),
     enabled: Boolean(taskId),
   });
   const members = useInfiniteQuery({
     ...scoped(
-      listWorkspaceMembersInfiniteOptions({
-        client: runtime.client,
-        path: { workspaceId: scope.workspaceId! },
-        query: { limit: '50', assignableToListId: listId },
-      }),
+      listWorkspaceMembersInfiniteOptions(
+        {
+          client: runtime.client,
+          path: { workspaceId: scope.workspaceId! },
+          query: { limit: '50', assignableToListId: listId },
+        },
+        { ...policy, ...options.members },
+      ),
     ),
-    ...policy,
     initialPageParam: { path: { workspaceId: scope.workspaceId! }, query: {} },
     getNextPageParam: (page) => {
       const parsed = MemberPageSchema.safeParse(page);

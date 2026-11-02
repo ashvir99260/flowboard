@@ -12,7 +12,9 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { SearchHit } from '@flowboard/contracts';
 
-export function GlobalSearch({ runtime, scope }: { runtime: ClientRuntime; scope: QueryScope }) {
+type GlobalSearchProps = { runtime: ClientRuntime; scope: QueryScope };
+
+export function GlobalSearch({ runtime, scope }: GlobalSearchProps) {
   const router = useRouter();
   const openTask = useTaskEditor();
   const id = useId();

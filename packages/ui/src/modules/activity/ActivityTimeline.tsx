@@ -13,10 +13,12 @@ const Entries = styled('ol')(({ theme }) => ({
 }));
 const Entry = styled('li')({ overflowWrap: 'anywhere' });
 
-export function ActivityTimeline({
-  items,
-  statuses,
-}: Readonly<{ items: readonly Activity[]; statuses: readonly ResolvedStatus[] }>) {
+type ActivityTimelineProps = Readonly<{
+  items: readonly Activity[];
+  statuses: readonly ResolvedStatus[];
+}>;
+
+export function ActivityTimeline({ items, statuses }: ActivityTimelineProps) {
   const label = (id: string) =>
     statuses.find((status) => status.id === id)?.name ?? `Status ${id.slice(0, 8)}`;
 

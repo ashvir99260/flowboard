@@ -10,7 +10,9 @@ import type { ReactNode } from 'react';
 
 const empty: ReturnType<ReturnType<typeof createNotificationStore>['snapshot']> = [];
 
-export function NotificationProvider({ children }: { children: ReactNode }) {
+type NotificationProviderProps = { children: ReactNode };
+
+export function NotificationProvider({ children }: NotificationProviderProps) {
   const [store] = useState(createNotificationStore);
   const queue = useSyncExternalStore(store.subscribe, store.snapshot, () => empty);
 

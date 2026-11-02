@@ -7,6 +7,8 @@ import { BulkTaskEditor } from './BulkTaskEditor';
 
 import type { BulkTaskEditorProps } from './bulkTaskEditorTypes';
 
+type BulkTaskActionsProps = Omit<BulkTaskEditorProps, 'onClose'> & { onClear: () => void };
+
 export function BulkTaskActions({
   listId,
   runtime,
@@ -14,7 +16,7 @@ export function BulkTaskActions({
   tasks,
   onSaved,
   onClear,
-}: Omit<BulkTaskEditorProps, 'onClose'> & { onClear: () => void }) {
+}: BulkTaskActionsProps) {
   const [open, setOpen] = useState(false);
 
   return (

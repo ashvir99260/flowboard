@@ -25,20 +25,19 @@ import { useWorkspaceMutation } from './useWorkspaceMutation';
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
-export function WorkspaceMemberships({
-  runtime,
-  scope,
-}: {
+type WorkspaceMembershipsProps = {
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function WorkspaceMemberships({ runtime, scope }: WorkspaceMembershipsProps) {
   const router = useRouter();
   const notifications = useNotifications();
   const { logout, switchWorkspace } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [changing, setChanging] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const { submit } = useWorkspaceMutation(runtime, scope);
+  const { mutateAsync } = useWorkspaceMutation(runtime, scope);
   const alive = useRef(true);
 
   useEffect(() => {
@@ -126,20 +125,11 @@ export function WorkspaceMemberships({
                   setError(null);
                   try {
                     if (workspace.archivedAt) {
-                      const result = await submit({
+                      await mutateAsync({
                         kind: 'restore',
                         workspaceId: workspace.id,
                         expectedConfigVersion: workspace.configVersion,
                       });
-                      if (!result.success) {
-                        if (alive.current) {
-                          setError(result.error.message);
-                          setChanging(false);
-                        }
-
-                        return;
-                      }
-
                       await runtime.refresh();
                     }
 

@@ -373,10 +373,14 @@ D159 and [SEARCH.md](SEARCH.md) define indexed list search, delivered through P3
 
 [UI_REFRESH.md](UI_REFRESH.md) and [design system](../design-system/flowboard/MASTER.md) define P32-01–03: shared visual system/shell, workspace lists board, and header/invitation actions. Existing list status resolution, tenancy, permissions and generated APIs remain authoritative.
 
-# Frontend organization follow-up
+## Frontend organization follow-up
 
 R164–R165 follow [the frontend refactor plan](FRONTEND_REFACTOR.md): one typed mutation execution hook with feature-owned validation, separate React components, PascalCase component files and camelCase hooks/helpers. Framework route names and backend/generated contracts keep their required spelling. P33-01 through P33-03 cover implementation and source-boundary checks.
 
 ## UI stability and loading refinement (Phase 40)
 
 The next UI pass first fixes routine refreshes that discard valid content, then adds layout-matched skeletons, then refines the workspace visual hierarchy. Preserve generated API operations, cursor/version validation, optimistic rollback and immediate clearing on access or identity changes. Routine focus, reconnect and task updates may retain only a validated snapshot for the same workspace/list/query while a new snapshot loads. Coalesce duplicate realtime refresh requests without losing a trailing invalidation. Skeletons represent the real shell/board/table/drawer geometry, contain no fake interactive content and respect reduced motion. Use the existing MUI styled components and semantic HSL/rem tokens; do not introduce a second design system.
+
+## List-first settings
+
+R179/P41-01 follows D175: show an expandable container hierarchy and selectable status/field lists, with Add at the top right and existing editors in responsive right-hand panels. The panels remain non-modal to preserve scope selection and workspace navigation; existing dirty-edit, permission and conflict rules remain in force. See [the work contract](evidence/P41-01.md).

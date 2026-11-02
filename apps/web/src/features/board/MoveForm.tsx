@@ -12,6 +12,8 @@ import { useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
+import { apiError } from '../../lib/apiError';
+
 import { prepareMoveFields } from './taskPlacement';
 
 import type { BoardColumn } from './boardData';
@@ -27,6 +29,21 @@ const DraftSchema = z.strictObject({
 });
 type Draft = z.infer<typeof DraftSchema>;
 
+type MoveFormProps = {
+  busy: boolean;
+  columns: readonly BoardColumn[];
+  configVersion: number;
+  destinationListId: string;
+  fields: readonly ResolvedField[];
+  formId: string;
+  mutateAsync: ReturnType<typeof useTaskPlacementMutation>['mutateAsync'];
+  onBusyChange: (busy: boolean) => void;
+  onClose: () => void;
+  sourceStatus: ResolvedStatus;
+  statuses: readonly ResolvedStatus[];
+  task: Task;
+};
+
 export function MoveForm({
   busy,
   task,
@@ -37,23 +54,10 @@ export function MoveForm({
   statuses,
   columns,
   formId,
-  submit,
+  mutateAsync,
   onClose,
   onBusyChange,
-}: {
-  busy: boolean;
-  columns: readonly BoardColumn[];
-  configVersion: number;
-  destinationListId: string;
-  fields: readonly ResolvedField[];
-  formId: string;
-  onBusyChange: (busy: boolean) => void;
-  onClose: () => void;
-  sourceStatus: ResolvedStatus;
-  statuses: readonly ResolvedStatus[];
-  submit: ReturnType<typeof useTaskPlacementMutation>['submit'];
-  task: Task;
-}) {
+}: MoveFormProps) {
   const inFlight = useRef(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -121,7 +125,7 @@ export function MoveForm({
     inFlight.current = true;
     onBusyChange(true);
     try {
-      const result = await submit({
+      await mutateAsync({
         taskId: task.id,
         sourceListId: task.primaryListId,
         sourceStatusId: task.statusId,
@@ -134,14 +138,13 @@ export function MoveForm({
           customFields: prepared.patch,
         },
       });
-      if (result.success) onClose();
-      else {
-        setMessage(result.error.message);
-        if ('details' in result.error)
-          for (const issue of result.error.details ?? []) {
-            if (issue.path[0] === 'customFields')
-              setError(issue.path.join('.') as FieldPath<Draft>, { message: issue.message });
-          }
+      onClose();
+    } catch (cause) {
+      const error = apiError(cause);
+      setMessage(error.message);
+      for (const issue of error.details ?? []) {
+        if (issue.path[0] === 'customFields')
+          setError(issue.path.join('.') as FieldPath<Draft>, { message: issue.message });
       }
     } finally {
       inFlight.current = false;

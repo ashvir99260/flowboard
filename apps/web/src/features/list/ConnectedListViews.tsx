@@ -11,7 +11,9 @@ import { ListViewLink } from './ListViewLink';
 
 import type { TaskTableQuery } from './listLocation';
 
-export function ConnectedListViews({ listId }: { listId: string }) {
+type ConnectedListViewsProps = { listId: string };
+
+export function ConnectedListViews({ listId }: ConnectedListViewsProps) {
   const pathname = usePathname();
   const search = useSearchParams();
   const { runtime, scope } = useSession();

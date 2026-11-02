@@ -38,17 +38,14 @@ const Summary = styled(Box)(({ theme }) => ({
   '& .MuiChip-root': { minWidth: 0, maxWidth: '100%' },
 }));
 
-export function KanbanColumn({
-  action,
-  children,
-  count,
-  status,
-}: Readonly<{
+type KanbanColumnProps = Readonly<{
   action?: ReactNode;
   children?: ReactNode;
   count: number;
   status: Pick<ResolvedStatus, 'name' | 'category' | 'color'>;
-}>) {
+}>;
+
+export function KanbanColumn({ action, children, count, status }: KanbanColumnProps) {
   return (
     <Column component="section" aria-label={`${status.name} column`} variant="outlined">
       <Header direction="row" useFlexGap spacing={0.8}>

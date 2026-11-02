@@ -4,11 +4,9 @@ import { Paper, Typography } from '@flowboard/ui';
 
 import type { ReactNode } from 'react';
 
-export function PlaygroundSection({
-  children,
-  description,
-  title,
-}: Readonly<{ children: ReactNode; description: string; title: string }>) {
+type PlaygroundSectionProps = Readonly<{ children: ReactNode; description: string; title: string }>;
+
+export function PlaygroundSection({ children, description, title }: PlaygroundSectionProps) {
   return (
     <Paper component="section" variant="outlined" sx={{ p: 2.4, minWidth: 0, borderRadius: 2 }}>
       <Typography component="h2" variant="h3">

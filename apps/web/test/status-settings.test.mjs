@@ -11,7 +11,7 @@ test(
   async (t) => {
     const { page } = await openSettings(t);
     await expect(page.getByRole('heading', { exact: true, name: 'Status settings' })).toBeVisible();
-    const preview = page.getByRole('region', { exact: true, name: 'Effective status preview' });
+    const preview = page.getByRole('region', { exact: true, name: 'Status configuration' });
     await expect(preview.getByText(/^To do ·/)).toBeVisible();
     await expect(preview.getByText(/^In progress ·/)).toBeVisible();
     await selectAutocomplete(
@@ -61,7 +61,7 @@ test(
     );
     await expect(
       page
-        .getByRole('region', { exact: true, name: 'Effective status preview' })
+        .getByRole('region', { exact: true, name: 'Status configuration' })
         .getByText(/^Building ·/),
     ).toBeVisible();
     await selectAutocomplete(
@@ -70,7 +70,7 @@ test(
     );
     await expect(
       page
-        .getByRole('region', { exact: true, name: 'Effective status preview' })
+        .getByRole('region', { exact: true, name: 'Status configuration' })
         .getByText(/^In review ·/),
     ).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit In review' }).click();
@@ -87,7 +87,7 @@ test(
 
     await expect(
       page
-        .getByRole('region', { exact: true, name: 'Effective status preview' })
+        .getByRole('region', { exact: true, name: 'Status configuration' })
         .getByText(/^Building ·/),
     ).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit Building' }).click();
@@ -98,7 +98,7 @@ test(
       .click();
     await expect(
       page
-        .getByRole('region', { exact: true, name: 'Status doing' })
+        .getByRole('listitem', { exact: true, name: 'Status doing' })
         .getByText('Inherited', { exact: true }),
     ).toBeVisible();
   },
@@ -109,7 +109,7 @@ test(
   { timeout: 120000 },
   async (t) => {
     const { page } = await openSettings(t);
-    const preview = page.getByRole('region', { exact: true, name: 'Effective status preview' });
+    const preview = page.getByRole('region', { exact: true, name: 'Status configuration' });
     await selectAutocomplete(
       page.getByLabel('Configuration scope', { exact: true }),
       'List: Product backlog',
@@ -128,7 +128,7 @@ test(
     await expect(preview.getByText(/^Paused ·/)).toHaveCount(0);
     await expect(
       page
-        .getByRole('region', { exact: true, name: 'Status paused' })
+        .getByRole('listitem', { exact: true, name: 'Status paused' })
         .getByText('Hidden', { exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { exact: true, name: 'Edit Paused' }).click();
@@ -142,6 +142,6 @@ test(
       .getByRole('button', { exact: true, name: 'Remove configuration' })
       .click();
     await expect(preview.getByText(/^Paused ·/)).toHaveCount(0);
-    await expect(page.getByRole('region', { exact: true, name: 'Status paused' })).toHaveCount(0);
+    await expect(page.getByRole('listitem', { exact: true, name: 'Status paused' })).toHaveCount(0);
   },
 );

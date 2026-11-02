@@ -9,7 +9,9 @@ import { SessionLoading } from './SessionLoading';
 
 import type { ReactNode } from 'react';
 
-export function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
+type SessionGateProps = Readonly<{ children: ReactNode }>;
+
+export function SessionGate({ children }: SessionGateProps) {
   const { status } = useSession();
   const router = useRouter();
 

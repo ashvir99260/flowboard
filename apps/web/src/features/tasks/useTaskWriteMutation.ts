@@ -1,14 +1,14 @@
 'use client';
 
+import { ArchiveTaskSchema, CreateTaskSchema, UpdateTaskSchema } from '@flowboard/contracts';
+import { useQueryClient } from '@tanstack/react-query';
+
 import {
   archiveTaskMutation,
   createTaskMutation,
   updateTaskMutation,
-} from '@flowboard/api-client/tanstack-query';
-import { ArchiveTaskSchema, CreateTaskSchema, UpdateTaskSchema } from '@flowboard/contracts';
-import { useQueryClient } from '@tanstack/react-query';
-
-import { apiError } from '../../lib/apiError';
+} from '../../generated/apiHooks.gen';
+import { apiError, ApiMutationError } from '../../lib/apiError';
 import { useApiMutation } from '../../lib/useApiMutation';
 import { useNotifications } from '../notifications/useNotifications';
 
@@ -24,6 +24,11 @@ import type {
   ResolvedStatus,
   UpdateTask,
 } from '@flowboard/contracts';
+import type {
+  MutationFunctionContext,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 
 class TaskResponseError extends Error {}
 
@@ -33,83 +38,126 @@ type TaskWrite = { listId: string; taskId: string } & (
   | { body: ArchiveTask; kind: 'archive' }
 );
 
+export type TaskWriteMutationVariables = TaskWrite;
+
+export type TaskWriteMutationData =
+  Extract<ReturnType<typeof readTaskWriteResponse>, { success: true }>['response'] | null;
+
+type TaskWriteMutationContext = {
+  report: ReturnType<ReturnType<typeof useNotifications>['capture']>;
+};
+export type TaskWriteMutationOptions = Omit<
+  UseMutationOptions<
+    TaskWriteMutationData,
+    ApiMutationError,
+    TaskWriteMutationVariables,
+    TaskWriteMutationContext
+  >,
+  'mutationKey' | 'mutationFn' | 'retry' | 'networkMode' | 'onMutate'
+>;
+
+export type TaskWriteMutationResult = UseMutationResult<
+  TaskWriteMutationData,
+  ApiMutationError,
+  TaskWriteMutationVariables,
+  TaskWriteMutationContext
+>;
+
+export async function requestTaskWrite(
+  requestClient: ClientRuntime['client'],
+  scope: QueryScope,
+  configuration: { fields: readonly ResolvedField[]; statuses: readonly ResolvedStatus[] },
+  command: TaskWriteMutationVariables,
+
+  mutationContext: MutationFunctionContext,
+): Promise<TaskWriteMutationData> {
+  try {
+    if (command.kind === 'archive') {
+      await archiveTaskMutation({ client: requestClient }).mutationFn(
+        { ...{ path: { taskId: command.taskId }, body: ArchiveTaskSchema.parse(command.body) } },
+        mutationContext,
+      );
+
+      return null;
+    }
+
+    const response =
+      command.kind === 'create'
+        ? await createTaskMutation({ client: requestClient }).mutationFn(
+            { path: { listId: command.listId }, body: CreateTaskSchema.parse(command.body) },
+            mutationContext,
+          )
+        : await updateTaskMutation({ client: requestClient }).mutationFn(
+            { path: { taskId: command.taskId }, body: UpdateTaskSchema.parse(command.body) },
+            mutationContext,
+          );
+    const parsed = readTaskWriteResponse(response, {
+      ...configuration,
+      workspaceId: scope.workspaceId,
+      listId: command.listId,
+      taskId: command.kind === 'update' ? command.taskId : undefined,
+      configVersion: command.body.expectedConfigVersion,
+      minVersion: command.kind === 'update' ? command.body.expectedVersion : 1,
+    });
+    if (!parsed.success)
+      throw new TaskResponseError(
+        'The saved task response could not be validated. Reload before continuing.',
+      );
+
+    return parsed.response;
+  } catch (cause) {
+    throw new ApiMutationError(
+      cause instanceof TaskResponseError
+        ? { code: 'INVALID_RESPONSE', message: cause.message }
+        : apiError(cause),
+    );
+  }
+}
+
 export function useTaskWriteMutation(
   runtime: ClientRuntime,
   scope: QueryScope,
   configuration: { fields: readonly ResolvedField[]; statuses: readonly ResolvedStatus[] },
-) {
+  options: TaskWriteMutationOptions = {},
+): TaskWriteMutationResult {
   const notifications = useNotifications();
+
+  const capture = notifications.captureFactory();
+
   const client = useQueryClient();
 
-  const create = createTaskMutation({ client: runtime.client });
-  const update = updateTaskMutation({ client: runtime.client });
-  const archive = archiveTaskMutation({ client: runtime.client });
+  const mutationKey = ['task-write', scope.revision, scope.userId, scope.workspaceId];
 
-  const mutation = useApiMutation({
-    mutationKey: ['task-write', scope.revision, scope.userId, scope.workspaceId],
-    mutationFn: async (command: TaskWrite, context) => {
-      if (command.kind === 'archive') {
-        await archive.mutationFn!(
-          { path: { taskId: command.taskId }, body: ArchiveTaskSchema.parse(command.body) },
-          context,
-        );
-
-        return null;
+  const mutation = useApiMutation<
+    TaskWriteMutationData,
+    ApiMutationError,
+    TaskWriteMutationVariables,
+    TaskWriteMutationContext
+  >({
+    ...options,
+    mutationKey,
+    mutationFn: (command, mutationContext) =>
+      requestTaskWrite(runtime.client, scope, configuration, command, mutationContext),
+    onMutate: (command) => {
+      const report = capture();
+      if (isTaskBusy(client, scope, command.taskId, true)) {
+        throw new ApiMutationError({ code: 'BUSY', message: 'This task is already saving.' });
       }
 
-      const response =
-        command.kind === 'create'
-          ? await create.mutationFn!(
-              { path: { listId: command.listId }, body: CreateTaskSchema.parse(command.body) },
-              context,
-            )
-          : await update.mutationFn!(
-              { path: { taskId: command.taskId }, body: UpdateTaskSchema.parse(command.body) },
-              context,
-            );
-      const parsed = readTaskWriteResponse(response, {
-        ...configuration,
-        workspaceId: scope.workspaceId,
-        listId: command.listId,
-        taskId: command.kind === 'update' ? command.taskId : undefined,
-        configVersion: command.body.expectedConfigVersion,
-        minVersion: command.kind === 'update' ? command.body.expectedVersion : 1,
-      });
-      if (!parsed.success)
-        throw new TaskResponseError(
-          'The saved task response could not be validated. Reload before continuing.',
-        );
-
-      return parsed.response;
+      return { report };
     },
-  });
-
-  const submit = async (command: TaskWrite) => {
-    const report = notifications.capture();
-    if (isTaskBusy(client, scope, command.taskId))
-      return {
-        success: false as const,
-        error: { code: 'BUSY', message: 'This task is already saving.' },
-      };
-
-    try {
-      const response = await mutation.mutateAsync(command);
-      report(
+    onSuccess: async (response, command, context, mutationContext) => {
+      context?.report(
         { archive: 'Task archived.', create: 'Task created.', update: 'Task saved.' }[command.kind],
         'success',
       );
+      await options.onSuccess?.(response, command, context, mutationContext);
+    },
+    onError: async (error, command, context, mutationContext) => {
+      context?.report(error.message, 'error');
+      await options.onError?.(error, command, context, mutationContext);
+    },
+  });
 
-      return { success: true as const, response };
-    } catch (error) {
-      const failure: ReturnType<typeof apiError> =
-        error instanceof TaskResponseError
-          ? { code: 'INVALID_RESPONSE', message: error.message }
-          : apiError(error);
-      report(failure.message, 'error');
-
-      return { success: false as const, error: failure };
-    }
-  };
-
-  return { submit };
+  return mutation;
 }

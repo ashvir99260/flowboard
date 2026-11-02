@@ -22,6 +22,15 @@ const Panel = styled(Drawer, { name: 'FlowboardDrawer', slot: 'Root' })(({ theme
   },
 }));
 
+type DrawerPanelProps = Readonly<{
+  children: ReactNode;
+  closeDisabled?: boolean;
+  closeLabel?: string;
+  onClose: () => void;
+  open: boolean;
+  title: string;
+}>;
+
 export function DrawerPanel({
   children,
   open,
@@ -29,14 +38,7 @@ export function DrawerPanel({
   closeLabel = 'Close',
   closeDisabled = false,
   onClose,
-}: Readonly<{
-  children: ReactNode;
-  closeDisabled?: boolean;
-  closeLabel?: string;
-  onClose: () => void;
-  open: boolean;
-  title: string;
-}>) {
+}: DrawerPanelProps) {
   const id = useId();
   const close = useRef<HTMLButtonElement>(null);
 

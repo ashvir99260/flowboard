@@ -2,6 +2,60 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
+test('consumer mutation observer failures do not replace request outcomes', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['--experimental-strip-types', '--input-type=module'],
+    {
+      cwd: new URL('../', import.meta.url),
+      encoding: 'utf8',
+      timeout: 10_000,
+      input: `
+      import assert from 'node:assert/strict';
+      import { createElement } from 'react';
+      import { renderToString } from 'react-dom/server';
+      import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+      import { useApiMutation } from './src/lib/useApiMutation.ts';
+      const client = new QueryClient();
+      const reported = [];
+      const events = [];
+      globalThis.reportError = (error) => reported.push(error);
+      let hook;
+      function Harness({ options }) { hook = useApiMutation(options); return null; }
+      function mount(options) {
+        renderToString(createElement(QueryClientProvider, { client }, createElement(Harness, { options })));
+        return hook;
+      }
+      try {
+        const success = mount({
+          mutationKey: ['test'], mutationFn: async (value) => value,
+          onSuccess: async (data, value) => {
+            await Promise.resolve();
+            events.push([data, value]);
+            throw new Error('private callback content');
+          },
+          onSettled: () => events.push('settled'),
+        });
+        assert.equal(await success.mutateAsync(7), 7);
+        assert.deepEqual(events, [[7, 7], 'settled']);
+        assert.equal(reported.length, 1);
+        assert.doesNotMatch(reported[0].message, /private/);
+        const failure = new Error('original request failure');
+        const rejected = mount({
+          mutationKey: ['failure'], mutationFn: async () => { throw failure; },
+          onError: (error) => { assert.equal(error, failure); throw new Error('observer failed'); },
+          onSettled: () => { throw new Error('settled failed'); },
+        });
+        await assert.rejects(rejected.mutateAsync(8), (error) => error === failure);
+        assert.equal(reported.length, 3);
+      } finally { client.clear(); }
+    `,
+    },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
 test('API mutations preserve commands, keys and callbacks while disabling retries and offline queuing', () => {
   const result = spawnSync(
     process.execPath,

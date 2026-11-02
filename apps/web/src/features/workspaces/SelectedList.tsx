@@ -3,24 +3,22 @@
 import { NodeEnvelopeSchema } from '@flowboard/contracts';
 import { Button, Chip, ErrorState, Stack, Typography, WorkspaceIcon } from '@flowboard/ui';
 
+import { useGetNodeQuery } from '../../generated/apiHooks.gen';
 import { apiError } from '../../lib/apiError';
 import { SessionLoading } from '../auth/SessionLoading';
 import { ListViews } from '../list/ListViews';
-import { useGetNodeQuery } from '../tree/useGetNodeQuery';
 
 import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 
-export function SelectedList({
-  listId,
-  runtime,
-  scope,
-}: {
+type SelectedListProps = {
   listId: string;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
-  const query = useGetNodeQuery({ nodeId: listId, runtime, scope });
+};
+
+export function SelectedList({ listId, runtime, scope }: SelectedListProps) {
+  const query = useGetNodeQuery({ path: { nodeId: listId }, runtime, scope });
 
   if (query.isPending) return <SessionLoading />;
 

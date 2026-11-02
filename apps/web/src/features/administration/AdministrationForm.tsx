@@ -6,6 +6,8 @@ import { Alert, Button, Stack, Typography } from '@flowboard/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
+import { apiError } from '../../lib/apiError';
+
 import {
   administrationCommand,
   administrationDefaults,
@@ -22,6 +24,18 @@ import type { FormFieldConfig } from '@flowboard/forms';
 import type { FormEvent } from 'react';
 import type { FieldPath } from 'react-hook-form';
 
+type AdministrationFormProps = {
+  active: boolean;
+  onReload: () => void;
+  onSaved: (nodeId?: string) => void;
+  onState: (value: { busy: boolean; dirty: boolean }) => void;
+  runtime: ClientRuntime;
+  scope: QueryScope;
+  selection: AdministrationSelection;
+  snapshot: AdministrationSnapshot;
+  stale: boolean;
+};
+
 export function AdministrationForm({
   selection,
   snapshot,
@@ -32,18 +46,8 @@ export function AdministrationForm({
   onState,
   onSaved,
   onReload,
-}: {
-  active: boolean;
-  onReload: () => void;
-  onSaved: (nodeId?: string) => void;
-  onState: (value: { busy: boolean; dirty: boolean }) => void;
-  runtime: ClientRuntime;
-  scope: QueryScope;
-  selection: AdministrationSelection;
-  snapshot: AdministrationSnapshot;
-  stale: boolean;
-}) {
-  const { submit } = useAdministrationMutation(runtime, scope);
+}: AdministrationFormProps) {
+  const { mutateAsync } = useAdministrationMutation(runtime, scope);
   const {
     control,
     handleSubmit,
@@ -197,27 +201,30 @@ export function AdministrationForm({
 
       setBusy(true);
       setNotice(null);
-      const result = await submit(command);
-      if (!mounted.current) return;
+      try {
+        const response = await mutateAsync(command);
+        if (!mounted.current) return;
 
-      if (result.success) {
-        onSaved(result.response?.data.id);
+        onSaved(response?.data.id);
+      } catch (cause) {
+        if (!mounted.current) return;
 
-        return;
-      }
-
-      setNotice(result.error.message);
-      setConflict(
-        ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(result.error.code),
-      );
-      for (const issue of 'details' in result.error ? (result.error.details ?? []) : []) {
-        const field = issue.path[0] === 'mode' ? 'grantMode' : String(issue.path[0]);
-        if (['name', 'type', 'parentId', 'visibility', 'grantMode', 'placement'].includes(field)) {
-          setError(field as FieldPath<AdministrationDraft>, {
-            type: 'server',
-            message: issue.message,
-          });
-          focus.current ??= field as FieldPath<AdministrationDraft>;
+        const error = apiError(cause);
+        setNotice(error.message);
+        setConflict(
+          ['VERSION_CONFLICT', 'CONFIG_CONFLICT', 'INVALID_RESPONSE'].includes(error.code),
+        );
+        for (const issue of error.details ?? []) {
+          const field = issue.path[0] === 'mode' ? 'grantMode' : String(issue.path[0]);
+          if (
+            ['name', 'type', 'parentId', 'visibility', 'grantMode', 'placement'].includes(field)
+          ) {
+            setError(field as FieldPath<AdministrationDraft>, {
+              type: 'server',
+              message: issue.message,
+            });
+            focus.current ??= field as FieldPath<AdministrationDraft>;
+          }
         }
       }
     })(event)

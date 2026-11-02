@@ -8,19 +8,21 @@ import { CustomFieldInput } from '../forms/CustomFieldInput.js';
 
 import type { FieldValue, ResolvedField } from '@flowboard/contracts';
 
+type FieldPreviewProps = {
+  errors?: readonly string[];
+  items: readonly ResolvedField[];
+  label?: string;
+  onValueChange: (key: string, value: FieldValue | null) => void;
+  values: Readonly<Record<string, FieldValue | null>>;
+};
+
 export function FieldPreview({
   items,
   values,
   onValueChange,
   errors = [],
   label = 'Effective field preview',
-}: {
-  errors?: readonly string[];
-  items: readonly ResolvedField[];
-  label?: string;
-  onValueChange: (key: string, value: FieldValue | null) => void;
-  values: Readonly<Record<string, FieldValue | null>>;
-}) {
+}: FieldPreviewProps) {
   return (
     <Stack component="section" aria-label={label} spacing={1.2}>
       <Typography component="h2" variant="h3">

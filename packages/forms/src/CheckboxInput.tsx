@@ -3,6 +3,19 @@
 import { Checkbox, FormControl, FormControlLabel, FormHelperText } from '@flowboard/ui';
 import { useId } from 'react';
 
+type CheckboxInputProps = {
+  checked: boolean;
+  disabled?: boolean;
+  error?: string;
+  hint?: string;
+  inputRef: (element: HTMLInputElement | null) => void;
+  label: string;
+  name: string;
+  onBlur: () => void;
+  onChange: (value: boolean) => void;
+  required?: boolean;
+};
+
 export function CheckboxInput({
   checked,
   disabled,
@@ -14,18 +27,7 @@ export function CheckboxInput({
   onBlur,
   onChange,
   required,
-}: {
-  checked: boolean;
-  disabled?: boolean;
-  error?: string;
-  hint?: string;
-  inputRef: (element: HTMLInputElement | null) => void;
-  label: string;
-  name: string;
-  onBlur: () => void;
-  onChange: (value: boolean) => void;
-  required?: boolean;
-}) {
+}: CheckboxInputProps) {
   const id = useId();
 
   const message = error ?? hint;

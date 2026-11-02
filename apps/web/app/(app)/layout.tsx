@@ -5,7 +5,9 @@ import { readRealtimeUrl } from '../../src/server/realtimeConfig';
 
 import type { ReactNode } from 'react';
 
-export default async function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
+type AppLayoutProps = Readonly<{ children: ReactNode }>;
+
+export default async function AppLayout({ children }: AppLayoutProps) {
   await connection();
 
   return (

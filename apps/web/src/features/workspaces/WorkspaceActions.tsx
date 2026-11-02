@@ -21,17 +21,14 @@ import type { QueryScope } from '../../lib/queryScope';
 import type { ClientRuntime } from '../../providers/sessionContext';
 import type { WorkspaceRole } from '@flowboard/contracts';
 
-export function WorkspaceActions({
-  listId,
-  runtime,
-  scope,
-  role,
-}: {
+type WorkspaceActionsProps = {
   listId?: string;
   role: WorkspaceRole;
   runtime: ClientRuntime;
   scope: QueryScope;
-}) {
+};
+
+export function WorkspaceActions({ listId, runtime, scope, role }: WorkspaceActionsProps) {
   const openTask = useTaskEditor();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [chooseList, setChooseList] = useState(false);

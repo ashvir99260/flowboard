@@ -70,6 +70,12 @@ export { FieldPreview } from './modules/configuration/FieldPreview.js';
 
 export { StatusPreview } from './modules/configuration/StatusPreview.js';
 
+export { SettingsLayout } from './modules/configuration/SettingsLayout.js';
+
+export { SettingsDetailPanel } from './modules/configuration/SettingsDetailPanel.js';
+
+export { SettingsList } from './modules/configuration/SettingsList.js';
+
 export { MarkdownContent } from './modules/content/MarkdownContent.js';
 
 export { LoadingState } from './modules/feedback/LoadingState.js';
